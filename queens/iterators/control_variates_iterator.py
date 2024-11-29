@@ -4,9 +4,7 @@ import logging
 
 import numpy as np
 
-from queens.drivers.driver import Driver
 from queens.iterators.iterator import Iterator
-from queens.models.simulation_model import SimulationModel
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
@@ -15,149 +13,199 @@ _logger = logging.getLogger(__name__)
 class ControlVariatesIterator(Iterator):
     """Control varaites iterator class.
 
+    The implementation of control variates is based on chapter
+    9.3 of "Handbook of Monte Carlo Methods" written by Kroese, Taimre and Botev.
+
     Attributes:
-        driver_main (Driver): driver for the function which you want to estimate
-        driver_cvs (list(Driver)): drivers for the functions of the control variates
-        parameters (Parameters): parameters to use for evaluation
-        global_settings (GlobalSettings): global settings to use for evaluation
-        seed (int): seed for random samples
-        num_samples (int): number of samples to evaluate for estimation
-        expecation_cvs (list(int)): known expected values of all control
-            variates in same order as driver of control variates
-        num_cvs (int): number of control variates
-        output (dict): output of iterator
-        result_description (dict, opt): desctiption of results of iterator
+        models (list(Model)):           Models to be used for evaluation. With models[0] being the
+                                        function that you want to approximate and models[1:] being
+                                        the control variates. Pass at least two models.
+        parameters (Parameters):        Parameters to use for evaluation.
+        global_settings (GlobalSettings):   Global settings to use for evaluation.
+        seed (int):                     Seed for random samples.
+        num_samples (int):              Number of samples to evaluate for estimation.
+        expecation_cvs (list(int)):     Here you can pass expected values of control variates with
+                                        expectation[i] corresponding to models[i+1] (the i-th
+                                        control variate). If the expectation value of a control
+                                        variate is not known, pass None as it's expected value.
+        num_cvs (int):                  Number of control variates.
+        output (dict):                  Iterator outputs a dict with following entries:
+            - mean (float): Estimated mean of main model
+            - std (float): Calculated standard error of estimator, ASSUMING expected values to be
+            exact, even if computed. This value can only trusted, if given expectation values are
+            exact and none are estimated by control variates iterator!
+        result_description (dict, opt): Desctiption of results of iterator.
+        num_samples_cvs (list(int)):    Number of samples to use for computing the expectation
+                                        value of each control variable. With num_samples_cvs[i]
+                                        corresponding to models[i+1] (the i-th control
+                                        varaible). If expectation of a control variable is known,
+                                        you can pass None as it's number of samples.
+        samples (np.array):             Samples, on which all models are evaluated on.
     """
 
     @log_init_args
     def __init__(
         self,
-        driver_main,
-        drivers_cvs,
+        models,
         parameters,
         global_settings,
         seed,
         num_samples,
-        expectation_cvs,
-        scheduler,
+        expectation_cvs=None,
         result_description=None,
+        num_samples_cvs=None,
     ):
         """Control variates iterator constructor.
 
         Args:
-            driver_main (Driver): driver of function to be estimated
-            drivers_cvs (list(Driver)): drivers of all control variates
-            parameters (Parameters): parameters to be used for evaluation
-            global_settings (GlobalSettings): global settings to use for evaluation
-            seed (int): seed to use for samples generation
-            num_samples (int): number of samples to evaluate
-            expectation_cvs (list(int)): known expected value of control variates
-            scheduler (Scheduler): scheduler to use for model evaluation
-            result_description (dict, optional): result description for output
-                of iterator. Defaults to None.
+            models (list(Model)):           Models to be used for evaluation. With models[0] being
+                                            the function that you want to approximate and models
+                                            [1:] being the control variates. Pass at least two
+                                            models.
+            parameters (Parameters):        Parameters to use for evaluation.
+            global_settings (GlobalSettings):   Global settings to use for evaluation.
+            seed (int):                     Seed for random samples.
+            num_samples (int):              Number of samples to evaluate for estimation.
+            expecation_cvs (list(int), opt):    Here you can pass expected values of control
+                                                variates
+                                            with expectation[i] corresponding to models[i+1] (the
+                                            i-th control variate). If the expectation value of a
+                                            control variate is not known, pass None as it's
+                                            expected value.
+            result_description (dict, opt): Desctiption of results of iterator.
+            num_samples_cvs (list(int), optional):    Number of samples to use for computing the
+                                            expectation value of each control variable. With
+                                            num_samples_cvs[i] corresponding to models[i+1] (the
+                                            i-th control varaible). If expectation of a control
+                                            variable is known, you can pass None as it's number of
+                                            samples.
 
         Raises:
             ValueError: if number of expected values does not match number of
-                passed control variates, or driver_cvs is not a list
+                passed control variates, or driver_cvs is not a list.
         """
-
+        if expectation_cvs is None:
+            expectation_cvs = [None for i in range(len(models) - 1)]
         if isinstance(expectation_cvs, int):
             expectation_cvs = [expectation_cvs]
 
-        if isinstance(drivers_cvs, Driver):
-            drivers_cvs = [drivers_cvs]
+        if num_samples_cvs is None:
+            num_samples_cvs = [None for i in range(len(models) - 1)]
 
-        if not isinstance(drivers_cvs, list):
-            raise ValueError("drivers_cvs is not a Driver or list of Drivers")
+        if not isinstance(models, list):
+            raise ValueError("Models have to be given in the form of a list!")
+        if len(models) < 2:
+            raise ValueError("At least two models have to be given!")
 
-        if not len(drivers_cvs) == len(expectation_cvs):
+        if not len(models) - 1 == len(expectation_cvs):
             raise ValueError(
                 """number of control variates and number of expected
                               values does not match"""
             )
 
+        if not len(models) - 1 == len(num_samples_cvs):
+            raise ValueError(
+                """
+                Length of num_samples_cvs has to be equal to len(models)-1
+            """
+            )
+
+        for i in range(len(models) - 1):
+            if expectation_cvs[i] is None and num_samples_cvs[i] is None:
+                raise ValueError(
+                    """
+                    For each control variate either a expectation value has to be given
+                    or a number of samples, for the computation of it's expectation value
+                """
+                )
+
         super().__init__(None, parameters, global_settings)  # init parent iterator with no model
+        self.models = models
         self.seed = seed
-        self.driver_main = driver_main
-        self.drivers_cvs = drivers_cvs
         self.num_samples = num_samples
         self.result_description = result_description
         self.samples = None
         self.output = None
-        self.num_cvs = len(drivers_cvs)
+        self.num_cvs = len(models) - 1
         self.expectation_cvs = expectation_cvs
-
-        models = []
-
-        # creating a model object for each driver object in drivers list
-        #   and adding the model object to the models list
-        for driver in self.drivers_cvs:
-            models.append(SimulationModel(scheduler=scheduler, driver=driver))
-
-            # add models list as attribute
-            self.models_cvs = models
-
-        self.model_main = SimulationModel(scheduler=scheduler, driver=self.driver_main)
+        self.num_samples_cvs = num_samples_cvs
 
     def __draw_samples(self, num_samples):
         """Draws samples from paramter space.
 
         Args:
-            num_samples (list(int)): number of samples to draw on each level
+            num_samples (list(int)): Number of samples to draw on each level.
 
         Returns:
-            samples (list(np.array)): drawn samples
+            samples (list(np.array)): Drawn samples.
         """
-
         samples = self.parameters.draw_samples(num_samples)
 
         return samples
 
     def pre_run(self):
-        """Draws samples for core_run()"""
+        """Draws samples for core_run()."""
         np.random.seed(self.seed)
 
         self.samples = self.__draw_samples(self.num_samples)
 
     def core_run(self):
-        """Computes expectation estimate and variance, standard deviation of
-        expectation estimate."""
+        """Core run of iterator.
 
-        # compute main model
-        computed_samples_main = np.concatenate(self.model_main.evaluate(self.samples)["result"])
+        Computes expectation estimate and variance, standard deviation
+        of expectation estimate. The implementation is based on chapter
+        9.3 of "Handbook of Monte Carlo Methods" written by Kroese,
+        Taimre and Botev.
+        """
+        # Compute expecation of control variables, if none are given
+        # Using simple monte carlo simulation
+        for i, expectation in enumerate(self.expectation_cvs):
+            if expectation is None:
 
-        # compute control variables
-        # computed_samples_cvs = np.zeros((self.num_cvs, self.num_samples))
-        computed_samples_cvs = []
-        for i, model in enumerate(self.models_cvs):
-            # computed_samples_cvs[i, :] = model.evaluate(self.samples)['result']
-            computed_samples_cvs.append(np.concatenate(model.evaluate(self.samples)["result"]))
+                samples = self.__draw_samples(self.num_samples_cvs[i])
 
-        computed_samples_cvs = np.array(computed_samples_cvs)
+                self.expectation_cvs[i] = self.models[i + 1].evaluate(samples)["result"].mean()
+
+        # Check if expectation values for all control variables are now present
+        for expectation in self.expectation_cvs:
+            if expectation is None:
+                raise ValueError(
+                    """
+                    Expectation values of control variables could be successfully
+                    computed"""
+                )
+
+        # compute models
+        computed_samples = []
+        for i, model in enumerate(self.models):
+            computed_samples.append(np.concatenate(model.evaluate(self.samples)["result"]))
+
+        computed_samples = np.array(computed_samples)
+
+        models_cov = np.cov(computed_samples)
 
         # compute covariance matrix between control variables
-        cov_cvs = np.cov(computed_samples_cvs)
+        cvs_cov = models_cov[1:, 1:]
 
-        breakpoint()
+        main_cov = models_cov[0, 1:]
 
-        cov_main = [
-            np.cov(computed_samples_main, computed_samples_cvs[i])[0, 1]
-            for i in range(self.num_cvs)
-        ]
+        alpha = np.linalg.solve(cvs_cov, main_cov)
 
-        breakpoint()
-        alpha = np.linalg.solve(cov_cvs, cov_main)
+        expectation_tensor = np.tensordot(
+            np.array(self.expectation_cvs), np.ones(self.num_samples), axes=0
+        )
+        correction = np.dot(alpha, computed_samples[1:] - expectation_tensor)
+        mean = (computed_samples[0] - correction).mean()
 
-        breakpoint()
-        mean = (
-            computed_samples_main
-            - np.dot(
-                computed_samples_cvs
-                - np.tensordot(np.array(self.expectation_cvs), np.ones(self.num_samples)),
-                alpha,
-            )
-        ).mean()
+        var_main_samples = models_cov[0, 0]
 
-        var = computed_samples_main.var() - np.dot(cov_main, np.dot(cov_cvs, cov_main))
+        coefficient_of_multiple_correlation = (
+            np.dot(np.array(main_cov).T, np.dot(np.linalg.inv(cvs_cov), np.array(main_cov)))
+            / var_main_samples
+        )
 
-        self.output = {"mean": mean, "std": var**0.5}
+        var_estimator = (
+            1 / self.num_samples * (1 - coefficient_of_multiple_correlation) * var_main_samples
+        )
+
+        self.output = {"mean": mean, "std": var_estimator**0.5}
