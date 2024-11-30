@@ -6,6 +6,7 @@ import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
+from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -54,6 +55,8 @@ class ControlVariatesIterator(Iterator):
         expectation_cvs=None,
         result_description=None,
         num_samples_cvs=None,
+        use_optn=False,
+        models_cost=None,
     ):
         """Control variates iterator constructor.
 
@@ -84,40 +87,18 @@ class ControlVariatesIterator(Iterator):
             ValueError: if number of expected values does not match number of
                 passed control variates, or driver_cvs is not a list.
         """
-        if expectation_cvs is None:
-            expectation_cvs = [None for i in range(len(models) - 1)]
-        if isinstance(expectation_cvs, int):
-            expectation_cvs = [expectation_cvs]
-
-        if num_samples_cvs is None:
-            num_samples_cvs = [None for i in range(len(models) - 1)]
-
         if not isinstance(models, list):
             raise ValueError("Models have to be given in the form of a list!")
         if len(models) < 2:
             raise ValueError("At least two models have to be given!")
 
-        if not len(models) - 1 == len(expectation_cvs):
+        if expectation_cvs is None and num_samples_cvs is None and use_optn is False:
             raise ValueError(
-                """number of control variates and number of expected
-                              values does not match"""
+                "expectation_cvs or num_samples_cvs has to be given, when not using optn"
             )
 
-        if not len(models) - 1 == len(num_samples_cvs):
-            raise ValueError(
-                """
-                Length of num_samples_cvs has to be equal to len(models)-1
-            """
-            )
-
-        for i in range(len(models) - 1):
-            if expectation_cvs[i] is None and num_samples_cvs[i] is None:
-                raise ValueError(
-                    """
-                    For each control variate either a expectation value has to be given
-                    or a number of samples, for the computation of it's expectation value
-                """
-                )
+        if use_optn is True and models_cost is None:
+            raise ValueError("model cost has to be given, you want to use optn")
 
         super().__init__(None, parameters, global_settings)  # init parent iterator with no model
         self.models = models
@@ -126,9 +107,15 @@ class ControlVariatesIterator(Iterator):
         self.result_description = result_description
         self.samples = None
         self.output = None
-        self.num_cvs = len(models) - 1
         self.expectation_cvs = expectation_cvs
         self.num_samples_cvs = num_samples_cvs
+        self.use_optn = use_optn
+        self.models_cost = models_cost
+
+        if expectation_cvs is not None:
+            self.variance_cvs = 0
+        else:
+            self.variance_cvs = None
 
     def __draw_samples(self, num_samples):
         """Draws samples from paramter space.
@@ -157,55 +144,56 @@ class ControlVariatesIterator(Iterator):
         9.3 of "Handbook of Monte Carlo Methods" written by Kroese,
         Taimre and Botev.
         """
-        # Compute expecation of control variables, if none are given
-        # Using simple monte carlo simulation
-        for i, expectation in enumerate(self.expectation_cvs):
-            if expectation is None:
-
-                samples = self.__draw_samples(self.num_samples_cvs[i])
-
-                self.expectation_cvs[i] = self.models[i + 1].evaluate(samples)["result"].mean()
-
-        # Check if expectation values for all control variables are now present
-        for expectation in self.expectation_cvs:
-            if expectation is None:
-                raise ValueError(
-                    """
-                    Expectation values of control variables could be successfully
-                    computed"""
-                )
-
         # compute models
         computed_samples = []
-        for i, model in enumerate(self.models):
+        for model in self.models:
             computed_samples.append(np.concatenate(model.evaluate(self.samples)["result"]))
 
         computed_samples = np.array(computed_samples)
 
         models_cov = np.cov(computed_samples)
 
-        # compute covariance matrix between control variables
-        cvs_cov = models_cov[1:, 1:]
+        cov = models_cov[0, 1]
+        var0 = models_cov[0, 0]
+        var1 = models_cov[1, 1]
+        rho = cov / np.sqrt(var0 * var1)
 
-        main_cov = models_cov[0, 1:]
+        # Compute expecation of control variable, if it is not known
+        # Using simple monte carlo simulation
+        if self.expectation_cvs is None:
+            if self.use_optn is True:
+                # calculate optimal factor relating number of samples on main estimator and
+                # monte carlo estimator
+                beta = np.sqrt(
+                    rho**2
+                    * (self.models_cost[0] / self.models_cost[1] + 1)
+                    / (self.num_samples * (1 - rho**2))
+                )
+                self.num_samples_cvs = int(beta * self.num_samples)
 
-        alpha = np.linalg.solve(cvs_cov, main_cov)
+            samples = self.__draw_samples(self.num_samples_cvs)
+            results = self.models[1].evaluate(samples)["result"]
+            self.expectation_cvs = results.mean()
+            self.variance_cvs = results.var() / self.num_samples_cvs
 
-        expectation_tensor = np.tensordot(
-            np.array(self.expectation_cvs), np.ones(self.num_samples), axes=0
+        alpha = cov / (models_cov[1, 1] + self.variance_cvs)
+        mean = (
+            computed_samples[0] - alpha * computed_samples[1]
+        ).mean() + alpha * self.expectation_cvs
+
+        var_estimator = models_cov[0, 0] - cov**2 / (models_cov[1, 1] + self.variance_cvs)
+        var_estimator *= 1 / self.num_samples
+
+        self.output = {
+            "mean": mean,
+            "std": var_estimator**0.5,
+            "num_samples_cvs": self.num_samples_cvs,
+            "std_cvs": self.variance_cvs**0.5,
+            "alpha": alpha,
+        }
+
+    def post_run(self):
+        """Writes results to result file."""
+        write_results(
+            processed_results=self.output, file_path=self.global_settings.result_file(".pickle")
         )
-        correction = np.dot(alpha, computed_samples[1:] - expectation_tensor)
-        mean = (computed_samples[0] - correction).mean()
-
-        var_main_samples = models_cov[0, 0]
-
-        coefficient_of_multiple_correlation = (
-            np.dot(np.array(main_cov).T, np.dot(np.linalg.inv(cvs_cov), np.array(main_cov)))
-            / var_main_samples
-        )
-
-        var_estimator = (
-            1 / self.num_samples * (1 - coefficient_of_multiple_correlation) * var_main_samples
-        )
-
-        self.output = {"mean": mean, "std": var_estimator**0.5}
