@@ -14,11 +14,13 @@
 #
 """Driver to run a jobscript."""
 
+
 import logging
 from dataclasses import dataclass
 from pathlib import Path
 
 from queens.drivers.driver import Driver
+from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
 from queens.utils.io_utils import read_file
 from queens.utils.logger_settings import log_init_args
@@ -50,7 +52,7 @@ class JobOptions:
         """Create a job options dict.
 
         Returns:
-            dict: dictionary with all the data
+            dict: Dict containing all the data.
         """
         dictionary = self.__dict__.copy()
         dictionary.update(dictionary.pop("input_files"))
@@ -60,10 +62,10 @@ class JobOptions:
         """Add additional options to the job options dict.
 
         Args:
-            additional_data (dict): Additional data to combine with the job options
+            additional_data (dict): Additional data to combine with the job options.
 
         Returns:
-            _type_: _description_
+            dict: Dict combining the job options and the additional data.
         """
         return self.to_dict() | additional_data
 
@@ -72,12 +74,14 @@ class JobscriptDriver(Driver):
     """Driver to run an executable with a jobscript.
 
     Attributes:
-        input_templates (Path): read in simulation input template as string
-        data_processor (obj): instance of data processor class
-        gradient_data_processor (obj): instance of data processor class for gradient data
-        jobscript_template (str): read in jobscript template as string
-        jobscript_options (dict): Dictionary containing jobscript options
-        jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
+        input_templates (Path): Read in simulation input template as string.
+        data_processor (obj): Instance of data processor class.
+        gradient_data_processor (obj): Instance of data processor class for gradient data.
+        jobscript_template (str): Read-in jobscript template.
+        jobscript_options (dict): Dictionary containing jobscript options.
+        jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh').
+        raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
+                                                 exit code.
     """
 
     @log_init_args
@@ -92,30 +96,30 @@ class JobscriptDriver(Driver):
         gradient_data_processor=None,
         jobscript_file_name="jobscript.sh",
         extra_options=None,
+        raise_error_on_jobscript_failure=True,
     ):
         """Initialize JobscriptDriver object.
 
         Args:
-            parameters (Parameters): Parameters object
-            input_templates (str, Path, dict): path(s) to simulation input template
-            jobscript_template (str, Path): path to jobscript template or read in jobscript template
-            executable (str, Path): path to main executable of respective software
-            files_to_copy (list, opt): files or directories to copy to experiment_dir
-            data_processor (obj, opt): instance of data processor class
-            gradient_data_processor (obj, opt): instance of data processor class for gradient data
-            jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh')
-            extra_options (dict): Extra options to inject into jobscript template
+            parameters (Parameters): Parameters object.
+            input_templates (str, Path, dict): Path(s) to simulation input template.
+            jobscript_template (str, Path): Path to jobscript template or read-in jobscript
+                                            template.
+            executable (str, Path): Path to main executable of respective software.
+            files_to_copy (list, opt): Files or directories to copy to experiment_dir.
+            data_processor (obj, opt): Instance of data processor class.
+            gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
+            jobscript_file_name (str, opt): Jobscript file name (default: 'jobscript.sh').
+            extra_options (dict, opt): Extra options to inject into jobscript template.
+            raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
+                                                          jobscript exit code.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.input_templates = self.create_input_templates_dict(input_templates)
+        self.jobscript_template = self.get_read_in_jobscript_template(jobscript_template)
         self.files_to_copy.extend(self.input_templates.values())
         self.data_processor = data_processor
         self.gradient_data_processor = gradient_data_processor
-
-        if Path(jobscript_template).is_file():
-            self.jobscript_template = read_file(jobscript_template)
-        else:
-            self.jobscript_template = jobscript_template
 
         if extra_options is None:
             extra_options = {}
@@ -123,16 +127,17 @@ class JobscriptDriver(Driver):
         self.jobscript_options = extra_options
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
+        self.raise_error_on_jobscript_failure = raise_error_on_jobscript_failure
 
     @staticmethod
     def create_input_templates_dict(input_templates):
         """Cast input templates into a dict.
 
         Args:
-            input_templates (str, Path, dict): Input template(s)
+            input_templates (str, Path, dict): Input template(s).
 
         Returns:
-            dict: containing input file names and template paths
+            dict: Dict containing input file names and template paths.
         """
         if not isinstance(input_templates, dict):
             input_templates = {"input_file": input_templates}
@@ -143,18 +148,53 @@ class JobscriptDriver(Driver):
         }
         return input_templates_dict
 
+    @staticmethod
+    def get_read_in_jobscript_template(jobscript_template):
+        """Get the jobscript template contents.
+
+        If the provided jobscript template is a Path or a string of a
+        path and a valid file, the corresponding file is read.
+
+        Args:
+            jobscript_template (str, Path): Path to jobscript template or read-in jobscript
+                                            template.
+
+        Returns:
+            str: Read-in jobscript template
+        """
+        if isinstance(jobscript_template, str):
+            # Catch an exception due to a long string
+            try:
+                if Path(jobscript_template).is_file():
+                    jobscript_template = read_file(jobscript_template)
+            except OSError:
+                # We assume that the string already holds the jobscript template contents
+                pass
+
+        elif isinstance(jobscript_template, Path):
+            if jobscript_template.is_file():
+                jobscript_template = read_file(jobscript_template)
+            else:
+                raise FileNotFoundError(
+                    f"The provided jobscript template path {jobscript_template} is not a file."
+                )
+        else:
+            raise TypeError("The jobscript template needs to be a string or a Path.")
+
+        return jobscript_template
+
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
-            sample (dict): Dict containing sample
-            job_id (int): Job ID
-            num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
+            sample (dict): Dict containing sample.
+            job_id (int): Job ID.
+            num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): Name of QUEENS experiment.
 
         Returns:
-            Result and potentially the gradient
+            Result and potentially the gradient.
         """
         job_dir, output_dir, output_file, input_files, log_file, error_file = self._manage_paths(
             job_id, experiment_dir, experiment_name
@@ -204,17 +244,17 @@ class JobscriptDriver(Driver):
         """Manage paths for driver run.
 
         Args:
-            job_id (int): Job id.
+            job_id (int): Job ID.
             experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): name of QUEENS experiment.
+            experiment_name (str): Name of QUEENS experiment.
 
         Returns:
-            job_dir (Path): Path to job directory
-            output_dir (Path): Path to output directory
-            output_file (Path): Path to output file(s)
-            input_files (dict): Dict with name and path of the input file(s)
-            log_file (Path): Path to log file
-            error_file (Path): Path to error file
+            job_dir (Path): Path to job directory.
+            output_dir (Path): Path to output directory.
+            output_file (Path): Path to output file(s).
+            input_files (dict): Dict with name and path of the input file(s).
+            log_file (Path): Path to log file.
+            error_file (Path): Path to error file.
         """
         job_dir = experiment_dir / str(job_id)
         output_dir = job_dir / "output"
@@ -235,18 +275,17 @@ class JobscriptDriver(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file, error_file
 
-    @staticmethod
-    def _run_executable(job_id, execute_cmd, log_file, error_file, verbose=False):
+    def _run_executable(self, job_id, execute_cmd, log_file, error_file, verbose=False):
         """Run executable.
 
         Args:
-            job_id (int): Job id
-            execute_cmd (str): Executed command
-            log_file (Path): Path to log file
-            error_file (Path): Path to error file
-            verbose (bool, opt): flag for additional streaming to terminal
+            job_id (int): Job ID.
+            execute_cmd (str): Executed command.
+            log_file (Path): Path to log file.
+            error_file (Path): Path to error file.
+            verbose (bool, opt): Flag for additional streaming to terminal.
         """
-        run_subprocess_with_logging(
+        process_returncode, _, _, stderr = run_subprocess_with_logging(
             execute_cmd,
             terminate_expression="PROC.*ERROR",
             logger_name=__name__ + f"_{job_id}",
@@ -255,16 +294,21 @@ class JobscriptDriver(Driver):
             streaming=verbose,
             raise_error_on_subprocess_failure=False,
         )
+        if self.raise_error_on_jobscript_failure and process_returncode:
+            raise SubprocessError(
+                f"The jobscript with job ID {job_id} has failed with exit code "
+                f"{process_returncode}. The stderr is:\n{stderr}"
+            )
 
     def _get_results(self, output_dir):
         """Get results from driver run.
 
         Args:
-            output_dir (Path): Path to output directory
+            output_dir (Path): Path to output directory.
 
         Returns:
-            result (np.array): Result from the driver run
-            gradient (np.array, None): Gradient from the driver run (potentially None)
+            result (np.array): Result from the driver run.
+            gradient (np.array, None): Gradient from the driver run (potentially None).
         """
         result = None
         if self.data_processor:
@@ -281,9 +325,9 @@ class JobscriptDriver(Driver):
         """Prepare and parse data to input files.
 
         Args:
-            sample_dict (dict): Dict containing sample
+            sample_dict (dict): Dict containing sample.
             experiment_dir (Path): Path to QUEENS experiment directory.
-            input_files (dict): Dict with name and path of the input file(s)
+            input_files (dict): Dict with name and path of the input file(s).
         """
         for input_template_name, input_template_path in self.input_templates.items():
             inject(

@@ -30,6 +30,12 @@ def fixture_dummy_simulation_model():
     return model
 
 
+@pytest.fixture(name="files_to_copy")
+def fixture_files_to_copy():
+    """Files to copy."""
+    return ["fileA", "fileB"]
+
+
 @pytest.fixture(name="get_patched_bmfia_iterator")
 def fixture_get_patched_bmfia_iterator(global_settings):
     """Function that returns a dummy BMFIA iterator for testing."""

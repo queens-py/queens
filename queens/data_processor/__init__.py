@@ -23,10 +23,14 @@ from queens.data_processor.data_processor_ensight_interface import (
     DataProcessorEnsightInterfaceDiscrepancy,
 )
 from queens.data_processor.data_processor_numpy import DataProcessorNumpy
+from queens.data_processor.data_processor_pvd import DataProcessorPvd
+from queens.data_processor.data_processor_txt import DataProcessorTxt
 
 VALID_TYPES = {
     "csv": DataProcessorCsv,
     "ensight": DataProcessorEnsight,
     "ensight_interface_discrepancy": DataProcessorEnsightInterfaceDiscrepancy,
     "numpy": DataProcessorNumpy,
+    "pvd": DataProcessorPvd,
+    "txt": DataProcessorTxt,
 }
