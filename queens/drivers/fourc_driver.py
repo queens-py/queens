@@ -38,7 +38,7 @@ class FourcDriver(JobscriptDriver):
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
-        post_processor=None,
+        post_processor="",
         post_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):

@@ -21,12 +21,6 @@ import pytest
 from queens.utils.rsync import rsync
 
 
-@pytest.fixture(name="files_to_copy")
-def fixture_files_to_copy():
-    """Files to copy."""
-    return ["fileA", "fileB"]
-
-
 @pytest.fixture(name="_create_source_files")
 def fixture_create_source_files(source_path, files_to_copy):
     """Create source files."""

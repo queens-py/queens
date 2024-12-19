@@ -93,7 +93,7 @@ def fixture_setup_symbolic_links_fourc(fourc_link_paths, fourc_build_paths_for_g
             "existing file! \n"
             "You can create the necessary symbolic links on Linux via:\n"
             "-------------------------------------------------------------------------\n"
-            "ln -s <path/to/fourc> <QUEENS_BaseDir>/config/fourc\n"
+            "ln -s <path/to/fourc> <QUEENS_BaseDir>/config/4C\n"
             "ln -s <path/to/post_ensight> <QUEENS_BaseDir>/config/post_ensight\n"
             "ln -s <path/to/post_processor> <QUEENS_BaseDir>/config/post_processor\n"
             "-------------------------------------------------------------------------\n"

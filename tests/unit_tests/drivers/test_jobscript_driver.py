@@ -14,13 +14,17 @@
 #
 """Unit tests for the jobscript driver."""
 
+import os
+
 import numpy as np
 import pytest
 import yaml
 
+from queens.data_processor import DataProcessorNumpy, DataProcessorTxt
 from queens.distributions import FreeVariable
 from queens.drivers.jobscript_driver import JobOptions, JobscriptDriver
 from queens.parameters import Parameters
+from queens.utils.exceptions import SubprocessError
 
 
 @pytest.fixture(name="parameters")
@@ -28,6 +32,90 @@ def fixture_parameters():
     """Parameters for the jobscript driver test."""
     parameters = Parameters(parameter_1=FreeVariable(1), parameter_2=FreeVariable(1))
     return parameters
+
+
+def create_template(list_of_keys, template_path):
+    """Create dict from list of keys and write it to template path."""
+    template_dict = {f: "{{ " + f + " }}" for f in list_of_keys}
+    # yaml format is used to ease read in of input file
+    template_path.write_text(yaml.safe_dump(template_dict))
+
+
+@pytest.fixture(name="input_template")
+def fixture_input_template(tmp_path, parameters):
+    """Generate an input template."""
+    input_template = tmp_path / "input_template.yaml"
+    create_template(parameters.names, input_template)
+
+    return input_template
+
+
+@pytest.fixture(name="input_templates")
+def fixture_input_templates(tmp_path, job_options, parameters):
+    """Generate two input templates."""
+    # only add the second parameter
+    input_template_1 = tmp_path / "input_template_1.yaml"
+    create_template(list(job_options.to_dict().keys()) + parameters.names[-1:], input_template_1)
+
+    # add both parameters to the template
+    input_template_2 = tmp_path / "input_template_2.yaml"
+    create_template(parameters.names + ["input_1", "experiment_name"], input_template_2)
+
+    return input_template_1, input_template_2
+
+
+@pytest.fixture(name="jobscript_template")
+def fixture_jobscript_template():
+    """Dummy jobscript template."""
+    return 'echo "This is a dummy jobscript"'
+
+
+@pytest.fixture(name="jobscript_template_path")
+def fixture_jobscript_template_path(tmp_path, jobscript_template):
+    """Generate a dummy jobscript template."""
+    jobscript_template_path = tmp_path / "dummy_jobscript_template.sh"
+    jobscript_template_path.write_text(jobscript_template)
+
+    return jobscript_template_path
+
+
+@pytest.fixture(name="executable")
+def fixture_executable(tmp_path):
+    """Generate a dummy executable."""
+    executable = tmp_path / "dummy_executable"
+    executable.write_text("This is a dummy file.")
+
+    # Make the dummy file executable
+    os.chmod(executable, 0o755)
+
+    return executable
+
+
+@pytest.fixture(name="data_processor")
+def fixture_data_processor():
+    """Dummy data processor."""
+    return DataProcessorNumpy(
+        file_name_identifier="dummy.npy",
+        file_options_dict={},
+    )
+
+
+@pytest.fixture(name="gradient_data_processor")
+def fixture_gradient_data_processor():
+    """Dummy gradient data processor."""
+    return DataProcessorTxt(file_name_identifier="dummy.txt", file_options_dict={})
+
+
+@pytest.fixture(name="jobscript_file_name")
+def fixture_jobscript_file_name():
+    """Jobscript file name."""
+    return "dummy_jobscript.sh"
+
+
+@pytest.fixture(name="extra_options")
+def fixture_extra_options():
+    """Extra options for JobOptions."""
+    return {"option_1": 1, "option_2": "dummy"}
 
 
 @pytest.fixture(name="job_id")
@@ -40,6 +128,16 @@ def fixture_job_id():
 def fixture_experiment_name():
     """Fixture for the experiment_name."""
     return "test_experiment"
+
+
+@pytest.fixture(name="injected_input_files")
+def fixture_injected_input_files(tmp_path, job_id, experiment_name):
+    """Fixture for the create input files."""
+    input_file_1 = tmp_path / str(job_id) / f"{experiment_name}_input_1_{job_id}.yaml"
+    input_file_2 = tmp_path / str(job_id) / f"{experiment_name}_input_2_{job_id}.yaml"
+    injected_input_files = {"input_1": input_file_1, "input_2": input_file_2}
+
+    return injected_input_files
 
 
 @pytest.fixture(name="job_options")
@@ -62,72 +160,121 @@ def fixture_job_options(tmp_path, job_id, experiment_name, injected_input_files)
     return job_options
 
 
-@pytest.fixture(name="input_templates")
-def fixture_input_templates(tmp_path, job_options, parameters):
-    """Generate input templates."""
-
-    def templatify(list_of_keys, template_path):
-        """Create dict from list of keys."""
-        template_dict = {f: "{{ " + f + " }}" for f in list_of_keys}
-        # yaml format is used to ease read in of input file
-        template_path.write_text(yaml.safe_dump(template_dict))
-
-    # only add the second parameter
-    input_template_1 = tmp_path / "input_template_1.yaml"
-    templatify(list(job_options.to_dict().keys()) + parameters.names[-1:], input_template_1)
-
-    # add both parameters to the template
-    input_template_2 = tmp_path / "input_template_2.yaml"
-    templatify(parameters.names + ["input_1", "experiment_name"], input_template_2)
-
-    return input_template_1, input_template_2
-
-
-@pytest.fixture(name="injected_input_files")
-def fixture_injected_input_files(tmp_path, job_id, experiment_name):
-    """Fixture for the create input files."""
-    input_file_1 = tmp_path / str(job_id) / f"{experiment_name}_input_1_{job_id}.yaml"
-    input_file_2 = tmp_path / str(job_id) / f"{experiment_name}_input_2_{job_id}.yaml"
-    injected_input_files = {"input_1": input_file_1, "input_2": input_file_2}
-
-    return injected_input_files
-
-
 @pytest.fixture(name="jobscript_driver")
-def fixture_jobscript_driver(parameters, input_templates):
+def fixture_jobscript_driver(parameters, input_templates, executable):
     """Jobscript driver object."""
     input_template_1, input_template_2 = input_templates
 
     driver = JobscriptDriver(
         parameters=parameters,
         jobscript_template="",
-        executable="",
+        executable=executable,
         input_templates={"input_1": input_template_1, "input_2": input_template_2},
     )
 
     return driver
 
 
-def test_jobscript_driver_multiple_input_files(
-    jobscript_driver, job_options, injected_input_files, parameters
+@pytest.fixture(name="args_init")
+def fixture_args_init(
+    parameters,
+    jobscript_template,
+    executable,
+    input_template,
+    files_to_copy,
+    data_processor,
+    gradient_data_processor,
+    jobscript_file_name,
+    extra_options,
 ):
+    """Arguments to initialize a JobscriptDriver.
+
+    These arguments are meant for initialization with the default
+    constructor.
+    """
+    # pylint: disable=unused-argument
+    args_init = locals()
+    args_init["input_templates"] = args_init["input_template"]
+    args_init.pop("input_template")
+    return args_init
+
+
+def assert_jobscript_driver_attributes(jobscript_driver, args_init):
+    """Assert that the jobscript driver attributes are set correctly."""
+    args_init["files_to_copy"].append(args_init["input_templates"])
+
+    assert jobscript_driver.parameters == args_init["parameters"]
+    assert jobscript_driver.input_templates == {"input_file": args_init["input_templates"]}
+    assert jobscript_driver.jobscript_template == args_init["jobscript_template"]
+    assert jobscript_driver.jobscript_options["executable"] == args_init["executable"]
+    assert jobscript_driver.files_to_copy == args_init["files_to_copy"]
+    assert jobscript_driver.data_processor == args_init["data_processor"]
+    assert jobscript_driver.gradient_data_processor == args_init["gradient_data_processor"]
+    assert jobscript_driver.jobscript_file_name == args_init["jobscript_file_name"]
+    assert jobscript_driver.jobscript_options.items() >= args_init["extra_options"].items()
+
+
+def assert_subprocess_error(
+    parameters, raise_error_on_jobscript_failure, jobscript_driver, job_options
+):
+    """Assert that jobscript driver run raises an error if so intended."""
+    sample_dict = parameters.sample_as_dict(np.array([1, 2]))
+    sample = np.array(list(sample_dict.values()))
+
+    if raise_error_on_jobscript_failure:
+        with pytest.raises(SubprocessError):
+            jobscript_driver.run(
+                sample=sample,
+                job_id=job_options.job_id,
+                num_procs=job_options.num_procs,
+                experiment_dir=job_options.experiment_dir,
+                experiment_name=job_options.experiment_name,
+            )
+    else:
+        jobscript_driver.run(
+            sample=sample,
+            job_id=job_options.job_id,
+            num_procs=job_options.num_procs,
+            experiment_dir=job_options.experiment_dir,
+            experiment_name=job_options.experiment_name,
+        )
+
+
+def test_init_from_jobscript_template_str(args_init):
+    """Test initialization of the JobscriptDriver.
+
+    For this initialization, the jobscript template is provided in the
+    form of a string describing the jobscript template contents.
+    """
+    driver = JobscriptDriver(**args_init)
+    assert_jobscript_driver_attributes(driver, args_init)
+
+
+def test_init_from_jobscript_template_path(args_init, jobscript_template_path):
+    """Test initialization of the JobscriptDriver.
+
+    For this initialization, the jobscript template is provided in the
+    form of a string describing the path to a file.
+    """
+    args_init_from_jobscript_template_path = args_init.copy()
+    args_init_from_jobscript_template_path["jobscript_template"] = jobscript_template_path
+    driver = JobscriptDriver(**args_init_from_jobscript_template_path)
+    assert_jobscript_driver_attributes(driver, args_init)
+
+
+def test_multiple_input_files(jobscript_driver, job_options, injected_input_files, parameters):
     """Test if multiple input files are correctly generated."""
     # Samples to be injected
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-
-    # Arguments to call the run method of the driver
-    job_id = job_options.job_id
-    num_procs = job_options.num_procs
-    experiment_dir = job_options.experiment_dir
-    experiment_name = job_options.experiment_name
+    sample = np.array(list(sample_dict.values()))
 
     # Run the driver
     jobscript_driver.run(
-        sample=np.array(list(sample_dict.values())),
-        job_id=job_id,
-        num_procs=num_procs,
-        experiment_dir=experiment_dir,
-        experiment_name=experiment_name,
+        sample=sample,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
     )
 
     # Join all options
@@ -137,3 +284,49 @@ def test_jobscript_driver_multiple_input_files(
     for input_file in injected_input_files.values():
         for key, value in yaml.safe_load(input_file.read_text()).items():
             assert value == str(injectable_options[key])
+
+
+@pytest.mark.parametrize("raise_error_on_jobscript_failure", [True, False])
+def test_error_in_jobscript_template(
+    parameters, input_template, job_options, raise_error_on_jobscript_failure
+):
+    """Test for an error when the jobscript template has an error."""
+    jobscript_driver = JobscriptDriver(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template="This jobscript should fail.",
+        executable="",
+        raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
+    )
+    assert_subprocess_error(
+        parameters, raise_error_on_jobscript_failure, jobscript_driver, job_options
+    )
+
+
+@pytest.mark.parametrize("raise_error_on_jobscript_failure", [True, False])
+def test_nonzero_exit_code(
+    parameters, input_template, job_options, raise_error_on_jobscript_failure
+):
+    """Test for an error when the jobscript exits with a code other than 0."""
+    jobscript_driver = JobscriptDriver(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template="exit 1",
+        executable="",
+        raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
+    )
+    assert_subprocess_error(
+        parameters, raise_error_on_jobscript_failure, jobscript_driver, job_options
+    )
+
+
+def test_long_jobscript_template_str(parameters, input_template):
+    """Test that a long jobscript template string does not raise an error."""
+    long_str = "dummy" * 100
+    jobscript_driver = JobscriptDriver(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template=long_str,
+        executable="",
+    )
+    assert jobscript_driver.jobscript_template == long_str
