@@ -52,6 +52,7 @@ class Adam(StochasticOptimizer):
         beta_1=0.9,
         beta_2=0.999,
         eps=1e-8,
+        learning_rate_decay=None,
     ):
         """Initialize optimizer.
 
@@ -68,6 +69,7 @@ class Adam(StochasticOptimizer):
             beta_1 (float): :math:`beta_1` parameter as described in [1]
             beta_2 (float): :math:`beta_1` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
+            learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
         """
         # pylint:disable=duplicate-code
         super().__init__(
@@ -78,6 +80,7 @@ class Adam(StochasticOptimizer):
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            learning_rate_decay=learning_rate_decay,
         )
         self.beta_1 = beta_1
         self.beta_2 = beta_2
