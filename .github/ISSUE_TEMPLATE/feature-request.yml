@@ -1,0 +1,34 @@
+name: Issue
+description: A problem, feature request, or task to be addressed in the project.
+title: "<Please write a comprehensive title>"
+
+body:
+  - type: textarea
+    attributes:
+      label: "Description of the Issue:"
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: "Proposed Solution:"
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: "Action Items:"
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: >
+        Crosslinks
+  - type: textarea
+    attributes:
+      label: "Related Issues:"
+    validations:
+      required: false
+  - type: textarea
+    attributes:
+      label: "Interested Parties:"
+    validations:
+      required: false
