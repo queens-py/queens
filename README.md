@@ -90,15 +90,14 @@ if __name__ == "__main__":
 Your contributions are welcome! Please follow our [contributing guidelines](https://github.com/queens-py/queens/blob/main/CONTRIBUTING.md) and [code of conduct](https://github.com/queens-py/queens/blob/main/CODE_OF_CONDUCT.md).
 
 ## :page_with_curl: How to cite
-If you use QUEENS in your work, please cite the [QUEENS paper](https://arxiv.org/?) and relevant method papers.
+If you use QUEENS in your work, please cite the relevant method papers and
 
 ```bib
-@inproceedings{queens,
-  title={QUEENS: An Open-Source Python Framework for Solver-
-Independent Analyses of Large-Scale Computational Models},
-  author={Qommunity},
-  pages={1--2},
-  year={2025}
+@misc{queens,
+  author       = {QUEENS},
+  title        = {QUEENS: An Open-Source Python Framework for Solver-Independent Analyses of Large-Scale Computational Models},
+  year         = {2025},
+  howpublished = {\url{https://www.queens-py.org}}
 }
 ```
 
