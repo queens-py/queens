@@ -50,6 +50,7 @@ class RMSprop(StochasticOptimizer):
         max_iteration=1e6,
         beta=0.999,
         eps=1e-8,
+        learning_rate_decay=None,
     ):
         """Initialize optimizer.
 
@@ -65,6 +66,7 @@ class RMSprop(StochasticOptimizer):
             max_iteration (int): Maximum number of iterations
             beta (float): :math:`beta` parameter as described in [1]
             eps (float): Nugget term to avoid a division by values close to zero
+            learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
         """
         super().__init__(
             learning_rate=learning_rate,
@@ -74,6 +76,7 @@ class RMSprop(StochasticOptimizer):
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            learning_rate_decay=learning_rate_decay,
         )
         self.beta = beta
         self.v = ExponentialAveraging(coefficient=beta)

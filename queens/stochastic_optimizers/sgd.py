@@ -37,6 +37,7 @@ class SGD(StochasticOptimizer):
         clip_by_l2_norm_threshold=np.inf,
         clip_by_value_threshold=np.inf,
         max_iteration=1e6,
+        learning_rate_decay=None,
     ):
         """Initialize optimizer.
 
@@ -50,6 +51,7 @@ class SGD(StochasticOptimizer):
             clip_by_l2_norm_threshold (float): Threshold to clip the gradient by L2-norm
             clip_by_value_threshold (float): Threshold to clip the gradient components
             max_iteration (int): Maximum number of iterations
+            learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
         """
         super().__init__(
             learning_rate=learning_rate,
@@ -59,6 +61,7 @@ class SGD(StochasticOptimizer):
             clip_by_l2_norm_threshold=clip_by_l2_norm_threshold,
             clip_by_value_threshold=clip_by_value_threshold,
             max_iteration=max_iteration,
+            learning_rate_decay=learning_rate_decay,
         )
 
     def scheme_specific_gradient(self, gradient):
