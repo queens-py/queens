@@ -168,8 +168,12 @@ class JobscriptDriver(Driver):
                 if Path(jobscript_template).is_file():
                     jobscript_template = read_file(jobscript_template)
             except OSError:
-                # We assume that the string already holds the jobscript template contents
-                pass
+                _logger.debug(
+                    "The provided jobscript template string is not a regular file so we assume "
+                    "that it holds the read-in jobscript template. The jobscript template reads:\n"
+                    "%s",
+                    {jobscript_template},
+                )
 
         elif isinstance(jobscript_template, Path):
             if jobscript_template.is_file():
