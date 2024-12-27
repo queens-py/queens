@@ -1,0 +1,51 @@
+# yamllint disable
+env:
+  PYTHON_PACKAGE_MANAGER: "conda" # Python package manager to create the python environments
+name: documentation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-documentation:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: conda-incubator/setup-miniconda@v3
+      - name: Install dependencies
+        run: |
+          $PYTHON_PACKAGE_MANAGER env create -f environment.yml
+          $PYTHON_PACKAGE_MANAGER activate queens
+          pip install -e .[develop]
+      - name: Sphinx build
+        run: |
+          $PYTHON_PACKAGE_MANAGER activate queens
+          sphinx-apidoc -o doc/source queens -f -M
+          cd doc
+          sphinx-build -b html -d build/doctrees source build/html
+
+      # If triggered manually, upload the built html files for download and review
+      - name: Upload html artifacts
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: queens_docs
+          path: doc/build/html
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        with:
+          publish_branch: gh-pages
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: doc/build/html
+          force_orphan: true
