@@ -1,6 +1,7 @@
 # yamllint disable
 env:
   PYTHON_PACKAGE_MANAGER: "conda" # Python package manager to create the python environments
+
 name: documentation
 
 on:
@@ -10,7 +11,9 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build-documentation:
@@ -21,11 +24,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: conda-incubator/setup-miniconda@v3
+
       - name: Install dependencies
         run: |
           $PYTHON_PACKAGE_MANAGER env create -f environment.yml
           $PYTHON_PACKAGE_MANAGER activate queens
           pip install -e .[develop]
+
       - name: Sphinx build
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
@@ -33,19 +38,20 @@ jobs:
           cd doc
           sphinx-build -b html -d build/doctrees source build/html
 
-      # If triggered manually, upload the built html files for download and review
-      - name: Upload html artifacts
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-        uses: actions/upload-artifact@v4
+      - name: Upload html
+        uses: actions/upload-pages-artifact@v3
         with:
-          name: queens_docs
           path: doc/build/html
+          retention-days: 1
 
+  deploy-documentation:
+    needs: build-documentation
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    steps:
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        id: deployment
         if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
-        with:
-          publish_branch: gh-pages
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: doc/build/html
-          force_orphan: true
+        uses: actions/deploy-pages@v4
