@@ -289,7 +289,7 @@ class JobscriptDriver(Driver):
             error_file (Path): Path to error file.
             verbose (bool, opt): Flag for additional streaming to terminal.
         """
-        process_returncode, _, _, stderr = run_subprocess_with_logging(
+        process_returncode, _, stdout, stderr = run_subprocess_with_logging(
             execute_cmd,
             terminate_expression="PROC.*ERROR",
             logger_name=__name__ + f"_{job_id}",
@@ -299,9 +299,12 @@ class JobscriptDriver(Driver):
             raise_error_on_subprocess_failure=False,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
-            raise SubprocessError(
-                f"The jobscript with job ID {job_id} has failed with exit code "
-                f"{process_returncode}. The stderr is:\n{stderr}"
+            raise SubprocessError.construct_error_from_command(
+                command=execute_cmd,
+                command_output=stdout,
+                error_message=stderr,
+                additional_message=f"The jobscript with job ID {job_id} has failed with exit code "
+                f"{process_returncode}.",
             )
 
     def _get_results(self, output_dir):
