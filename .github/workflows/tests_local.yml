@@ -1,12 +1,11 @@
 # yamllint disable
----
-#---------------------------------------------------------------------------------------------------
-env:
-  TEST_TIMING_OPTION: ""  # Set the option if local test should be timed or not. Default is off.
-  PYTHON_PACKAGE_MANAGER: "conda"  # Python package manager to create the python environments
-name: github_ci
+name: tests_local
 
 on: [pull_request]
+
+env:
+  # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
+  TEST_TIMING_OPTION: ""
 
 jobs:
   run_tests:
@@ -17,22 +16,25 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
+    env:
+      PYTHON_PACKAGE_MANAGER: ${{needs.create-python-environment.outputs.ppm}}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
-      - name: build
+      - name: Install rsync
         run: |
           sudo apt-get update
           sudo apt-get install -y rsync
+      - name: Create links to 4C
+        run: |
           ln -s /home/user/4C/build/4C config/4C
           ln -s /home/user/4C/build/post_ensight config/post_ensight
           ln -s /home/user/4C/build/post_processor config/post_processor
-          $PYTHON_PACKAGE_MANAGER env create -f environment.yml
-          $PYTHON_PACKAGE_MANAGER activate queens
-          pip install -e .[develop]
-          $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
-          $PYTHON_PACKAGE_MANAGER list
-      - name: codechecks
+      - name: Create Python environment
+        id: environment
+        uses: ./.github/actions/create_python_environment
+      - name: Get Python package manager
+        run: echo "PYTHON_PACKAGE_MANAGER=${{steps.environment.outputs.ppm}}" >> $GITHUB_ENV
+      - name: Codechecks
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
           isort --check-only queens tests > track_isort.txt 2>&1
@@ -41,7 +43,7 @@ jobs:
           pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
           python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
           pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt 2>&1
-      - name: tests
+      - name: Run pytest
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" -o log_cli=true --log-cli-level=INFO --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes --junitxml=test_junit.xml

@@ -1,0 +1,24 @@
+name: Create Python environment
+description: Create the QUEENS Python environment with all dependencies
+
+outputs:
+  ppm:
+    description: Python package manager
+    value: ${{ steps.output.outputs.ppm }}
+
+runs:
+  using: composite
+  steps:
+    - uses: conda-incubator/setup-miniconda@v3
+    - name: Create environment and install QUEENS
+      id: output
+      shell: bash -l {0}
+      env:
+        PYTHON_PACKAGE_MANAGER: conda
+      run: |
+        $PYTHON_PACKAGE_MANAGER env create -f environment.yml
+        $PYTHON_PACKAGE_MANAGER activate queens
+        pip install -e .[develop]
+        $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
+        $PYTHON_PACKAGE_MANAGER list
+        echo "ppm=$PYTHON_PACKAGE_MANAGER" >> $GITHUB_OUTPUT

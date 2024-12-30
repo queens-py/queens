@@ -1,7 +1,4 @@
 # yamllint disable
-env:
-  PYTHON_PACKAGE_MANAGER: "conda" # Python package manager to create the python environments
-
 name: documentation
 
 on:
@@ -23,21 +20,17 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - uses: conda-incubator/setup-miniconda@v3
-
-      - name: Install dependencies
-        run: |
-          $PYTHON_PACKAGE_MANAGER env create -f environment.yml
-          $PYTHON_PACKAGE_MANAGER activate queens
-          pip install -e .[develop]
-
+      - name: Create Python environment
+        id: environment
+        uses: ./.github/actions/create_python_environment
       - name: Sphinx build
+        env:
+          PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
           sphinx-apidoc -o doc/source queens -f -M
           cd doc
           sphinx-build -b html -d build/doctrees source build/html
-
       - name: Upload html
         uses: actions/upload-pages-artifact@v3
         with:
@@ -53,5 +46,5 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+        if: ${{github.ref == 'refs/heads/main'}}
         uses: actions/deploy-pages@v4
