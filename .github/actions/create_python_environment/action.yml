@@ -4,14 +4,14 @@ description: Create the QUEENS Python environment with all dependencies
 outputs:
   ppm:
     description: Python package manager
-    value: ${{ steps.output.outputs.ppm }}
+    value: ${{ steps.environment.outputs.ppm }}
 
 runs:
   using: composite
   steps:
     - uses: conda-incubator/setup-miniconda@v3
     - name: Create environment and install QUEENS
-      id: output
+      id: environment
       shell: bash -l {0}
       env:
         PYTHON_PACKAGE_MANAGER: conda

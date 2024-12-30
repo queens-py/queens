@@ -16,8 +16,6 @@ jobs:
     defaults:
       run:
         shell: bash -l {0}
-    env:
-      PYTHON_PACKAGE_MANAGER: ${{needs.create-python-environment.outputs.ppm}}
     steps:
       - uses: actions/checkout@v4
       - name: Install rsync
