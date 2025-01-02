@@ -40,11 +40,11 @@ queens-export-metadata = "queens.utils.cli_utils:gather_metadata_and_write_to_cs
 
 # urls
 [project.urls]
-Homepage = "https://queens_community.pages.gitlab.lrz.de/website/"
-Documentation = "https://queens_community.pages.gitlab.lrz.de/queens/docs/"
-Repository = "https://gitlab.lrz.de/queens_community/queens.git"
-Issues = "https://gitlab.lrz.de/queens_community/queens/-/issues"
-Changelog = "https://gitlab.lrz.de/queens_community/queens/-/blob/main/CHANGELOG.md"
+Homepage = "https://www.queens-py.org"
+Documentation = "https://queens-py.github.io/queens"
+Repository = "https://github.com/queens-py/queens.git"
+Issues = "https://github.com/queens-py/queens/issues"
+Changelog = "https://github.com/queens-py/queens/blob/main/CHANGELOG.md"
 
 # Tools section
 [tool.black]
