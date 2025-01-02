@@ -1,7 +1,12 @@
 # yamllint disable
 name: tests_local
 
-on: [pull_request]
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
 
 env:
   # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
