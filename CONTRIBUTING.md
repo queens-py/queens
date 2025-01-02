@@ -74,5 +74,5 @@ main branch by the QUEENS maintainers. This ensures that the community has a cha
 
 ## :book: Documentation
 We use [Sphinx](https://www.sphinx-doc.org/en/master/#) to generate the
-[QUEENS documentation](https://queens_community.pages.gitlab.lrz.de/queens/docs/).
+[QUEENS documentation](https://queens-py.github.io/queens).
 We believe that documentation is essential and therefore welcome any improvements.
