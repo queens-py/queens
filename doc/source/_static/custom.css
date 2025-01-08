@@ -1,0 +1,20 @@
+/* Hintergrundbild für das Logo erzwingen */
+.navbar-brand {
+    background: url('https://raw.githubusercontent.com/queens-py/queens-design/d155bc658c3f3f24984a2905e92c45781be84ee2/logo/queens_logo_day.svg') no-repeat center;
+    background-size: contain;
+    height: 60px; /* Höhe des Logos */
+    width: 200px; /* Breite des Logos */
+    display: block; /* Erzwingt, dass das Logo allein steht */
+    text-indent: -9999px; /* Text ausblenden */
+    overflow: hidden; /* Überflüssigen Inhalt verbergen */
+}
+
+/* Standard-Logo entfernen */
+.navbar-brand img {
+    display: none; /* Standard-Logo ausblenden */
+}
+
+/* Zusätzlichen Text, der das Logo stört, entfernen */
+.navbar-brand span {
+    display: none; /* Entfernt eingebetteten Text */
+}
