@@ -1,5 +1,5 @@
 # yamllint disable
-name: documentation
+name: build_documentation
 
 on:
   push:

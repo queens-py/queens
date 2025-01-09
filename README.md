@@ -7,11 +7,22 @@
 </picture>
 </div>
 
-[![tests-local-main](https://github.com/queens-py/queens/actions/workflows/tests_local.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/.github-ci.yml)
-[![documentation-main](https://github.com/queens-py/queens/actions/workflows/documentation.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/.github-ci.yml)
+<div align="center">
+
+[![QUEENS-website](https://img.shields.io/badge/QUEENS-website-5cbbfe?logo=book)](https://www.queens-py.org/)
+[![QUEENS-documentation](https://img.shields.io/badge/QUEENS-documentation-5cbbfe?logo=book)](https://queens-py.github.io/queens)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
 [![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
 [![pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+
+</div>
+
+<div align="center">
+
+[![tests-local-main](https://github.com/queens-py/queens/actions/workflows/tests_local.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/tests_local.yml?query=branch:main)
+[![build-documentation-main](https://github.com/queens-py/queens/actions/workflows/build_documentation.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/build_documentation.yml?query=branch:main)
+
+</div>
 
 QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**ystems) is a Python framework for solver-independent multi-query analyses of large-scale computational models.
 
@@ -27,10 +38,6 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 * robust data, resource, and error management
 * easy switching between analysis types
 * smooth scaling from laptop to HPC cluster
-
-:globe_with_meridians: **Website**: [queens-py.org](https://www.queens-py.org)
-
-:book: **Documentation**: [queens-py.github.io/queens](https://queens-py.github.io/queens)
 
 ## :rocket: Getting started
 
