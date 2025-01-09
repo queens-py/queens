@@ -18,6 +18,7 @@
 import logging
 from dataclasses import dataclass
 from pathlib import Path
+from subprocess import TimeoutExpired
 
 from queens.drivers.driver import Driver
 from queens.utils.exceptions import SubprocessError
@@ -25,7 +26,7 @@ from queens.utils.injector import inject, inject_in_template
 from queens.utils.io_utils import read_file
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
-from queens.utils.run_subprocess import run_subprocess_with_logging
+from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
@@ -82,6 +83,8 @@ class JobscriptDriver(Driver):
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh').
         raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
                                                  exit code.
+        job_timeout (int | None): Timeout for jobs in seconds. Jobs will be terminated after
+                                  timeout seconds. Default is None meaning no timeout is used.
     """
 
     @log_init_args
@@ -91,6 +94,7 @@ class JobscriptDriver(Driver):
         input_templates,
         jobscript_template,
         executable,
+        job_timeout=None,
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
@@ -106,6 +110,8 @@ class JobscriptDriver(Driver):
             jobscript_template (str, Path): Path to jobscript template or read-in jobscript
                                             template.
             executable (str, Path): Path to main executable of respective software.
+            job_timeout (int, opt): Timeout for jobs in seconds. Jobs will be terminated after
+                                    timeout seconds. Default is None meaning no timeout is used.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
@@ -128,6 +134,8 @@ class JobscriptDriver(Driver):
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
         self.raise_error_on_jobscript_failure = raise_error_on_jobscript_failure
+
+        self.job_timeout = job_timeout
 
     @staticmethod
     def create_input_templates_dict(input_templates):
@@ -235,8 +243,18 @@ class JobscriptDriver(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = "bash " + str(jobscript_file)
-            self._run_executable(job_id, execute_cmd, log_file, error_file, verbose=False)
+            try:
+                execute_cmd = f"bash {jobscript_file} >{log_file} 2>{error_file}"
+                self._run_executable(execute_cmd)
+            except TimeoutExpired as timeout_expired_error:
+                _logger.warning("Job %d timed out:", job_id)
+                _logger.warning("%s", timeout_expired_error)
+                with error_file.open("a") as file:
+                    file.write(f"Job {job_id} timed out:\n")
+                    file.write(f"{timeout_expired_error}")
+                results = (None, None)
+                metadata.outputs = results
+                return results
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -279,24 +297,16 @@ class JobscriptDriver(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file, error_file
 
-    def _run_executable(self, job_id, execute_cmd, log_file, error_file, verbose=False):
+    def _run_executable(self, execute_cmd):
         """Run executable.
 
         Args:
-            job_id (int): Job ID.
             execute_cmd (str): Executed command.
-            log_file (Path): Path to log file.
-            error_file (Path): Path to error file.
-            verbose (bool, opt): Flag for additional streaming to terminal.
         """
-        process_returncode, _, stdout, stderr = run_subprocess_with_logging(
+        process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
-            terminate_expression="PROC.*ERROR",
-            logger_name=__name__ + f"_{job_id}",
-            log_file=str(log_file),
-            error_file=str(error_file),
-            streaming=verbose,
             raise_error_on_subprocess_failure=False,
+            timeout=self.job_timeout,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
             raise SubprocessError.construct_error_from_command(

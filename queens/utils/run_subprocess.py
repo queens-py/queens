@@ -18,7 +18,6 @@ import logging
 import subprocess
 
 from queens.utils.exceptions import SubprocessError
-from queens.utils.logger_settings import finish_job_logger, get_job_logger, job_logging
 
 _logger = logging.getLogger(__name__)
 
@@ -31,6 +30,7 @@ def run_subprocess(
     raise_error_on_subprocess_failure=True,
     additional_error_message=None,
     allowed_errors=None,
+    timeout=None,
 ):
     """Run a system command outside of the Python script.
 
@@ -40,6 +40,7 @@ def run_subprocess(
         raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
         additional_error_message (str, optional): Additional error message to be displayed
         allowed_errors (lst, optional): List of strings to be removed from the error message
+        timeout (int, optional): Terminate process after timeout seconds
     Returns:
         process_returncode (int): code for success of subprocess
         process_id (int): unique process id, the subprocess was assigned on computing machine
@@ -48,88 +49,9 @@ def run_subprocess(
     """
     process = start_subprocess(command)
 
-    stdout, stderr = process.communicate()
+    stdout, stderr = process.communicate(timeout=timeout)
     process_id = process.pid
     process_returncode = process.returncode
-
-    _raise_or_warn_error(
-        command=command,
-        stdout=stdout,
-        stderr=stderr,
-        raise_error_on_subprocess_failure=raise_error_on_subprocess_failure,
-        additional_error_message=additional_error_message,
-        allowed_errors=allowed_errors,
-    )
-    return process_returncode, process_id, stdout, stderr
-
-
-def run_subprocess_with_logging(
-    command,
-    terminate_expression,
-    logger_name,
-    log_file,
-    error_file,
-    full_log_formatting=True,
-    streaming=False,
-    raise_error_on_subprocess_failure=True,
-    additional_error_message=None,
-    allowed_errors=None,
-):
-    """Run a system command outside of the Python script.
-
-    Log errors and stdout-return to initialized logger during runtime. Terminate subprocess if
-    regular expression pattern is found in stdout.
-
-    Args:
-        command (str): command, that will be run in subprocess
-        terminate_expression (str): regular expression to terminate subprocess
-        logger_name (str): logger name to write to. Should be configured previously
-        log_file (str): path to log file
-        error_file (str): path to error file
-        full_log_formatting (bool): Flag to add logger metadata in the simulation logs
-        streaming (bool, optional): Flag for additional streaming to stdout
-        raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
-        additional_error_message (str, optional): Additional error message to be displayed
-        allowed_errors (lst, optional): List of strings to be removed from the error message
-    Returns:
-        process_returncode (int): code for success of subprocess
-        process_id (int): unique process id, the subprocess was assigned on computing machine
-        stdout (str): always None
-        stderr (str): standard error content
-    """
-    # setup job logging and get job logger as well as handlers
-    job_logger, log_file_handle, error_file_handler, stream_handler = get_job_logger(
-        logger_name=logger_name,
-        log_file=log_file,
-        error_file=error_file,
-        streaming=streaming,
-        full_log_formatting=full_log_formatting,
-    )
-
-    # run subprocess
-    process = start_subprocess(command)
-
-    # actual logging of job
-    stderr = job_logging(
-        command_string=command,
-        process=process,
-        job_logger=job_logger,
-        terminate_expression=terminate_expression,
-    )
-
-    stdout = ""
-
-    # get ID and returncode of subprocess
-    process_id = process.pid
-    process_returncode = process.returncode
-
-    # close and remove file handlers (to prevent OSError: [Errno 24] Too many open files)
-    finish_job_logger(
-        job_logger=job_logger,
-        lfh=log_file_handle,
-        efh=error_file_handler,
-        stream_handler=stream_handler,
-    )
 
     _raise_or_warn_error(
         command=command,
