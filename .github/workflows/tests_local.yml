@@ -49,4 +49,11 @@ jobs:
       - name: Run pytest
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
-          pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" -o log_cli=true --log-cli-level=INFO --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes --junitxml=test_junit.xml
+          pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
+      - name: Publish junit pytest report
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure() # always run even if the previous step fails
+        with:
+          report_paths: "test_junit.xml"
+          annotate_only: true
+          detailed_summary: true
