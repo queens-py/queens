@@ -12,7 +12,7 @@ contributions, irrespective of size and complexity.
 ## :rotating_light: Issues
 Issues are generally used to remind or inform yourself or others about certain things in the
 software. We use them to report bugs, start a feature request, or plan tasks. In case you have a
-general question please refer to [Github Discussions](https://github.com/queens-py/queens/discussion).
+general question please refer to [Github Discussions](https://github.com/queens-py/queens/discussions).
 
 To create an issue select one of our templates and provide a detailed description. We use labels
 to organize our issues, please label it with the mandatory labels

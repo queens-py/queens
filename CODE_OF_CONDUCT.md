@@ -40,7 +40,7 @@ The [QUEENS maintainers][queens community] have the right and responsibility to 
 
 ## Enforcement
 
-Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to [Lea Häusel](mailto:lea.haeusel@tum.de), [Sebastian Brandstäter](mailto:sebastian.brandstaeter@tum.de) or any other [QUEENS maintainer][queens community]. All complaints will be reviewed and investigated promptly and fairly.
+Instances of abusive, harassing, or otherwise unacceptable behavior may be reported to [Lea Häusel](mailto:lea.haeusel@tum.de), [Sebastian Brandstäter](mailto:sebastian.brandstaeter@tum.de), or any other [QUEENS maintainer][queens community]. All complaints will be reviewed and investigated promptly and fairly.
 
 The [QUEENS maintainers][queens community] are obligated to respect the privacy and security of the reporter of any incident.
 
