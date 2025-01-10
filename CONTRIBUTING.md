@@ -12,10 +12,10 @@ contributions, irrespective of size and complexity.
 ## :rotating_light: Issues
 Issues are generally used to remind or inform yourself or others about certain things in the
 software. We use them to report bugs, start a feature request, or plan tasks. In case you have a
-general question please refer to [Github Discussions](https://github.com/queens-py/queens/discussions).
+general question, please refer to [GitHub Discussions](https://github.com/queens-py/queens/discussions).
 
-To create an issue select one of our templates and provide a detailed description. We use labels
-to organize our issues, please label it with the mandatory labels
+To create an issue, select one of our templates and provide a detailed description. We use labels
+to organize our issues, so please label issues with the mandatory labels
 - `status:` label
 - `topic:` label
 - `type:` label
@@ -49,8 +49,8 @@ pre-commit install --hook-type commit-msg
 #### Coding style
 QUEENS code follows the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style. Non-compliant code
 will lead to failing CI pipelines and will therefore not be merged.
-The code checks are conducted with [pylint](https://pylint.org/),
-[isort](https://github.com/PyCQA/isort), and [black](https://github.com/psf/black).
+The code checks are conducted with [Pylint](https://pylint.org/),
+[isort](https://github.com/PyCQA/isort), and [Black](https://github.com/psf/black).
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
 is checked with [pydocstyle](https://github.com/PyCQA/pydocstyle).
 Complete and meaningful docstrings are required as they are used to generate the
@@ -58,7 +58,7 @@ Complete and meaningful docstrings are required as they are used to generate the
 
 #### Commit messages
 Please provide meaningful commit messages based on the
-[convential commits guidelines](https://www.conventionalcommits.org/en/v1.0.0/).
+[Conventional Commits guidelines](https://www.conventionalcommits.org/en/v1.0.0/).
 These are verified by the commit-msg hook (managed by [commitizen](https://github.com/commitizen-tools/commitizen)).
 
 ### 4. Test your code
