@@ -39,6 +39,7 @@ tensorflow-probability
 jax
 scikit-activeml>=0.4.1
 pymc
+stable-baselines3
 
 # making fancy plots
 matplotlib
