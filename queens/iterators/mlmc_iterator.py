@@ -191,10 +191,10 @@ class MLMCIterator(Iterator):
         # result list of computation on all levels
         result = []
 
-        # ------------------ level 0 -------------------
+        # level 0
         result.append(self.models[0].evaluate(self.samples[0])["result"])
 
-        # ---------------- levels 1,2,3 ... n ------------------
+        # levels 1,2,3 ... n
         for i, samples in enumerate(self.samples[1:], 1):
             result.append(
                 self.models[i].evaluate(samples)["result"]
@@ -233,12 +233,12 @@ class MLMCIterator(Iterator):
 
             self.samples = self.__draw_samples(num_samples_additional)
 
-            # ------------------ iteration on level 0 -------------------
+            # iteration on level 0
             result[0] = np.concatenate(
                 (result[0], self.models[0].evaluate(self.samples[0])["result"])
             )
 
-            # ---------------- iteration on levels 1,2,3 ... n ------------------
+            # iteration on levels 1,2,3 ... n
             for i, samples in enumerate(self.samples[1:], 1):
                 if num_samples_additional[i] == 0:
                     continue
