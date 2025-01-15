@@ -126,18 +126,18 @@ class ControlVariatesIterator(Iterator):
         if model is None or control_variate is None:
             raise ValueError("A model and a control variate have to be given!")
 
-        if expectation_cv is None and num_samples_cv is None and use_optimal_num_samples is False:
+        if expectation_cv is None and num_samples_cv is None and not use_optimal_num_samples:
             raise ValueError(
                 """expectation_cv or num_samples_cv has to be given, when not using
                              the optimal number of samples.
                              """
             )
 
-        if use_optimal_num_samples is True and cost_model is None and cost_cv:
+        if bool(use_optimal_num_samples) and (cost_model is None or cost_cv is None):
             raise ValueError(
                 """model costs have to be given if you want to use the optimal number
-                             of samples
-                             """
+                    of samples
+                """
             )
 
         # Initialize parent iterator with no model.
@@ -185,9 +185,9 @@ class ControlVariatesIterator(Iterator):
 
             # If using the optimal number of samples, calculate the best ratio of
             # num_samples to num_samples_cv.
-            if self.use_optimal_num_samples is True:
+            if bool(self.use_optimal_num_samples):
                 if correlation_coefficient >= 0.99999:
-                    raise Warning(
+                    _logger.warning(
                         """The correlation between input models is perfect, do not use
                                     control variates!
                                     """
@@ -236,7 +236,7 @@ class ControlVariatesIterator(Iterator):
             "alpha": cv_influence_coeff,
         }
 
-        if self.use_optimal_num_samples is True:
+        if bool(self.use_optimal_num_samples):
             self.output["beta"] = sample_ratio
 
     def post_run(self):
