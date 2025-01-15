@@ -1,0 +1,24 @@
+# yamllint disable
+name: preview_documentation
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+concurrency: preview-${{ github.ref }}
+
+jobs:
+  build-and-deploy-preview:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Build documentation
+        uses: ./.github/actions/build_documentation
+      - name: Deploy preview
+        uses: rossjrw/pr-preview-action@v1
+        with:
+          source-dir: doc/build/html
+          deploy-repository: queens-py/queens-doc-preview
+          token: $DOC_PREVIEW_WRITE_ACCESS
+          action: auto
