@@ -2,6 +2,7 @@
 name: build_documentation
 
 on:
+  pull_request:
   push:
     branches:
       - main
