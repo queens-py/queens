@@ -36,49 +36,52 @@ class ControlVariatesIterator(Iterator):
 
     The estimator for the Monte Carlo control variates method is given by
     :math:`\hat{\mu}_{f}= \underbrace{\frac{1}{N} \sum\limits_{i=1}^{l} \Big [ f(y^{(i)}) - \alpha
-    \Big(g(y^{(i)}) - \hat\mu_{g} \Big) \Big]}_\textrm{main estimator}`
-    Where :math:`f` represents the model and :math:`g` the control variables. :math:`N` represents
-    the number of samples on the main estimator and :math:`y^{(i)}` are random samples.
+    \Big(g(y^{(i)}) - \hat\mu_{g} \Big) \Big]}_\textrm{cross-model estimator}`
+    where :math:`f` represents the model and :math:`g` the control variate. :math:`N` represents
+    the number of samples on the cross-model estimator and :math:`y^{(i)}` are random samples.
 
-    In case the mean of the control variate is known, :math:`\hat\mu_{g}` is given. Otherwise
+    In case the mean of the control variate is known, :math:`\hat\mu_{g}` is given. Otherwise,
     :math:`\hat\mu_{g}` is the control variate mean estimator. The control variate mean estimator
-    uses the Monte Carlo Method.
+    uses the Monte Carlo method.
 
     The implementation is based on chapter 9.3 in [1] and uses one control variate.
 
     References:
         [1] D. P. Kroese, Z. I. Botev, and T. Taimre. "Handbook of Monte Carlo Methods". Wiley,
-        2011.
+            2011.
 
     Attributes:
-        model (Model):  The main model. The uncertainties are quantified for this model.
-        control_variate (Model): The control variate model.
+        model (Model): Main model. The uncertainties are quantified for this model.
+        control_variate (Model): Control variate model.
         seed (int): Seed for random samples.
-        num_samples (int):  Number of samples on the main estimator
-        expectation_cvs (float):    Expectation of the control variate. If the expectation is None,
-                                    it will be estimated via MC sampling.
-        output (dict):  Output dict with the following entries:
-                        * ``mean`` (float): Estimated mean of main model.
-                        * ``std`` (float): Estimated standard deviation of the main model mean
-                        estimate.
-                        * ``num_samples_cv`` (int): Number of samples on control variate.
-                        * ``mean_cv`` (float): Mean of control variate.
-                        * ``std_cv`` (float): Standard deviation of control variate.
-                        * ``alpha`` (float): Method specific parameter that determines the
-                        influence of control variate.
-                        * ``sample_ratio`` (float): Ratio of number of samples on control variate to
-                                            number of samples on main model. Is only part of output
-                                            if use_optimal_num_samples==True.
-        num_samples_cv (int):    Number of samples to use for computing the expectation
-                                        value of control variate. If expectation of the control
-                                        variate is known, you can pass None as it's number of
-                                        samples.
-        samples (np.array): Samples for which all models are evaluated on.
-        use_optimal_num_samples (bool):    Determines if the iterator calculates and uses the
-                            optimal number of samples.
+        num_samples (int): Number of samples on the cross-model estimator.
+        expectation_cv (float): Expectation of the control variate. If the expectation is None,
+                                it will be estimated via MC sampling.
+        output (dict): Output dict with the following entries:
+
+                       * ``mean`` (float): Estimated mean of main model.
+                       * ``std`` (float): Estimated standard deviation of the main model mean
+                                          estimate.
+                       * ``num_samples_cv`` (int): Number of samples to estimate the control variate
+                                                   mean.
+                       * ``mean_cv`` (float): Mean of control variate.
+                       * ``std_cv`` (float): Standard deviation of control variate mean estimation.
+                       * ``alpha`` (float): Method specific parameter that determines the
+                                            influence of the control variate.
+                       * ``sample_ratio`` (float): Ratio of number of samples on control variate to
+                                                   number of samples on main model. Is only part of
+                                                   output if use_optimal_num_samples is True.
+
+        num_samples_cv (int): Number of samples to use for computing the expectation
+                              of the control variate if this expectation is unknown.
+        samples (np.array): Samples for the control variates estimator.
+        use_optimal_num_samples (bool): Determines wether the iterator calculates and uses the
+                                        optimal number of samples to estimate the control variate
+                                        mean such that the variance of the control variates
+                                        estimator is minimized.
         cost_model (float): Cost of evaluating the model.
-        cost_cv (float):    Cost of evaluating the control variate.
-        variance_cv_mean_estimator (float):   variance of the control variate mean estimator
+        cost_cv (float): Cost of evaluating the control variate.
+        variance_cv_mean_estimator (float): Variance of the control variate mean estimator.
     """
 
     @log_init_args
@@ -99,21 +102,22 @@ class ControlVariatesIterator(Iterator):
         """Initialize the control variates iterator.
 
         Args:
-            model (Model):  The main model. Uncertainties are quantified for this model.
-            control_variate (Model):    The control variate - a model that approximates the main
-            model and is cheaper to evaluate.
-            parameters (Parameters):    Parameters to use for evaluation.
-            global_settings (GlobalSettings):   Global settings to use for evaluation.
+            model (Model): Main model. The uncertainties are quantified for this model.
+            control_variate (Model): Control variate model.
+            parameters (Parameters): Parameters to use for evaluation.
+            global_settings (GlobalSettings): Global settings to use for evaluation.
             seed (int): Seed for random samples.
-            num_samples (int):  Number of samples to evaluate for estimation.
-            expectation_cv (float): Here you can pass expected values of the control variate.
-            num_samples_cv (int):   Number of MC samples to use for computing the expectation of
-                                    the control variate. Only used if the expectation of the control
-                                    variate is not passed.
-            cost_model (float): Cost of evaluating the model.
-            cost_cv (float):    Cost of evaluating the control variate.
-            use_optimal_num_samples (bool):  Determines if the iterator calculates and uses
-                                                the optimal number of samples.
+            num_samples (int): Number of samples on the cross-model estimator.
+            expectation_cv (float, opt): Expectation of the control variate. If the expectation is
+                                         None, it will be estimated via MC sampling.
+            num_samples_cv (int, opt): Number of samples to use for computing the expectation
+                                       of the control variate if this expectation is unknown.
+            use_optimal_num_samples (bool): Determines wether the iterator calculates and uses the
+                                            optimal number of samples to estimate the control
+                                            variate mean such that the variance of the control
+                                            variates estimator is minimized.
+            cost_model (float, opt): Cost of evaluating the model.
+            cost_cv (float, opt): Cost of evaluating the control variate.
 
         Raises:
             ValueError: If model is None.
@@ -128,21 +132,18 @@ class ControlVariatesIterator(Iterator):
 
         if expectation_cv is None and num_samples_cv is None and not use_optimal_num_samples:
             raise ValueError(
-                """expectation_cv or num_samples_cv has to be given, when not using
-                             the optimal number of samples.
-                             """
+                "expectation_cv or num_samples_cv has to be given when not using "
+                "the optimal number of samples."
             )
 
         if use_optimal_num_samples and (cost_model is None or cost_cv is None):
             raise ValueError(
-                """model costs have to be given if you want to use the optimal number
-                    of samples
-                """
+                "Model and control variate costs have to be given if you want to use the optimal "
+                "number of samples"
             )
 
         # Initialize parent iterator with no model.
-        super().__init__(None, parameters, global_settings)
-        self.model = model
+        super().__init__(model, parameters, global_settings)
         self.control_variate = control_variate
         self.seed = seed
         self.num_samples = num_samples
@@ -156,7 +157,7 @@ class ControlVariatesIterator(Iterator):
         self.variance_cv_mean_estimator = 0
 
     def pre_run(self):
-        """Draws samples for core_run()."""
+        """Draw samples for the core run."""
         np.random.seed(self.seed)
 
         self.samples = self.parameters.draw_samples(self.num_samples)
@@ -177,23 +178,21 @@ class ControlVariatesIterator(Iterator):
         var_model0 = models_cov[0, 0]  # Variance of main function
         var_model1 = models_cov[1, 1]  # Variance of control variate
 
-        # Correlation coefficient between the main model and the control variate.
-        correlation_coefficient = cov / np.sqrt(var_model0 * var_model1)
-
         # Compute expectation of control variate if it is not known.
         if self.expectation_cv is None:
 
             # If using the optimal number of samples, calculate the best ratio of
             # num_samples to num_samples_cv.
             if self.use_optimal_num_samples:
+                # Correlation coefficient between the main model and the control variate.
+                correlation_coefficient = cov / np.sqrt(var_model0 * var_model1)
                 if correlation_coefficient >= 0.99999:
                     _logger.warning(
-                        """The correlation between input models is perfect, do not use
-                                    control variates!
-                                    """
+                        "The correlation between input models is perfect, do not use "
+                        "control variates!"
                     )
-                # Calculate optimal factor relating number of samples on main estimator and
-                # control variate estimator.
+                # Calculate optimal factor relating number of samples on the cross-model
+                # estimator and the control variate estimator.
                 sample_ratio = (
                     np.sqrt(
                         correlation_coefficient**2
