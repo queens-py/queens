@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Integration tests for the control varaites iterator."""
+"""Integration tests for the control variates iterator."""
 
 import pytest
 
@@ -26,11 +26,9 @@ from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
-def test_control_variates_with_given_num_samples(global_settings):
-    """Test function for control variates with a given number of samples."""
-    n0 = 100
-
-    # Parameters
+@pytest.fixture(name="parameters")
+def fixture_parameters():
+    """Parameters for the integration test of the control variates iterator."""
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
     r = UniformDistribution(lower_bound=100, upper_bound=50000)
     tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
@@ -41,20 +39,51 @@ def test_control_variates_with_given_num_samples(global_settings):
     kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
+    return parameters
+
+
+@pytest.fixture(name="scheduler")
+def fixture_scheduler(global_settings):
+    """Scheduler for the integration test of the control variates iterator."""
     # Set up scheduler
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
 
-    # Set up drivers
-    driver0 = FunctionDriver(parameters=parameters, function="borehole83_lofi")
-    driver1 = FunctionDriver(parameters=parameters, function="borehole83_hifi")
+    return scheduler
 
-    # Set up models
-    model0 = SimulationModel(scheduler=scheduler, driver=driver0)
-    model1 = SimulationModel(scheduler=scheduler, driver=driver1)
 
+@pytest.fixture(name="control_variate")
+def fixture_control_variate(parameters, scheduler):
+    """Control variate model."""
+    # Set up driver.
+    driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
+    # Set up model.
+    model = SimulationModel(scheduler=scheduler, driver=driver)
+
+    return model
+
+
+@pytest.fixture(name="model_main")
+def fixture_model_main(parameters, scheduler):
+    """Main model."""
+    # Set up driver.
+    driver = FunctionDriver(parameters=parameters, function="borehole83_hifi")
+    # Set up model.
+    model = SimulationModel(scheduler=scheduler, driver=driver)
+
+    return model
+
+
+def test_control_variates_with_given_num_samples(
+    global_settings, parameters, model_main, control_variate
+):
+    """Test function for control variates with a given number of samples."""
+    # Number of samples on the cross-model estimator.
+    n0 = 100
+
+    # Set up iterator.
     iterator = ControlVariatesIterator(
-        model=model1,
-        control_variate=model0,
+        model=model_main,
+        control_variate=control_variate,
         parameters=parameters,
         global_settings=global_settings,
         seed=42,
@@ -63,9 +92,11 @@ def test_control_variates_with_given_num_samples(global_settings):
         use_optimal_num_samples=False,
     )
 
+    # Run iterator and load results.
     run_iterator(iterator=iterator, global_settings=global_settings)
     res = load_result(global_settings.result_file(".pickle"))
 
+    # Test outputs.
     assert res["mean"] == pytest.approx(77.03460846952085)
     assert res["std"] == pytest.approx(1.3774480043137558)
     assert res["num_samples_cv"] == pytest.approx(1000)
@@ -74,51 +105,36 @@ def test_control_variates_with_given_num_samples(global_settings):
     assert res["alpha"] == pytest.approx(1.1296035845358712)
 
 
-def test_control_variates_with_optimal_num_samples(global_settings):
+def test_control_variates_with_optimal_num_samples(
+    global_settings, parameters, model_main, control_variate
+):
     """Test function for control variates with optimal number of samples."""
+    # Number of samples on the cross-model estimator.
     n0 = 4
+    # Cost of evaluating the main model
+    cost_model_main = 1
+    # Cost of evaluating the control variate.
+    cost_control_variate = 0.9999999
 
-    # Parameters
-    rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
-    r = UniformDistribution(lower_bound=100, upper_bound=50000)
-    tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
-    hu = UniformDistribution(lower_bound=990, upper_bound=1110)
-    tl = UniformDistribution(lower_bound=63.1, upper_bound=116)
-    hl = UniformDistribution(lower_bound=700, upper_bound=820)
-    l = UniformDistribution(lower_bound=1120, upper_bound=1680)
-    kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
-    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
-
-    # Set up scheduler
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-
-    # Set up drivers
-    driver0 = FunctionDriver(parameters=parameters, function="borehole83_lofi")
-    driver1 = FunctionDriver(parameters=parameters, function="borehole83_hifi")
-
-    # Set up models
-    model0 = SimulationModel(scheduler=scheduler, driver=driver0)
-    model1 = SimulationModel(scheduler=scheduler, driver=driver1)
-
-    c1 = 1
-    c0 = 0.9999999
-
+    # Set up iterator.
     iterator = ControlVariatesIterator(
-        model=model1,
-        control_variate=model0,
+        model=model_main,
+        control_variate=control_variate,
         parameters=parameters,
         global_settings=global_settings,
         seed=42,
         num_samples=n0,
         num_samples_cv=10 * n0,
         use_optimal_num_samples=True,
-        cost_model=c1,
-        cost_cv=c0,
+        cost_model=cost_model_main,
+        cost_cv=cost_control_variate,
     )
 
+    # Run iterator and load results.
     run_iterator(iterator=iterator, global_settings=global_settings)
     res = load_result(global_settings.result_file(".pickle"))
 
+    # Test outputs.
     assert res["mean"] == pytest.approx(77.6457414342444)
     assert res["std"] == pytest.approx(0.039169722018672436)
     assert res["num_samples_cv"] == pytest.approx(1353264)
