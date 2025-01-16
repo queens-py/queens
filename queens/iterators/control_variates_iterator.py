@@ -133,7 +133,7 @@ class ControlVariatesIterator(Iterator):
                              """
             )
 
-        if bool(use_optimal_num_samples) and (cost_model is None or cost_cv is None):
+        if use_optimal_num_samples and (cost_model is None or cost_cv is None):
             raise ValueError(
                 """model costs have to be given if you want to use the optimal number
                     of samples
@@ -185,7 +185,7 @@ class ControlVariatesIterator(Iterator):
 
             # If using the optimal number of samples, calculate the best ratio of
             # num_samples to num_samples_cv.
-            if bool(self.use_optimal_num_samples):
+            if self.use_optimal_num_samples:
                 if correlation_coefficient >= 0.99999:
                     _logger.warning(
                         """The correlation between input models is perfect, do not use
@@ -236,7 +236,7 @@ class ControlVariatesIterator(Iterator):
             "alpha": cv_influence_coeff,
         }
 
-        if bool(self.use_optimal_num_samples):
+        if self.use_optimal_num_samples:
             self.output["beta"] = sample_ratio
 
     def post_run(self):
