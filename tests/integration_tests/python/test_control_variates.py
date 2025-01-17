@@ -28,7 +28,7 @@ from queens.utils.io_utils import load_result
 
 @pytest.fixture(name="parameters")
 def fixture_parameters():
-    """Parameters for the integration test of the control variates iterator."""
+    """Parameters for the integration tests."""
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
     r = UniformDistribution(lower_bound=100, upper_bound=50000)
     tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
@@ -44,7 +44,7 @@ def fixture_parameters():
 
 @pytest.fixture(name="scheduler")
 def fixture_scheduler(global_settings):
-    """Scheduler for the integration test of the control variates iterator."""
+    """Scheduler for the integration tests."""
     # Set up scheduler
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
 
@@ -53,7 +53,7 @@ def fixture_scheduler(global_settings):
 
 @pytest.fixture(name="control_variate")
 def fixture_control_variate(parameters, scheduler):
-    """Control variate model."""
+    """Control variate model for the integration tests."""
     # Set up driver.
     driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     # Set up model.
@@ -64,7 +64,7 @@ def fixture_control_variate(parameters, scheduler):
 
 @pytest.fixture(name="model_main")
 def fixture_model_main(parameters, scheduler):
-    """Main model."""
+    """Main model for the integration tests."""
     # Set up driver.
     driver = FunctionDriver(parameters=parameters, function="borehole83_hifi")
     # Set up model.
@@ -111,7 +111,7 @@ def test_control_variates_with_optimal_num_samples(
     """Test function for control variates with optimal number of samples."""
     # Number of samples on the cross-model estimator.
     n0 = 4
-    # Cost of evaluating the main model
+    # Cost of evaluating the main model.
     cost_model_main = 1
     # Cost of evaluating the control variate.
     cost_control_variate = 0.9999999
