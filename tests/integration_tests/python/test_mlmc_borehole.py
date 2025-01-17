@@ -1,6 +1,21 @@
-"""Integration test for the Multilevel Monte Carlo iterator.
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (c) 2025, QUEENS contributors.
+#
+# This file is part of QUEENS.
+#
+# QUEENS is free software: you can redistribute it and/or modify it under the terms of the GNU
+# Lesser General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version. QUEENS is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
+# should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
+# see <https://www.gnu.org/licenses/>.
+#
+"""Integration tests for the multilevel Monte Carlo iterator.
 
-This test is based on the low-fidelity Borehole function.
+This tests are based on the low-fidelity and the high-fidelity Borehole
+function.
 """
 
 import pytest
@@ -15,11 +30,9 @@ from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
-def test_mlmc_borehole(global_settings):
-    """Test case for Monte Carlo iterator.
-
-    Testing both normal num_samples and optimal num_samples.
-    """
+@pytest.fixture(name="parameters")
+def fixture_parameters():
+    """Parameters for the integration tests of the MLMC iterator."""
     # Parameters
     rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
     r = UniformDistribution(lower_bound=100, upper_bound=50000)
@@ -31,51 +44,91 @@ def test_mlmc_borehole(global_settings):
     kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
-    # Set up scheduler
+    return parameters
+
+
+@pytest.fixture(name="scheduler")
+def fixture_scheduler(global_settings):
+    """Scheduler for the integration tests of the MLMC iterator."""
+    # Set up scheduler.
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
 
-    # Set up drivers
+    return scheduler
+
+
+@pytest.fixture(name="models")
+def fixture_models(parameters, scheduler):
+    """Models for the integration tests of the MLMC iterator."""
+    # Set up drivers.
     driver0 = FunctionDriver(parameters=parameters, function="borehole83_lofi")
     driver1 = FunctionDriver(parameters=parameters, function="borehole83_hifi")
-
-    # Set up models
+    # Set up models.
     model0 = SimulationModel(scheduler=scheduler, driver=driver0)
     model1 = SimulationModel(scheduler=scheduler, driver=driver1)
 
-    # Set up iterator
+    return [model0, model1]
+
+
+def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
+    """Test case for the iterator with a given number of samples."""
+    # Set up iterator.
     iterator = MLMCIterator(
         seed=42,
         num_samples=[1000, 100],
-        result_description={"write_results": True, "plot_results": False},
-        models=[model0, model1],
+        models=models,
         parameters=parameters,
         global_settings=global_settings,
     )
 
-    # Analysis
+    # Run iterator and load results.
     run_iterator(iterator=iterator, global_settings=global_settings)
-
     result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
 
+    # Test outputs.
     assert result["mean"] == pytest.approx(76.52224796054254)
     assert result["std"] == pytest.approx(1.4321771079107875)
 
-    # Optimal number of samples test
 
+def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
+    """Test case for the bootstrap estimate of the MLMC standard deviation."""
+    # Set up iterator.
+    iterator = MLMCIterator(
+        seed=42,
+        num_samples=[1000, 100],
+        models=models,
+        parameters=parameters,
+        global_settings=global_settings,
+        num_bootstrap_samples=200,
+    )
+
+    # Run iterator and load results.
+    run_iterator(iterator=iterator, global_settings=global_settings)
+    result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
+
+    # Note that the bootstrap estimate of the MLMC standard deviation only approximates calculated
+    # standard deviation than is tested for above. The accuracy of the bootstrap approximation
+    # increases for in increasing number of bootstrap samples.
+    assert result["std_bootstrap"] == pytest.approx(1.4177144502392238)
+
+
+def test_mlmc_borehole_optimal_num_samples(global_settings, parameters, models):
+    """Test case for the iterator with an optimal number of samples."""
+    # Set up iterator.
     iterator_optimal = MLMCIterator(
         seed=42,
         num_samples=[1000, 100],
-        result_description={"write_results": True, "plot_results": False},
-        models=[model0, model1],
+        models=models,
         parameters=parameters,
         global_settings=global_settings,
         use_optimal_num_samples=True,
         cost_models=[1, 1000],
-        bootstrap_samples=200,
+        num_bootstrap_samples=200,
     )
 
+    # Run iterator and load results.
     run_iterator(iterator=iterator_optimal, global_settings=global_settings)
     result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
 
+    # Test ouputs.
     assert result["mean"] == pytest.approx(77.9589082063506)
     assert result["std"] == pytest.approx(0.9411428987983472)
