@@ -49,6 +49,10 @@ class RLIterator(Iterator):
     def __init__(self, model, parameters, global_settings, result_description=None):
         """Initialize an RLIterator.
 
+        TODO:
+        - introduce a "mode" argument, that allows for "train" and "evaluation"
+        - different core run depending on the mode
+
         Args:
             agent (str): String that defines the RL algorithm to be used:
 
