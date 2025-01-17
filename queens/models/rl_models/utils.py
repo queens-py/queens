@@ -5,7 +5,7 @@ import stable_baselines3 as sb3
 
 
 def _create_supported_agents_dict():
-    # Get all classes in the stable_baselines3 module
+    # Get all agent classes in the stable_baselines3 module
     supported_agents = {
         name: obj for name, obj in inspect.getmembers(sb3)
         if inspect.isclass(obj) and issubclass(obj, sb3.common.base_class.BaseAlgorithm)

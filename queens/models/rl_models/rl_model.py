@@ -45,7 +45,7 @@ class RLModel(Model):
         self._render_on_evaluation = render_on_evaluation
         self._render_args = render_args
 
-    def evaluate(self, observation):
+    def step(self, observation):
         """Interaction step of a (trained) RL agent with an environment.
 
         Args:
@@ -60,7 +60,7 @@ class RLModel(Model):
         _logger.info(
             'Computing one agent-enviroment interaction (i.e., one timestep).'
         )
-        action, _state = self._predict(observation)
+        action, _state = self.evaluate(observation)
         obs, reward, done, info = self._step(action)
         if self._render_on_evaluation:
             self._render(self._render_args)
@@ -79,7 +79,7 @@ class RLModel(Model):
             "the `grad` method in the child class."
         )
     
-    def _predict(self, observation):
+    def evaluate(self, observation):
         """Make a single prediction with the trained RL agent.
         
         Args:
@@ -93,7 +93,14 @@ class RLModel(Model):
         _logger.debug(
             'Predicting the next action based on the current state of the environment.'
         )
-        return self._agent.predict(observation)
+        # TODO make sure that an RLModel can handle multiple observations 
+        # (i.e., loop over all entries in observation here)
+        self.response = self._agent.predict(observation)
+        result = {
+            "result": self.response[0],
+            "state": self.response[1]
+        }
+        return result
     
     @abc.abstractmethod
     def _render(self, *render_args):
