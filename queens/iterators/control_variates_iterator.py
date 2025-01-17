@@ -60,8 +60,7 @@ class ControlVariatesIterator(Iterator):
         output (dict): Output dict with the following entries:
 
                        * ``mean`` (float): Estimated mean of main model.
-                       * ``std`` (float): Estimated standard deviation of the main model mean
-                                          estimate.
+                       * ``std`` (float): Estimated standard deviation of the cross-model estimator.
                        * ``num_samples_cv`` (int): Number of samples to estimate the control variate
                                                    mean.
                        * ``mean_cv`` (float): Mean of control variate.
@@ -112,10 +111,10 @@ class ControlVariatesIterator(Iterator):
                                          None, it will be estimated via MC sampling.
             num_samples_cv (int, opt): Number of samples to use for computing the expectation
                                        of the control variate if this expectation is unknown.
-            use_optimal_num_samples (bool): Determines wether the iterator calculates and uses the
-                                            optimal number of samples to estimate the control
-                                            variate mean such that the variance of the control
-                                            variates estimator is minimized.
+            use_optimal_num_samples (bool, opt): Determines wether the iterator calculates and uses
+                                                 the optimal number of samples to estimate the
+                                                 control variate mean such that the variance of the
+                                                 control variates estimator is minimized.
             cost_model (float, opt): Cost of evaluating the model.
             cost_cv (float, opt): Cost of evaluating the control variate.
 
@@ -127,6 +126,9 @@ class ControlVariatesIterator(Iterator):
                         If the optimal number of samples are used and the costs of the models are
                         not provided.
         """
+        # Initialize parent iterator with main model.
+        super().__init__(model, parameters, global_settings)
+
         if model is None or control_variate is None:
             raise ValueError("A model and a control variate have to be given!")
 
@@ -142,8 +144,6 @@ class ControlVariatesIterator(Iterator):
                 "number of samples"
             )
 
-        # Initialize parent iterator with no model.
-        super().__init__(model, parameters, global_settings)
         self.control_variate = control_variate
         self.seed = seed
         self.num_samples = num_samples
@@ -165,7 +165,7 @@ class ControlVariatesIterator(Iterator):
     def core_run(self):
         """Core run of iterator.
 
-        Computes the expectation estimate and its standard deviation.
+        Computes the cross-model estimator and its standard deviation.
         """
         # Evaluate models for the drawn samples.
         output_model = np.concatenate(self.model.evaluate(self.samples)["result"])
