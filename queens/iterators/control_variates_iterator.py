@@ -36,14 +36,14 @@ class ControlVariatesIterator(Iterator):
 
     The estimator for the Monte Carlo control variates method with a single control variate is
     given by
-    :math:`\hat{\mu}_{f}= \underbrace{\frac{1}{N} \sum\limits_{i=1}^{l} \Big [ f(x^{(i)}) - \alpha
+    :math:`\hat{\mu}_{f}= \underbrace{\frac{1}{N} \sum\limits_{i=1}^{N} \Big [ f(x^{(i)}) - \alpha
     \Big(g(x^{(i)}) - \hat\mu_{g} \Big) \Big]}_\textrm{cross-model estimator}`
-    where :math:`f` represents the model and :math:`g` the control variate. :math:`N` represents
-    the number of samples on the cross-model estimator and :math:`x^{(i)}` are random
-    parameter samples.
+    where :math:`f` represents the model, :math:`g` the control variate, and :math:`\hat\mu_{g}`
+    the expectation of the control variate. :math:`N` represents the number of samples on the
+    cross-model estimator and :math:`x^{(i)}` are random parameter samples.
 
     In case the mean of the control variate is known, :math:`\hat\mu_{g}` can be passed to the
-    iterator as ´´expectation_cv´´. Otherwise, :math:`\hat\mu_{g}` is estimated with the Monte
+    iterator as expectation_cv. Otherwise, :math:`\hat\mu_{g}` is estimated with the Monte
     Carlo method.
 
     The implementation is based on chapter 9.3 in [1] and uses one control variate.

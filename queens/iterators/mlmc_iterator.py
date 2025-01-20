@@ -40,7 +40,7 @@ class MLMCIterator(Iterator):
     :math:`\hat{\mu}_\mathrm{MLMC} = \underbrace{\frac{1}{N_{0}} \sum_{i=1}^{N_{0}} f_{0}(x^{(0,
     i)})}_\textrm{estimator 0} + \sum_{l=1}^{L} \underbrace{\bigg \{ \frac{1}{N_{l}} \sum_{i=1}^{N_
     {l}} \Big (  f_{l}(x^{(l, i)}) - f_{l-1}(x^{(l, i)})  \Big ) \bigg \}}_{\textrm{estimator }l}`
-    Where :math:`f_{l}` are the models with increasing fidelity as :math:`l` increases.
+    where :math:`f_{l}` are the models with increasing fidelity as :math:`l` increases.
     :math:`N_{l}` are the number of samples on the :math:`l`-th estimator and :math:`x^{(l,i)}` is
     the :math:`i`-th sample on the :math:`l`-th estimator.
 
@@ -311,7 +311,9 @@ class MLMCIterator(Iterator):
     def _bootstrap(self, results_estimators):
         """Bootstrapping standard deviation estimate.
 
-        Compute the standard deviation of the MLMC estimator using bootstrapping.
+        The bootstrap estimate approximates the standard deviation of the MLMC estimator calculated
+        by the iterator. The accuracy of the bootstrap approximation increases for an increasing
+        number of bootstrap samples.
 
         Args:
             result (list(np.array)): Results of the core run for each estimator.

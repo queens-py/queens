@@ -109,9 +109,6 @@ def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
     run_iterator(iterator=iterator, global_settings=global_settings)
     result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
 
-    # Note that the bootstrap estimate approximates the standard deviation of the MLMC
-    # estimator that is calculated by the iterator. The accuracy of the bootstrap approximation
-    # increases for in increasing number of bootstrap samples.
     assert result["mean"] == pytest.approx(76.52224796054254)
     assert result["var"] == pytest.approx(2.0511312684237075)
     assert result["std"] == pytest.approx(1.4321771079107875)
