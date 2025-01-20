@@ -203,7 +203,7 @@ class MLMCIterator(Iterator):
             # Calculate mean of estimators via samples mean.
             mean_estimators.append(result.mean())
 
-            # Calculate variance of estamators via sample mean variance.
+            # Calculate variance of estimators via sample mean variance.
             var_estimators.append(result.var())
 
             # Update MLMC mean.
@@ -316,7 +316,7 @@ class MLMCIterator(Iterator):
         number of bootstrap samples.
 
         Args:
-            result (list(np.array)): Results of the core run for each estimator.
+            results_estimators (list(np.array)): Results of the core run for each estimator.
 
         Returns:
             float: Standard deviation of the MLMC estimator using bootstrapping.
