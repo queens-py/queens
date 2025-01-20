@@ -14,7 +14,7 @@
 #
 """Integration tests for the multilevel Monte Carlo iterator.
 
-This tests are based on the low-fidelity and the high-fidelity Borehole
+The tests are based on the low-fidelity and the high-fidelity Borehole
 function.
 """
 
@@ -86,7 +86,11 @@ def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
 
     # Test outputs.
     assert result["mean"] == pytest.approx(76.52224796054254)
+    assert result["var"] == pytest.approx(2.0511312684237075)
     assert result["std"] == pytest.approx(1.4321771079107875)
+    assert result["mean_estimators"] == pytest.approx([60.4546131, 16.06763486])
+    assert result["var_estimators"] == pytest.approx([1266.89995688, 78.42313115])
+    assert result["num_samples"] == pytest.approx([1000, 100])
 
 
 def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
@@ -105,9 +109,15 @@ def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
     run_iterator(iterator=iterator, global_settings=global_settings)
     result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
 
-    # Note that the bootstrap estimate of the MLMC standard deviation only approximates calculated
-    # standard deviation than is tested for above. The accuracy of the bootstrap approximation
+    # Note that the bootstrap estimate approximates the standard deviation of the MLMC
+    # estimator that is calculated by the iterator. The accuracy of the bootstrap approximation
     # increases for in increasing number of bootstrap samples.
+    assert result["mean"] == pytest.approx(76.52224796054254)
+    assert result["var"] == pytest.approx(2.0511312684237075)
+    assert result["std"] == pytest.approx(1.4321771079107875)
+    assert result["mean_estimators"] == pytest.approx([60.4546131, 16.06763486])
+    assert result["var_estimators"] == pytest.approx([1266.89995688, 78.42313115])
+    assert result["num_samples"] == pytest.approx([1000, 100])
     assert result["std_bootstrap"] == pytest.approx(1.4177144502392238)
 
 
@@ -122,13 +132,16 @@ def test_mlmc_borehole_optimal_num_samples(global_settings, parameters, models):
         global_settings=global_settings,
         use_optimal_num_samples=True,
         cost_models=[1, 1000],
-        num_bootstrap_samples=200,
     )
 
     # Run iterator and load results.
     run_iterator(iterator=iterator_optimal, global_settings=global_settings)
     result = load_result(path_to_result_file=global_settings.result_file(".pickle"))
 
-    # Test ouputs.
+    # Test outputs.
     assert result["mean"] == pytest.approx(77.9589082063506)
+    assert result["var"] == pytest.approx(0.8857499559585561)
     assert result["std"] == pytest.approx(0.9411428987983472)
+    assert result["mean_estimators"] == pytest.approx([61.89127335, 16.06763486])
+    assert result["var_estimators"] == pytest.approx([1290.91108238, 78.42313115])
+    assert result["num_samples"] == pytest.approx([12716, 100])

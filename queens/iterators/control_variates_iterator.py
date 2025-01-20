@@ -34,15 +34,17 @@ class ControlVariatesIterator(Iterator):
     make the quantification more precise. In the context of Monte Carlo, the control variate method
     is sometimes also called control variable method.
 
-    The estimator for the Monte Carlo control variates method is given by
-    :math:`\hat{\mu}_{f}= \underbrace{\frac{1}{N} \sum\limits_{i=1}^{l} \Big [ f(y^{(i)}) - \alpha
-    \Big(g(y^{(i)}) - \hat\mu_{g} \Big) \Big]}_\textrm{cross-model estimator}`
+    The estimator for the Monte Carlo control variates method with a single control variate is
+    given by
+    :math:`\hat{\mu}_{f}= \underbrace{\frac{1}{N} \sum\limits_{i=1}^{l} \Big [ f(x^{(i)}) - \alpha
+    \Big(g(x^{(i)}) - \hat\mu_{g} \Big) \Big]}_\textrm{cross-model estimator}`
     where :math:`f` represents the model and :math:`g` the control variate. :math:`N` represents
-    the number of samples on the cross-model estimator and :math:`y^{(i)}` are random samples.
+    the number of samples on the cross-model estimator and :math:`x^{(i)}` are random
+    parameter samples.
 
-    In case the mean of the control variate is known, :math:`\hat\mu_{g}` is given. Otherwise,
-    :math:`\hat\mu_{g}` is the control variate mean estimator. The control variate mean estimator
-    uses the Monte Carlo method.
+    In case the mean of the control variate is known, :math:`\hat\mu_{g}` can be passed to the
+    iterator as ´´expectation_cv´´. Otherwise, :math:`\hat\mu_{g}` is estimated with the Monte
+    Carlo method.
 
     The implementation is based on chapter 9.3 in [1] and uses one control variate.
 
@@ -59,14 +61,15 @@ class ControlVariatesIterator(Iterator):
                                 it will be estimated via MC sampling.
         output (dict): Output dict with the following entries:
 
-                       * ``mean`` (float): Estimated mean of main model.
+                       * ``mean`` (float): Cross-model estimator.
                        * ``std`` (float): Estimated standard deviation of the cross-model estimator.
                        * ``num_samples_cv`` (int): Number of samples to estimate the control variate
                                                    mean.
                        * ``mean_cv`` (float): Mean of control variate.
-                       * ``std_cv`` (float): Standard deviation of control variate mean estimation.
-                       * ``alpha`` (float): Method specific parameter that determines the
-                                            influence of the control variate.
+                       * ``std_cv_mean_estimator`` (float): Standard deviation of control variate
+                                                            mean estimation.
+                       * ``cv_influence_coeff`` (float): Method specific parameter that determines
+                                                         the influence of the control variate.
                        * ``sample_ratio`` (float): Ratio of number of samples on control variate to
                                                    number of samples on main model. Is only part of
                                                    output if use_optimal_num_samples is True.
@@ -174,9 +177,9 @@ class ControlVariatesIterator(Iterator):
         # Compute the covariance matrix between the two models.
         models_cov = np.cov(output_model, output_cv)
 
-        cov = models_cov[0, 1]  # Covariance between main function and control variate
-        var_model0 = models_cov[0, 0]  # Variance of main function
-        var_model1 = models_cov[1, 1]  # Variance of control variate
+        cov = models_cov[0, 1]  # Covariance between the main model and the control variate
+        var_model = models_cov[0, 0]  # Variance of main model
+        var_cv = models_cov[1, 1]  # Variance of control variate
 
         # Compute expectation of control variate if it is not known.
         if self.expectation_cv is None:
@@ -185,7 +188,7 @@ class ControlVariatesIterator(Iterator):
             # num_samples to num_samples_cv.
             if self.use_optimal_num_samples:
                 # Correlation coefficient between the main model and the control variate.
-                correlation_coefficient = cov / np.sqrt(var_model0 * var_model1)
+                correlation_coefficient = cov / np.sqrt(var_model * var_cv)
                 if correlation_coefficient >= 0.99999:
                     _logger.warning(
                         "The correlation between input models is perfect, do not use "
@@ -216,7 +219,7 @@ class ControlVariatesIterator(Iterator):
 
         # Calculate coefficient that determines how much the control variate influences
         # the control variate mean estimator.
-        cv_influence_coeff = cov / (var_model1 + self.num_samples * self.variance_cv_mean_estimator)
+        cv_influence_coeff = cov / (var_cv + self.num_samples * self.variance_cv_mean_estimator)
 
         # Calculate estimated mean of mean function with control variates estimator.
         mean = (
@@ -224,7 +227,7 @@ class ControlVariatesIterator(Iterator):
         ).mean() + cv_influence_coeff * self.expectation_cv
 
         # Calculate the variance of control variates estimator.
-        var_estimator = 1 / self.num_samples * (var_model0 - cv_influence_coeff * cov)
+        var_estimator = 1 / self.num_samples * (var_model - cv_influence_coeff * cov)
 
         self.output = {
             "mean": mean,
@@ -232,11 +235,11 @@ class ControlVariatesIterator(Iterator):
             "num_samples_cv": self.num_samples_cv,
             "mean_cv": self.expectation_cv,
             "std_cv_mean_estimator": self.variance_cv_mean_estimator**0.5,
-            "alpha": cv_influence_coeff,
+            "cv_influence_coeff": cv_influence_coeff,
         }
 
         if self.use_optimal_num_samples:
-            self.output["beta"] = sample_ratio
+            self.output["sample_ratio"] = sample_ratio
 
     def post_run(self):
         """Write results to result file."""

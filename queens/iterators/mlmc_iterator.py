@@ -37,16 +37,15 @@ class MLMCIterator(Iterator):
     model is set by the user.
 
     The multilevel Monte Carlo (MLMC) estimator is given by
-    :math:`\hat{\mu}_\mathrm{MLMC} = \underbrace{\frac{1}{N_{0}} \sum_{i=1}^{N_{0}} f_{0}(y^{(0,
+    :math:`\hat{\mu}_\mathrm{MLMC} = \underbrace{\frac{1}{N_{0}} \sum_{i=1}^{N_{0}} f_{0}(x^{(0,
     i)})}_\textrm{estimator 0} + \sum_{l=1}^{L} \underbrace{\bigg \{ \frac{1}{N_{l}} \sum_{i=1}^{N_
-    {l}} \Big (  f_{l}(y^{(l, i)}) - f_{l-1}(y^{(l, i)})  \Big ) \bigg \}}_{\textrm{estimator }l}`
-    Where :math:`f_{i}` are the models with increasing fidelity as :math:`i` increases.
-    :math:`N_{i}` are the number of samples on the :math:`i`-th estimator and :math:`y^{(l,i)}` is
+    {l}} \Big (  f_{l}(x^{(l, i)}) - f_{l-1}(x^{(l, i)})  \Big ) \bigg \}}_{\textrm{estimator }l}`
+    Where :math:`f_{l}` are the models with increasing fidelity as :math:`l` increases.
+    :math:`N_{l}` are the number of samples on the :math:`l`-th estimator and :math:`x^{(l,i)}` is
     the :math:`i`-th sample on the :math:`l`-th estimator.
 
     References:
         [1] M. B. Giles. "Multilevel Monte Carlo methods". Acta Numerica, 2018.
-
 
     Attributes:
         seed (int): Seed for random number generation.
@@ -63,16 +62,19 @@ class MLMCIterator(Iterator):
         samples (list(np.array)): List of samples for each estimator.
         output (dict): Output dict with the following entries:
 
+                        * ``mean`` (float): MLMC estimator.
+                        * ``var`` (float): Variance of the MLMC estimator.
+                        * ``std`` (float): Standard deviation of the MLMC estimator.
                         * ``result`` (np.array): Evaluated samples of each estimator.
                         * ``mean_estimators`` (list): Estimated mean of each estimator.
                         * ``var_estimators`` (list): Variance of each estimator.
-                        * ``mean`` (float): Estimated mean of the MLMC estimtaor.
-                        * ``var`` (float): Variance of the MLMC estimator.
-                        * ``std`` (float): Standard deviation of the MLMC estimator.
                         * ``num_samples`` (list): Number of evaluated samples of each estimator.
+                        * ``std_bootstrap`` (float): Bootstrap approximation of the calculated MLMC
+                                                     estimator standard deviation. This value is not
+                                                     computed if num_bootstrap_samples is 0.
 
         cost_estimators (list(float)): The relative cost of each estimator. The i-th
-                                       entry of the list corresponds to the i-the estimator.
+                                       entry of the list corresponds to the i-th estimator.
         use_optimal_num_samples (bool): Sets the mode of the iterator to either using num_samples as
                                         the number of model evaluations on each estimator or using
                                         num_samples as initial samples to calculate the optimal
@@ -145,7 +147,6 @@ class MLMCIterator(Iterator):
                 cost_models[i] + cost_models[i - 1] for i in range(1, len(cost_models))
             ]
 
-        # Assign attributs.
         self.seed = seed
         self.models = models
         self.num_samples = num_samples
@@ -170,7 +171,7 @@ class MLMCIterator(Iterator):
             num_samples (list(int)): Number of samples to draw for each estimator.
 
         Returns:
-            samples (list(np.array)): Drawn samples on for each estimator.
+            samples (list(np.array)): Drawn samples for each estimator.
         """
         samples = []
 
@@ -273,15 +274,14 @@ class MLMCIterator(Iterator):
 
             # Iteration on estimators 1,2,3 ... n
             for i, samples in enumerate(additional_samples[1:], 1):
-                if num_samples_additional[i] == 0:
-                    continue
-                results_estimators[i] = np.concatenate(
-                    (
-                        results_estimators[i],
-                        self.models[i].evaluate(samples)["result"]
-                        - self.models[i - 1].evaluate(samples)["result"],
+                if num_samples_additional[i] > 0:
+                    results_estimators[i] = np.concatenate(
+                        (
+                            results_estimators[i],
+                            self.models[i].evaluate(samples)["result"]
+                            - self.models[i - 1].evaluate(samples)["result"],
+                        )
                     )
-                )
 
             # Update num_samples with additional samples and update estimator statistics.
             self.num_samples = self.num_samples + num_samples_additional
@@ -290,12 +290,12 @@ class MLMCIterator(Iterator):
             )
 
         self.output = {
-            "result": results_estimators,
-            "mean_estimators": mean_estimators,
-            "var_estimators": var_estimators,
             "mean": mean,
             "var": std**2,
             "std": std,
+            "result": results_estimators,
+            "mean_estimators": mean_estimators,
+            "var_estimators": var_estimators,
             "num_samples": self.num_samples,
         }
 
