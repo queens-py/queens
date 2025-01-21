@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -365,6 +365,7 @@ def get_module_class(module_options, valid_types, code, module_type_specifier="t
     Args:
         module_options (dict): Module options
         valid_types (dict): Dict of valid types with corresponding module paths and class names
+        code (QueensPythonCode): Object to store the code in
         module_type_specifier (str): Specifier for the module type
 
     Returns:

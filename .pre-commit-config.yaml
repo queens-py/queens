@@ -1,5 +1,12 @@
 default_stages: [pre-commit, pre-merge-commit, pre-push, manual]
 repos:
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.9.2 # Ruff version
+    hooks:
+      # Run the linter.
+      # Needs to placed before black, isort, and other formatters
+      - id: ruff
+        args: [ --fix ]
   - repo: local
     hooks:
       - id: trailing-whitespace
@@ -24,12 +31,6 @@ repos:
         language: python
         types: ["python"]
         pass_filenames: true
-      - id: pydocstyle
-        name: pydocstyle
-        entry: pydocstyle
-        language: python
-        types: ["python"]
-        additional_dependencies: ["toml"]
       - id: docformatter
         name: docformatter
         entry: docformatter

@@ -39,7 +39,7 @@ jobs:
         uses: ./.github/actions/create_python_environment
       - name: Get Python package manager
         run: echo "PYTHON_PACKAGE_MANAGER=${{steps.environment.outputs.ppm}}" >> $GITHUB_ENV
-      - name: Codechecks
+      - name: Code checks
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
 
@@ -53,12 +53,15 @@ jobs:
 
           echo "::group::Run pylint..."
           pylint --rcfile=.pylintrc_ci queens tests
-          # pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
+          echo "::endgroup::"
+
+          echo "::group::Run ruff..."
+          ruff check
           echo "::endgroup::"
 
           # echo "::group::Create code quality report..."
+          # pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
-          # pydocstyle --match-dir='^(?!.*test).*$' queens
           # echo "::endgroup::"
 
           echo "::group::Check compatibility with licenses of dependencies..."

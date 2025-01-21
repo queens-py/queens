@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -147,7 +147,7 @@ class FullRankNormalVariational(VariationalDistribution):
 
         Args:
             variational_parameters (np.ndarray): Variational parameters
-            n_draw (int): Number of samples to draw
+            n_draws (int): Number of samples to draw
 
         Returns:
             samples (np.ndarray): Row-wise samples of the variational distribution

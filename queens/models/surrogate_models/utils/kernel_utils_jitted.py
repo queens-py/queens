@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -37,7 +37,7 @@ def squared_exponential(x_train_mat, hyper_param_lst):
     Args:
         x_train_mat (np.array): Training input points for the GP. Row-wise samples are stored,
                                 different columns correspond to different input dimensions.
-        hyper_params_lst (lst): List with the hyper-parameters for the kernel
+        hyper_param_lst (lst): List with the hyper-parameters for the kernel
 
     Returns:
         k_mat (np.array): Assembled covariance matrix of the GP
@@ -191,7 +191,7 @@ def posterior_var_squared_exponential(
                     columns correspond to different dimensions.
         x_train_mat (np.array): Training input points for the GP. Individual samples row-wise,
                                 columns correspond to different dimensions.
-        hyper_param_lst
+        hyper_param_lst (lst): List with the hyper-parameters of the kernel
         support (str): Support type for the posterior distribution. For 'y' the posterior
                     is computed w.r.t. the output data; For 'f' the GP is computed w.r.t. the
                     latent function f.
@@ -235,7 +235,7 @@ def grad_posterior_var_squared_exponential(
                     columns correspond to different dimensions.
         x_train_mat (np.array): Training input points for the GP. Individual samples row-wise,
                                 columns correspond to different dimensions.
-        hyper_param_lst
+        hyper_param_lst (lst): List with the hyper-parameters of the kernel
 
     Returns:
         grad_posterior_variance (np.array): Gradient of the posterior variance
@@ -333,7 +333,7 @@ def matern_3_2(x_train_mat, hyper_param_lst):
     Args:
         x_train_mat (np.array): Training input points for the GP. Row-wise samples are stored,
                                 different columns correspond to different input dimensions.
-        hyper_params_lst (lst): List with the hyper-parameters for the kernel
+        hyper_param_lst (lst): List with the hyper-parameters for the kernel
 
     Returns:
         k_mat (np.array): Assembled covariance matrix of the GP
@@ -450,7 +450,7 @@ def posterior_var_matern_3_2(
                     columns correspond to different dimensions.
         x_train_mat (np.array): Training input points for the GP. Individual samples row-wise,
                                 columns correspond to different dimensions.
-        hyper_param_lst
+        hyper_param_lst (lst): List with the hyper-parameters of the kernel
         support (str): Support type for the posterior distribution. For 'y' the posterior
                     is computed w.r.t. the output data; For 'f' the GP is computed w.r.t. the
                     latent function f.

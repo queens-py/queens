@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -45,7 +45,7 @@ def assemble_rsync_command(
         verbose (bool): true for verbose
         rsh (str): remote ssh command
         host (str): host where to copy the files to
-            rsync_options (list): additional rsync options
+        rsync_options (list): additional rsync options
 
     Returns:
         str command to run rsync

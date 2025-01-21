@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -324,7 +324,7 @@ class ParticlesChopinDistribution(dists.ProbDist):
         """Ppf of the distribution.
 
         Args:
-            x (np.ndarray): Input locations
+            u (np.ndarray): Input locations
 
         Returns:
             np.ndarray: ppf values

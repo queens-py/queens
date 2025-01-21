@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -61,6 +61,8 @@ class BmfmcInterface:
                            *support=f*  the Gaussian process predicts w.r.t. the latent function
                            *f*. For the choice of *support=y* we predict w.r.t. the
                            simulation/experimental output *y*
+            full_cov (bool): Boolean that specifies whether the entire posterior covariance matrix
+                             should be returned or only the posterior variance
             gradient_bool (bool): Flag to determine whether the gradient of the function at
                                   the evaluation point is expected (*True*) or not (*False*)
 

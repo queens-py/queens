@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -100,6 +100,7 @@ class SobolIndexGPUncertaintyIterator(Iterator):
             num_procs (int, opt): number of processors
             second_order (bool, opt): true if second-order indices are calculated
             third_order (bool, opt): true if third-order indices only are calculated
+            additional_options: Additional keyword arguments.
         """
         super().__init__(model, parameters, global_settings)
 

@@ -52,7 +52,7 @@ will lead to failing CI pipelines and will therefore not be merged.
 The code checks are conducted with [Pylint](https://pylint.org/),
 [isort](https://github.com/PyCQA/isort), and [Black](https://github.com/psf/black).
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
-is checked with [pydocstyle](https://github.com/PyCQA/pydocstyle).
+is checked with [ruff](https://github.com/astral-sh/ruff).
 Complete and meaningful docstrings are required as they are used to generate the
 [documentation](#reading-and-writing-documentation).
 

@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -17,7 +17,7 @@
 import sys
 from pathlib import Path
 
-import gitlab
+import gitlab  # pylint: disable=import-error
 
 CHANGE_KEY = "change:"
 
@@ -28,6 +28,7 @@ def create_section(name, link, date, message, header_symbol, newline=True):
     Args:
         name (str): Name of the tag
         link (str): Link of the tag
+        date (obj): Date of the tag
         message (str): Tag message
         header_symbol (str): Symbol of the section
         newline (bool): Add newline after the section name

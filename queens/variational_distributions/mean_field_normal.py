@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -112,7 +112,7 @@ class MeanFieldNormalVariational(VariationalDistribution):
     def _grad_reconstruct_distribution_parameters(self, variational_parameters):
         """Gradient of the parameter reconstruction.
 
-         Args:
+        Args:
             variational_parameters (np.ndarray): Variational parameters
 
         Returns:

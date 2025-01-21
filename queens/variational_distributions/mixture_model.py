@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -92,7 +92,7 @@ class MixtureModelVariational(VariationalDistribution):
 
         Args:
             component_parameters_list (list): List of the component parameters of the components
-            probabilities (np.ndarray): Probabilities of the distribution
+            weights (np.ndarray): Probabilities of the distribution
 
         Returns:
             variational_parameters (np.ndarray): Variational parameters

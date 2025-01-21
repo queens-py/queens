@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -442,6 +442,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         such that the final result is the deformed grid at the specified time.
 
         Args:
+            raw_data (obj): Raw data from file
             time (float): Time value for data processing
 
         Returns:

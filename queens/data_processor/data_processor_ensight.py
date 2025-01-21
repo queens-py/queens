@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -445,6 +445,7 @@ class DataProcessorEnsight(DataProcessor):
         """Load a vtk-object from the ensight file.
 
         Args:
+            raw_data (obj): Raw data from file
             target_time (float): Time the field should be evaluated on
 
         Returns:
@@ -488,7 +489,7 @@ class DataProcessorEnsight(DataProcessor):
         This method uses the QUEENS external geometry module.
 
         Args:
-            external_geometry_obj (queens.fourc_dat_geometry)
+            external_geometry (queens.fourc_dat_geometry): QUEENS external geometry object
 
         Returns:
             dict: set with 4C topology

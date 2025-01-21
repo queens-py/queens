@@ -17,6 +17,6 @@ pydata-sphinx-theme
 pandoc
 pip-tools
 commitizen>=3.12.0
-pydocstyle>=6.3.0
 docformatter>=1.5.1
 yamllint>=1.19.0
+ruff

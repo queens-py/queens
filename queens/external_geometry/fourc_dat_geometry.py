@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -1153,7 +1153,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
         I.e.e its node mappings, based on the type of the geometric set.
 
         Args:
-            geo_set_name_type:
+            geo_set_name_type (str): Name of the geometric set type.
 
         Returns:
             my_topology (lst): List with desired geometric topology

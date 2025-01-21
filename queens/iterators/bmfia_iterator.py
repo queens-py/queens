@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -397,6 +397,7 @@ class BMFIAIterator(Iterator):
                               and colum-wise variable dimensions.
             y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
                                  Columns are different dimensions of the output.
+            coords_mat (np.array): Coordinates matrix.
 
         Returns:
             z_mat (np.array): Extended low-fidelity matrix containing
@@ -454,7 +455,7 @@ class BMFIAIterator(Iterator):
     def _get_time_features(self, _, y_lf_mat, __):
         """Get the low-fidelity feature matrix with time features.
 
-         Args:
+        Args:
             y_lf_mat (np.array): Low-fidelity output matrix with row-wise model realizations.
                                  Columns are different dimensions of the output.
 

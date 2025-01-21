@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -117,7 +117,9 @@ class RemoteConnection(Connection):
 
         Args:
             func (Function): function that is executed
+            func_args: Additional arguments for the functools.partial function
             wait (bool): Flag to decide whether to wait for result of function
+            func_kwargs: Additional keyword arguments for the functools.partial function
         Returns:
             return_value (obj): Return value of function
         """

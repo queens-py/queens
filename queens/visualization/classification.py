@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -277,6 +277,7 @@ class ConditionalDecisionBoundaryDisplay(DecisionBoundaryDisplay):
             ylabel (str, optional): Label for the y-axis. Defaults to None.
             axes (Matplotlib axes, optional): Axes object to plot on. If `None`, a new figure and
                                             axes is created. Defaults to None.
+            kwargs: Additional keyword arguments for DecisionBoundaryDisplay parent class
 
         Returns:
             sklearn.inspection.DecisionBoundaryDisplay object
