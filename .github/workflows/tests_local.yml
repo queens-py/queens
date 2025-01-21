@@ -2,6 +2,8 @@
 name: tests_local
 
 on:
+  schedule:
+    - cron: '0 1 * * *'
   pull_request:
   push:
     branches:
@@ -27,6 +29,19 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y rsync
+      - name: Check compatibility of licenses of dependencies
+        id: license_check_report
+        uses: pilosus/action-pip-license-checker@v2
+        with:
+          requirements: requirements.txt,dev-requirements.txt
+          fail: StrongCopyleft,NetworkCopyleft
+          # eclude StrongCopyleft dependencies whose source code is not imported
+          exclude: '(?i)^(docutils|pylint).*'
+          fails-only: true
+          verbose: 1
+      - name: Print non-compatible dependencies
+        if: ${{ always() }}
+        run: echo "${{ steps.license_check_report.outputs.report }}"
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/build/4C config/4C
@@ -40,16 +55,39 @@ jobs:
       - name: Codechecks
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
-          isort --check-only queens tests > track_isort.txt 2>&1
-          black --check queens tests > track_black.txt 2>&1
-          pylint --rcfile=.pylintrc_ci queens tests | tee track_pylint.txt 2>&1
-          pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
-          python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
-          pydocstyle --match-dir='^(?!.*test).*$' queens > track_pydocstyle.txt 2>&1
+
+          echo "::group::Run isort..."
+          isort --check-only queens tests
+          echo "::endgroup::"
+
+          echo "::group::Run black..."
+          black --check queens tests
+          echo "::endgroup::"
+
+          echo "::group::Run pylint..."
+          pylint --rcfile=.pylintrc_ci queens tests
+          # pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
+          echo "::endgroup::"
+
+          # echo "::group::Create code quality report..."
+          # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
+          # pydocstyle --match-dir='^(?!.*test).*$' queens
+          # echo "::endgroup::"
+
+          echo "::group::Create an rc file for the license header check..."
+          python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
+          echo "::endgroup::"
+      - name: Check License headers
+        uses: apache/skywalking-eyes/header@v0.4.0
       - name: Run pytest
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
+      - name: Upload coverage report
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: html_coverage_report
+          retention-days: 7
       - name: Publish junit pytest report
         uses: mikepenz/action-junit-report@v5
         if: success() || failure() # always run even if the previous step fails
