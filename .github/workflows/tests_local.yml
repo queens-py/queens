@@ -29,19 +29,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y rsync
-      - name: Check compatibility of licenses of dependencies
-        id: license_check_report
-        uses: pilosus/action-pip-license-checker@v2
-        with:
-          requirements: requirements.txt,dev-requirements.txt
-          fail: StrongCopyleft,NetworkCopyleft
-          # eclude StrongCopyleft dependencies whose source code is not imported
-          exclude: '(?i)^(docutils|pylint).*'
-          fails-only: true
-          verbose: 1
-      - name: Print non-compatible dependencies
-        if: ${{ always() }}
-        run: echo "${{ steps.license_check_report.outputs.report }}"
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/build/4C config/4C
@@ -73,6 +60,10 @@ jobs:
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
           # pydocstyle --match-dir='^(?!.*test).*$' queens
           # echo "::endgroup::"
+
+          echo "::group::Check compatibility with licenses of dependencies..."
+          liccheck -r requirements.txt
+          echo "::endgroup::"
 
           echo "::group::Create an rc file for the license header check..."
           python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
