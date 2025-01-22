@@ -80,7 +80,8 @@ jobs:
       - name: Upload coverage report
         uses: actions/upload-pages-artifact@v3
         with:
-          path: html_coverage_report
+          name: html-coverage-report
+          path: html_coverage_report/
           retention-days: 7
       - name: Publish junit pytest report
         uses: mikepenz/action-junit-report@v5
