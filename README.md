@@ -10,11 +10,9 @@
 
 <div align="center">
 
-[![QUEENS-website](https://img.shields.io/badge/QUEENS-website-5cbbfe?logo=book)](https://www.queens-py.org/)
-[![QUEENS-documentation](https://img.shields.io/badge/QUEENS-documentation-5cbbfe?logo=book)](https://queens-py.github.io/queens)
-[![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit)](https://github.com/pre-commit/pre-commit)
-[![black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
-[![pylint](https://img.shields.io/badge/linting-pylint-yellowgreen)](https://github.com/pylint-dev/pylint)
+[![precommit](./doc/source/images/precommit_badge.svg)](https://github.com/pre-commit/pre-commit)
+[![black](./doc/source/images/black_badge.svg)](https://github.com/psf/black)
+[![pylint](./doc/source/images/pylint_badge.svg)](https://github.com/pylint-dev/pylint)
 
 </div>
 
@@ -43,6 +41,10 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 * easy switching between analysis types
 * smooth scaling from laptop to HPC cluster
 <!---capabilities marker, do not remove this comment-->
+
+:globe_with_meridians: **Website**: [queens-py.org](https://www.queens-py.org)
+
+:book: **Documentation**: [queens-py.github.io/queens](https://queens-py.github.io/queens)
 
 ## :rocket: Getting started
 
