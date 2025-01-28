@@ -46,7 +46,7 @@ class RLIterator(Iterator):
     """
 
     @log_init_args
-    def __init__(self, model, parameters, global_settings, result_description=None):
+    def __init__(self, model, parameters, global_settings, result_description=None, mode='training', eval_steps=1000, initial_observation=None):
         """Initialize an RLIterator.
 
         TODO:
@@ -77,6 +77,55 @@ class RLIterator(Iterator):
 
         self.result_description = result_description
 
+        if not mode in ['training', 'evaluation']:
+            raise ValueError(
+                f'Unsupported mode: {mode}\n'
+                'The mode must be either `training` or `evaluation`.'
+            )
+        self._mode = mode
+        self._eval_steps = eval_steps
+        self._initial_observation = initial_observation
+
+    @property
+    def mode(self):
+        """str: Mode of the RLIterator."""
+        return self._mode
+    
+    @mode.setter
+    def mode(self, mode):
+        """Set the mode of the RLIterator."""
+        if not mode in ['training', 'evaluation']:
+            raise ValueError(
+                f'Unsupported mode: {mode}\n'
+                'The mode must be either `training` or `evaluation`.'
+            )
+        self._mode = mode
+
+    @property
+    def eval_steps(self):
+        """int: Number of evaluation steps to be performed."""
+        return self._eval_steps
+    
+    @eval_steps.setter
+    def eval_steps(self, eval_steps):
+        """Set the number of evaluation steps."""
+        if eval_steps < 0:
+            raise ValueError(
+                f'Unsupported number of evaluation steps: {eval_steps}\n'
+                'The number of evaluation steps must be a positive integer.'
+            )
+        self._eval_steps = eval_steps
+
+    @property
+    def initial_observation(self):
+        """np.ndarray: Initial observation of the environment."""
+        return self._initial_observation
+    
+    @initial_observation.setter
+    def initial_observation(self, initial_observation):
+        """Set the initial observation of the environment."""
+        self._initial_observation = initial_observation
+
     def pre_run(self):
         """Pre run portion of RLIterator."""
         _logger.info("Initialize RLIterator.")
@@ -84,11 +133,29 @@ class RLIterator(Iterator):
     def core_run(self):
         """Core run of RLIterator."""
         _logger.info("Welcome to Reinforcement Learning core run.")
-        start = time.time()
-        # Start the model training
-        self.model.train()
-        end = time.time()
-        _logger.info("Agent training took %E seconds.", end - start)
+        if self._mode == 'training':
+            _logger.info("Starting agent training.")
+            start = time.time()
+            # Start the model training
+            self.model.train()
+            end = time.time()
+            _logger.info("Agent training took %E seconds.", end - start)
+        else: # self._mode == 'evaluation'
+            _logger.info("Starting agent evaluation.")
+            if self._initial_observation is None:
+                _logger.debug(
+                    "No initial observation provided.\n"
+                    "Resetting environment to generate an initial observation."
+                )
+                obs = self.model.get_initial_observation()
+            else: # initial observation has been provided by the user
+                _logger.debug("Using provided initial observation.")
+                obs = self._initial_observation
+            start = time.time()
+            for _ in range(self._eval_steps):
+                obs = self.model.eval(obs)
+            end = time.time()
+            _logger.info("Agent evaluation took %E seconds.", end - start)
 
     def post_run(self):
         """Post run portion of RLIterator."""
