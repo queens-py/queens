@@ -26,7 +26,7 @@ class PredefinedGymModel(RLModel):
         self.env = gym.make(env_name, **env_kwargs)
 
         # Pass all arguments to the constructor of the parent class
-        super().__init__(self.env, agent=agent, agent_kwargs=agent_kwargs, policy=policy, total_timesteps=total_timesteps, render_on_evaluation=render_on_evaluation, render_args=render_args)
+        super().__init__(self.env, agent=agent, agent_options=agent_kwargs, policy=policy, total_timesteps=total_timesteps, render_on_evaluation=render_on_evaluation, render_args=render_args)
 
     def setup(self):
         """Setup the model for training."""

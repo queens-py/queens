@@ -15,9 +15,11 @@ class RLModel(Model):
     """
 
     @log_init_args
-    def __init__(self, env, agent='PPO', policy='MlpPolicy', total_timesteps=10000, agent_kwargs={}, render_on_evaluation=False, render_args=()):
+    def __init__(self, env, agent='PPO', policy='MlpPolicy', total_timesteps=10000, agent_options={}, render_on_evaluation=False, render_args=()):
         """TODO"""
         super().__init__()
+
+        self.is_trained = False
 
         # Check that a valid agent has been provided
         agent = agent.upper()
@@ -37,7 +39,7 @@ class RLModel(Model):
         # Store the environment instance (this is a gymnasium environment)
         self._env = env
         # Instantiate the stable-baselines3 agent
-        self._agent = agent_class(policy, self._env, **agent_kwargs)
+        self._agent = agent_class(policy, self._env, **agent_options)
         # Retrieve a (vectorized) stable-baseline3 environment for evaluation
         self._vec_env = self._agent.get_env()
 
@@ -45,7 +47,7 @@ class RLModel(Model):
         self._render_on_evaluation = render_on_evaluation
         self._render_args = render_args
 
-    def step(self, observation):
+    def eval(self, observation):
         """Interaction step of a (trained) RL agent with an environment.
 
         Args:
@@ -60,8 +62,8 @@ class RLModel(Model):
         _logger.info(
             'Computing one agent-enviroment interaction (i.e., one timestep).'
         )
-        action, _state = self.evaluate(observation)
-        obs, reward, done, info = self._step(action)
+        result = self.predict(observation)
+        obs, reward, done, info = self.step(result["action"])
         if self._render_on_evaluation:
             self._render(self._render_args)
         _logger.info('Interaction completed.')
@@ -79,26 +81,39 @@ class RLModel(Model):
             "the `grad` method in the child class."
         )
     
-    def evaluate(self, observation):
+    def evaluate(self, samples):
+        """Evaluate model with current set of input samples.
+
+        Args:
+            samples (np.ndarray): Input samples, i.e., multiple observations
+
+        Returns:
+            dict: Results and actions corresponding to current set of input samples
+        """
+        # TODO make sure that an RLModel can handle multiple observations 
+        # (i.e., loop over all entries in observation here)
+        self.response = self.predict(samples)
+    
+    def predict(self, observation):
         """Make a single prediction with the trained RL agent.
         
         Args:
             observation (np.ndarray): Observation
 
         Returns:
-            action (np.ndarray): Action to be executed based on the current 
-                                 state of the environment
-            state (np.ndarray): TODO
+            dict: Results and actions corresponding to current set of input samples
         """
         _logger.debug(
             'Predicting the next action based on the current state of the environment.'
         )
-        # TODO make sure that an RLModel can handle multiple observations 
-        # (i.e., loop over all entries in observation here)
-        self.response = self._agent.predict(observation)
+        # Predict the agent's action and the new state of the environment 
+        # based on the current observation
+        action, state = self._agent.predict(observation)
+        # combine information in a dict
         result = {
-            "result": self.response[0],
-            "state": self.response[1]
+            "result": action,  # this is redundant, but kept for compatibility
+            "action": action,  
+            "state": state,
         }
         return result
     
@@ -111,7 +126,7 @@ class RLModel(Model):
             "or implement the `_render` method in the child class."
         )
 
-    def _step(self, action):
+    def step(self, action):
         """Execute a single step in the environment.
 
         Args:
@@ -142,3 +157,4 @@ class RLModel(Model):
         # Train the agent for the desired number of timesteps
         self._agent.learn(total_timesteps=self._total_timesteps)
         _logger.info('Training completed.')
+        self.is_trained = True
