@@ -33,6 +33,6 @@ class PredefinedGymModel(RLModel):
         _logger.info('Setting up the model for training')
         _logger.debug('Nothing to be setup for model `PredefinedGymModel`.')
 
-    def _render(self, *render_args):
+    def render(self, *render_args):
         """Render the current state of the environment."""
         self._vec_env.render(*render_args)

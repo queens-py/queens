@@ -46,7 +46,7 @@ class RLIterator(Iterator):
     """
 
     @log_init_args
-    def __init__(self, model, parameters, global_settings, result_description=None, mode='training', eval_steps=1000, initial_observation=None):
+    def __init__(self, model, parameters, global_settings, result_description=None, mode='training', interaction_steps=1000, initial_observation=None):
         """Initialize an RLIterator.
 
         TODO:
@@ -83,7 +83,7 @@ class RLIterator(Iterator):
                 'The mode must be either `training` or `evaluation`.'
             )
         self._mode = mode
-        self._eval_steps = eval_steps
+        self._interaction_steps = interaction_steps
         self._initial_observation = initial_observation
 
     @property
@@ -102,19 +102,19 @@ class RLIterator(Iterator):
         self._mode = mode
 
     @property
-    def eval_steps(self):
-        """int: Number of evaluation steps to be performed."""
-        return self._eval_steps
+    def interaction_steps(self):
+        """int: Number of interaction steps to be performed."""
+        return self._interaction_steps
     
-    @eval_steps.setter
-    def eval_steps(self, eval_steps):
-        """Set the number of evaluation steps."""
+    @interaction_steps.setter
+    def interaction_steps(self, eval_steps):
+        """Set the number of interaction steps."""
         if eval_steps < 0:
             raise ValueError(
-                f'Unsupported number of evaluation steps: {eval_steps}\n'
-                'The number of evaluation steps must be a positive integer.'
+                f'Unsupported number of interaction steps: {eval_steps}\n'
+                'The number of interaction steps must be a positive integer.'
             )
-        self._eval_steps = eval_steps
+        self._interaction_steps = eval_steps
 
     @property
     def initial_observation(self):
@@ -141,7 +141,7 @@ class RLIterator(Iterator):
             end = time.time()
             _logger.info("Agent training took %E seconds.", end - start)
         else: # self._mode == 'evaluation'
-            _logger.info("Starting agent evaluation.")
+            _logger.info("Starting interaction loop.")
             if self._initial_observation is None:
                 _logger.debug(
                     "No initial observation provided.\n"
@@ -152,10 +152,11 @@ class RLIterator(Iterator):
                 _logger.debug("Using provided initial observation.")
                 obs = self._initial_observation
             start = time.time()
-            for _ in range(self._eval_steps):
-                obs = self.model.eval(obs)
+            # Perform as many interaction steps as set by the user
+            for _ in range(self._interaction_steps):
+                obs = self.model.interact(obs)
             end = time.time()
-            _logger.info("Agent evaluation took %E seconds.", end - start)
+            _logger.info("Interaction loop took %E seconds.", end - start)
 
     def post_run(self):
         """Post run portion of RLIterator."""
