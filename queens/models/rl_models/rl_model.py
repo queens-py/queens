@@ -47,7 +47,7 @@ class RLModel(Model):
         self._render_on_evaluation = render_on_evaluation
         self._render_args = render_args
 
-    def eval(self, observation):
+    def interact(self, observation):
         """Interaction step of a (trained) RL agent with an environment.
 
         Args:
@@ -65,7 +65,7 @@ class RLModel(Model):
         result = self.predict(observation)
         obs, reward, done, info = self.step(result["action"])
         if self._render_on_evaluation:
-            self._render(self._render_args)
+            self.render(self._render_args)
         _logger.info('Interaction completed.')
         return obs # TODO wrap in dict
     
@@ -118,7 +118,7 @@ class RLModel(Model):
         return result
     
     @abc.abstractmethod
-    def _render(self, *render_args):
+    def render(self, *render_args):
         """Render the current state of the environment."""
         raise NotImplementedError(
             "I can't render anything for the currently selected model.\n"
