@@ -28,6 +28,12 @@ For development, install the additional required packages via:
 
 > Note: We recommend using conda/mamba environments and installing performance-critical packages (e.g., numpy, scipy, ...) using `conda install <packagename>.` The reason for this is the choice of BLAS library (linear algebra packages). Conda (depending on the channel) installs numpy and the [mkl](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mkl-and-third-party-applications-how-to-use-them-together.html) library from Intel, in contrast to pip which defaults back to the linear algebra package installed on the system. According to certain benchmarks ([here](http://markus-beuckelmann.de/blog/boosting-numpy-blas.html) or [here](https://medium.com/analytics-vidhya/why-conda-install-instead-of-pip-install-ba4c6826a0ae)), the mkl library is able to outperform other linear algebra libraries, especially on Intel devices. Particularly for use cases where linear algebra operations dominate the computational costs, the benefit can be huge.
 
+To test for a successful installation, run the test suite:
+```
+pytest -n <number_of_workers>
+```
+Consult the [documentation of QUEENS tests](https://queens-py.github.io/queens/testing.html) for more details on testing.
+
 ## Citing QUEENS
 You used QUEENS for a publication? Don't forget to cite
 {{ extract_from_markdown_by_marker("citation", readme_path) }}
