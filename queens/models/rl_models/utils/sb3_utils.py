@@ -12,16 +12,32 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""TODO: Document this."""
+"""Utiltiy functions for working with *stable-baselines3* agents.
+
+This module provides utility functions for working with *stable-
+baselines3* agents in *QUEENS*. The idea is to enable a *QUEENS* user
+who is not familiar with the *stable-baselines* reinforcement learning
+library but wants to try out RL for their problem to easily create and
+use a reinforcement learning agent in *QUEENS* without first studying
+the package. If you are familiar with *stable-baselines3*, you can as
+well create the agents yourself.
+"""
 
 import inspect
 
-import gymnasium as gym
 import stable_baselines3 as sb3
 
 
 def _create_supported_agents_dict():
-    """TODO: Document this."""
+    """Create a dictionary of supported *stable-baselines3* agents.
+
+    In order to work even with updates of the *stable-baselines3* library, this
+    function dynamically looks up the supported agents based on the currently
+    installed library version.
+
+    Returns:
+        supported_agents (dict): A dictionary of the currently supported *stable-baselines3* agents.
+    """
     # Get all agent classes in the stable_baselines3 module
     supported_agents = {
         name: obj
@@ -35,7 +51,17 @@ _supported_sb3_agents = _create_supported_agents_dict()
 
 
 def get_supported_sb3_policies(agent_class):
-    """TODO: Document this."""
+    """Looks up the supported policies for a *stable-baselines3* agent class.
+
+    Args:
+        agent_class (class): A *stable-baselines3* agent class.
+
+    Returns:
+        list: A list of strings representing the supported policies for the given agent class.
+
+    Raises:
+        ValueError: If the provided class is not a *stable-baselines3* agent class.
+    """
     if issubclass(agent_class, sb3.common.base_class.BaseAlgorithm):
         return list(agent_class.policy_aliases.keys())
 
@@ -45,22 +71,29 @@ def get_supported_sb3_policies(agent_class):
     )
 
 
-_supported_gym_environments = list(gym.envs.registry.keys())
-
-
-def create_gym_environment(env_name, env_options):
-    """TODO: Document this."""
-    if env_name not in _supported_gym_environments:
-        raise ValueError(f"Environment `{env_name}` is not known to gymnasium")
-
-    # If the environment name is known, create an environment instance
-    env = gym.make(env_name, **env_options)
-
-    return env
-
-
 def create_sb3_agent(agent_name, policy_name, env, agent_options):
-    """TODO: Document this."""
+    """Creates a *stable-baselines3* agent based on its name as string.
+
+    Looks up whether the provided agent name corresponds to an agent supported by
+    *stable-baselines3* and creates an instance of the agent with the provided policy
+    and environment. Options for modifying the agent's optional parameters can be
+    provided as a dictionary.
+
+    Args:
+        agent_name (str): The name of the agent to create.
+        policy_name (str): The name of the policy to use with the agent.
+        env (gymnasium.Env): The environment to train the agent on. For a convenience
+            function to create a predefined *gymnasium* environment, see
+            :py:meth:`queens.models.rl_models.utils.gym_utils.create_gym_environment`.
+        agent_options (dict): A dictionary of optional parameters to pass to the agent.
+
+    Returns:
+        agent (stable_baselines3.BaseAlgorithm): An instance of the created agent.
+
+    Raises:
+        ValueError: If the provided agent name is not supported by *stable-baselines3*
+            or does not support the provided policy
+    """
     # Check that a valid agent has been provided
     agent_name = agent_name.upper()
     if agent_name not in _supported_sb3_agents.keys():
