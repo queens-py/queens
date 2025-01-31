@@ -14,9 +14,8 @@
 #
 """Models.
 
-The model package contains several types of models to be used in the
-context of multi-query analysis. Within QUEENS, the model returns its
-evaluations and possibly gradients.
+Map inputs to outputs, such as parameter samples to model evaluations
+and possibly gradients.
 """
 
 from queens.models.bmfmc_model import BMFMCModel

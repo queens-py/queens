@@ -14,7 +14,7 @@
 #
 """Data Processor.
 
-The data processor modules are used to extract data from simulation
+Extract and process data from various files, such as those containing
 model outputs.
 """
 

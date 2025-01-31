@@ -14,9 +14,8 @@
 #
 """Parameters.
 
-In the context of QUEENS, parameters are altered for the multi-query
-analysis. They can either be deterministic, random variables or random
-fields.
+Group parameters of various types, including deterministic variables,
+continuous random variables, and random fields.
 """
 
 from queens.parameters.parameters import Parameters

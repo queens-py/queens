@@ -15,8 +15,7 @@
 #
 """Drivers.
 
-This package contains a set of driver scripts, which are used to make
-the actual call to the simulation software.
+Execute simulation software.
 """
 
 from queens.drivers.fourc_driver import FourcDriver

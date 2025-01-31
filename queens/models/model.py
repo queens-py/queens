@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -22,10 +22,6 @@ import numpy as np
 
 class Model(metaclass=abc.ABCMeta):
     """Base Model class.
-
-        The model hierarchy contains a set of parameters, an interface,
-        and a set of responses. An iterator operates on the model to map
-        the variables into responses using the interface.
 
         As with the Iterator hierarchy, the purpose of this base class is
         twofold. One, it defines a unified interface for all derived classes.
