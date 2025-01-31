@@ -14,7 +14,7 @@
 #
 """Variational distributions.
 
-A probability distributions package for variational inference.
+Access probability distributions for variational inference.
 """
 
 from queens.variational_distributions.full_rank_normal import FullRankNormalVariational

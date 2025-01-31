@@ -14,7 +14,7 @@
 #
 """Stochastic optimizers.
 
-This package consists of a set of stochastic optimizers.
+Access a set of stochastic optimizers.
 """
 
 from queens.stochastic_optimizers.adam import Adam

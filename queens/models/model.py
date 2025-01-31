@@ -23,10 +23,6 @@ import numpy as np
 class Model(metaclass=abc.ABCMeta):
     """Base Model class.
 
-        The model hierarchy contains a set of parameters, an interface,
-        and a set of responses. An iterator operates on the model to map
-        the variables into responses using the interface.
-
         As with the Iterator hierarchy, the purpose of this base class is
         twofold. One, it defines a unified interface for all derived classes.
         Two, it acts as a factory for the instantiation of model objects.
