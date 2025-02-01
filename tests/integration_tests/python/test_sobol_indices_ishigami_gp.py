@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -68,6 +68,7 @@ def test_sobol_indices_ishigami_gp(global_settings):
         model=gpflow_regression_model,
         parameters=parameters,
         global_settings=global_settings,
+        skip_values=1024,
     )
 
     # Actual analysis
