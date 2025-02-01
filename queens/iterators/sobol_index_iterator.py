@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -65,7 +65,7 @@ class SobolIndexIterator(Iterator):
         num_bootstrap_samples,
         confidence_level,
         result_description,
-        skip_values=1024,
+        skip_values=None,
     ):
         """Initialize Saltelli SALib iterator object.
 
@@ -80,7 +80,9 @@ class SobolIndexIterator(Iterator):
             confidence_level (float): Confidence level for intervals.
             result_description (dict): Description of the desired results.
             skip_values (int or None): Number of points in Sobol' sequence to skip, ideally a value
-                                       of base 2 (default: 1024).
+                                       of base 2. None triggers the SALib default value:
+                                       a power of 2 >= N, or 16; whichever is greater.
+                                       (default: None).
         """
         super().__init__(model, parameters, global_settings)
 
