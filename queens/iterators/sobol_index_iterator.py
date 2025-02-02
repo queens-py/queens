@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2024, QUEENS contributors.
+# Copyright (c) 2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -40,6 +40,8 @@ class SobolIndexIterator(Iterator):
         seed (int): Seed for random number generator.
         num_samples (int): Number of samples.
         calc_second_order (bool): Whether to calculate second-order sensitivities.
+        skip_values (int or None): Number of points in Sobol' sequence to skip, ideally a value of
+                                   base 2 (default: 1024).
         num_bootstrap_samples (int): Number of bootstrap samples for confidence intervals.
         confidence_level (float): Confidence level for the intervals.
         result_description (dict): Description of the desired results.
@@ -63,6 +65,7 @@ class SobolIndexIterator(Iterator):
         num_bootstrap_samples,
         confidence_level,
         result_description,
+        skip_values=None,
     ):
         """Initialize Saltelli SALib iterator object.
 
@@ -76,12 +79,17 @@ class SobolIndexIterator(Iterator):
             num_bootstrap_samples (int): Number of bootstrap samples.
             confidence_level (float): Confidence level for intervals.
             result_description (dict): Description of the desired results.
+            skip_values (int or None): Number of points in Sobol' sequence to skip, ideally a value
+                                       of base 2. None triggers the SALib default value:
+                                       a power of 2 >= N, or 16; whichever is greater.
+                                       (default: None).
         """
         super().__init__(model, parameters, global_settings)
 
         self.seed = seed
         self.num_samples = num_samples
         self.calc_second_order = calc_second_order
+        self.skip_values = skip_values
         self.num_bootstrap_samples = num_bootstrap_samples
         self.confidence_level = confidence_level
         self.result_description = result_description
@@ -117,7 +125,7 @@ class SobolIndexIterator(Iterator):
             self.salib_problem,
             self.num_samples,
             calc_second_order=self.calc_second_order,
-            skip_values=1024,
+            skip_values=self.skip_values,
         )
         _logger.debug(self.samples)
 
