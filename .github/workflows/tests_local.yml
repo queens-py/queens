@@ -3,7 +3,7 @@ name: tests_local
 
 on:
   schedule:
-    - cron: '0 1 * * *'
+    - cron: "0 1 * * *"
   pull_request:
   push:
     branches:
@@ -71,10 +71,13 @@ jobs:
           echo "::group::Create an rc file for the license header check..."
           python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
           echo "::endgroup::"
-      - name: Check License headers
+      - name: Check license headers
         uses: apache/skywalking-eyes/header@v0.4.0
+      - name: Check conventional commit messages
+        uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
         run: |
+          echo "# Integration and unit tests" >> $GITHUB_STEP_SUMMARY
           $PYTHON_PACKAGE_MANAGER activate queens
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
       - name: Upload coverage report
