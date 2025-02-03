@@ -15,7 +15,7 @@
 #
 """Drivers.
 
-Execute simulation software.
+Modules for calling external simulation software.
 """
 
 from queens.drivers.fourc_driver import FourcDriver

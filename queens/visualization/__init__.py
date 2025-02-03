@@ -14,5 +14,5 @@
 #
 """Visualization.
 
-Visualize the results of various iterators.
+Modules for visualizing the iterator results.
 """

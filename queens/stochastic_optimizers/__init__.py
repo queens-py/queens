@@ -14,7 +14,7 @@
 #
 """Stochastic optimizers.
 
-Access a set of stochastic optimizers.
+Modules containing stochastic optimizers.
 """
 
 from queens.stochastic_optimizers.adam import Adam

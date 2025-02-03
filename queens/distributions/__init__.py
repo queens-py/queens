@@ -14,8 +14,7 @@
 #
 """Distributions.
 
-Sample from and compute probabilities for a variety of probability
-distributions.
+Modules for probability distributions.
 """
 
 from queens.distributions.bernoulli import BernoulliDistribution

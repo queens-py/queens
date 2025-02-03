@@ -14,8 +14,7 @@
 #
 """Schedulers.
 
-Submit computational jobs either through job-scheduling software or
-system calls.
+Modules for scheduling and submitting computational jobs.
 """
 
 from queens.schedulers.cluster_scheduler import ClusterScheduler

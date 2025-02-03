@@ -14,5 +14,5 @@
 #
 """Utils.
 
-Access a large collection of utilities used throughout QUEENS.
+Modules containing utilities used throughout QUEENS.
 """
