@@ -12,3 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
+"""Likelihood models.
+
+Modules for probabilistic likelihood models.
+"""

@@ -14,8 +14,8 @@
 #
 """Parameters.
 
-Group parameters of various types, including deterministic variables,
-continuous random variables, and random fields.
+Modules grouping deterministic and continuous random variables or random
+fields.
 """
 
 from queens.parameters.parameters import Parameters

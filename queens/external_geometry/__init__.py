@@ -14,8 +14,7 @@
 #
 """External geometry.
 
-Read in external geometry from simulation software to QUEENS for
-preprocessing.
+Modules for preprocessing geometry from external simulation software.
 """
 
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry

@@ -14,8 +14,8 @@
 #
 """Models.
 
-Map inputs to outputs, such as parameter samples to model evaluations
-and possibly gradients.
+Modules for multi-query mapping of inputs to outputs, such as parameter
+samples to model evaluations.
 """
 
 from queens.models.bmfmc_model import BMFMCModel

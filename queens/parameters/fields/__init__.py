@@ -12,7 +12,10 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Random Fields."""
+"""Random fields.
+
+Modules for random fields.
+"""
 
 from queens.parameters.fields.fourier_field import FourierRandomField
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField

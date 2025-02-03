@@ -14,8 +14,7 @@
 #
 """Data Processor.
 
-Extract and process data from various files, such as those containing
-model outputs.
+Modules for extracting and processing data from simulation output files.
 """
 
 from queens.data_processor.data_processor_csv import DataProcessorCsv

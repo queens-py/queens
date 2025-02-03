@@ -14,9 +14,8 @@
 #
 """Iterators.
 
-Access methods for parameter studies, uncertainty quantification,
-sensitivity analysis, Bayesian inverse analysis, and optimization. These
-methods iterate on QUEENS models in a multi-query fashion.
+Modules for parameter studies, uncertainty quantification, sensitivity
+analysis, Bayesian inverse analysis, and optimization.
 """
 
 from queens.iterators.black_box_variational_bayes import BBVIIterator

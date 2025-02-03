@@ -14,8 +14,8 @@
 #
 """Example simulator functions.
 
-This package contains a set of example simulator functions, which can be
-used for benchmarking.
+Modules containing example simulator functions for testing and
+benchmarking.
 """
 
 from queens.example_simulator_functions.agawal09 import agawal09a

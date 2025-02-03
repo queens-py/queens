@@ -14,7 +14,7 @@
 #
 """Variational distributions.
 
-Access probability distributions for variational inference.
+Modules containing probability distributions for variational inference.
 """
 
 from queens.variational_distributions.full_rank_normal import FullRankNormalVariational
