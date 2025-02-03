@@ -14,8 +14,7 @@
 #
 """Data Processor.
 
-The data processor modules are used to extract data from simulation
-model outputs.
+Modules for extracting and processing data from simulation output files.
 """
 
 from queens.data_processor.data_processor_csv import DataProcessorCsv

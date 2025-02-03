@@ -14,9 +14,7 @@
 #
 """Schedulers.
 
-The scheduler package contains a set of scheduler classes which submit
-compute jobs either through a job-scheduling software or through a
-system call.
+Modules for scheduling and submitting computational jobs.
 """
 
 from queens.schedulers.cluster_scheduler import ClusterScheduler

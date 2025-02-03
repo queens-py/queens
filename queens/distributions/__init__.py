@@ -14,7 +14,7 @@
 #
 """Distributions.
 
-Probability distribution modules of QUEENS.
+Modules for probability distributions.
 """
 
 from queens.distributions.bernoulli import BernoulliDistribution

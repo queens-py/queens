@@ -14,8 +14,7 @@
 #
 """Parameters.
 
-In the context of QUEENS, parameters are altered for the multi-query
-analysis. They can either be deterministic, random variables or random
+Modules grouping deterministic and continuous random variables or random
 fields.
 """
 

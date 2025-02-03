@@ -14,5 +14,5 @@
 #
 """Visualization.
 
-A set of modules to visualize results of different iterators.
+Modules for visualizing the iterator results.
 """
