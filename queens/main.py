@@ -50,7 +50,18 @@ def run(input_file, output_dir, debug=False):
         output_dir=output_dir,
         debug=debug,
     ) as global_settings:
-        # create iterator
+
+        # Inform user on new script approach
+        # Do not remove this from inside the context, otherwise logging will be missing.
+        _logger.warning(
+            "You started QUEENS from an input file. Consider using QUEENS as a library within a "
+            "Python script. You can generate a Python script from this input file using"
+            "\nqueens-input-to-script --input %s --output_dir %s --script_path queens_script.py\n",
+            input_file,
+            output_dir,
+        )
+
+        # Create iterator
         my_iterator = from_config_create_iterator(config, global_settings)
 
         end_time_input = time.time()
@@ -59,7 +70,7 @@ def run(input_file, output_dir, debug=False):
         _logger.info("Time for INPUT: %s s", end_time_input - start_time_input)
         _logger.info("")
 
-        # perform analysis
+        # Perform analysis
         run_iterator(my_iterator, global_settings)
 
 
@@ -98,15 +109,15 @@ def run_iterator(iterator, global_settings):
 
 def main():
     """Main function."""
-    # the first argument is the file name
+    # The first argument is the file name
     args = sys.argv[1:]
 
     if len(args) > 0:
-        # do QUEENS run
+        # Do QUEENS run
         input_file_path, output_dir, debug = get_cli_options(args)
         run(input_file_path, output_dir, debug)
     else:
-        # print some infos
+        # Print some infos
         print_greeting_message()
 
 
