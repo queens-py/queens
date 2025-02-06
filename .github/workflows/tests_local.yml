@@ -52,7 +52,7 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Run pylint..."
-          pylint --rcfile=.pylintrc_ci queens tests
+          pylint --rcfile=.pylintrc --disable=duplicate-code queens tests
           echo "::endgroup::"
 
           echo "::group::Run ruff..."
