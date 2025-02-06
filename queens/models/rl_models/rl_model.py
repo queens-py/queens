@@ -113,17 +113,27 @@ class RLModel(Model):
                                       the environment.
 
         Returns:
-            obs (np.ndarray): The next observation (of the new state of
-                the environment after the agent's action has been applied).
+            result (dict): A dictionary containing all the results generated during
+                this interaction step, such as the undertaken action, the new observation,
+                and the reward obtained from the environment.
         """
         _logger.info("Computing one agent-enviroment interaction (i.e., one timestep).")
         result = self.predict(observation)
         # return values are: observation, reward, done, info
-        obs, _, _, _ = self.step(result["action"])
+        obs, reward, done, info = self.step(result["action"])
         if self._render_on_evaluation:
             self.render()
         _logger.info("Interaction completed.")
-        return obs
+        # add the additional information to the result dict
+        result.update(
+            {
+                "observation": obs,
+                "reward": reward,
+                "done": done,
+                "info": info,
+            }
+        )
+        return result
 
     def get_initial_observation(self):
         """Returns a (random) initial state of the environment.
