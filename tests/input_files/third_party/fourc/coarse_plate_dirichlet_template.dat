@@ -55,29 +55,26 @@ VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 
 COMPONENT 0 SYMBOLIC_FUNCTION_OF_SPACE_TIME l
 VARIABLE 0 NAME l TYPE linearinterpolation NUMPOINTS 2 TIMES 0    1.0000 VALUES 0  2.5
 ------------------------------------DESIGN POINT DIRICH CONDITIONS
-DPOINT 4
 // dirich-point-fix-xyz
-E 1 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 1 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich-point-fix-z-pull-xy
-E 2 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 1 2 0
+E 2 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 1.0 0.0 FUNCT 1 2 0
 // dirich-point-fix-xz-pull-y
-E 3 - NUMDOF 3 ONOFF 1 1 1 VAL 0.0 1.0 0.0 FUNCT 0 2 0
+E 3 NUMDOF 3 ONOFF 1 1 1 VAL 0.0 1.0 0.0 FUNCT 0 2 0
 // dirich-point-fix-yz-pull-x
-E 4 - NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
+E 4 NUMDOF 3 ONOFF 1 1 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 -------------------------------------DESIGN LINE DIRICH CONDITIONS
-DLINE  4
 // dirich-line-fix-yz
-E 1 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 1 NUMDOF 3 ONOFF 0 1 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich-line-fix-xz
-E 2 - NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 2 NUMDOF 3 ONOFF 1 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 // dirich-line-fix-z-pull-y
-E 3 - NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0 0.0 FUNCT 0 2 0
+E 3 NUMDOF 3 ONOFF 0 1 1 VAL 0.0 1.0 0.0 FUNCT 0 2 0
 // dirich-line-fix-z-pull-x
-E 4 - NUMDOF 3 ONOFF 1 0 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
+E 4 NUMDOF 3 ONOFF 1 0 1 VAL 1.0 0.0 0.0 FUNCT 1 0 0
 -------------------------------------DESIGN SURF DIRICH CONDITIONS
-DSURF  1
 // dirich-surf-fix-z
-E 1 - NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
+E 1 NUMDOF 3 ONOFF 0 0 1 VAL 0.0 0.0 0.0 FUNCT 0 0 0
 -----------------------------------------------DNODE-NODE TOPOLOGY
 NODE    121 DNODE 1
 NODE    1 DNODE 2
