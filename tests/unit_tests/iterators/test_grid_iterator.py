@@ -238,15 +238,12 @@ def test_core_run(mocker, default_grid_iterator, expected_samples_two):
 def test_post_run(mocker, default_grid_iterator):
     """Test the post_run method of the GridIterator class."""
     # test if save results is called
+
+    visualization = Mock()
+    mp2 = mocker.patch.object(visualization, "plot_qoi_grid", return_value=1)
     mp1 = mocker.patch("queens.iterators.grid_iterator.write_results", return_value=None)
-    mocker.patch(
-        "queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance",
-    )
-    mp3 = mocker.patch(
-        "queens.visualization.grid_iterator_visualization.grid_iterator_visualization_instance"
-        ".plot_qoi_grid",
-        return_value=1,
-    )
+    default_grid_iterator.visualization = visualization
+
     default_grid_iterator.post_run()
     mp1.assert_called_once()
-    mp3.assert_called_once()
+    mp2.assert_called_once()

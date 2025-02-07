@@ -313,3 +313,14 @@ def fixture_global_settings(test_name, tmp_path):
     # wrap the tests in a global settings context
     with global_settings:
         yield global_settings
+
+
+@pytest.fixture(name="disable_matplot_show", autouse=True)
+def fixture_disable_matplotlib_show():
+    """Do not show plots in matplotlib gui during testing.
+
+    Note that the plots are still saved during testing.
+    """
+    import matplotlib  # pylint: disable=import-outside-toplevel
+
+    matplotlib.use("Agg")

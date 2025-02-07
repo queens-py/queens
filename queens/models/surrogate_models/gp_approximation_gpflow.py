@@ -247,7 +247,7 @@ class GPFlowRegressionModel(SurrogateModel):
         var = var.numpy() * self.scaler_y.var_
 
         output = {"result": mean.reshape(number_test_samples, -1), "x_test": x_test}
-        if support == "f" and full_cov is True:
+        if support == "f" and full_cov:
             output["variance"] = np.squeeze(var, axis=0)
             output["variance_diagonal"] = extract_block_diag(
                 np.squeeze(var, axis=0), output["result"].shape[1]

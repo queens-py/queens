@@ -228,7 +228,7 @@ class HeteroskedasticGPModel(SurrogateModel):
         mean, variance = self.model.predict_y(x_test)
         mean = mean.numpy()
         variance = variance.numpy()
-        if full_cov is True:
+        if full_cov:
             posterior_samples_y = []
             posterior_samples_mean, posterior_samples_noise = self.predict_f_samples(
                 x_test, self.num_samples_stats

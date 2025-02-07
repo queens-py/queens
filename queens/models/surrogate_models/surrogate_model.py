@@ -20,8 +20,8 @@ import logging
 import numpy as np
 from sklearn.model_selection import KFold
 
-import queens.visualization.surrogate_visualization as qvis
 from queens.models.model import Model
+from queens.visualization.surrogate_visualization import SurrogateVisualization
 
 _logger = logging.getLogger(__name__)
 
@@ -39,6 +39,7 @@ class SurrogateModel(Model):
         is_trained (bool): true if model is trained
         x_train (np.array): training inputs
         y_train (np.array): training outputs
+        visualization (SurrogateVisualization): Surrogate visualization object.
     """
 
     def __init__(
@@ -61,8 +62,10 @@ class SurrogateModel(Model):
         plotting options
         """
         super().__init__()
-        # visualization
-        qvis.from_config_create(plotting_options)
+
+        self.visualization = None
+        if plotting_options:
+            self.visualization = SurrogateVisualization.from_config_create(plotting_options)
 
         self.training_iterator = training_iterator
         self.testing_iterator = testing_iterator
@@ -143,7 +146,8 @@ class SurrogateModel(Model):
         self.is_trained = True
 
         # TODO: Passing self is ugly # pylint: disable=fixme
-        qvis.surrogate_visualization_instance.plot(self.training_iterator.parameters.names, self)
+        if self.visualization:
+            self.visualization.plot(self.training_iterator.parameters.names, self)
 
         if self.testing_iterator:
             self.testing_iterator.run()

@@ -14,45 +14,16 @@
 #
 """Provide utilities for visualization in the grid iterator.
 
-A module that provides utilities and a class for visualization in the grid
-iterator.
-
-It is designed such that the GridIteratorVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    grid_iterator_visualization_instance (obj): Instance of the GridIteratorVisualization class
+A module that provides utilities and a class for visualization in the
+grid iterator.
 """
 
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import cm
 from matplotlib.ticker import FormatStrFormatter, LinearLocator
-
-this = sys.modules[__name__]
-this.grid_iterator_visualization_instance = None
-
-
-def from_config_create(plotting_options, grid_design):
-    """Create a GridIteratorVisualization instance from config.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the GridIteratorVisualization class from the problem
-    description.
-
-    Args:
-        plotting_options (dict): Dictionary containing the plotting options
-        grid_design (dict): Dictionary containing grid information
-    """
-    this.grid_iterator_visualization_instance = GridIteratorVisualization.from_config_create(
-        plotting_options, grid_design
-    )
 
 
 def _log_tick_formatter(val):
@@ -109,10 +80,6 @@ class GridIteratorVisualization:
         GridIteratorVisualization (obj): Instance of the GridIteratorVisualization Class
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 22})
-
     def __init__(self, paths, save_bools, plot_booleans, scale_types_list, var_names_list):
         """Initialize the GridIteratorVisualization.
 
@@ -167,12 +134,12 @@ class GridIteratorVisualization:
             num_params (int): Number of parameters varied
             n_grid_p (np.array): Array containing number of grid points for each parameter
         """
-        if self.plot_booleans[0] is True or self.save_bools[0] is True:
+        if self.plot_booleans[0] or self.save_bools[0]:
             plotter = self.get_plotter(num_params)
             plotter(output, samples, n_grid_p)
             _save_plot(self.save_bools[0], self.saving_paths_list[0])
 
-        if self.plot_booleans[0] is True:
+        if self.plot_booleans[0]:
             plt.show()
 
     def get_plotter(self, num_params):
@@ -306,5 +273,5 @@ def _save_plot(save_bool, path):
     Returns:
         Saved plot.
     """
-    if save_bool is True:
+    if save_bool:
         plt.savefig(path, dpi=300)

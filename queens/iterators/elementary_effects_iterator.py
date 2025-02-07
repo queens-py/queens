@@ -24,11 +24,11 @@ import numpy as np
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
-import queens.visualization.sa_visualization as qvis
 from queens.distributions.uniform import UniformDistribution
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
+from queens.visualization.sa_visualization import SAVisualization
 
 _logger = logging.getLogger(__name__)
 
@@ -53,6 +53,7 @@ class ElementaryEffectsIterator(Iterator):
         output (np.array): Results at samples.
         salib_problem (dict): Dictionary with SALib problem description.
         si (dict): Dictionary with all sensitivity indices.
+        visualization (SAVisualization): Visualization object for SA.
     """
 
     @log_init_args
@@ -105,8 +106,12 @@ class ElementaryEffectsIterator(Iterator):
         self.output = None
         self.salib_problem = {}
         self.si = {}
+
+        self.visualization = None
         if result_description.get("plotting_options"):
-            qvis.from_config_create(result_description.get("plotting_options"))
+            self.visualization = SAVisualization.from_config_create(
+                result_description.get("plotting_options")
+            )
 
     def pre_run(self):
         """Generate samples for subsequent analysis and update model."""
@@ -156,8 +161,8 @@ class ElementaryEffectsIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(results, self.global_settings.result_file(".pickle"))
 
-            if qvis.sa_visualization_instance:
-                qvis.sa_visualization_instance.plot(results)
+            if self.visualization:
+                self.visualization.plot(results)
 
     def process_results(self):
         """Write all results to self contained dictionary."""

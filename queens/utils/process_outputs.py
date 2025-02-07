@@ -65,7 +65,7 @@ def do_processing(output_data, output_description):
     # do we want confidence intervals
     bayesian = output_description.get("bayesian", False)
     # check if we have the data to support this
-    if "post_samples" not in output_data and bayesian is True:
+    if "post_samples" not in output_data and bayesian:
         warnings.warn(
             "Warning: Output data does not contain posterior samples. "
             "Not computing confidence intervals"
@@ -103,28 +103,28 @@ def do_processing(output_data, output_description):
 
     # do we want pdf estimation
     est_pdf = output_description.get("estimate_pdf", False)
-    if (est_pdf or est_all) is True:
+    if est_pdf or est_all:
         pdf_estimate = estimate_pdf(output_data, support_points, bayesian)
-        if plot_results is True:
+        if plot_results:
             plot_pdf(pdf_estimate, support_points, bayesian)
 
         processed_results["pdf_estimate"] = pdf_estimate
 
     # do we want cdf estimation
     est_cdf = output_description.get("estimate_cdf", False)
-    if (est_cdf or est_all) is True:
+    if est_cdf or est_all:
         cdf_estimate = estimate_cdf(output_data, support_points, bayesian)
-        if plot_results is True:
+        if plot_results:
             plot_cdf(cdf_estimate, support_points, bayesian)
 
         processed_results["cdf_estimate"] = cdf_estimate
 
     # do we want icdf estimation
     est_icdf = output_description.get("estimate_icdf", False)
-    if (est_icdf or est_all) is True:
+    if est_icdf or est_all:
         icdf_estimate = estimate_icdf(output_data, bayesian)
 
-        if plot_results is True:
+        if plot_results:
             plot_icdf(icdf_estimate, bayesian)
 
         processed_results["icdf_estimate"] = icdf_estimate
@@ -226,7 +226,7 @@ def estimate_cdf(output_data, support_points, bayesian):
     """
     cdf = {}
     cdf["x"] = support_points
-    if bayesian is False:
+    if not bayesian:
         raw_data = output_data["result"]
         size_data = raw_data.size
         cdf_values = []
@@ -274,7 +274,7 @@ def estimate_icdf(output_data, bayesian):
     my_percentiles = 100 * np.linspace(0 + 1 / 1000, 1 - 1 / 1000, 999)
     icdf = {}
     icdf["x"] = my_percentiles
-    if bayesian is False:
+    if not bayesian:
         samples = output_data["result"]
         icdf_values = np.zeros_like(my_percentiles)
         for i, percentile in enumerate(my_percentiles):
@@ -310,7 +310,7 @@ def estimate_pdf(output_data, support_points, bayesian):
     """
     pdf = {}
     pdf["x"] = support_points
-    if bayesian is False:
+    if not bayesian:
         samples = output_data["result"]
         min_samples = np.amin(samples)
         max_samples = np.amax(samples)

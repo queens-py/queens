@@ -371,12 +371,7 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         output["result"] = np.atleast_2d(y_random_variable_model_means.mean(axis=0)).T
 
         # repeat the former process for variance/covariance estimates
-        if full_cov is False:
-            y_random_variable_model_var = np.array(
-                [y_random_variable.variance() for y_random_variable in y_random_variable_models]
-            )
-            output["variance"] = y_random_variable_model_var.mean(axis=0)
-        elif full_cov is True:
+        if full_cov:
             y_random_variable_model_var = (
                 (
                     np.array(
@@ -393,6 +388,12 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
                 y_random_variable_model_var
             )
             output["variance"] = y_random_variable_model_cov
+            return output
+
+        y_random_variable_model_var = np.array(
+            [y_random_variable.variance() for y_random_variable in y_random_variable_models]
+        )
+        output["variance"] = y_random_variable_model_var.mean(axis=0)
 
         return output
 
@@ -425,12 +426,11 @@ class GaussianBayesianNeuralNetworkModel(SurrogateModel):
         output["result"] = y_random_variable_model_means.mean(axis=0)
 
         # repeat the former process for variance/covariance estimates
-        if full_cov is False:
-            output["variance"] = y_random_variable_model_means.var(axis=0)
-        elif full_cov is True:
+        if full_cov:
             samples = self.predict_f_samples(x_test, self.num_posterior_samples)
             output["variance"] = np.cov(samples)
-
+            return output
+        output["variance"] = y_random_variable_model_means.var(axis=0)
         return output
 
     def predict_f_samples(self, x_test, num_samples):

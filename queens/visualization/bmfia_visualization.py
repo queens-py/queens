@@ -12,20 +12,9 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Provide utilities and a class for visualization in BMFIA analysis.
-
-It is designed such that the BMFIAVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    bmfia_visualization_instance (obj): Instance of the BMFIAVisualization class
-"""
+"""Provide utilities and a class for visualization in BMFIA analysis."""
 
 # pylint: disable=invalid-name
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -33,24 +22,6 @@ import numpy as np
 import plotly.graph_objects as go
 import seaborn as sns
 from plotly.subplots import make_subplots
-
-this = sys.modules[__name__]
-this.bmfia_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Call the class function `from_config_create`.
-
-    It creates an instance of the BMFIAVisualization class
-    from the problem description.
-
-    Args:
-        plotting_options (dict): Dictionary with plotting options
-
-    Returns:
-        None
-    """
-    this.bmfia_visualization_instance = BMFIAVisualization.from_config_create(plotting_options)
 
 
 class BMFIAVisualization:
@@ -68,11 +39,6 @@ class BMFIAVisualization:
     Returns:
         BMFIAVisualization (obj): Instance of the BMFIAVisualization Class
     """
-
-    # some overall class states
-    plt.rcParams.update(plt.rcParamsDefault)
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 15})
 
     def __init__(self, paths, save_bools, plot_booleans):
         """Initialize the BMFIAVisualization.
@@ -121,7 +87,7 @@ class BMFIAVisualization:
         Returns:
             Plots of the probabilistic manifold
         """
-        if self.plot_booleans[0] is True:
+        if self.plot_booleans[0]:
             plot_model_dependency(z_train, Y_HF_train, regression_obj_lst)
             if self.save_bools[0] is not None:
                 _save_plot(self.save_bools[0], self.paths[0])
@@ -140,7 +106,7 @@ class BMFIAVisualization:
             dim_labels_lst (lst): List with labels/naming of the involved dimensions.
                                 Order of the list corresponds to order of columns in sample matrix.
         """
-        if self.plot_booleans[1] is True:
+        if self.plot_booleans[1]:
             if samples.shape[1] > 2:
                 raise RuntimeError(
                     f"At the moment we only support posterior plots up to two dimensions. "

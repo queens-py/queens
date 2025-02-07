@@ -27,7 +27,7 @@ from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
 
 
-def test_grid_iterator(expected_response, expected_grid, global_settings):
+def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_path):
     """Integration test for the grid iterator."""
     # Parameters
     x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
@@ -47,9 +47,9 @@ def test_grid_iterator(expected_response, expected_grid, global_settings):
             "write_results": True,
             "plotting_options": {
                 "plot_booleans": [True],
-                "plotting_dir": "some/plotting/dir",
+                "plotting_dir": tmp_path,
                 "plot_names": ["grid_plot.eps"],
-                "save_bool": [False],
+                "save_bool": [True],
             },
         },
         model=model,

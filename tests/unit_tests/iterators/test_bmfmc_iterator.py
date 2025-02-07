@@ -125,12 +125,6 @@ def test_core_run(mocker, default_bmfmc_iterator, default_bmfmc_model):
 def test_calculate_optimal_X_train(mocker, default_bmfmc_iterator):
     """Test calculate_optimal_X_train method of BMFMCIterator."""
     mp1 = mocker.patch("queens.iterators.bmfmc_iterator.BMFMCIterator.diverse_subset_design")
-    mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
-
-    mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance"
-        ".plot_feature_ranking"
-    )
     default_bmfmc_iterator.X_train = np.array([1.0, 1.0, 1.0])
     default_bmfmc_iterator.Y_LFs_train = np.array([2.0, 2.0, 2.0])
     default_bmfmc_iterator.calculate_optimal_X_train()
@@ -218,16 +212,11 @@ def test_model_evaluate(default_bmfmc_iterator):
 
 def test_post_run(mocker, default_bmfmc_iterator):
     """Test post_run method of BMFMCIterator."""
-    mocker.patch("queens.visualization.bmfmc_visualization.bmfmc_visualization_instance")
-
-    mp1 = mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_pdfs"
-    )
-
-    mp2 = mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance.plot_manifold"
-    )
+    visualization = Mock()
+    mp1 = mocker.patch.object(visualization, "plot_pdfs")
+    mp2 = mocker.patch.object(visualization, "plot_manifold")
     mp3 = mocker.patch("queens.iterators.bmfmc_iterator.write_results")
+    default_bmfmc_iterator.visualization = visualization
 
     default_bmfmc_iterator.post_run()
 

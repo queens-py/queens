@@ -32,7 +32,7 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
 
     data = [mean_pdf]
 
-    if bayes is True:
+    if bayes:
         q5_pdf = go.Scatter(
             x=support_points, y=pdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )
@@ -72,7 +72,7 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
     )
     data = [mean_cdf]
 
-    if bayes is True:
+    if bayes:
         q5_cdf = go.Scatter(
             x=support_points, y=cdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )
@@ -123,7 +123,7 @@ def plot_icdf(icdf_estimate, bayes=False):
     )
     data = [mean_icdf]
 
-    if bayes is True:
+    if bayes:
         q5_icdf = go.Scatter(
             x=my_percentiles, y=icdf_estimate["q5"], mode="markers+lines", name="5% quantile"
         )

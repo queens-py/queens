@@ -156,7 +156,7 @@ class SobolIndexIterator(Iterator):
             if self.result_description["write_results"]:
                 write_results(results, self.global_settings.result_file(".pickle"))
             self.print_results(results)
-            if self.result_description["plot_results"] is True:
+            if self.result_description["plot_results"]:
                 self.plot_results(results)
 
     def print_results(self, results):

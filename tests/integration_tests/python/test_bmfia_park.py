@@ -61,7 +61,6 @@ def test_bmfia_smc_park(
     (bmfia) using the park91 function.
     """
     experimental_data_path = tmp_path
-    plot_dir = tmp_path
 
     # Parameters
     x1 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
@@ -115,12 +114,6 @@ def test_bmfia_smc_park(
     )
     model = BMFGaussianModel(
         noise_value=0.001,
-        plotting_options={
-            "plotting_dir": plot_dir,
-            "plot_names": ["bmfia_plot.png", "posterior.png"],
-            "save_bool": [False, False],
-            "plot_booleans": [False, False],
-        },
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
@@ -219,12 +212,6 @@ def test_bmfia_rpvi_gp_park(
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
-        plotting_options={
-            "plot_booleans": [False, False],
-            "plot_names": ["bmfia_plot.png", "posterior.png"],
-            "plotting_dir": "plot_dir",
-            "save_bool": [False, False],
-        },
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
@@ -330,13 +317,6 @@ def test_bmfia_rpvi_nn_park(
     )
     model = BMFGaussianModel(
         noise_value=0.0001,
-        plotting_options={
-            "plot_booleans": [False, False],
-            "plot_names": ["bmfia_plot.png", "posterior.png"],
-            "plot_options_dict": {"x_lim": [0, 10], "y_lim": [0, 10]},
-            "plotting_dir": plot_dir,
-            "save_bool": [False, False],
-        },
         experimental_data_reader=experimental_data_reader,
         mf_approx=mf_approx,
         mf_interface=mf_interface,

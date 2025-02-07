@@ -190,10 +190,10 @@ def test_init(global_settings, mocker, settings_probab_mapping, parameters):
     assert model.var_y_mc is None
     assert model.p_yhf_mean is None
     assert model.p_yhf_var is None
-    assert model.predictive_var_bool is True
+    assert model.predictive_var_bool
     assert model.p_yhf_mc is None
     assert model.p_ylf_mc is None
-    assert model.no_features_comparison_bool is False
+    assert not model.no_features_comparison_bool
     assert model.eigenfunc_random_fields is None
     assert model.eigenvals is None
     assert model.f_mean_train is None
@@ -503,18 +503,15 @@ def test_calculate_extended_gammas(mocker, default_bmfmc_model):
     np.random.seed(1)
     x_red = np.hstack((np.random.random((20, 1)), y_LFS_mc_stdized))
 
-    mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.input_dim_red", return_value=x_red)
-    mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance",
-    )
+    visualization = Mock()
 
-    mp2 = mocker.patch(
-        "queens.visualization.bmfmc_visualization.bmfmc_visualization_instance"
-        ".plot_feature_ranking"
-    )
+    mp1 = mocker.patch("queens.models.bmfmc_model.BMFMCModel.input_dim_red", return_value=x_red)
+    mp2 = mocker.patch.object(visualization, "plot_feature_ranking")
     mp3 = mocker.patch(
         "queens.models.bmfmc_model.StandardScaler.fit_transform", return_value=y_LFS_mc_stdized
     )
+
+    default_bmfmc_model.visualization = visualization
 
     def linear_scale_dummy(a, b):  # pylint: disable=unused-argument
         return a

@@ -16,9 +16,9 @@
 
 import numpy as np
 
-import queens.visualization.grid_iterator_visualization as qvis
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
+from queens.visualization.grid_iterator_visualization import GridIteratorVisualization
 
 from .iterator import Iterator
 
@@ -36,6 +36,7 @@ class GridIterator(Iterator):
         num_grid_points_per_axis (list):  List with number of grid points for each grid axis.
         num_parameters (int):   Number of parameters to be varied.
         scale_type (list): List with string entries denoting scaling type for each grid axis.
+        visualization (GridIteratorVisualization): Visualization object for the grid iterator.
     """
 
     @log_init_args
@@ -66,9 +67,11 @@ class GridIterator(Iterator):
         self.num_parameters = self.parameters.num_parameters
         self.scale_type = []
 
-        # ---------------------- CREATE VISUALIZATION BORG ----------------------------
+        self.visualization = None
         if result_description.get("plotting_options"):
-            qvis.from_config_create(result_description.get("plotting_options"), grid_design)
+            self.visualization = GridIteratorVisualization.from_config_create(
+                result_description.get("plotting_options"), grid_design
+            )
 
     def pre_run(self):
         """Generate samples based on description in *grid_dict*."""
@@ -169,8 +172,8 @@ class GridIterator(Iterator):
                 write_results(results, self.global_settings.result_file(".pickle"))
 
         # plot QoI over grid
-        if qvis.grid_iterator_visualization_instance:  # pylint: disable=no-member
-            qvis.grid_iterator_visualization_instance.plot_qoi_grid(  # pylint: disable=no-member
+        if self.visualization:
+            self.visualization.plot_qoi_grid(
                 self.output,
                 self.samples,
                 self.num_parameters,

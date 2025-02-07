@@ -20,12 +20,20 @@ from test_utils.get_queens_example_from_readme import get_queens_example_from_re
 
 def test_queens_readme_example(tmp_path):
     """Test if the example in the readme runs."""
+    # Disable plotting in the script
+    example_source = "import matplotlib"
+    example_source += "\nmatplotlib.use('Agg')\n"
+
     # Get the source of the example
-    example_source = get_queens_example_from_readme(tmp_path)
+    example_source += get_queens_example_from_readme(tmp_path)
+
+    # Create script
+    script_path = tmp_path / "script.py"
+    script_path.write_text(example_source)
 
     # Run the script
     process_returncode, _, _, _ = run_subprocess(
-        f"python -c '{example_source}'", raise_error_on_subprocess_failure=False
+        f"python {script_path}", raise_error_on_subprocess_failure=False
     )
 
     # Check for an exit code

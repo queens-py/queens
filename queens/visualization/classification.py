@@ -37,9 +37,6 @@ class ClassificationVisualization:
         Instance of the visualization class
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-
     def __init__(self, plotting_dir, plot_name, save_bool, plot_bool=False):
         """Initialise iterator.
 

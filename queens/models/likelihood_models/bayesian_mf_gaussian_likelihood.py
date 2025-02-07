@@ -23,7 +23,6 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-import queens.visualization.bmfia_visualization as qvis
 from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
 from queens.models.likelihood_models.likelihood_model import LikelihoodModel
 from queens.utils.ascii_art import print_bmfia_acceleration
@@ -82,7 +81,6 @@ class BMFGaussianModel(LikelihoodModel):
         noise_value=None,
         num_refinement_samples=None,
         likelihood_evals_for_refinement=None,
-        plotting_options=None,
     ):
         """Instantiate the multi-fidelity likelihood class.
 
@@ -134,10 +132,6 @@ class BMFGaussianModel(LikelihoodModel):
             self.time_vec,
             self.coords_mat,
         )
-
-        # ----------------------- create visualization object(s) ---------------------------------
-        if plotting_options:
-            qvis.from_config_create(plotting_options)
 
         self.mf_interface = mf_interface
         self.mf_subiterator = mf_subiterator

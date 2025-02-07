@@ -252,7 +252,7 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
     )
     std_vec = np.array([0.1, 0.2, 0.01, 0.3, 0.1])
     cov = np.diag(std_vec**2)
-    if pdf is False:
+    if not pdf:
         for value in x:
             output_array.append(mvn.logpdf(value, mean=mean, cov=cov))
     else:

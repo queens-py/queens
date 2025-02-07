@@ -409,7 +409,7 @@ def test_from_config_create_parameters(parameters):
         "z_7",
         "z_8",
     ]
-    assert parameters.random_field_flag is True
+    assert parameters.random_field_flag
     assert parameters.names == ["field_1", "field_2", "field_3"]
     rf_1 = parameters.dict["field_1"]
     rf_2 = parameters.dict["field_2"]

@@ -82,7 +82,7 @@ class MonteCarloIterator(Iterator):
                 write_results(results, self.global_settings.result_file(".pickle"))
 
                 # ----------------------------- WIP PLOT OPTIONS ----------------------------
-                if self.result_description["plot_results"] is True:
+                if self.result_description["plot_results"]:
                     _, ax = plt.subplots(figsize=(6, 4))
 
                     # Check for dimensionality of the results

@@ -14,47 +14,15 @@
 #
 """Visualization of surrogate models.
 
-A module that provides utilities and a class for visualization of surrogate
-models.
-
-It is designed such that the SurrogateVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    surrogate_visualization_instance (obj): Instance of the SAVisualization class
+A module that provides utilities and a class for visualization of
+surrogate models.
 """
 
-import sys
 from pathlib import Path
 
-import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
-from matplotlib import style
 from matplotlib.cm import ScalarMappable
-
-matplotlib.use("agg")
-style.use("seaborn-v0_8")
-this = sys.modules[__name__]
-this.surrogate_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Create the SurrogateVisualization object.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the SurrogateVisualization class from the problem
-    description.
-
-    Args:
-        plotting_options (dict): Dictionary containing the plotting_options
-    """
-    this.surrogate_visualization_instance = SurrogateVisualization.from_config_create(
-        plotting_options
-    )
 
 
 def convert_to_dict(values):
@@ -89,12 +57,6 @@ class SurrogateVisualization:
     Returns:
         SAVisualization (obj): Instance of the SurrogateVisualization Class
     """
-
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams["font.sans-serif"] = "Arial"
-    plt.rcParams["font.family"] = "sans-serif"
-    plt.rcParams.update({"font.size": 28})
 
     def __init__(self, saving_paths, save_plot, display_plot):
         """Initialize the SurrogateVisualization object.
@@ -158,7 +120,7 @@ class SurrogateVisualization:
             self.plot_2d(surrogate_model)
 
         # show all result plots in the end
-        if any(self.should_be_displayed.values()) is True:
+        if any(self.should_be_displayed.values()):
             self._display_plots()
 
     def _display_plots(self):

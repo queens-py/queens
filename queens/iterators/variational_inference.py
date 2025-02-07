@@ -20,10 +20,10 @@ import time
 
 import numpy as np
 
-import queens.visualization.variational_inference_visualization as qvis
 from queens.iterators.iterator import Iterator
 from queens.utils.process_outputs import write_results
 from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
+from queens.visualization.variational_inference_visualization import VIVisualization
 
 _logger = logging.getLogger(__name__)
 
@@ -150,8 +150,11 @@ class VariationalInferenceIterator(Iterator):
         self.iteration_data = iteration_data
         self.verbose_every_n_iter = verbose_every_n_iter
 
+        self.visualization = None
         if result_description.get("plotting_options"):
-            qvis.from_config_create(result_description["plotting_options"])
+            self.visualization = VIVisualization.from_config_create(
+                result_description["plotting_options"]
+            )
 
     def core_run(self):
         """Core run for stochastic variational inference."""
@@ -212,8 +215,8 @@ class VariationalInferenceIterator(Iterator):
             result_dict = self._prepare_result_description()
             write_results(result_dict, self.global_settings.result_file(".pickle"))
 
-        if qvis.vi_visualization_instance:
-            qvis.vi_visualization_instance.save_plots()
+        if self.visualization:
+            self.visualization.save_plots()
 
     def _verbose_output(self):
         """Give some informative outputs during the BBVI iterations."""
@@ -370,8 +373,8 @@ class VariationalInferenceIterator(Iterator):
     def _clearing_and_plots(self):
         """Visualization and clear some internal variables."""
         # some plotting and output
-        if qvis.vi_visualization_instance and qvis.vi_visualization_instance.plot_boolean:
-            qvis.vi_visualization_instance.plot_convergence(
+        if self.visualization and self.visualization.plot_boolean:
+            self.visualization.plot_convergence(
                 self.stochastic_optimizer.iteration,
                 self.iteration_data.variational_parameters,
                 self.iteration_data.elbo,

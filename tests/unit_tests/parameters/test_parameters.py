@@ -180,5 +180,5 @@ def test_from_config_create_parameters_options_3(parameters_options_3, pre_proce
         "random_inflow_1",
         "random_inflow_2",
     ]
-    assert parameters.random_field_flag is True
+    assert parameters.random_field_flag
     assert parameters.names == ["x1", "x2", "random_inflow"]

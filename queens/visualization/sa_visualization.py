@@ -12,42 +12,12 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Module providing visualization utilities for sensitivity analysis.
+"""Module providing visualization utilities for sensitivity analysis."""
 
-It is designed such that the SAVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    sa_visualization_instance (obj): Instance of the SAVisualization class
-"""
-
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import pandas as pd
-import seaborn as sns
-from matplotlib import style
-
-cycle_colors = sns.color_palette()
-style.use("seaborn-v0_8")
-this = sys.modules[__name__]
-this.sa_visualization_instance = None
-
-
-def from_config_create(plotting_options):
-    """Create an SAVisualization instance from configuration.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the SAVisualization class from the problem description.
-
-    Args:
-        plotting_options (dict): Dictionary containing the plotting options
-    """
-    this.sa_visualization_instance = SAVisualization.from_config_create(plotting_options)
 
 
 def convert_to_dict(values):
@@ -114,10 +84,6 @@ class SAVisualization:
         SAVisualization (obj): Instance of the SAVisualization Class
     """
 
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 28})
-
     def __init__(self, saving_paths, save_plot, display_plot):
         """Initialize the SAVisualization.
 
@@ -168,7 +134,7 @@ class SAVisualization:
         self.plot_si_scatter(results)
 
         # show all result plots in the end
-        if any(self.should_be_displayed.values()) is True:
+        if any(self.should_be_displayed.values()):
             self._display_plots()
 
     def plot_si_bar(self, results):
@@ -231,7 +197,7 @@ class SAVisualization:
             Displays plots.
         """
         for plot_key, current_figure in self.figures.items():
-            if self.should_be_displayed[plot_key] is not True:
+            if not self.should_be_displayed[plot_key]:
                 plt.close(current_figure)
 
         plt.show()
@@ -245,5 +211,5 @@ class SAVisualization:
         Returns:
             Saved plot.
         """
-        if self.should_be_saved[key] is True:
+        if self.should_be_saved[key]:
             plt.savefig(self.saving_paths[key], dpi=300)

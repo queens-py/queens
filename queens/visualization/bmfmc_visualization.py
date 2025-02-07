@@ -14,49 +14,16 @@
 #
 """Visualization for BMFMC-UQ.
 
-A module that provides utilities and a class for visualization in BMFMC-UQ.
-It is designed such that the BMFMCVisualization class only needs to be initialized once
-and can then be accessed and modified in the entire project.
-
-In this context "this" is a pointer to the module object instance itself and can be compared to the
-"self" keyword in classes.
-
-Attributes:
-    bmfmc_visualization_instance (obj): Instance of the BMFMCVisualization class
+A module that provides utilities and a class for visualization in BMFMC-
+UQ.
 """
 
 # pylint: disable=invalid-name
-import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib import animation
-
-this = sys.modules[__name__]
-this.bmfmc_visualization_instance = None
-
-
-def from_config_create(plotting_options, predictive_var, BMFMC_reference):
-    r"""Create class from config.
-
-    Module function that calls the class function *from_config_create* and
-    creates instance of the BMFMCVisualization class from the problem
-    description.
-
-    Args:
-        plotting_options (dict): Plotting options
-        predictive_var (bool): Boolean flag that triggers the computation of the posterior
-                                   variance
-                                   :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]`
-                                   if set to True. (default value: False)
-        BMFMC_reference (bool): Boolean that triggers the BMFMC solution without informative
-                                features :math:`\boldsymbol{\gamma}` for comparison if set to
-                                True (default value: False)
-    """
-    this.bmfmc_visualization_instance = BMFMCVisualization.from_config_create(
-        plotting_options, predictive_var, BMFMC_reference
-    )
 
 
 class BMFMCVisualization:
@@ -77,10 +44,6 @@ class BMFMCVisualization:
     Returns:
         BMFMCVisualization (obj): Instance of the BMFMCVisualization Class
     """
-
-    # some overall class states
-    plt.rcParams["mathtext.fontset"] = "cm"
-    plt.rcParams.update({"font.size": 28})
 
     def __init__(
         self, paths, save_bools, animation_bool, predictive_var, no_features_ref, plot_booleans
@@ -177,11 +140,11 @@ class BMFMCVisualization:
             )
 
             # --------- Plot the posterior variance -----------------------------------------
-            if self.predictive_var is True:
+            if self.predictive_var:
                 _plot_pdf_var(output)
 
             # ---- plot the BMFMC reference without features
-            if self.no_features_ref is True:
+            if self.no_features_ref:
                 _plot_pdf_no_features(output, posterior_variance=self.predictive_var)
 
             # ---- some further settings for the axes ---------------------------------------
@@ -223,7 +186,7 @@ class BMFMCVisualization:
             if manifold_plotter is not None:
                 manifold_plotter(output, Y_LFs_mc, Y_HF_mc, Y_HF_train)
 
-            if self.animation_bool is True:
+            if self.animation_bool:
                 _animate_3d(output, Y_HF_mc, self.paths[1])
 
             if self.save_bools[1] is not None:
@@ -529,7 +492,7 @@ def _save_plot(save_bool, path):
     Returns:
         Saved plot.
     """
-    if save_bool is True:
+    if save_bool:
         plt.savefig(path, dpi=300)
 
 
@@ -562,5 +525,5 @@ def _plot_pdf_no_features(output, posterior_variance=False):
     )
 
     # plot the bmfmc var
-    if posterior_variance is True:
+    if posterior_variance:
         _plot_pdf_var(output, reference_str="_BMFMC")

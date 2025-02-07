@@ -114,20 +114,6 @@ class MyContext:
         self.dummy = 0
 
 
-@pytest.fixture(name="dummy_plot_instance")
-def fixture_dummy_plot_instance():
-    """Quick fake plotting object."""
-
-    class my_plot:
-        """Fake plot class."""
-
-        def plot(self):
-            """Fake plot method."""
-
-    my_plot_obj = my_plot()
-    return my_plot_obj
-
-
 # ---- Actual unit_tests ------------------------------
 def test_init():
     """Test from config create method."""
@@ -219,9 +205,7 @@ def test__init__():
     assert interface.coords_mat is None
 
 
-def test_build_approximation(
-    default_bmfia_interface, mocker, default_probabilistic_obj_lst, dummy_plot_instance
-):
+def test_build_approximation(default_bmfia_interface, mocker, default_probabilistic_obj_lst):
     """Test the set-up / build of the probabilistic regression models."""
     z_lf_train = np.zeros((2, 30))
     y_hf_train = np.zeros((2, 25))
@@ -239,10 +223,6 @@ def test_build_approximation(
     mock_optimize_state = mocker.patch(
         "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface."
         "set_optimized_state_of_probabilistic_mappings"
-    )
-    mocker.patch(
-        "queens.visualization.bmfia_visualization.bmfia_visualization_instance",
-        return_value=dummy_plot_instance,
     )
 
     default_bmfia_interface.num_processors_multi_processing = 2
@@ -521,11 +501,11 @@ def test_evaluate_per_coordinate(default_bmfia_interface, mocker):
 
     np.testing.assert_array_equal(map_1.predict.call_args[0][0], z_lf.T[0, :, :])
     assert map_1.predict.call_args[1]["support"] == support
-    assert map_1.predict.call_args[1]["gradient_bool"] is False
+    assert not map_1.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(map_2.predict.call_args[0][0], z_lf.T[1, :, :])
     assert map_2.predict.call_args[1]["support"] == support
-    assert map_2.predict.call_args[1]["gradient_bool"] is False
+    assert not map_2.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(mean, np.array([[1, 3], [2, 4]]))
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))
@@ -691,11 +671,11 @@ def test_evaluate_and_gradient_per_coordinate(mocker):
 
     np.testing.assert_array_equal(map_1.predict.call_args[0][0], Z_LF.T[0, :, :])
     assert map_1.predict.call_args[1]["support"] == support
-    assert map_1.predict.call_args[1]["gradient_bool"] is True
+    assert map_1.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(map_2.predict.call_args[0][0], Z_LF.T[1, :, :])
     assert map_2.predict.call_args[1]["support"] == support
-    assert map_2.predict.call_args[1]["gradient_bool"] is True
+    assert map_2.predict.call_args[1]["gradient_bool"]
 
     np.testing.assert_array_equal(mean, np.array([[1, 3], [2, 4]]))
     np.testing.assert_array_equal(variance, np.array([[3, 5], [4, 6]]))

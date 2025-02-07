@@ -233,7 +233,7 @@ class GPflowSVGPModel(SurrogateModel):
             var = var.numpy() * self.scaler_y.var_[i]
 
             output["result"].append(mean)
-            if support == "f" and full_cov is True:
+            if support == "f" and full_cov:
                 output["variance"].append(np.squeeze(var, axis=0))
                 output["variance_diagonal"].append(
                     extract_block_diag(np.squeeze(var, axis=0), output["result"][-1].shape[1])

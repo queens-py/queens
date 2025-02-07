@@ -36,21 +36,10 @@ model:
   mf_subiterator_name: bmfia_iterator
   forward_model_name: lf_model
   noise_value: 0.0001
-  plotting_options:
-    plot_booleans:
-      - false
-      - false
-    plot_names:
-      - bmfia_plot.png
-      - posterior.png
-    plotting_dir: {{ plot_dir }}
-    save_bool:
-      - false
-      - false
   experimental_data_reader_name: experimental_data_reader
 experimental_data_reader:
   type: experimental_data_reader
-  file_name_identifier: '*.csv'
+  file_name_identifier: "*.csv"
   csv_data_base_dir: {{ experimental_data_path }}
   output_label: y_obs
   coordinate_labels: [x3, x4]

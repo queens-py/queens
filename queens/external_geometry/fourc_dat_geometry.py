@@ -567,7 +567,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
                     # write them now
                     elif self.current_dat_section == "END":
                         bcs_list = [random_field["type"] for random_field in self.random_fields]
-                        if ("dirichlet" in bcs_list) and (self.random_dirich_flag is False):
+                        if ("dirichlet" in bcs_list) and not self.random_dirich_flag:
                             print(
                                 "----------------------------------------------DESIGN POINT "
                                 "DIRICH CONDITIONS\n"
@@ -575,7 +575,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
                             self._write_design_point_dirichlet_conditions(self.random_fields, line)
 
                         elif ("transport_dirichlet" in bcs_list) and (
-                            self.random_transport_dirich_flag is False
+                            not self.random_transport_dirich_flag
                         ):
                             print(
                                 "----------------------------------------------DESIGN POINT "
@@ -583,7 +583,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
                             )
                             self._write_design_point_dirichlet_transport_conditions()
 
-                        elif ("neumann" in bcs_list) and (self.random_neumann_flag is False):
+                        elif ("neumann" in bcs_list) and not self.random_neumann_flag:
                             print(
                                 "---------------------------------------------DESIGN POINT "
                                 "NEUMANN CONDITIONS\n"

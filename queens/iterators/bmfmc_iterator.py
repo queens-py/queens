@@ -21,10 +21,10 @@ import numpy as np
 import pandas as pd
 from diversipy import psa_select
 
-import queens.visualization.bmfmc_visualization as qvis
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
+from queens.visualization.bmfmc_visualization import BMFMCVisualization
 
 _logger = logging.getLogger(__name__)
 
@@ -79,12 +79,9 @@ class BMFMCIterator(Iterator):
                                training inputs *X_train* such that :math:`Y_{HF}=y_{HF}(X)`
             *  ``X_train``: Corresponding input for the simulations that are used to
                             train the probabilistic mapping
-
         initial_design (dict): Dictionary containing settings for the selection strategy/initial
                                design of training points for the probabilistic mapping.
-
-    Returns:
-       BMFMCIterator (obj): Instance of the BMFMCIterator
+        visualization (BMFMCVisualization): Visualization object for BMFMC.
     """
 
     @log_init_args
@@ -117,9 +114,13 @@ class BMFMCIterator(Iterator):
         self.output = None
         self.initial_design = initial_design
 
-        # ---------------------- CREATE VISUALIZATION BORG ----------------------------
+        self.visualization = None
         if plotting_options:
-            qvis.from_config_create(plotting_options, model.predictive_var, model.BMFMC_reference)
+            self.visualization = BMFMCVisualization.from_config_create(
+                plotting_options, model.predictive_var, model.BMFMC_reference
+            )
+
+            self.model.visulization = self.visualization
 
     def core_run(self):
         r"""Main run of the BMFMCIterator.
@@ -280,12 +281,12 @@ class BMFMCIterator(Iterator):
     # ------------------- BELOW JUST PLOTTING AND SAVING RESULTS ------------------
     def post_run(self):
         """Saving and plotting the results."""
-        if qvis.bmfmc_visualization_instance:
-            qvis.bmfmc_visualization_instance.plot_pdfs(self.output)
-            qvis.bmfmc_visualization_instance.plot_manifold(
+        if self.visualization:
+            self.visualization.plot_pdfs(self.output)
+            self.visualization.plot_manifold(
                 self.output, self.model.Y_LFs_mc, self.model.Y_HF_mc, self.model.Y_HF_train
             )
 
-        if self.result_description["write_results"] is True:
+        if self.result_description["write_results"]:
             results = process_outputs(self.output, self.result_description)
             write_results(results, self.global_settings.result_file(".pickle"))
