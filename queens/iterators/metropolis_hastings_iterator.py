@@ -124,7 +124,7 @@ class MetropolisHastingsIterator(Iterator):
         self.tune = tune
         # TODO change back to a scalar value. # pylint: disable=fixme
         #  Otherwise the diagnostics tools might not make sense
-        self.scale_covariance = np.ones((self.num_chains, 1)) * scale_covariance
+        self.scale_covariance = np.ones(self.num_chains) * scale_covariance
         self.num_burn_in = num_burn_in
 
         if not isinstance(self.proposal_distribution, NormalDistribution):
@@ -146,14 +146,14 @@ class MetropolisHastingsIterator(Iterator):
 
         self.tot_num_samples = self.num_samples + self.num_burn_in + 1
         self.chains = np.zeros((self.tot_num_samples, self.num_chains, num_parameters))
-        self.log_likelihood = np.zeros((self.tot_num_samples, self.num_chains, 1))
-        self.log_prior = np.zeros((self.tot_num_samples, self.num_chains, 1))
-        self.log_posterior = np.zeros((self.tot_num_samples, self.num_chains, 1))
+        self.log_likelihood = np.zeros((self.tot_num_samples, self.num_chains))
+        self.log_prior = np.zeros((self.tot_num_samples, self.num_chains))
+        self.log_posterior = np.zeros((self.tot_num_samples, self.num_chains))
 
         self.seed = seed
 
-        self.accepted = np.zeros((self.num_chains, 1))
-        self.accepted_interval = np.zeros((self.num_chains, 1))
+        self.accepted = np.zeros(self.num_chains)
+        self.accepted_interval = np.zeros(self.num_chains)
 
     def eval_log_prior(self, samples):
         """Evaluate natural logarithm of prior at samples of chains.
@@ -164,7 +164,7 @@ class MetropolisHastingsIterator(Iterator):
         Returns:
             np.array: Logarithms of the prior probabilities for each sample.
         """
-        return self.parameters.joint_logpdf(samples).reshape(-1, 1)
+        return self.parameters.joint_logpdf(samples)
 
     def eval_log_likelihood(self, samples):
         """Evaluate natural logarithm of likelihood at samples of chains.
@@ -194,12 +194,13 @@ class MetropolisHastingsIterator(Iterator):
             self.scale_covariance = mcmc_utils.tune_scale_covariance(
                 self.scale_covariance, accept_rate_interval
             )
-            self.accepted_interval = np.zeros((self.num_chains, 1))
+            self.accepted_interval = np.zeros(self.num_chains)
 
         cur_sample = self.chains[step_id - 1]
         # the scaling only holds for random walks
         delta_proposal = (
-            self.proposal_distribution.draw(num_draws=self.num_chains) * self.scale_covariance
+            self.proposal_distribution.draw(num_draws=self.num_chains)
+            * self.scale_covariance[:, np.newaxis]
         )
         proposal = cur_sample + delta_proposal
 
@@ -279,7 +280,7 @@ class MetropolisHastingsIterator(Iterator):
             burn_in_accept_rate = np.exp(np.log(self.accepted) - np.log(self.num_burn_in))
             _logger.info("Acceptance rate during burn in: %s", burn_in_accept_rate)
         # reset number of accepted samples
-        self.accepted = np.zeros((self.num_chains, 1))
+        self.accepted = np.zeros(self.num_chains)
         self.accepted_interval = 0
 
         # Sampling phase

@@ -343,7 +343,7 @@ class BMFGaussianModel(LikelihoodModel):
                 variance_vec.flatten() + self.noise_var.flatten()
             )
             log_lik_mf_lst.append(self.normal_distribution.logpdf(m_f_vec.reshape(1, -1)))
-        log_lik_mf_output = np.array(log_lik_mf_lst).reshape(-1, 1)
+        log_lik_mf_output = np.array(log_lik_mf_lst).reshape(-1)
 
         if self.min_log_lik_mf is None:
             self.min_log_lik_mf = np.min(log_lik_mf_output)

@@ -122,7 +122,7 @@ def test_smc_generic_temper_multivariate_gaussian(
 def target_density(self, samples):  # pylint: disable=unused-argument
     """Returns the log likelihood of samples with 4D Gaussian distribution."""
     samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_4d_logpdf(samples).reshape(-1, 1)
+    log_likelihood = gaussian_4d_logpdf(samples)
 
     return log_likelihood
 

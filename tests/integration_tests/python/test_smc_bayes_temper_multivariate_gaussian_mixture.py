@@ -129,7 +129,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 def target_density(self, samples):  # pylint: disable=unused-argument
     """Compute the log likelihood of samples under a Gaussian mixture model."""
     samples = np.atleast_2d(samples)
-    log_likelihood = gaussian_mixture_4d_logpdf(samples).reshape(-1, 1)
+    log_likelihood = gaussian_mixture_4d_logpdf(samples)
 
     return log_likelihood
 

@@ -116,7 +116,7 @@ def fixture_target_density_gaussian_1d():
     def target_density_gaussian_1d(self, samples):  # pylint: disable=unused-argument
         """Target posterior density."""
         samples = np.atleast_2d(samples)
-        log_likelihood = gaussian_1d_logpdf(samples).reshape(-1, 1)
+        log_likelihood = gaussian_1d_logpdf(samples)
 
         return log_likelihood
 
@@ -130,7 +130,7 @@ def fixture_target_density_gaussian_2d():
     def target_density_gaussian_2d(self, samples):  # pylint: disable=unused-argument
         """Target likelihood density."""
         samples = np.atleast_2d(samples)
-        log_likelihood = gaussian_2d_logpdf(samples).reshape(-1, 1)
+        log_likelihood = gaussian_2d_logpdf(samples)
 
         return log_likelihood
 
@@ -144,7 +144,7 @@ def fixture_target_density_gaussian_2d_with_grad():
     def target_density_gaussian_2d_with_grad(self, samples):  # pylint: disable=unused-argument
         """Target likelihood density."""
         samples = np.atleast_2d(samples)
-        log_likelihood = gaussian_2d_logpdf(samples).flatten()
+        log_likelihood = gaussian_2d_logpdf(samples)
 
         cov = [[1.0, 0.5], [0.5, 1.0]]
         cov_inverse = np.linalg.inv(cov)

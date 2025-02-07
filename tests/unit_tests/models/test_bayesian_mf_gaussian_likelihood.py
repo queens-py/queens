@@ -323,7 +323,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     assert distribution_mock.logpdf.call_count == diff_mat.shape[0]
 
     # test logpdf output and input
-    np.testing.assert_array_equal(log_lik_mf, np.array([[1], [1]]))
+    np.testing.assert_array_equal(log_lik_mf, np.array([1, 1]))
 
 
 def test_grad(default_mf_likelihood):

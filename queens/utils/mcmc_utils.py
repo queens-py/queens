@@ -51,7 +51,7 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
 
     bool_idx = isfinite * accept
 
-    selected_samples = np.where(bool_idx, proposed_sample, current_sample)
+    selected_samples = np.where(bool_idx[:, np.newaxis], proposed_sample, current_sample)
 
     return selected_samples, bool_idx
 

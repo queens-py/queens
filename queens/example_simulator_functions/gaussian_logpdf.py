@@ -53,7 +53,7 @@ def gaussian_1d_logpdf(x):
     Returns:
         float: The logpdf evaluated at *x*
     """
-    y = np.atleast_2d(STANDARD_NORMAL.logpdf(x))
+    y = STANDARD_NORMAL.logpdf(x)
     return y
 
 

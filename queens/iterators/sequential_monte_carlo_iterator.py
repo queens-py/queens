@@ -157,9 +157,9 @@ class SequentialMonteCarloIterator(Iterator):
         # TODO: use normalised weights? # pylint: disable=fixme
         self.weights = np.ones((self.num_particles, 1))
 
-        self.log_likelihood = np.zeros((self.num_particles, 1))
-        self.log_prior = np.zeros((self.num_particles, 1))
-        self.log_posterior = np.zeros((self.num_particles, 1))
+        self.log_likelihood = np.zeros(self.num_particles)
+        self.log_prior = np.zeros(self.num_particles)
+        self.log_posterior = np.zeros(self.num_particles)
 
         self.ess = []
         self.ess_cur = 0.0
@@ -206,10 +206,10 @@ class SequentialMonteCarloIterator(Iterator):
         # draw initial particles from prior distribution
         self.particles = self.parameters.draw_samples(self.num_particles)
         self.log_likelihood = self.eval_log_likelihood(self.particles)
-        self.log_prior = self.eval_log_prior(self.particles).reshape(-1, 1)
+        self.log_prior = self.eval_log_prior(self.particles)
         self.log_posterior = self.log_likelihood + self.log_prior
         # initialize importance weights
-        self.weights = np.ones((self.num_particles, 1))
+        self.weights = np.ones(self.num_particles)
         self.ess_cur = self.num_particles
         self.ess.append(self.ess_cur)
 
@@ -343,13 +343,13 @@ class SequentialMonteCarloIterator(Iterator):
         """
         # draw from multinomial distribution to decide
         # the frequency of individual particles
-        particle_freq = np.random.multinomial(self.num_particles, np.squeeze(self.weights))
+        particle_freq = np.random.multinomial(self.num_particles, self.weights)
 
         idx_list = []
         for idx, freq in enumerate(particle_freq):
             idx_list += [idx] * freq
 
-        resampled_weights = np.ones((self.num_particles, 1))
+        resampled_weights = np.ones(self.num_particles)
 
         return (
             self.particles[idx_list],
@@ -398,7 +398,7 @@ class SequentialMonteCarloIterator(Iterator):
 
             # estimate current covariance matrix
             cov_mat = np.atleast_2d(
-                np.cov(self.particles, ddof=0, aweights=np.squeeze(self.weights), rowvar=False)
+                np.cov(self.particles, ddof=0, aweights=self.weights, rowvar=False)
             )
 
             # scale covariance based on average acceptance rate of last rejuvenation step
