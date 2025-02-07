@@ -24,8 +24,12 @@ well create the agents yourself.
 """
 
 import inspect
+import logging
+import os
 
 import stable_baselines3 as sb3
+
+_logger = logging.getLogger(__name__)
 
 
 def _create_supported_agents_dict():
@@ -115,3 +119,91 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options):
     agent = agent_class(policy_name, env, **agent_options)
 
     return agent
+
+
+def load_model(agent_name, path, experiment_name, env=None):
+    """Convenience function for loading a *stable-baselines3* agent from file.
+
+    Checks whether the agent is of an off-policy type and if so loads its
+    replay buffer as well. The latter is required if a continuation of the
+    training is desired.
+
+    Args:
+        agent_name (str): The name of the agent to load.
+        path (str, Path): The path to the directory containing the agent to load.
+        experiment_name (str): The name of the QUEENS experiment that was used
+            to train the agent (contained in the filename).
+        env (gymnasium.Env, optional): The environment on which the agent was trained.
+
+    Returns:
+        agent (stable_baselines3.BaseAlgorithm): The loaded agent.
+    """
+    # Check whether the provided path is a Path object and convert it to a string
+    if not isinstance(path, str):
+        path = path.as_posix()
+    file_stem = {path} / {experiment_name}
+
+    # Check that a valid agent has been provided
+    agent_name = agent_name.upper()
+    if agent_name not in _supported_sb3_agents.keys():
+        raise ValueError(f"Unsupported agent: {agent_name}")
+    # Retrieve the corresponding agent class
+    agent_class = _supported_sb3_agents[agent_name]
+
+    # Load the agent from file
+    agent_file = f"{file_stem}_agent"
+    _logger.info("Loading agent from file %s.zip", agent_file)
+    agent = agent_class.load(agent_file, env=env)
+
+    if env is None:
+        _logger.warning(
+            "No environment provided!\n"
+            "The agent is loaded without an environment and cannot be used for "
+            "predictions. Make sure to attach an environment by calling `set_env()` "
+            "on the agent instance to attach an environment before using it for "
+            "evaluation."
+        )
+
+    # Check and load replay buffer if it exists
+    if hasattr(agent, "replay_buffer"):
+        _logger.debug("Agent is of off-policy type. Attempting to load replay buffer.")
+        replay_buffer_file = f"{file_stem}_replay_buffer"
+        if os.path.exists(f"{replay_buffer_file}.pkl"):
+            _logger.debug("Loading replay buffer from file %s.pkl", replay_buffer_file)
+            agent.load_replay_buffer(replay_buffer_file)
+        else:
+            _logger.warning(
+                "No replay buffer found for the agent.\n"
+                "You cannot continue the training with this agent."
+            )
+
+    return agent
+
+
+def save_model(agent, gs):
+    """Save a (trained) *stable-baselines3* agent to a file.
+
+    Checks whether the agent is of an off-policy type and if so stores its
+    replay buffer as well. The latter is required if a continuation of the
+    training is desired.
+
+    Args:
+        agent (stable_baselines3.BaseAlgorithm): The trained agent to save.
+        gs (GlobalSettings): The global settings of the QUEENS experiment
+            (needed to retrieve the experiment name and the output directory of
+            the current run).
+    """
+    # Save the agent to file
+    agent_file = gs.result_file("", suffix="_agent")
+    _logger.info("Saving agent to %s.zip", agent_file.as_posix())
+    agent.save(agent_file)
+
+    # Check and save replay buffer if it exists
+    if hasattr(agent, "replay_buffer") and agent.replay_buffer is not None:
+        _logger.debug(
+            "Agent is of off-policy type and has a replay buffer. "
+            "Saving the replay buffer as well."
+        )
+        replay_buffer_file = gs.result_file("", suffix="_replay_buffer")
+        _logger.debug("Writing replay buffer to %s.pkl", replay_buffer_file.as_posix())
+        agent.save_replay_buffer(replay_buffer_file)

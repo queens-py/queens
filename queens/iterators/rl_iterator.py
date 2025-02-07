@@ -32,17 +32,22 @@ class RLIterator(Iterator):
     the :py:mod:`queens.models.rl_models.rl_model` module.
 
     Attributes:
-        _initial_observation (np.ndarray): Initial observation of the environment.
-            This variable is only relevant in 'evaluation' mode and determines
-            the initial observation of the environment, i.e., the starting
-            point of the interaction loop.
         _interaction_steps (int): Number of interaction steps to be performed.
-            This variable is only relevant in 'evaluation' mode and determines
+            This variable is only relevant in ``'evaluation'`` mode and determines
             the number of interaction steps that should be performed with the model.
         _mode (str): Mode of the RLIterator. This variable can be either
             ``'training'`` or ``'evaluation'``, depending on whether the user
             wants to train an RL model or use a trained model for evaluation
             purposes, e.g., as surrogate.
+        initial_observation (np.ndarray): Initial observation of the environment.
+            This variable is only relevant in ``'evaluation'`` mode and determines
+            the initial observation of the environment, i.e., the starting
+            point of the interaction loop.
+        output (dict): Dictionary for storing the output of the iterator in
+            ``'evaluation'`` mode. The dictionary contains two keys: ``'step'``
+            and ``'result'``. The key ``'step'`` contains the list of steps
+            performed and the key ``'result'`` contains the list of results
+            corresponding to each step.
         result_description (dict):  Description of desired results.
     """
 
@@ -147,8 +152,9 @@ class RLIterator(Iterator):
     def core_run(self):
         """Core run of RLIterator.
 
-        Depending on the :py:attr:`mode` of the RLIterator, the agent is either
-        trained or used for evaluation.
+        Depending on the :py:attr:`_mode` of the RLIterator, the agent is either
+        trained or used for evaluation. In case of evaluation, the results of
+        the interactions are stored in the :py:attr:`output` dictionary.
         """
         _logger.info("Welcome to Reinforcement Learning core run.")
         if self._mode == "training":
@@ -184,15 +190,16 @@ class RLIterator(Iterator):
     def post_run(self):
         """Optionally export the results of the core run depending on the mode.
 
-        If the mode is set to 'training', the trained agent is stored
-        for further processing. If the mode is set to 'evaluation', the
-        interaction outputs are stored for further processing.
+        If the mode is set to ``'training'``, the trained agent is
+        stored for further processing. If the mode is set to
+        ``'evaluation'``, the interaction outputs are stored for further
+        processing.
         """
         if self.result_description:
             if self.result_description["write_results"]:
                 if self._mode == "training":
                     _logger.info("Storing the trained agent for further processing.")
-                    # HOW to store a trained sb3 agent?
+                    self.model.save(self.global_settings)
                 else:  # self._mode == 'evaluation'
                     _logger.info("Storing interaction output for further processing.")
                     write_results(self.output, self.global_settings.result_file(".pickle"))
