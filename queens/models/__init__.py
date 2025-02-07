@@ -30,6 +30,7 @@ from queens.models.surrogates.gaussian_process import GaussianProcess
 from queens.models.surrogates.heteroskedastic_gaussian_process import HeteroskedasticGaussianProcess
 from queens.models.surrogates.jitted_gaussian_process import JittedGaussianProcess
 from queens.models.surrogates.variational_gaussian_process import VariationalGaussianProcess
+from queens.models.rl_models.rl_model import RLModel
 
 VALID_TYPES = {
     "simulation_model": Simulation,
@@ -45,4 +46,5 @@ VALID_TYPES = {
     "gp_jitted": JittedGaussianProcess,
     "gp_approximation_gpflow_svgp": VariationalGaussianProcess,
     "gaussian_nn": GaussianNeuralNetwork,
+    "rl_model": RLModel,
 }
