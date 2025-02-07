@@ -118,13 +118,13 @@ class RLModel(Model):
                 this interaction step, such as the undertaken action, the new observation,
                 and the reward obtained from the environment.
         """
-        _logger.info("Computing one agent-enviroment interaction (i.e., one timestep).")
+        _logger.debug("Computing one agent-enviroment interaction (i.e., one timestep).")
         result = self.predict(observation)
         # return values are: observation, reward, done, info
         obs, reward, done, info = self.step(result["action"])
         if self._render_on_evaluation:
             self.render()
-        _logger.info("Interaction completed.")
+        _logger.debug("Interaction completed.")
         # add the additional information to the result dict
         result.update(
             {

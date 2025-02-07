@@ -194,8 +194,8 @@ def save_model(agent, gs):
             the current run).
     """
     # Save the agent to file
-    agent_file = gs.result_file("", suffix="_agent")
-    _logger.info("Saving agent to %s.zip", agent_file.as_posix())
+    agent_file = gs.result_file(".zip", suffix="_agent")
+    _logger.info("Saving agent to %s", agent_file.as_posix())
     agent.save(agent_file)
 
     # Check and save replay buffer if it exists
@@ -204,6 +204,6 @@ def save_model(agent, gs):
             "Agent is of off-policy type and has a replay buffer. "
             "Saving the replay buffer as well."
         )
-        replay_buffer_file = gs.result_file("", suffix="_replay_buffer")
-        _logger.debug("Writing replay buffer to %s.pkl", replay_buffer_file.as_posix())
+        replay_buffer_file = gs.result_file(".pkl", suffix="_replay_buffer")
+        _logger.debug("Writing replay buffer to %s", replay_buffer_file.as_posix())
         agent.save_replay_buffer(replay_buffer_file)
