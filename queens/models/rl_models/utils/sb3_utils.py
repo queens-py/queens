@@ -26,8 +26,11 @@ well create the agents yourself.
 import inspect
 import logging
 import os
+import random
 
+import numpy as np
 import stable_baselines3 as sb3
+import torch
 
 _logger = logging.getLogger(__name__)
 
@@ -119,6 +122,44 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options):
     agent = agent_class(policy_name, env, **agent_options)
 
     return agent
+
+
+def make_deterministic(seed, disable_gpu=True):
+    """Make the random number generation deterministic for an agent training.
+
+    This is achieved by setting the random seed for all python libraries
+    that are involved in training and *stable-baselines3* agent.
+
+    .. note::
+            This function should be called before creating the agent.
+            Make sure to also pass a seed to the agent and the environment.
+
+            * For the environment, you wanna invoke the ``reset()`` method
+              after creation and pass the seed as parameter, e.g., ``env.reset(seed=seed)``.
+              This needs to be done before passing the environment to the agent.
+            * For the agent, this can be achieved by adding the entry
+              ``"seed": seed,`` to the ``agent_options`` dict.
+
+    .. warning::
+            Since GPU computations can result in non-deterministic computations,
+            this functions modifies the ``CUDA_VISIBLE_DEVICES`` environment
+            variable to disable GPU computations. This behavior can be changed
+            by adapting the ``disable_gpu`` parameter.
+
+    Args:
+        seed (int): The random seed to set for all libraries.
+        disable_gpu (bool, optional): Flag indicating whether to disable GPU
+                computations. Defaults to True.
+    """
+    _logger.info("Setting random seed of libraries to %s", seed)
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    sb3.common.utils.set_random_seed(seed)
+
+    if disable_gpu:
+        _logger.info("Disabling GPU computations.")
+        os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
 
 def load_model(agent_name, path, experiment_name, env=None):
