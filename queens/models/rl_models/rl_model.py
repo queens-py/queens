@@ -55,6 +55,7 @@ design of the :py:class:`RLModel` class.
 import logging
 
 from queens.models.model import Model
+from queens.models.rl_models.utils.sb3_utils import save_model
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
@@ -211,6 +212,16 @@ class RLModel(Model):
                 the constructor of the environment.
         """
         self._vec_env.render()
+
+    def save(self, gs):
+        """Save the trained agent to a file.
+
+        Delegates the call to :py:meth:`queens.models.rl_models.utils.sb3_utils.save_model`.
+
+        Args:
+            gs (queens.utils.global_settings.GlobalSettings): Global settings object
+        """
+        save_model(self._agent, gs)
 
     def step(self, action):
         """Perform a single step in the environment.
