@@ -129,21 +129,21 @@ class RLIterator(Iterator):
         return self._interaction_steps
 
     @interaction_steps.setter
-    def interaction_steps(self, eval_steps):
+    def interaction_steps(self, steps):
         """Set the number of interaction steps.
 
         Perform sanity checks to ensure that the number of interaction steps
         has a valid value.
 
         Args:
-            eval_steps (int): Number of interaction steps to be performed.
+            steps (int): Number of interaction steps to be performed.
         """
-        if eval_steps < 0:
+        if steps < 0:
             raise ValueError(
-                f"Unsupported number of interaction steps: {eval_steps}\n"
+                f"Unsupported number of interaction steps: {steps}\n"
                 "The number of interaction steps must be a positive integer."
             )
-        self._interaction_steps = eval_steps
+        self._interaction_steps = steps
 
     def pre_run(self):
         """Prepare the core run of the RLIterator (not needed here)."""
