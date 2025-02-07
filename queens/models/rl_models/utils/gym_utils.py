@@ -28,12 +28,12 @@ _logger = logging.getLogger(__name__)
 _supported_gym_environments = list(gym.envs.registry.keys())
 
 
-def create_gym_environment(env_name, env_options, seed=None):
+def create_gym_environment(env_name, env_options=None, seed=None):
     """Convenience function to create a *gymnasium* environment.
 
     Args:
         env_name (str): Name of the *gymnasium* environment to create.
-        env_options (dict): Dictionary of options to pass to the environment.
+        env_options (dict, optional): Dictionary of options to pass to the environment.
         seed (int, optional): Seed to use for the environment.
 
     Returns:
@@ -47,6 +47,10 @@ def create_gym_environment(env_name, env_options, seed=None):
             f"Environment `{env_name}` is not known to gymnasium.\n"
             f"Supported environments are: {_supported_gym_environments}"
         )
+
+    # if no options are provided, create an empty dictionary to be able to
+    # unpack it without errors
+    env_options = env_options or {}
 
     # If the environment name is known, create an environment instance
     env = gym.make(env_name, **env_options)

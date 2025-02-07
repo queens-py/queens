@@ -78,7 +78,7 @@ def get_supported_sb3_policies(agent_class):
     )
 
 
-def create_sb3_agent(agent_name, policy_name, env, agent_options):
+def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
     """Creates a *stable-baselines3* agent based on its name as string.
 
     Looks up whether the provided agent name corresponds to an agent supported by
@@ -92,7 +92,8 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options):
         env (gymnasium.Env): The environment to train the agent on. For a convenience
             function to create a predefined *gymnasium* environment, see
             :py:meth:`queens.models.rl_models.utils.gym_utils.create_gym_environment`.
-        agent_options (dict): A dictionary of optional parameters to pass to the agent.
+        agent_options (dict, optional): A dictionary of optional parameters to pass
+            to the agent.
 
     Returns:
         agent (stable_baselines3.BaseAlgorithm): An instance of the created agent.
@@ -117,6 +118,10 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options):
             f"Agent {agent_name} only supports the following policies: "
             f"{supported_sb3_policies}!"
         )
+
+    # if no options are provided, create an empty dictionary to be able to
+    # unpack it without errors
+    agent_options = agent_options or {}
 
     # create the agent instance with the provided parameters
     agent = agent_class(policy_name, env, **agent_options)
