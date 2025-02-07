@@ -171,7 +171,7 @@ class RLIterator(Iterator):
                     "No initial observation provided.\n"
                     "Resetting environment to generate an initial observation."
                 )
-                obs = self.model.get_initial_observation()
+                obs = self.model.reset()
             else:  # initial observation has been provided by the user
                 _logger.debug("Using provided initial observation.")
                 obs = self.initial_observation

@@ -69,6 +69,8 @@ class RLModel(Model):
 
     Attributes:
         _agent (object): An instance of a *stable-baselines3* agent.
+        _deteministic_actions (bool): Flag indicating whether to use a
+            deterministic policy.
         _render_on_evaluation (bool): Flag indicating whether to render the
             environment during evaluation.
         _total_timesteps (int): Total number of timesteps to train the agent.
@@ -78,14 +80,18 @@ class RLModel(Model):
     """
 
     @log_init_args
-    def __init__(self, agent, total_timesteps=10000, render_on_evaluation=False):
+    def __init__(
+        self, agent, deterministic_actions=False, render_on_evaluation=False, total_timesteps=10000
+    ):
         """Initialize an RLModel instance.
 
         Args:
             agent (object): An instance of a *stable-baselines3* agent.
-            total_timesteps (int): Total number of timesteps to train the agent.
+            deterministic_actions (bool): Flag indicating whether to use a
+                deterministic policy.
             render_on_evaluation (bool): Flag indicating whether to render the
                 environment during evaluation.
+            total_timesteps (int): Total number of timesteps to train the agent.
         """
         super().__init__()
 
@@ -96,14 +102,17 @@ class RLModel(Model):
         # Retrieve a (vectorized) stable-baseline3 environment for evaluation
         self._vec_env = self._agent.get_env()
 
-        self._total_timesteps = total_timesteps
+        self._deterministic_actions = deterministic_actions
         self._render_on_evaluation = render_on_evaluation
+        self._total_timesteps = total_timesteps
 
     def interact(self, observation):
         """Perform one interaction step of an RL agent with an environment.
 
         One interaction consists of the following steps:
             1. Predict the next action based on the current observation, see :py:meth:`predict()`.
+               Whether or not a deterministic prediction will be made is determined
+               by the value of :py:attr:`_deterministic_action`.
             2. Apply the predicted action to the environment, see :py:meth:`step()`.
             3. Optionally render the environment depending on the value of
                :py:attr:`_render_on_evaluation`, see :py:meth:`render()`.
@@ -119,7 +128,7 @@ class RLModel(Model):
                 and the reward obtained from the environment.
         """
         _logger.debug("Computing one agent-enviroment interaction (i.e., one timestep).")
-        result = self.predict(observation)
+        result = self.predict(observation, self._deterministic_actions)
         # return values are: observation, reward, done, info
         obs, reward, done, info = self.step(result["action"])
         if self._render_on_evaluation:
@@ -136,16 +145,24 @@ class RLModel(Model):
         )
         return result
 
-    def get_initial_observation(self):
-        """Returns a (random) initial state of the environment.
+    def reset(self, seed=None):
+        """Resets the environment and returns its initial state.
 
-        This method can be used to generate an inital observation of the
-        environment to be used as the starting point for an evalution of a
-        trained agent.
+        .. note::
+            This method can also be used to generate an inital observation of
+            the environment as the starting point for the evalution of a
+            trained agent.
+
+        Args:
+            seed (int, optional): Seed for making the observation generation
+                reproducible.
 
         Returns:
             np.ndarray: (Random) Initial observation of the environment.
         """
+        if seed is not None:
+            _logger.debug("Using seed %d for resetting the environment", seed)
+            self._vec_env.seed(seed=seed)
         return self._vec_env.reset()
 
     def grad(self, samples, upstream_gradient):
@@ -180,26 +197,33 @@ class RLModel(Model):
         self.response = self.predict(samples)
         return self.response
 
-    def predict(self, observations):
+    def predict(self, observations, deterministic=False):
         """Predict the actions to be undertaken for given observations.
 
         Args:
             observations (np.ndarray): Either a single observation or a batch of observations.
+            deterministic (bool): Flag indicating whether to use a deterministic policy.
+
+        .. note::
+                The ``deterministic`` flag is generally only relevant for testing
+                purposes, i.e., to ensure that the same observation always results
+                in the same action.
 
         Returns:
-            result (dict): Actions and new (hidden) states corresponding to the provided
-                observations. The prediction actions are stored as the main result of this
+            result (dict): Actions corresponding to the provided observations.
+                The predicted actions are stored as the main result of this
                 model.
         """
         _logger.debug("Predicting the next action based on the current state of the environment.")
-        # Predict the agent's action and the new (hidden) state of the
-        # environment based on the current observation
-        actions, hidden_states = self._agent.predict(observations)
+        # Predict the agent's action based on the current observation
+        # The second return argument corresponds to hidden states of the environment
+        # which are only relevant for agents with a recurrent policy (of which
+        # none are currently supported by the stable-baselines3 package)
+        actions, _ = self._agent.predict(observations, deterministic=deterministic)
         # combine information into a dict
         result = {
             "result": actions,  # this is redundant, but kept for compatibility
             "action": actions,
-            "hidden_state": hidden_states,
         }
         return result
 
