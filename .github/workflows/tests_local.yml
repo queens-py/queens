@@ -77,9 +77,9 @@ jobs:
         uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
         run: |
-          echo "# Integration and unit tests" >> $GITHUB_STEP_SUMMARY
           $PYTHON_PACKAGE_MANAGER activate queens
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
+          python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
       - name: Upload coverage report
         uses: actions/upload-pages-artifact@v3
         with:
@@ -92,4 +92,4 @@ jobs:
         with:
           report_paths: "test_junit.xml"
           annotate_only: true
-          detailed_summary: true
+          job_summary: false
