@@ -187,7 +187,7 @@ def load_model(agent_name, path, experiment_name, env=None):
     # Check whether the provided path is a Path object and convert it to a string
     if not isinstance(path, str):
         path = path.as_posix()
-    file_stem = {path} / {experiment_name}
+    file_stem = f"{path}/{experiment_name}"
 
     # Check that a valid agent has been provided
     agent_name = agent_name.upper()
