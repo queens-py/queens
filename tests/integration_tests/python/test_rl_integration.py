@@ -100,6 +100,21 @@ def test_rl_integration(agent_name, environment_name, global_settings):
 
     # TODO  # pylint: disable=W0511
     # Check entries of results dictionary
+    assert "raw_output_data" in results
+    assert "result" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["result"], np.ndarray)
+    assert "action" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["action"], np.ndarray)
+    assert "new_obs" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["new_obs"], np.ndarray)
+    assert "reward" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["reward"], np.ndarray)
+    assert "done" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["done"], np.ndarray)
+    assert "info" in results["raw_output_data"]
+    assert isinstance(results["raw_output_data"]["info"], np.ndarray)
+    assert "input_data" in results
+    assert isinstance(results["input_data"], np.ndarray)
 
     # retrieve the data as numpy arrays
     expected_results = results["raw_output_data"]["actions"]
