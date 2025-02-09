@@ -257,6 +257,6 @@ class RLIterator(Iterator):
         This function is called at the end of :py:meth:`core_run` when executed
         with ``mode==evaluation``.
         """
-        self.samples = np.atleast_2d(self.samples)
+        self.samples = np.array(self.samples)
         for key in self.output.keys():
-            self.output[key] = np.atleast_2d(self.output[key])
+            self.output[key] = np.array(self.output[key])
