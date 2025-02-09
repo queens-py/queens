@@ -16,11 +16,14 @@
 
 import logging
 import time
+from collections import defaultdict
+
+import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.models.rl_models.rl_model import RLModel
 from queens.utils.logger_settings import log_init_args
-from queens.utils.process_outputs import write_results
+from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -33,22 +36,42 @@ class RLIterator(Iterator):
 
     Attributes:
         _interaction_steps (int): Number of interaction steps to be performed.
-            This variable is only relevant in ``'evaluation'`` mode and determines
+            This variable is only relevant in ``"evaluation"`` mode and determines
             the number of interaction steps that should be performed with the model.
         _mode (str): Mode of the RLIterator. This variable can be either
-            ``'training'`` or ``'evaluation'``, depending on whether the user
+            ``"training"`` or ``"evaluation"``, depending on whether the user
             wants to train an RL model or use a trained model for evaluation
             purposes, e.g., as surrogate.
         initial_observation (np.ndarray): Initial observation of the environment.
-            This variable is only relevant in ``'evaluation'`` mode and determines
+            This variable is only relevant in ``"evaluation"`` mode and determines
             the initial observation of the environment, i.e., the starting
             point of the interaction loop.
         output (dict): Dictionary for storing the output of the iterator in
-            ``'evaluation'`` mode. The dictionary contains two keys: ``'step'``
-            and ``'result'``. The key ``'step'`` contains the list of steps
-            performed and the key ``'result'`` contains the list of results
-            corresponding to each step.
+            ``"evaluation"`` mode. Since an ``RLIterator`` instance behaves differently
+            than other iterators in the sense that the outputs are only collected
+            iteratively via an interaction loop, the dictionary contains lists
+            during an evaluation run, which are filled dynamically. Once the evaluation
+            run is complete, these lists are converted to ``numpy`` arrarys, so that
+            the resulting dict associates string keys, with ``numpy`` arrays.
+            The ``output`` dict of an ``RLIterator`` instance contains x keys:
+
+            * ``"result"``: This key is kept for compatibility with other *QUEENS*
+              iterators and contains the recorded actions.
+            * ``"action"``: Contains the actions that were predicted by the agent
+              as result of the provided observations.
+            * ``"new_obs"``: The new observation after applying the predicted action
+              to the environment.
+            * ``"reward"``: The reward corresponding to the predicted action.
+            * ``"info"``: Additional information about the interaction step.
+            * ``"done"``: Flag indicating whether the undertaken action completed
+              an episode.
         result_description (dict):  Description of desired results.
+        samples (ndarray): Observations that were used as model inputs during the
+            evaluation interaction loop. Similarly to the :py:attr:`output` member,
+            the samples are only generated iteratively during an evaluation run
+            of an ``RLIterator`` instance. Thus, this variable is initially initialized
+            as list and only converted to a numpy array at the end of each evaluation
+            run.
     """
 
     @log_init_args
@@ -73,8 +96,8 @@ class RLIterator(Iterator):
             global_settings (GlobalSettings): Settings of the QUEENS experiment including its name
                 and the output directory.
             result_description (dict): Description of desired results.
-            mode (str): Mode of the RLIterator. This variable can be either ``'training'``
-                or ``'evaluation'``.
+            mode (str): Mode of the RLIterator. This variable can be either ``"training"``
+                or ``"evaluation"``.
             interaction_steps (int): Number of interaction steps to be performed.
             initial_observation (np.ndarray): Initial observation of the environment.
         """
@@ -92,8 +115,9 @@ class RLIterator(Iterator):
         self.interaction_steps = interaction_steps
         self.initial_observation = initial_observation
 
-        # Create a dictionary with empty lists to store the interaction data
-        self.output = {"step": [], "result": []}
+        # Initialize samples and output members
+        self.samples = None
+        self.output = None
 
     @property
     def mode(self):
@@ -164,8 +188,13 @@ class RLIterator(Iterator):
             self.model.train()
             end = time.time()
             _logger.info("Agent training took %E seconds.", end - start)
-        else:  # self._mode == 'evaluation'
+        else:  # self._mode == "evaluation"
             _logger.info("Starting interaction loop.")
+            # Reset samples member (initialize as list since data needs to be added dynamically)
+            self.samples = []
+            # Reset output member (initilize as a dictionary with lists since
+            # data needs to be added dynamically)
+            self.output = defaultdict(list)
             if self.initial_observation is None:
                 _logger.debug(
                     "No initial observation provided.\n"
@@ -177,22 +206,23 @@ class RLIterator(Iterator):
                 obs = self.initial_observation
             start = time.time()
             # Perform as many interaction steps as set by the user
-            for step in range(self._interaction_steps):
+            for _ in range(self._interaction_steps):
                 result = self.model.interact(obs)
                 # Extract the observation for the next iteration
-                obs = result["observation"]
-                # Update the output dictionary
-                self.output["step"].append(step)
-                self.output["result"].append(result)
+                obs = result["new_obs"]
+                # Update the samples and outputs
+                self.update_samples_and_outputs(obs, result)
             end = time.time()
             _logger.info("Interaction loop took %E seconds.", end - start)
+            # convert the generated samples and outputs to numpy arrays
+            self.convert_to_numpy()
 
     def post_run(self):
         """Optionally export the results of the core run depending on the mode.
 
-        If the mode is set to ``'training'``, the trained agent is
+        If the mode is set to ``"training"``, the trained agent is
         stored for further processing. If the mode is set to
-        ``'evaluation'``, the interaction outputs are stored for further
+        ``"evaluation"``, the interaction outputs are stored for further
         processing.
         """
         if self.result_description:
@@ -200,6 +230,33 @@ class RLIterator(Iterator):
                 if self._mode == "training":
                     _logger.info("Storing the trained agent for further processing.")
                     self.model.save(self.global_settings)
-                else:  # self._mode == 'evaluation'
-                    _logger.info("Storing interaction output for further processing.")
-                    write_results(self.output, self.global_settings.result_file(".pickle"))
+                else:  # self._mode == "evaluation"
+                    _logger.info("Processing interaction output...")
+                    results = process_outputs(self.output, self.result_description, self.samples)
+                    _logger.info("Storing processed output for further processing.")
+                    write_results(results, self.global_settings.result_file(".pickle"))
+
+    def update_samples_and_outputs(self, obs, result):
+        """Stores step information of the current interaction step.
+
+        Dynamically updates the :py:attr:`samples` and :py:attr:`output` members
+        with the provided data from the last interaction step.
+
+        Args:
+            obs (np.ndarray) : The observation used as an input to start the last
+                interaction step.
+            result (dict): The results generated by the last interaction step.
+        """
+        self.samples.append(obs)
+        for key in result.keys():
+            self.output[key].append(result[key])
+
+    def convert_to_numpy(self):
+        """Converts members :py:attr:`samples` and :py:attr:`output` to numpy.
+
+        This function is called at the end of :py:meth:`core_run` when executed
+        with ``mode==evaluation``.
+        """
+        self.samples = np.atleast_2d(self.samples)
+        for key in self.output.keys():
+            self.output[key] = np.atleast_2d(self.output[key])

@@ -71,31 +71,45 @@ class RLModel(Model):
         _agent (object): An instance of a *stable-baselines3* agent.
         _deteministic_actions (bool): Flag indicating whether to use a
             deterministic policy.
-        _render_on_evaluation (bool): Flag indicating whether to render the
-            environment during evaluation.
+        _render_mode (str, optional): String indicating whether (and how) the
+            state of te environment should be rendered during evaluation.
+
+            * If ``None``, the state of the environment won't be rendered.
+            * If ``"human"``, the state of the environment will be visualized in
+              a new pop-up window.
+            * If ``"rgb_array"``, an rgb-image will be generated which will be
+              stored in the member :py:attr:`frames` for further processing (no
+              immediate screen output will be generated).
+            * If ``"ansi"``, a string representaton of the environment will be
+              generated which can be used for text-based rendering.
+
+            .. note::
+                    Not all render modes can be used with all environments.
         _total_timesteps (int): Total number of timesteps to train the agent.
         _vec_env (object): A vectorized environment for evaluation.
+        frames (list): A list with frames depicting the states of the environment
+            generated from performing an evaluation interaction loop.
         is_trained (bool): Flag indicating whether the agent has been trained.
-        response (dict): The response of the model evaluation.
+        response (dict): The response of the last model evaluation.
     """
 
     @log_init_args
-    def __init__(
-        self, agent, deterministic_actions=False, render_on_evaluation=False, total_timesteps=10000
-    ):
+    def __init__(self, agent, deterministic_actions=False, render_mode=None, total_timesteps=10000):
         """Initialize an RLModel instance.
 
         Args:
             agent (object): An instance of a *stable-baselines3* agent.
             deterministic_actions (bool): Flag indicating whether to use a
                 deterministic policy.
-            render_on_evaluation (bool): Flag indicating whether to render the
-                environment during evaluation.
+            render_mode (str, optional): String indicating whether (and how) the
+                state of the environment should be rendered during evaluation,
+                see :py:attr:`_render_mode` for more information.
             total_timesteps (int): Total number of timesteps to train the agent.
         """
         super().__init__()
 
         self.is_trained = False
+        self.frames = []
 
         # Store the provided agent instance
         self._agent = agent
@@ -103,8 +117,17 @@ class RLModel(Model):
         self._vec_env = self._agent.get_env()
 
         self._deterministic_actions = deterministic_actions
-        self._render_on_evaluation = render_on_evaluation
         self._total_timesteps = total_timesteps
+
+        # Check whether the provided render mode is supported
+        if render_mode:
+            if render_mode not in ["human", "rgb_array", "ansi"]:
+                raise ValueError(
+                    "Unsupported value for `render_mode`:\n"
+                    "`render_mode` needs to be either `human`, `rgb_array`, or "
+                    "`ansi`."
+                )
+        self._render_mode = render_mode
 
     def interact(self, observation):
         """Perform one interaction step of an RL agent with an environment.
@@ -131,13 +154,13 @@ class RLModel(Model):
         result = self.predict(observation, self._deterministic_actions)
         # return values are: observation, reward, done, info
         obs, reward, done, info = self.step(result["action"])
-        if self._render_on_evaluation:
+        if self._render_mode:
             self.render()
         _logger.debug("Interaction completed.")
         # add the additional information to the result dict
         result.update(
             {
-                "observation": obs,
+                "new_obs": obs,
                 "reward": reward,
                 "done": done,
                 "info": info,
@@ -230,12 +253,21 @@ class RLModel(Model):
     def render(self):
         """Render the current state of the environment.
 
+        Depending on the value of :py:attr:`_render_mode` the state of the
+        environment will be either visualized in a pop-up window
+        (``self._render_mode=="human"``) or a
+
         .. note::
                 Internally delegates the call to the ``render()`` method of the
                 vectorized environment. Render settings can be controlled via
-                the constructor of the environment.
+                the constructor of the environment and the value of member
+                :py:attr`_render_mode`.
         """
-        self._vec_env.render()
+        frame = self._vec_env.render(mode=self._render_mode)
+        if self._render_mode != "human":
+            style = "an image" if self._render_mode == "rgb_array" else "a textual representation"
+            _logger.debug("Storing %s of the environment for further processing.", style)
+            self.frames.append(frame)
 
     def save(self, gs):
         """Save the trained agent to a file.

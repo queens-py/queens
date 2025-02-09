@@ -37,18 +37,30 @@ def fixture_custom_agent(agent_name, environment_name):
 
 
 # ------------------ actual unit tests --------------------------- #
-def test_rl_model_init():
+@pytest.mark.parametrize(
+    "render_mode",
+    [
+        None,
+        "human",
+        "rgb_array",
+        "ansi",
+        pytest.param("rgb-array", marks=pytest.mark.xfail(strict=True, raises=ValueError)),
+    ],
+)
+def test_rl_model_init(render_mode):
     """Unit tests for the RLModel class."""
     # Create the model
     agent = Mock()
-    model = RLModel(agent, total_timesteps=1_000)
+    model = RLModel(agent, render_mode=render_mode, total_timesteps=1_000)
 
     # Check whether setting up the model worked correctly
     assert model._agent == agent  # pylint: disable=W0212
+    assert model._deterministic_actions is False  # pylint: disable=W0212
+    assert model._render_mode == render_mode  # pylint: disable=W0212
     assert model._total_timesteps == 1_000  # pylint: disable=W0212
-    assert model._render_on_evaluation is False  # pylint: disable=W0212
+    assert model._vec_env is not None  # pylint: disable=W0212
+    assert isinstance(model.frames, list) and len(model.frames) == 0
     assert model.is_trained is False
-    assert hasattr(model, "_vec_env") and model._vec_env is not None  # pylint: disable=W0212
 
 
 @pytest.mark.parametrize(
@@ -89,8 +101,8 @@ def test_rl_model_training_and_evaluation(custom_agent):
     assert interaction_result["result"] is not None
     assert "action" in interaction_result
     assert interaction_result["action"] is not None
-    assert "observation" in interaction_result
-    assert interaction_result["observation"] is not None
+    assert "new_obs" in interaction_result
+    assert interaction_result["new_obs"] is not None
     assert "reward" in interaction_result
     assert interaction_result["reward"] is not None
     assert "done" in interaction_result
