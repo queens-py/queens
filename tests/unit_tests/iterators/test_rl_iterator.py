@@ -44,6 +44,8 @@ def test_rl_iterator_initialization_and_properties(mode, steps):
     result_description = {
         "write_results": True,
     }
+
+    # generate a random observation
     obs = np.random.random(size=(5, 1))
 
     # create the iterator instance
@@ -62,8 +64,5 @@ def test_rl_iterator_initialization_and_properties(mode, steps):
     assert iterator.mode == mode
     assert iterator.interaction_steps == steps
     np.testing.assert_array_equal(iterator.initial_observation, obs)
-    assert hasattr(iterator, "output")
-    assert "step" in iterator.output
-    assert len(iterator.output["step"]) == 0
-    assert "result" in iterator.output
-    assert len(iterator.output["result"]) == 0
+    assert iterator.samples is None
+    assert iterator.output is None
