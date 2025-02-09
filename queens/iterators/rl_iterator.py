@@ -63,6 +63,8 @@ class RLIterator(Iterator):
               to the environment.
             * ``"reward"``: The reward corresponding to the predicted action.
             * ``"info"``: Additional information about the interaction step.
+              Please note that each entry in ``output["info"]`` will again be a
+              dictionary.
             * ``"done"``: Flag indicating whether the undertaken action completed
               an episode.
         result_description (dict):  Description of desired results.
