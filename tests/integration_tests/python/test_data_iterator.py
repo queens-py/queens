@@ -16,7 +16,7 @@
 
 import pytest
 
-from queens.iterators.data_iterator import DataIterator
+from queens.iterators.data import Data
 from queens.main import run_iterator
 from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
@@ -29,15 +29,12 @@ def test_branin_data_iterator(mocker, ref_result_iterator, global_settings):
 
     samples = ref_result_iterator
 
-    mocker.patch(
-        "queens.iterators.data_iterator.DataIterator.read_pickle_file",
-        return_value=[samples, output],
-    )
+    mocker.patch("queens.iterators.data.Data.read_pickle_file", return_value=[samples, output])
 
     parameters = Parameters()
 
     # Setup iterator
-    iterator = DataIterator(
+    iterator = Data(
         path_to_data="/path_to_data/some_data.pickle",
         result_description={
             "write_results": True,

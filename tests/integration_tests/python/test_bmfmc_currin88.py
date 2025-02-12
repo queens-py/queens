@@ -23,7 +23,7 @@ from scipy.stats import entropy
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.bmfmc_iterator import BMFMCIterator
+from queens.iterators.bmfmc import BMFMC
 from queens.main import run_iterator
 from queens.models.bmfmc_model import BMFMCModel
 from queens.models.simulation_model import SimulationModel
@@ -80,7 +80,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         parameters=parameters,
         global_settings=global_settings,
     )
-    iterator = BMFMCIterator(
+    iterator = BMFMC(
         global_settings=global_settings,
         result_description={
             "write_results": True,

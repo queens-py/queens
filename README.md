@@ -69,7 +69,7 @@ Let's consider a parallelized Monte Carlo simulation of the [Ishigami function](
 from queens.distributions import Beta, Normal, Uniform
 from queens.drivers import Function
 from queens.global_settings import GlobalSettings
-from queens.iterators import MonteCarloIterator
+from queens.iterators import MonteCarlo
 from queens.main import run_iterator
 from queens.models import SimulationModel
 from queens.parameters import Parameters
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     model = SimulationModel(scheduler=scheduler, driver=driver)
 
     # Set up the algorithm
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         model=model,
         parameters=parameters,
         global_settings=global_settings,

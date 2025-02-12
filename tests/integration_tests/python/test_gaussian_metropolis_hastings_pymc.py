@@ -21,7 +21,7 @@ from mock import patch
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
-from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
+from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -52,7 +52,7 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = MetropolisHastingsPyMCIterator(
+    iterator = MetropolisHastingsPyMC(
         seed=42,
         num_samples=10,
         num_burn_in=2,

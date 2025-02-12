@@ -21,8 +21,8 @@ import numpy as np
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.lhs_iterator import LHSIterator
-from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
+from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
@@ -43,7 +43,7 @@ def test_sobol_indices_ishigami_gp(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=50,
         num_iterations=10,
@@ -58,7 +58,7 @@ def test_sobol_indices_ishigami_gp(global_settings):
         dimension_lengthscales=3,
         training_iterator=training_iterator,
     )
-    iterator = SobolIndexIterator(
+    iterator = SobolIndex(
         seed=42,
         calc_second_order=False,
         num_samples=128,

@@ -22,7 +22,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.mlmc_iterator import MLMCIterator
+from queens.iterators.mlmc import MLMC
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters import Parameters
@@ -72,7 +72,7 @@ def fixture_models(parameters, scheduler):
 def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
     """Test case for the iterator with a given number of samples."""
     # Set up iterator.
-    iterator = MLMCIterator(
+    iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
@@ -96,7 +96,7 @@ def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
 def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
     """Test case for the bootstrap estimate of the MLMC standard deviation."""
     # Set up iterator.
-    iterator = MLMCIterator(
+    iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
@@ -121,7 +121,7 @@ def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
 def test_mlmc_borehole_optimal_num_samples(global_settings, parameters, models):
     """Test case for the iterator with an optimal number of samples."""
     # Set up iterator.
-    iterator_optimal = MLMCIterator(
+    iterator_optimal = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,

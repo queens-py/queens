@@ -21,7 +21,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -46,7 +46,7 @@ def test_monte_carlo_borehole(global_settings):
     driver = Function(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         seed=42,
         num_samples=1000,
         result_description={"write_results": True, "plot_results": False},

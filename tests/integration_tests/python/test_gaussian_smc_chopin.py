@@ -22,7 +22,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -58,7 +58,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = SequentialMonteCarloChopinIterator(
+    iterator = SequentialMonteCarloChopin(
         seed=42,
         num_particles=100,
         resampling_threshold=0.5,
@@ -75,7 +75,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
 
     # Actual analysis
     with patch.object(
-        SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density_gaussian_1d
+        SequentialMonteCarloChopin, "eval_log_likelihood", target_density_gaussian_1d
     ):
         run_iterator(iterator, global_settings=global_settings)
 

@@ -21,7 +21,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
+from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.main import run_iterator
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
@@ -74,7 +74,7 @@ def test_rpvi_iterator_park91a_hifi(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=1000,
         n_samples_per_iter=2,
         score_function_bool=True,
@@ -150,7 +150,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=1000,
         n_samples_per_iter=2,
         score_function_bool=True,
@@ -243,7 +243,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100000,
         n_samples_per_iter=10,
         score_function_bool=False,

@@ -20,7 +20,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators.hmc_iterator import HMCIterator
+from queens.iterators.hamiltonian_monte_carlo import HamiltonianMonteCarlo
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -56,7 +56,7 @@ def test_gaussian_hmc(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = HMCIterator(
+    iterator = HamiltonianMonteCarlo(
         seed=42,
         num_samples=10,
         num_burn_in=2,

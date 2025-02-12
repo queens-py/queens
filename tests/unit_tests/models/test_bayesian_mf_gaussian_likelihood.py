@@ -294,7 +294,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
     default_mf_likelihood.normal_distribution = distribution_mock
 
     mp1 = mocker.patch(
-        "queens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy",
+        "queens.iterators.bmfia.BMFIA.set_feature_strategy",
         return_value=(z_mat),
     )
     mp2 = mocker.patch(
@@ -366,7 +366,7 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
     default_mf_likelihood.normal_distribution = distribution_mock
 
     mp1 = mocker.patch(
-        "queens.iterators.bmfia_iterator.BMFIAIterator.set_feature_strategy",
+        "queens.iterators.bmfia.BMFIA.set_feature_strategy",
         return_value=z_mat,
     )
     mp2 = mocker.patch(
@@ -473,7 +473,7 @@ def test_build_approximation(default_bmfia_iterator, default_interface, mocker):
     approx = Mock()
 
     mo_1 = mocker.patch(
-        "queens.iterators.bmfia_iterator.BMFIAIterator.core_run",
+        "queens.iterators.bmfia.BMFIA.core_run",
         return_value=(z_train, y_hf_train),
     )
     mo_2 = mocker.patch(

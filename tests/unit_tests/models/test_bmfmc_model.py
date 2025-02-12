@@ -19,7 +19,7 @@ import pytest
 from mock import Mock, patch
 
 from queens.distributions.uniform import Uniform
-from queens.iterators.data_iterator import DataIterator
+from queens.iterators.data import Data
 from queens.models import bmfmc_model
 from queens.models.bmfmc_model import BMFMCModel
 from queens.models.simulation_model import SimulationModel
@@ -130,7 +130,7 @@ def fixture_default_bmfmc_model(global_settings, parameters, settings_probab_map
 def fixture_default_data_iterator(result_description, global_settings):
     """Create default data iterator."""
     path_to_data = "dummy"
-    data_iterator = DataIterator(path_to_data, result_description, global_settings)
+    data_iterator = Data(path_to_data, result_description, global_settings)
     return data_iterator
 
 
@@ -281,9 +281,7 @@ def test_run_BMFMC_without_features(mocker, default_bmfmc_model):
 
 def test_load_sampling_data(mocker, default_bmfmc_model, default_data_iterator, dummy_MC_data):
     """Test loading of sampling data."""
-    mp1 = mocker.patch(
-        "queens.iterators.data_iterator.DataIterator.read_pickle_file", return_value=dummy_MC_data
-    )
+    mp1 = mocker.patch("queens.iterators.data.Data.read_pickle_file", return_value=dummy_MC_data)
     # modify default model to expect HF MC reference data
     default_bmfmc_model.lf_data_iterators = [default_data_iterator, default_data_iterator]
     default_bmfmc_model.hf_data_iterator = default_data_iterator

@@ -19,7 +19,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.grid_iterator import GridIterator
+from queens.iterators.grid import Grid
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -38,7 +38,7 @@ def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_pa
     driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = GridIterator(
+    iterator = Grid(
         grid_design={
             "x1": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
             "x2": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},

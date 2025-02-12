@@ -19,7 +19,7 @@ import pandas as pd
 
 from queens.distributions.free import FreeVariable
 from queens.drivers.function import Function
-from queens.iterators.lm_iterator import LMIterator
+from queens.iterators.levenberg_marquardt import LevenbergMarquardt
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -37,7 +37,7 @@ def test_lm_rosenbrock_res(global_settings):
     driver = Function(parameters=parameters, function="rosenbrock60_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = LMIterator(
+    iterator = LevenbergMarquardt(
         jac_rel_step=1e-05,
         jac_abs_step=0.001,
         max_feval=99,

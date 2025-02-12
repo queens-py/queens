@@ -21,7 +21,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators.nuts_iterator import NUTSIterator
+from queens.iterators.nuts import NUTS
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -57,7 +57,7 @@ def test_gaussian_nuts(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = NUTSIterator(
+    iterator = NUTS(
         seed=42,
         num_samples=10,
         num_burn_in=2,

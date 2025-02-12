@@ -24,7 +24,7 @@ import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disab
 from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import Uniform
 from queens.drivers import Jobscript
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -155,7 +155,7 @@ class TestDaskCluster:
             extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
         model = SimulationModel(scheduler=scheduler, driver=driver)
-        iterator = MonteCarloIterator(
+        iterator = MonteCarlo(
             seed=42,
             num_samples=2,
             result_description={"write_results": True, "plot_results": False},

@@ -18,7 +18,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.control_variates_iterator import ControlVariatesIterator
+from queens.iterators.control_variates import ControlVariates
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters import Parameters
@@ -81,7 +81,7 @@ def test_control_variates_with_given_num_samples(
     n0 = 100
 
     # Set up iterator.
-    iterator = ControlVariatesIterator(
+    iterator = ControlVariates(
         model=model_main,
         control_variate=control_variate,
         parameters=parameters,
@@ -117,7 +117,7 @@ def test_control_variates_with_optimal_num_samples(
     cost_control_variate = 0.9999999
 
     # Set up iterator.
-    iterator = ControlVariatesIterator(
+    iterator = ControlVariates(
         model=model_main,
         control_variate=control_variate,
         parameters=parameters,

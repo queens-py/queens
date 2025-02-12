@@ -20,9 +20,9 @@ import pytest
 from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.bmfia_iterator import BMFIAIterator
-from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from queens.iterators.bmfia import BMFIA
+from queens.iterators.reparameteriztion_based_variational import RPVI
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
 from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
     BMFGaussianModel,
@@ -100,7 +100,7 @@ def test_bmfia_smc_park(
     lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    mf_subiterator = BMFIA(
         features_config="man_features",
         X_cols=[0],
         num_features=1,
@@ -118,7 +118,7 @@ def test_bmfia_smc_park(
         forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
-    iterator = SequentialMonteCarloIterator(
+    iterator = SequentialMonteCarlo(
         seed=41,
         num_particles=10,
         temper_type="bayes",
@@ -196,7 +196,7 @@ def test_bmfia_rpvi_gp_park(
     lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    mf_subiterator = BMFIA(
         features_config="man_features",
         num_features=1,
         X_cols=[0],
@@ -214,7 +214,7 @@ def test_bmfia_rpvi_gp_park(
         forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,
@@ -301,7 +301,7 @@ def test_bmfia_rpvi_nn_park(
     lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    mf_subiterator = BMFIA(
         features_config="no_features",
         initial_design={"num_HF_eval": 50, "seed": 1, "type": "random"},
         hf_model=hf_model,
@@ -324,7 +324,7 @@ def test_bmfia_rpvi_nn_park(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,

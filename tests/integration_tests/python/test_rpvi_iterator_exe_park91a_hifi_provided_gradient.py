@@ -20,7 +20,7 @@ import pytest
 from queens.data_processors import Csv
 from queens.distributions import Normal
 from queens.drivers import Mpi
-from queens.iterators import RPVIIterator
+from queens.iterators import RPVI
 from queens.main import run_iterator
 from queens.models import (
     DifferentiableSimulationModelAdjoint,
@@ -128,7 +128,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -235,7 +235,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -364,7 +364,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,

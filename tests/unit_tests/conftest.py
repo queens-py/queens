@@ -19,7 +19,7 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-from queens.iterators.bmfia_iterator import BMFIAIterator
+from queens.iterators.bmfia import BMFIA
 from queens.models.simulation_model import SimulationModel
 
 
@@ -47,8 +47,8 @@ def fixture_get_patched_bmfia_iterator(global_settings):
         num_features = None
         coord_cols = None
 
-        with patch.object(BMFIAIterator, "calculate_initial_x_train", lambda *args: x_train):
-            iterator = BMFIAIterator(
+        with patch.object(BMFIA, "calculate_initial_x_train", lambda *args: x_train):
+            iterator = BMFIA(
                 parameters=parameters,
                 global_settings=global_settings,
                 features_config=features_config,

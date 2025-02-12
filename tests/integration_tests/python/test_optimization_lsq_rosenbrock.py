@@ -21,7 +21,7 @@ import numpy as np
 
 from queens.distributions.free import FreeVariable
 from queens.drivers.function import Function
-from queens.iterators.optimization_iterator import OptimizationIterator
+from queens.iterators.optimization import Optimization
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -40,7 +40,7 @@ def test_optimization_lsq_rosenbrock(global_settings):
     driver = Function(parameters=parameters, function="rosenbrock60_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = OptimizationIterator(
+    iterator = Optimization(
         algorithm="LSQ",
         initial_guess=[-3.0, -4.0],
         result_description={"write_results": True},
@@ -72,7 +72,7 @@ def test_optimization_lsq_rosenbrock_error(global_settings):
     driver = Function(parameters=parameters, function="rosenbrock60_residual_3d")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = OptimizationIterator(
+    iterator = Optimization(
         algorithm="LSQ",
         initial_guess=[-3.0, -4.0, -5.0],
         result_description={"write_results": True},

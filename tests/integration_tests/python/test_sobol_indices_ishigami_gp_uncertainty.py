@@ -21,8 +21,8 @@ import numpy as np
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.lhs_iterator import LHSIterator
-from queens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
+from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
+from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
@@ -43,7 +43,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -51,7 +51,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -69,7 +69,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=3,
@@ -130,7 +130,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -138,7 +138,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -156,7 +156,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=20,
@@ -198,7 +198,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -206,7 +206,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -224,7 +224,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=1,

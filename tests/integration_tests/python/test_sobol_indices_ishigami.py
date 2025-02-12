@@ -18,7 +18,7 @@ import numpy as np
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -39,7 +39,7 @@ def test_sobol_indices_ishigami(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=True)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = SobolIndexIterator(
+    iterator = SobolIndex(
         seed=42,
         calc_second_order=True,
         num_samples=16,

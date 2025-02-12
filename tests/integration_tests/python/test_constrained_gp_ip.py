@@ -20,9 +20,9 @@ import pytest
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
-from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
-from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from queens.iterators.adaptive_sampling import AdaptiveSampling
+from queens.iterators.monte_carlo import MonteCarlo
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.logpdf_gp_model import LogpdfGPModel
@@ -124,7 +124,7 @@ def test_constrained_gp_ip_park(
         jitter=1.0e-16,
     )
 
-    initial_train_iterator = MonteCarloIterator(
+    initial_train_iterator = MonteCarlo(
         model=None,
         parameters=parameters,
         global_settings=global_settings,
@@ -132,7 +132,7 @@ def test_constrained_gp_ip_park(
         num_samples=num_initial_samples,
     )
 
-    solving_iterator = SequentialMonteCarloChopinIterator(
+    solving_iterator = SequentialMonteCarloChopin(
         model=logpdf_gp_model,
         parameters=parameters,
         global_settings=global_settings,
@@ -147,7 +147,7 @@ def test_constrained_gp_ip_park(
         result_description={},
     )
 
-    adaptive_sampling_iterator = AdaptiveSamplingIterator(
+    adaptive_sampling_iterator = AdaptiveSampling(
         model=logpdf_gp_model,
         parameters=parameters,
         global_settings=global_settings,

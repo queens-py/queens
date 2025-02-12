@@ -24,7 +24,7 @@ from scipy.stats import multivariate_normal as mvn
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
 from queens.global_settings import GlobalSettings
-from queens.iterators.black_box_variational_bayes import BBVIIterator
+from queens.iterators.bbvi import BBVI
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -47,12 +47,12 @@ def test_bbvi_density_match(
 
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "queens.iterators.black_box_variational_bayes.BBVIIterator.pre_run",
+        "queens.iterators.bbvi.BBVI.pre_run",
         return_value=None,
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(BBVIIterator, "get_log_posterior_unnormalized", target_density):
+    with patch.object(BBVI, "get_log_posterior_unnormalized", target_density):
         variational_distr_obj = dummy_bbvi_instance.variational_distribution
         mean = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
@@ -122,7 +122,7 @@ def test_bbvi_iterator_park91a_hifi(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = BBVIIterator(
+    iterator = BBVI(
         max_feval=100,
         n_samples_per_iter=2,
         memory=20,
@@ -172,7 +172,7 @@ def test_bbvi_iterator_park91a_hifi(
 
 @pytest.fixture(name="dummy_bbvi_instance")
 def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
-    """A BBVIIterator instance."""
+    """A BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     max_feval = 10 * n_samples_per_iter
@@ -218,7 +218,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
         parameters = Mock()
         parameters.num_parameters = num_variables
 
-        bbvi_instance = BBVIIterator(
+        bbvi_instance = BBVI(
             model=model,
             parameters=parameters,
             global_settings=global_settings,

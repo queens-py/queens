@@ -37,7 +37,7 @@ VALID_EXPORT_FIELDS = [
 ]
 
 
-class VariationalInferenceIterator(Iterator):
+class VariationalInference(Iterator):
     """Stochastic variational inference iterator.
 
     References:

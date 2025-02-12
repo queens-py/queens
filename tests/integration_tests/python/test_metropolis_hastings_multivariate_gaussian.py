@@ -24,7 +24,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators import MetropolisHastingsIterator
+from queens.iterators import MetropolisHastings
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -62,7 +62,7 @@ def test_metropolis_hastings_multivariate_gaussian(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = MetropolisHastingsIterator(
+    iterator = MetropolisHastings(
         seed=42,
         num_samples=10,
         num_burn_in=5,
@@ -75,9 +75,7 @@ def test_metropolis_hastings_multivariate_gaussian(
     )
 
     # Actual analysis
-    with patch.object(
-        MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_2d
-    ):
+    with patch.object(MetropolisHastings, "eval_log_likelihood", target_density_gaussian_2d):
         run_iterator(iterator, global_settings=global_settings)
 
     # Load results

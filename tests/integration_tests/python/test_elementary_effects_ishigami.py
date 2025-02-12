@@ -23,7 +23,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
+from queens.iterators.elementary_effects import ElementaryEffects
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -45,7 +45,7 @@ def test_elementary_effects_ishigami(global_settings):
     driver = Function(parameters=parameters, function="ishigami90")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = ElementaryEffectsIterator(
+    iterator = ElementaryEffects(
         seed=2,
         num_trajectories=100,
         num_optimal_trajectories=4,

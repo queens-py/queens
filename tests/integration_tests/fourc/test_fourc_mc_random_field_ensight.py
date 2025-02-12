@@ -22,7 +22,7 @@ import pytest
 from queens.data_processors.ensight import Ensight
 from queens.drivers.fourc import Fourc
 from queens.external_geometries.fourc_dat import FourcDat
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
@@ -118,7 +118,7 @@ def test_write_random_material_to_dat(
         data_processor=data_processor,
     )
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         seed=1,
         num_samples=3,
         result_description={"write_results": True, "plot_results": False},

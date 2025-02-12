@@ -34,7 +34,7 @@ from queens.utils.process_outputs import process_outputs, write_results
 _logger = logging.getLogger(__name__)
 
 
-class SequentialMonteCarloChopinIterator(Iterator):
+class SequentialMonteCarloChopin(Iterator):
     """Sequential Monte Carlo algorithm from Chopin et al.
 
     Sequential Monte Carlo algorithm based on the book [1] (especially chapter 17)

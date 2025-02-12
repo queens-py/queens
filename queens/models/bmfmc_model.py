@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from tqdm import tqdm
 
 import queens.utils.pdf_estimation as est
-from queens.iterators.data_iterator import DataIterator
+from queens.iterators.data import Data
 from queens.models.model import Model
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField as RandomField
 from queens.utils.logger_settings import log_init_args
@@ -212,15 +212,13 @@ class BMFMCModel(Model):
         interface = BmfmcInterface(probabilistic_mapping=probabilistic_mapping)
 
         if path_to_hf_mc_reference_data is not None:
-            hf_data_iterator = DataIterator(
-                path_to_hf_mc_reference_data, None, global_settings, None
-            )
+            hf_data_iterator = Data(path_to_hf_mc_reference_data, None, global_settings, None)
         else:
             hf_data_iterator = None
 
         # ----------------------- create subordinate data iterators ------------------------------
         self.lf_data_iterators = [
-            DataIterator(path, None, global_settings, None) for path in path_to_lf_mc_data
+            Data(path, None, global_settings, None) for path in path_to_lf_mc_data
         ]
 
         self.interface = interface

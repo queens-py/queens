@@ -22,8 +22,8 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from queens.iterators.metropolis_hastings import MetropolisHastings
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 from queens.models.simulation_model import SimulationModel
@@ -60,7 +60,7 @@ def test_gaussian_smc(
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = SequentialMonteCarloIterator(
+    iterator = SequentialMonteCarlo(
         seed=42,
         num_particles=10,
         temper_type="bayes",
@@ -75,12 +75,8 @@ def test_gaussian_smc(
 
     # Actual analysis
     # mock methods related to likelihood
-    with patch.object(
-        SequentialMonteCarloIterator, "eval_log_likelihood", target_density_gaussian_1d
-    ):
-        with patch.object(
-            MetropolisHastingsIterator, "eval_log_likelihood", target_density_gaussian_1d
-        ):
+    with patch.object(SequentialMonteCarlo, "eval_log_likelihood", target_density_gaussian_1d):
+        with patch.object(MetropolisHastings, "eval_log_likelihood", target_density_gaussian_1d):
             run_iterator(iterator, global_settings=global_settings)
 
     # Load results

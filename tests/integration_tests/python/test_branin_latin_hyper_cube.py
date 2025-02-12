@@ -21,7 +21,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.lhs_iterator import LHSIterator
+from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -41,7 +41,7 @@ def test_branin_latin_hyper_cube(global_settings):
     driver = Function(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = LHSIterator(
+    iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=1000,
         num_iterations=10,

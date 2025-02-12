@@ -19,7 +19,7 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
@@ -44,7 +44,7 @@ def test_gpflow_surrogate_branin(
     driver = Function(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = MonteCarloIterator(
+    training_iterator = MonteCarlo(
         seed=42,
         num_samples=20,
         model=model,
@@ -66,7 +66,7 @@ def test_gpflow_surrogate_branin(
         },
         training_iterator=training_iterator,
     )
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         seed=44,
         num_samples=10,
         result_description={
