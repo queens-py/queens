@@ -23,11 +23,11 @@ import shutil
 
 import numpy as np
 
-from queens.external_geometry.external_geometry import ExternalGeometry
+from queens.external_geometries.external_geometry import ExternalGeometry
 from queens.utils.logger_settings import log_init_args
 
 
-class FourcDatExternalGeometry(ExternalGeometry):
+class FourcDat(ExternalGeometry):
     """Class to read in external geometries based on 4C dat files.
 
     Attributes:
@@ -70,7 +70,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
         random_fields (lst): List of random field descriptions.
 
     Returns:
-        geometry_obj (obj): Instance of FourcDatExternalGeometry class
+        geometry_obj (obj): Instance of FourcDat class
     """
 
     dat_sections = [
@@ -751,7 +751,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
 
             # potentially replace material parameter
             #  TODO idx seems to be wrong here # pylint: disable=fixme
-            line_new = FourcDatExternalGeometry._parse_material_value_dependent_on_element_center(
+            line_new = FourcDat._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
             )
 
@@ -792,7 +792,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
         # below we loop over numbers of nested materials
         for idx, material_num in enumerate(self.new_material_numbers[1]):
             # potentially replace material parameter
-            line_new = FourcDatExternalGeometry._parse_material_value_dependent_on_element_center(
+            line_new = FourcDat._parse_material_value_dependent_on_element_center(
                 line, idx, material_fields
             )
 
@@ -860,9 +860,7 @@ class FourcDatExternalGeometry(ExternalGeometry):
                 if (field["type"] == "dirichlet") and (field["external_instance"] == geometric_set)
             ]
             if fields_dirich_on_geo_set:
-                old_num = FourcDatExternalGeometry._get_old_num_design_point_dirichlet_conditions(
-                    line
-                )
+                old_num = FourcDat._get_old_num_design_point_dirichlet_conditions(line)
                 self._overwrite_num_design_point_dirichlet_conditions(random_field_lst, old_num)
                 # select correct node set
                 node_set = [

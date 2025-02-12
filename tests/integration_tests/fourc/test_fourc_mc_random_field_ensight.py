@@ -21,7 +21,7 @@ import pytest
 
 from queens.data_processors.ensight import Ensight
 from queens.drivers.fourc import Fourc
-from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
+from queens.external_geometries.fourc_dat import FourcDat
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -61,7 +61,7 @@ def test_write_random_material_to_dat(
     fourc_input_preprocessed = dat_file_preprocessed
 
     # Parameters
-    random_field_preprocessor = FourcDatExternalGeometry(
+    random_field_preprocessor = FourcDat(
         list_geometric_sets=["DSURFACE 1"],
         associated_material_numbers_geometric_set=[[10, 11]],
         random_fields=[
@@ -86,7 +86,7 @@ def test_write_random_material_to_dat(
     parameters = Parameters(mat_param=mat_param)
 
     # Setup iterator
-    external_geometry = FourcDatExternalGeometry(
+    external_geometry = FourcDat(
         list_geometric_sets=["DSURFACE 1"],
         input_template=fourc_input_preprocessed,
     )

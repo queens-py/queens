@@ -12,18 +12,18 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Unit tests for FourcDatExternalGeometry."""
+"""Unit tests for FourcDat."""
 
 import numpy as np
 import pytest
 
-from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
+from queens.external_geometries.fourc_dat import FourcDat
 
 
 # general input fixtures
 @pytest.fixture(name="default_geo_obj")
 def fixture_default_geo_obj(tmp_path):
-    """Create a default FourcDatExternalGeometry object for testing."""
+    """Create a default FourcDat object for testing."""
     path_to_dat_file = tmp_path / "myfile.dat"
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -33,7 +33,7 @@ def fixture_default_geo_obj(tmp_path):
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
 
-    geo_obj = FourcDatExternalGeometry(
+    geo_obj = FourcDat(
         input_template=path_to_dat_file,
         input_template_preprocessed=path_to_preprocessed_dat_file,
         list_geometric_sets=list_geometric_sets,
@@ -192,7 +192,7 @@ def fixture_default_topology_vol():
 
 # ----------------- actual unit_tests -------------------------------------------------------------
 def test_init(mocker, tmp_path):
-    """Test the initialization of FourcDatExternalGeometry."""
+    """Test the initialization of FourcDat."""
     path_to_dat_file = "dummy_path"
     list_geometric_sets = ["DSURFACE 9"]
     list_associated_material_numbers = [[10, 11]]
@@ -202,14 +202,14 @@ def test_init(mocker, tmp_path):
     surface_topology = [{"node_mesh": [], "surface_topology": [], "topology_name": ""}]
     volume_topology = [{"node_mesh": [], "volume_topology": [], "topology_name": ""}]
     node_coordinates = {"node_mesh": [], "coordinates": []}
-    mp = mocker.patch("queens.external_geometry.external_geometry.ExternalGeometry.__init__")
+    mp = mocker.patch("queens.external_geometries.external_geometry.ExternalGeometry.__init__")
 
     path_to_preprocessed_dat_file = tmp_path / "preprocessed"
     random_fields = (
         [{"name": "mat_param", "type": "material", "external_instance": "DSURFACE 1"}],
     )
 
-    geo_obj = FourcDatExternalGeometry(
+    geo_obj = FourcDat(
         input_template=path_to_dat_file,
         input_template_preprocessed=path_to_preprocessed_dat_file,
         list_geometric_sets=list_geometric_sets,
@@ -239,30 +239,27 @@ def test_read_external_data_comment(mocker, tmp_path, dat_dummy_comment, default
     filepath.write_text(dat_dummy_comment, encoding="utf-8")
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_current_dat_section",
+        "queens.external_geometries.fourc_dat.FourcDat.get_current_dat_section",
         return_value=False,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_only_desired_topology",
+        "queens.external_geometries.fourc_dat.FourcDat.get_only_desired_topology",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_only_desired_coordinates",
+        "queens.external_geometries.fourc_dat.FourcDat.get_only_desired_coordinates",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_materials",
+        "queens.external_geometries.fourc_dat.FourcDat.get_materials",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
+        "queens.external_geometries.fourc_dat.FourcDat"
         ".get_elements_belonging_to_desired_material",
         return_value=1,
     )
@@ -284,30 +281,27 @@ def test_read_external_data_get_functions(mocker, tmp_path, dat_dummy_get_fun, d
     default_geo_obj.current_dat_section = "dummy"
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_current_dat_section",
+        "queens.external_geometries.fourc_dat.FourcDat.get_current_dat_section",
         return_value=False,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_only_desired_topology",
+        "queens.external_geometries.fourc_dat.FourcDat.get_only_desired_topology",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_only_desired_coordinates",
+        "queens.external_geometries.fourc_dat.FourcDat.get_only_desired_coordinates",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_materials",
+        "queens.external_geometries.fourc_dat.FourcDat.get_materials",
         return_value=1,
     )
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
+        "queens.external_geometries.fourc_dat.FourcDat"
         ".get_elements_belonging_to_desired_material",
         return_value=1,
     )
@@ -410,20 +404,18 @@ def test_get_only_desired_topology(default_geo_obj, mocker):
     """Test getting only desired topology."""
     line = "dummy"
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".check_if_in_desired_dat_section",
+        "queens.external_geometries.fourc_dat.FourcDat.check_if_in_desired_dat_section",
         return_value=True,
     )
     mp1 = mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry.get_topology",
+        "queens.external_geometries.fourc_dat.FourcDat.get_topology",
         return_value=None,
     )
     default_geo_obj.get_only_desired_topology(line)
     assert mp1.call_count == 1
 
     mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".check_if_in_desired_dat_section",
+        "queens.external_geometries.fourc_dat.FourcDat.check_if_in_desired_dat_section",
         return_value=False,
     )
     # counter stays 1 as called before
@@ -435,12 +427,11 @@ def test_get_only_desired_coordinates(default_geo_obj, mocker):
     """Test getting only desired coordinates."""
     line = "dummy 2"
     mp1 = mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
-        ".get_nodes_of_interest",
+        "queens.external_geometries.fourc_dat.FourcDat.get_nodes_of_interest",
         return_value=[1, 2, 3, 4, 5],
     )
     mp2 = mocker.patch(
-        "queens.external_geometry.fourc_dat_geometry.FourcDatExternalGeometry"
+        "queens.external_geometries.fourc_dat.FourcDat"
         ".get_coordinates_of_desired_geometric_sets",
         return_value=None,
     )

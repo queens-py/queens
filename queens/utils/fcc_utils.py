@@ -21,7 +21,7 @@ from queens.data_processors import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from queens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
 from queens.drivers.driver import Driver
-from queens.external_geometry import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
+from queens.external_geometries import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TYPES
 from queens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
 from queens.iterators.iterator import Iterator
 from queens.models import VALID_TYPES as VALID_MODEL_TYPES

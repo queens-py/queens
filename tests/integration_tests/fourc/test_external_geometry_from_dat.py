@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
+from queens.external_geometries.fourc_dat import FourcDat
 
 
 def test_external_geometry_from_dat(
@@ -27,7 +27,7 @@ def test_external_geometry_from_dat(
     dat_input_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
     # Create pre-processing module form config
-    preprocessor_obj = FourcDatExternalGeometry(
+    preprocessor_obj = FourcDat(
         input_template=dat_input_template, list_geometric_sets=["DSURFACE 1"]
     )
     preprocessor_obj.main_run()
