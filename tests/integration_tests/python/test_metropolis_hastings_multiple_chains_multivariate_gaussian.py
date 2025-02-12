@@ -23,7 +23,7 @@ import numpy as np
 from mock import patch
 
 from queens.distributions.normal import Normal
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
 from queens.main import run_iterator
@@ -54,7 +54,7 @@ def test_metropolis_hastings_multiple_chains_multivariate_gaussian(
         output_label="y_obs",
     )
     proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(

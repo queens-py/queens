@@ -19,7 +19,7 @@ import pytest
 from mock import patch
 
 from queens.distributions.normal import Normal
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.hmc_iterator import HMCIterator
 from queens.main import run_iterator
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
@@ -47,7 +47,7 @@ def test_gaussian_hmc(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(

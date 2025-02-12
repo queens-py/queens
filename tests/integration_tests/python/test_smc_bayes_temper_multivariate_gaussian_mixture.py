@@ -24,7 +24,7 @@ from mock import patch
 
 from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
@@ -66,7 +66,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             [0.0, 0.0, 0.0, 0.001],
         ],
     )
-    driver = FunctionDriver(parameters=parameters, function="agawal09a")
+    driver = Function(parameters=parameters, function="agawal09a")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(

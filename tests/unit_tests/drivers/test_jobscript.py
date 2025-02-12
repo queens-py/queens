@@ -23,7 +23,7 @@ import yaml
 
 from queens.data_processors import Numpy, Txt
 from queens.distributions import FreeVariable
-from queens.drivers.jobscript_driver import JobOptions, JobscriptDriver
+from queens.drivers.jobscript import JobOptions, Jobscript
 from queens.parameters import Parameters
 from queens.utils.exceptions import SubprocessError
 
@@ -166,7 +166,7 @@ def fixture_jobscript_driver(parameters, input_templates, executable):
     """Jobscript driver object."""
     input_template_1, input_template_2 = input_templates
 
-    driver = JobscriptDriver(
+    driver = Jobscript(
         parameters=parameters,
         jobscript_template="",
         executable=executable,
@@ -188,7 +188,7 @@ def fixture_args_init(
     jobscript_file_name,
     extra_options,
 ):
-    """Arguments to initialize a JobscriptDriver.
+    """Arguments to initialize a Jobscript.
 
     These arguments are meant for initialization with the default
     constructor.
@@ -222,24 +222,24 @@ def assert_jobscript_driver_attributes(jobscript_driver, args_init, extra_option
 
 
 def test_init_from_jobscript_template_str(args_init, extra_options):
-    """Test initialization of the JobscriptDriver.
+    """Test initialization of the Jobscript.
 
     For this initialization, the jobscript template is provided in the
     form of a string describing the jobscript template contents.
     """
-    driver = JobscriptDriver(**args_init)
+    driver = Jobscript(**args_init)
     assert_jobscript_driver_attributes(driver, args_init, extra_options)
 
 
 def test_init_from_jobscript_template_path(args_init, jobscript_template_path, extra_options):
-    """Test initialization of the JobscriptDriver.
+    """Test initialization of the Jobscript.
 
     For this initialization, the jobscript template is provided in the
     form of a string describing the path to a file.
     """
     args_init_from_jobscript_template_path = args_init.copy()
     args_init_from_jobscript_template_path["jobscript_template"] = jobscript_template_path
-    driver = JobscriptDriver(**args_init_from_jobscript_template_path)
+    driver = Jobscript(**args_init_from_jobscript_template_path)
     assert_jobscript_driver_attributes(driver, args_init, extra_options)
 
 
@@ -278,7 +278,7 @@ def test_error_in_jobscript_template(
     parameters, input_template, job_options, raise_error_on_jobscript_failure, expectation
 ):
     """Test for an error when the jobscript template has an error."""
-    jobscript_driver = JobscriptDriver(
+    jobscript_driver = Jobscript(
         parameters=parameters,
         input_templates=input_template,
         jobscript_template="This jobscript should fail.",
@@ -309,7 +309,7 @@ def test_nonzero_exit_code(
     parameters, input_template, job_options, raise_error_on_jobscript_failure, expectation
 ):
     """Test for an error when the jobscript exits with a code other than 0."""
-    jobscript_driver = JobscriptDriver(
+    jobscript_driver = Jobscript(
         parameters=parameters,
         input_templates=input_template,
         jobscript_template="exit 1",
@@ -332,7 +332,7 @@ def test_nonzero_exit_code(
 def test_long_jobscript_template_str(parameters, input_template):
     """Test that a long jobscript template string does not raise an error."""
     long_str = "dummy" * 100
-    jobscript_driver = JobscriptDriver(
+    jobscript_driver = Jobscript(
         parameters=parameters,
         input_templates=input_template,
         jobscript_template=long_str,

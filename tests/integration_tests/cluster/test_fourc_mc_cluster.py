@@ -23,7 +23,7 @@ import pytest
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import Uniform
-from queens.drivers import JobscriptDriver
+from queens.drivers import Jobscript
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -146,7 +146,7 @@ class TestDaskCluster:
             queue=cluster_settings.get("queue"),
         )
 
-        driver = JobscriptDriver(
+        driver = Jobscript(
             parameters=parameters,
             input_templates=fourc_input_file_template,
             jobscript_template=cluster_settings["jobscript_template"],

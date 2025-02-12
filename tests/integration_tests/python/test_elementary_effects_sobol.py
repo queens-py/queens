@@ -20,7 +20,7 @@ This test is based on Sobol's G function.
 import numpy as np
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -50,7 +50,7 @@ def test_elementary_effects_sobol(
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="sobol_g_function")
+    driver = Function(parameters=parameters, function="sobol_g_function")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = ElementaryEffectsIterator(

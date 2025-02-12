@@ -14,7 +14,7 @@
 #
 """Driver to run 4C."""
 
-from queens.drivers.jobscript_driver import JobscriptDriver
+from queens.drivers.jobscript import Jobscript
 from queens.utils.logger_settings import log_init_args
 
 _JOBSCRIPT_TEMPLATE = """
@@ -26,7 +26,7 @@ fi
 """
 
 
-class FourcDriver(JobscriptDriver):
+class Fourc(Jobscript):
     """Driver to run 4C."""
 
     @log_init_args
@@ -42,7 +42,7 @@ class FourcDriver(JobscriptDriver):
         post_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
-        """Initialize FourcDriver object.
+        """Initialize Fourc object.
 
         Args:
             parameters (Parameters): Parameters object

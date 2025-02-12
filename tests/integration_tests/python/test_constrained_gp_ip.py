@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
 from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -58,7 +58,7 @@ def fixture_parameters():
 def fixture_likelihood_model(parameters, global_settings):
     """A Gaussian likelihood model."""
     np.random.seed(42)
-    driver = FunctionDriver(parameters=parameters, function=park91a_hifi_on_grid)
+    driver = Function(parameters=parameters, function=park91a_hifi_on_grid)
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
 

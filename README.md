@@ -67,7 +67,7 @@ Let's consider a parallelized Monte Carlo simulation of the [Ishigami function](
 <!---example marker, do not remove this comment-->
 ```python
 from queens.distributions import Beta, Normal, Uniform
-from queens.drivers import FunctionDriver
+from queens.drivers import Function
 from queens.global_settings import GlobalSettings
 from queens.iterators import MonteCarloIterator
 from queens.main import run_iterator
@@ -86,7 +86,7 @@ if __name__ == "__main__":
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Set up the model
-    driver = FunctionDriver(parameters=parameters, function="ishigami90")
+    driver = Function(parameters=parameters, function="ishigami90")
     scheduler = LocalScheduler(
         experiment_name=global_settings.experiment_name, num_jobs=2, num_procs=4
     )

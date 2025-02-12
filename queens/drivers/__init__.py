@@ -18,14 +18,14 @@
 Modules for calling external simulation software.
 """
 
-from queens.drivers.fourc_driver import FourcDriver
-from queens.drivers.function_driver import FunctionDriver
-from queens.drivers.jobscript_driver import JobscriptDriver
-from queens.drivers.mpi_driver import MpiDriver
+from queens.drivers.fourc import Fourc
+from queens.drivers.function import Function
+from queens.drivers.jobscript import Jobscript
+from queens.drivers.mpi import Mpi
 
 VALID_TYPES = {
-    "fourc": FourcDriver,
-    "mpi": MpiDriver,
-    "jobscript": JobscriptDriver,
-    "function": FunctionDriver,
+    "fourc": Fourc,
+    "mpi": Mpi,
+    "jobscript": Jobscript,
+    "function": Function,
 }

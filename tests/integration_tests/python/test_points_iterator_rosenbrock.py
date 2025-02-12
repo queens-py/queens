@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.example_simulator_functions.rosenbrock60 import rosenbrock60
 from queens.iterators.points_iterator import PointsIterator
 from queens.main import run_iterator
@@ -36,7 +36,7 @@ def test_points_iterator(inputs, expected_results, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
+    driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = PointsIterator(
@@ -68,7 +68,7 @@ def test_points_iterator_failure(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
+    driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = PointsIterator(

@@ -14,7 +14,7 @@
 #
 """Convenience wrapper around Jobscript Driver."""
 
-from queens.drivers.jobscript_driver import JobscriptDriver
+from queens.drivers.jobscript import Jobscript
 from queens.utils.logger_settings import log_init_args
 
 _JOBSCRIPT_TEMPLATE = (
@@ -22,7 +22,7 @@ _JOBSCRIPT_TEMPLATE = (
 )
 
 
-class MpiDriver(JobscriptDriver):
+class Mpi(Jobscript):
     """Driver to run a generic MPI run."""
 
     @log_init_args
@@ -36,7 +36,7 @@ class MpiDriver(JobscriptDriver):
         gradient_data_processor=None,
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
-        """Initialize FourcDriver object.
+        """Initialize Fourc object.
 
         Args:
             parameters (Parameters): Parameters object

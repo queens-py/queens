@@ -17,7 +17,7 @@
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.control_variates_iterator import ControlVariatesIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -55,7 +55,7 @@ def fixture_scheduler(global_settings):
 def fixture_control_variate(parameters, scheduler):
     """Control variate model for the integration tests."""
     # Set up driver.
-    driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
+    driver = Function(parameters=parameters, function="borehole83_lofi")
     # Set up model.
     model = SimulationModel(scheduler=scheduler, driver=driver)
 
@@ -66,7 +66,7 @@ def fixture_control_variate(parameters, scheduler):
 def fixture_model_main(parameters, scheduler):
     """Main model for the integration tests."""
     # Set up driver.
-    driver = FunctionDriver(parameters=parameters, function="borehole83_hifi")
+    driver = Function(parameters=parameters, function="borehole83_hifi")
     # Set up model.
     model = SimulationModel(scheduler=scheduler, driver=driver)
 

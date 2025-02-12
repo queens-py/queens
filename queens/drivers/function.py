@@ -27,7 +27,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class FunctionDriver(Driver):
+class Function(Driver):
     """Driver to run an python function.
 
     Attributes:
@@ -42,7 +42,7 @@ class FunctionDriver(Driver):
         function,
         external_python_module_function=None,
     ):
-        """Initialize FunctionDriver object.
+        """Initialize Function object.
 
         Args:
             parameters (Parameters): Parameters object

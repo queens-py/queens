@@ -20,7 +20,7 @@ This test analyzes the special case of 1 unknown but 2 residuals.
 import numpy as np
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.optimization_iterator import OptimizationIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -39,7 +39,7 @@ def test_optimization_lsq_rosenbrock_1d(global_settings):
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual_1d")
+    driver = Function(parameters=parameters, function="rosenbrock60_residual_1d")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = OptimizationIterator(

@@ -21,7 +21,7 @@ function.
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.mlmc_iterator import MLMCIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -60,8 +60,8 @@ def fixture_scheduler(global_settings):
 def fixture_models(parameters, scheduler):
     """Models for the integration tests of the MLMC iterator."""
     # Set up drivers.
-    driver0 = FunctionDriver(parameters=parameters, function="borehole83_lofi")
-    driver1 = FunctionDriver(parameters=parameters, function="borehole83_hifi")
+    driver0 = Function(parameters=parameters, function="borehole83_lofi")
+    driver1 = Function(parameters=parameters, function="borehole83_hifi")
     # Set up models.
     model0 = SimulationModel(scheduler=scheduler, driver=driver0)
     model1 = SimulationModel(scheduler=scheduler, driver=driver1)

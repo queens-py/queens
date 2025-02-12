@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from queens.data_processors.ensight import Ensight
-from queens.drivers.fourc_driver import FourcDriver
+from queens.drivers.fourc import Fourc
 from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -110,7 +110,7 @@ def test_write_random_material_to_dat(
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    driver = FourcDriver(
+    driver = Fourc(
         parameters=parameters,
         input_templates=fourc_input_preprocessed,
         executable=fourc_executable,

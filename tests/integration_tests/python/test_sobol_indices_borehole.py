@@ -17,7 +17,7 @@
 import numpy as np
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -40,7 +40,7 @@ def test_sobol_indices_borehole(global_settings):
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="borehole83_lofi")
+    driver = Function(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, num_jobs=2)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = SobolIndexIterator(

@@ -20,7 +20,7 @@ import pytest
 from mock import patch
 
 from queens.distributions.normal import Normal
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
 from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
@@ -63,7 +63,7 @@ def test_rpvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = DifferentiableSimulationModelFD(
         scheduler=scheduler, driver=driver, finite_difference_method="2-point", step_size=1e-07
@@ -141,7 +141,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
@@ -234,7 +234,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(

@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.grid_iterator import GridIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -35,7 +35,7 @@ def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_pa
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
+    driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = GridIterator(

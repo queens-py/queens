@@ -22,7 +22,7 @@ import numpy as np
 from scipy.stats import entropy
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.main import run_iterator
 from queens.models.bmfmc_model import BMFMCModel
@@ -63,7 +63,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         number_training_iterations=1000,
         dimension_lengthscales=2,
     )
-    driver = FunctionDriver(parameters=parameters, function="currin88_hifi")
+    driver = Function(parameters=parameters, function="currin88_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     hf_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = BMFMCModel(

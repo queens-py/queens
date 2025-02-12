@@ -22,7 +22,7 @@ from mock import Mock
 from queens.distributions.lognormal import LogNormal
 from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
@@ -31,7 +31,7 @@ from queens.schedulers.local_scheduler import LocalScheduler
 @pytest.fixture(name="default_simulation_model")
 def fixture_default_simulation_model():
     """Default simulation model."""
-    driver = FunctionDriver(parameters=Mock(), function="ishigami90")
+    driver = Function(parameters=Mock(), function="ishigami90")
     scheduler = LocalScheduler(experiment_name="dummy_experiment_name")
     model = SimulationModel(scheduler=scheduler, driver=driver)
     return model

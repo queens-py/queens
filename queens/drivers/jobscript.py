@@ -70,7 +70,7 @@ class JobOptions:
         return self.to_dict() | additional_data
 
 
-class JobscriptDriver(Driver):
+class Jobscript(Driver):
     """Driver to run an executable with a jobscript.
 
     Attributes:
@@ -98,7 +98,7 @@ class JobscriptDriver(Driver):
         extra_options=None,
         raise_error_on_jobscript_failure=True,
     ):
-        """Initialize JobscriptDriver object.
+        """Initialize Jobscript object.
 
         Args:
             parameters (Parameters): Parameters object.

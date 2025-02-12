@@ -19,7 +19,7 @@ import pytest
 
 from queens.data_processors import Csv
 from queens.distributions import Normal
-from queens.drivers import MpiDriver
+from queens.drivers import Mpi
 from queens.iterators import RPVIIterator
 from queens.main import run_iterator
 from queens.models import (
@@ -53,7 +53,7 @@ def fixture_mpi_run_path():
 
 @pytest.fixture(name="mpi_command", scope="session")
 def fixture_mpi_command(mpirun_path):
-    """Base command to call mpirun with MpiDriver."""
+    """Base command to call mpirun with Mpi."""
     return mpirun_path + " --bind-to none"
 
 
@@ -113,7 +113,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
@@ -219,7 +219,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
@@ -331,7 +331,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
@@ -345,7 +345,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
             "filter": {"type": "entire_file"},
         },
     )
-    adjoint_driver = MpiDriver(
+    adjoint_driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=adjoint_executable,

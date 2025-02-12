@@ -22,7 +22,7 @@ from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
 from queens.distributions.normal import Normal
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.global_settings import GlobalSettings
 from queens.iterators.black_box_variational_bayes import BBVIIterator
 from queens.main import run_iterator
@@ -112,7 +112,7 @@ def test_bbvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(

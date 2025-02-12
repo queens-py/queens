@@ -20,7 +20,7 @@ import numpy as np
 
 from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import Uniform
-from queens.drivers.fourc_driver import FourcDriver
+from queens.drivers.fourc import Fourc
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -59,7 +59,7 @@ def test_fourc_mc(
         num_procs=2,
         num_jobs=2,
     )
-    driver = FourcDriver(
+    driver = Fourc(
         parameters=parameters,
         input_templates=fourc_input_file_template,
         executable=fourc_executable,

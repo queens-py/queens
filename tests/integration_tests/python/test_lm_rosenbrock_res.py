@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.lm_iterator import LMIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -34,7 +34,7 @@ def test_lm_rosenbrock_res(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual")
+    driver = Function(parameters=parameters, function="rosenbrock60_residual")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = LMIterator(

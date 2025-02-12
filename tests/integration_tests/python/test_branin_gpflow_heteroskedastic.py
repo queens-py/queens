@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
 from queens.models import HeteroskedasticGPModel
@@ -37,7 +37,7 @@ def test_branin_gpflow_heteroskedastic(expected_mean, expected_var, global_setti
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
+    driver = Function(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     training_iterator = MonteCarloIterator(

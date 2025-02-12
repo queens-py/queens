@@ -20,7 +20,7 @@ The test is based on the high-fidelity Branin function.
 import pytest
 
 from queens.distributions.uniform import Uniform
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.main import run_iterator
 from queens.models.simulation_model import SimulationModel
@@ -38,7 +38,7 @@ def test_branin_latin_hyper_cube(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
+    driver = Function(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     model = SimulationModel(scheduler=scheduler, driver=driver)
     iterator = LHSIterator(

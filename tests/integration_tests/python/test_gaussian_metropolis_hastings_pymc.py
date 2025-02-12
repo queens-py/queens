@@ -19,7 +19,7 @@ import pytest
 from mock import patch
 
 from queens.distributions.normal import Normal
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
 from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
 from queens.main import run_iterator
@@ -43,7 +43,7 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
     model = GaussianLikelihood(
