@@ -19,7 +19,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-from queens.data_processor.data_processor_numpy import DataProcessorNumpy
+from queens.data_processors.numpy import Numpy
 
 
 # ------ fixtures ----------
@@ -65,7 +65,7 @@ def fixture_default_data_processor_npy():
     file_options_dict = {}
     files_to_be_deleted_regex_lst = []
 
-    data_processor = DataProcessorNumpy(
+    data_processor = Numpy(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -81,7 +81,7 @@ def test_init():
     file_options_dict = {"dummy": "dummy"}
     files_to_be_deleted_regex_lst = ["abc"]
 
-    data_processor = DataProcessorNumpy(
+    data_processor = Numpy(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,

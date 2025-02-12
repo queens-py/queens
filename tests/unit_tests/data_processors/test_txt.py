@@ -16,7 +16,7 @@
 
 import pytest
 
-from queens.data_processor.data_processor_txt import DataProcessorTxt
+from queens.data_processors.txt import Txt
 from queens.utils.path_utils import relative_path_from_queens
 
 
@@ -24,7 +24,7 @@ from queens.utils.path_utils import relative_path_from_queens
 def fixture_dummy_txt_file():
     """Create dummy txt-file for tests."""
     txt_file_path = relative_path_from_queens(
-        "tests/unit_tests/data_processor/queens_example_log.txt"
+        "tests/unit_tests/data_processors/queens_example_log.txt"
     )
     return txt_file_path
 
@@ -37,13 +37,13 @@ def fixture_default_data_processor():
 
     file_options_dict = {}
 
-    data_processor_txt_instance = DataProcessorTxt(
+    txt_instance = Txt(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
         remove_logger_prefix_from_raw_data=True,
     )
-    return data_processor_txt_instance
+    return txt_instance
 
 
 @pytest.fixture(name="default_raw_data")
@@ -68,7 +68,7 @@ def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
     compared to the original 4C log file.
     """
     file_path_fourc_log = relative_path_from_queens(
-        "tests/unit_tests/data_processor/fourc_example_log.txt"
+        "tests/unit_tests/data_processors/fourc_example_log.txt"
     )
     with open(file_path_fourc_log, "r", encoding="utf-8") as file:
         raw_data_fourc = file.readlines()

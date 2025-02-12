@@ -18,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
-from queens.data_processor.data_processor_csv import DataProcessorCsv
+from queens.data_processors.csv import Csv
 from queens.utils.logger_settings import log_init_args
 
 
@@ -61,7 +61,7 @@ class ExperimentalDataReader:
         self.base_dir = Path(csv_data_base_dir)
 
         if data_processor is None:
-            self.data_processor = DataProcessorCsv(
+            self.data_processor = Csv(
                 file_name_identifier=self.file_name,
                 file_options_dict={
                     "header_row": 0,

@@ -12,14 +12,12 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Tests for distance to surface measurement data_processor evaluation."""
+"""Tests for distance to surface measurement data_processors evaluation."""
 
 import numpy as np
 import pytest
 
-from queens.data_processor.data_processor_ensight_interface import (
-    DataProcessorEnsightInterfaceDiscrepancy,
-)
+from queens.data_processors.ensight_interface import EnsightInterfaceDiscrepancy
 
 
 ############## fixtures
@@ -43,11 +41,10 @@ def fixture_default_data_processor(mocker):
     file_to_be_deleted_regex_lst = []
 
     mocker.patch(
-        "queens.data_processor.data_processor_ensight_interface."
-        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
+        "queens.data_processors.ensight_interface.EnsightInterfaceDiscrepancy.read_monitorfile",
         return_value="None",
     )
-    pp = DataProcessorEnsightInterfaceDiscrepancy(
+    pp = EnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         file_to_be_deleted_regex_lst,
@@ -77,11 +74,10 @@ def test_init(mocker):
     }
 
     mocker.patch(
-        "queens.data_processor.data_processor_ensight_interface."
-        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
+        "queens.data_processors.ensight_interface.EnsightInterfaceDiscrepancy.read_monitorfile",
         return_value="dummy_data",
     )
-    my_data_processor = DataProcessorEnsightInterfaceDiscrepancy(
+    my_data_processor = EnsightInterfaceDiscrepancy(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -102,14 +98,12 @@ def test_from_config_create_data_processor(mocker):
     """Test the config method."""
     experimental_ref_data = np.array([[1, 2], [3, 4]])
     mp = mocker.patch(
-        "queens.data_processor.data_processor_ensight_interface."
-        "DataProcessorEnsightInterfaceDiscrepancy.__init__",
+        "queens.data_processors.ensight_interface.EnsightInterfaceDiscrepancy.__init__",
         return_value=None,
     )
 
     mocker.patch(
-        "queens.data_processor.data_processor_ensight_interface."
-        "DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile",
+        "queens.data_processors.ensight_interface.EnsightInterfaceDiscrepancy.read_monitorfile",
         return_value=experimental_ref_data,
     )
     file_name_identifier = "dummyprefix*dummy.case"
@@ -130,7 +124,7 @@ def test_from_config_create_data_processor(mocker):
         "path_to_ref_data": path_to_ref_data,
     }
 
-    DataProcessorEnsightInterfaceDiscrepancy(
+    EnsightInterfaceDiscrepancy(
         file_name_identifier=file_name_identifier,
         file_options_dict=file_options_dict,
         files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
@@ -163,7 +157,7 @@ steps 2 npoints 4
 8.0e+00 5.0 5.0 5.0 5.0  6.0 6.0 6.0 6.0  7.0 7.0 7.0 7.0  5.0 5.0 5.0 5.0 5.0 5.0"""
 
     mp = mocker.patch("builtins.open", mocker.mock_open(read_data=monitor_string))
-    data = DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile("dummy_path")
+    data = EnsightInterfaceDiscrepancy.read_monitorfile("dummy_path")
     mp.assert_called_once()
 
     assert data == [
@@ -190,7 +184,7 @@ steps 2 npoints 4
     monitor_string = """something wrong"""
     mocker.patch("builtins.open", mocker.mock_open(read_data=monitor_string))
     with pytest.raises(ValueError):
-        DataProcessorEnsightInterfaceDiscrepancy.read_monitorfile("some_path")
+        EnsightInterfaceDiscrepancy.read_monitorfile("some_path")
 
 
 def test_stretch_vector(default_data_processor):

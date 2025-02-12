@@ -17,7 +17,7 @@
 import logging
 import types
 
-from queens.data_processor import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
+from queens.data_processors import VALID_TYPES as VALID_DATA_PROCESSOR_TYPES
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from queens.drivers import VALID_TYPES as VALID_DRIVER_TYPES
 from queens.drivers.driver import Driver

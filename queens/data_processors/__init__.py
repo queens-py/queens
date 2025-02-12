@@ -17,20 +17,18 @@
 Modules for extracting and processing data from simulation output files.
 """
 
-from queens.data_processor.data_processor_csv import DataProcessorCsv
-from queens.data_processor.data_processor_ensight import DataProcessorEnsight
-from queens.data_processor.data_processor_ensight_interface import (
-    DataProcessorEnsightInterfaceDiscrepancy,
-)
-from queens.data_processor.data_processor_numpy import DataProcessorNumpy
-from queens.data_processor.data_processor_pvd import DataProcessorPvd
-from queens.data_processor.data_processor_txt import DataProcessorTxt
+from queens.data_processors.csv import Csv
+from queens.data_processors.ensight import Ensight
+from queens.data_processors.ensight_interface import EnsightInterfaceDiscrepancy
+from queens.data_processors.numpy import Numpy
+from queens.data_processors.pvd import Pvd
+from queens.data_processors.txt import Txt
 
 VALID_TYPES = {
-    "csv": DataProcessorCsv,
-    "ensight": DataProcessorEnsight,
-    "ensight_interface_discrepancy": DataProcessorEnsightInterfaceDiscrepancy,
-    "numpy": DataProcessorNumpy,
-    "pvd": DataProcessorPvd,
-    "txt": DataProcessorTxt,
+    "csv": Csv,
+    "ensight": Ensight,
+    "ensight_interface_discrepancy": EnsightInterfaceDiscrepancy,
+    "numpy": Numpy,
+    "pvd": Pvd,
+    "txt": Txt,
 }

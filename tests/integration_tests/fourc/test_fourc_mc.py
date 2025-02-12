@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.data_processor.data_processor_pvd import DataProcessorPvd
+from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers.fourc_driver import FourcDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -48,7 +48,7 @@ def test_fourc_mc(
     parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-    data_processor = DataProcessorPvd(
+    data_processor = Pvd(
         field_name="displacement",
         file_name_identifier=f"{global_settings.experiment_name}_*.pvd",
         file_options_dict={},

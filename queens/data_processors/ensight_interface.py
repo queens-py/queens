@@ -21,11 +21,11 @@ import numpy as np
 import vtk
 from vtkmodules.util.numpy_support import vtk_to_numpy
 
-from queens.data_processor.data_processor import DataProcessor
+from queens.data_processors.data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 
 
-class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
+class EnsightInterfaceDiscrepancy(DataProcessor):
     """Discrepancy measure for boundaries and shapes.
 
     *data_processor* class uses full ensight result in vtk to measure distance of
@@ -47,7 +47,7 @@ class DataProcessorEnsightInterfaceDiscrepancy(DataProcessor):
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
     ):
-        """Initialize data_processor_ensight_interface class.
+        """Initialize ensight_interface class.
 
         Args:
             data_processor_name (str): Name of the data processor.

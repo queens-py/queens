@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
-from queens.data_processor.data_processor_pvd import DataProcessorPvd
+from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import UniformDistribution
 from queens.drivers import JobscriptDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
@@ -127,7 +127,7 @@ class TestDaskCluster:
         parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
         parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-        data_processor = DataProcessorPvd(
+        data_processor = Pvd(
             field_name="displacement",
             file_name_identifier="*.pvd",
             file_options_dict={},

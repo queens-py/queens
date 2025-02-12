@@ -18,13 +18,13 @@ import logging
 
 import numpy as np
 
-from queens.data_processor.data_processor import DataProcessor
+from queens.data_processors.data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class DataProcessorNumpy(DataProcessor):
+class Numpy(DataProcessor):
     """Class for extracting data from numpy binaries."""
 
     @log_init_args
@@ -45,7 +45,7 @@ class DataProcessorNumpy(DataProcessor):
                                                  The paths can contain regex expressions.
 
         Returns:
-            Instance of DataProcessorNpy class
+            Instance of Npy class
         """
         super().__init__(
             file_name_identifier=file_name_identifier,

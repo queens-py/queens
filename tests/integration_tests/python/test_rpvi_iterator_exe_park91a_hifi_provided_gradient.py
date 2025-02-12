@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.data_processor import DataProcessorCsv
+from queens.data_processors import Csv
 from queens.distributions import NormalDistribution
 from queens.drivers import MpiDriver
 from queens.iterators import RPVIIterator
@@ -99,14 +99,14 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    gradient_data_processor = DataProcessorCsv(
+    gradient_data_processor = Csv(
         file_name_identifier="*_gradient.csv",
         file_options_dict={
             "delete_field_data": False,
@@ -212,7 +212,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
@@ -324,7 +324,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
@@ -338,7 +338,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
-    gradient_data_processor = DataProcessorCsv(
+    gradient_data_processor = Csv(
         file_name_identifier="*_gradient.csv",
         file_options_dict={
             "delete_field_data": False,

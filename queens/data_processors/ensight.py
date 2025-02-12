@@ -20,13 +20,13 @@ import numpy as np
 import vtk
 from vtkmodules.util.numpy_support import numpy_to_vtk, vtk_to_numpy
 
-from queens.data_processor.data_processor import DataProcessor
+from queens.data_processors.data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class DataProcessorEnsight(DataProcessor):
+class Ensight(DataProcessor):
     """Class for data-processing ensight output.
 
     Attributes:
@@ -85,7 +85,7 @@ class DataProcessorEnsight(DataProcessor):
             experimental_data_reader (obj): Experimental data reader object
 
         Returns:
-            Instance of DataProcessorEnsight class (obj)
+            Instance of Ensight class (obj)
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
@@ -98,8 +98,8 @@ class DataProcessorEnsight(DataProcessor):
         target_time_lst = file_options_dict.get("target_time_lst")
         if not isinstance(target_time_lst, list):
             raise TypeError(
-                "The option 'target_time_lst' in the data_processor settings must be of type 'list'"
-                f" but you provided type {type(target_time_lst)}. Abort..."
+                "The option 'target_time_lst' in the data_processor settings must be of type "
+                f"'list' but you provided type {type(target_time_lst)}. Abort..."
             )
         time_tol = file_options_dict.get("time_tol")
         if time_tol:
@@ -112,8 +112,8 @@ class DataProcessorEnsight(DataProcessor):
         vtk_field_label = file_options_dict["physical_field_dict"]["vtk_field_label"]
         if not isinstance(vtk_field_label, str):
             raise TypeError(
-                "The option 'vtk_field_label' in the data_processor settings must be of type 'str' "
-                f"but you provided type {type(vtk_field_label)}. Abort..."
+                "The option 'vtk_field_label' in the data_processor settings must be of type "
+                f"'str' but you provided type {type(vtk_field_label)}. Abort..."
             )
         vtk_field_components = file_options_dict["physical_field_dict"]["field_components"]
         if not isinstance(vtk_field_components, list):
@@ -313,7 +313,7 @@ class DataProcessorEnsight(DataProcessor):
                 experimental_coordinates_for_snapshot, axis=1
             )
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = DataProcessorEnsight._interpolate_vtk(
+        interpolated_data = Ensight._interpolate_vtk(
             experimental_coordinates_for_snapshot,
             vtk_data_obj,
             self.vtk_array_type,
@@ -366,7 +366,7 @@ class DataProcessorEnsight(DataProcessor):
         ]
 
         # interpolate vtk solution to experimental coordinates
-        interpolated_data = DataProcessorEnsight._interpolate_vtk(
+        interpolated_data = Ensight._interpolate_vtk(
             geometric_set_coordinates,
             vtk_data_obj,
             self.vtk_array_type,

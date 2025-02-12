@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-import queens.data_processor.data_processor_csv
-from queens.data_processor.data_processor_csv import DataProcessorCsv
+import queens.data_processors.csv
+from queens.data_processors.csv import Csv
 
 
 @pytest.fixture(name="dummy_csv_file", scope="session")
@@ -113,15 +113,15 @@ def fixture_default_data_processor(mocker):
     }
 
     mocker.patch(
-        ("queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options"),
+        ("queens.data_processors.csv.Csv.check_valid_filter_options"),
         return_value=None,
     )
-    data_processor_csv_instance = DataProcessorCsv(
+    csv_instance = Csv(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
     )
-    return data_processor_csv_instance
+    return csv_instance
 
 
 def test_init(mocker):
@@ -155,11 +155,11 @@ def test_init(mocker):
     }
 
     mp = mocker.patch(
-        ("queens.data_processor.data_processor_csv.DataProcessorCsv.check_valid_filter_options"),
+        ("queens.data_processors.csv.Csv.check_valid_filter_options"),
         return_value=None,
     )
 
-    my_data_processor = DataProcessorCsv(
+    my_data_processor = Csv(
         file_name_identifier,
         file_options_dict,
         files_to_be_deleted_regex_lst,
@@ -183,59 +183,55 @@ def test_init(mocker):
 
 def test_check_valid_filter_options_entire_file():
     """Test checking of valid filter options."""
-    DataProcessorCsv.check_valid_filter_options({"type": "entire_file"})
+    Csv.check_valid_filter_options({"type": "entire_file"})
 
     with pytest.raises(
         TypeError,
         match="For the filter type `entire_file`, you have to provide a dictionary of type "
-        f"{DataProcessorCsv.expected_filter_entire_file}.",
+        f"{Csv.expected_filter_entire_file}.",
     ):
-        DataProcessorCsv.check_valid_filter_options({"type": "entire_file", "tolerance": 0})
+        Csv.check_valid_filter_options({"type": "entire_file", "tolerance": 0})
 
 
 def test_check_valid_filter_options_by_range():
     """Test checking of valid filter by range options."""
-    DataProcessorCsv.check_valid_filter_options(
-        {"type": "by_range", "range": [1.0, 2.0], "tolerance": 1.0}
-    )
+    Csv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0], "tolerance": 1.0})
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_range`, you have to provide "
-            f"a dictionary of type {DataProcessorCsv.expected_filter_by_range}."
+            f"a dictionary of type {Csv.expected_filter_by_range}."
         ),
     ):
-        DataProcessorCsv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0]})
+        Csv.check_valid_filter_options({"type": "by_range", "range": [1.0, 2.0]})
 
 
 def test_check_valid_filter_options_by_row_index():
     """Test checking of valid filter by row index options."""
-    DataProcessorCsv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2]})
+    Csv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2]})
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_row_index`, you have to provide "
-            f"a dictionary of type {DataProcessorCsv.expected_filter_by_row_index}."
+            f"a dictionary of type {Csv.expected_filter_by_row_index}."
         ),
     ):
-        DataProcessorCsv.check_valid_filter_options(
-            {"type": "by_row_index", "rows": [1, 2], "tolerance": 1.0}
-        )
+        Csv.check_valid_filter_options({"type": "by_row_index", "rows": [1, 2], "tolerance": 1.0})
 
 
 def test_check_valid_filter_options_by_target_values():
     """Test checking of valid filter by target values."""
-    DataProcessorCsv.check_valid_filter_options(
+    Csv.check_valid_filter_options(
         {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0], "tolerance": 1.0}
     )
     with pytest.raises(
         TypeError,
         match=re.escape(
             "For the filter type `by_target_values`, you have to provide "
-            f"a dictionary of type {DataProcessorCsv.expected_filter_by_target_values}."
+            f"a dictionary of type {Csv.expected_filter_by_target_values}."
         ),
     ):
-        DataProcessorCsv.check_valid_filter_options(
+        Csv.check_valid_filter_options(
             {"type": "by_target_values", "target_values": [1.0, 2.0, 3.0]}
         )
 

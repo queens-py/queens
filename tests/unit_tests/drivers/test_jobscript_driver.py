@@ -21,7 +21,7 @@ import numpy as np
 import pytest
 import yaml
 
-from queens.data_processor import DataProcessorNumpy, DataProcessorTxt
+from queens.data_processors import Numpy, Txt
 from queens.distributions import FreeVariable
 from queens.drivers.jobscript_driver import JobOptions, JobscriptDriver
 from queens.parameters import Parameters
@@ -95,7 +95,7 @@ def fixture_executable(tmp_path):
 @pytest.fixture(name="data_processor")
 def fixture_data_processor():
     """Dummy data processor."""
-    return DataProcessorNumpy(
+    return Numpy(
         file_name_identifier="dummy.npy",
         file_options_dict={},
     )
@@ -104,7 +104,7 @@ def fixture_data_processor():
 @pytest.fixture(name="gradient_data_processor")
 def fixture_gradient_data_processor():
     """Dummy gradient data processor."""
-    return DataProcessorTxt(file_name_identifier="dummy.txt", file_options_dict={})
+    return Txt(file_name_identifier="dummy.txt", file_options_dict={})
 
 
 @pytest.fixture(name="jobscript_file_name")
