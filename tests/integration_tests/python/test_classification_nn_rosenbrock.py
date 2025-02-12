@@ -17,7 +17,7 @@
 import numpy as np
 from sklearn.neural_network._multilayer_perceptron import MLPClassifier
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.classification import ClassificationIterator
 from queens.main import run_iterator
@@ -46,8 +46,8 @@ def test_classification_iterator(tmp_path, global_settings):
         return x > 80
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x1 = Uniform(lower_bound=-2, upper_bound=2)
+    x2 = Uniform(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

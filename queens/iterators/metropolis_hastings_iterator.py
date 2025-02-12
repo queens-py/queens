@@ -29,7 +29,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from tqdm import tqdm
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.iterators.iterator import Iterator
 from queens.utils import mcmc_utils, smc_utils
 from queens.utils.logger_settings import log_init_args
@@ -127,7 +127,7 @@ class MetropolisHastingsIterator(Iterator):
         self.scale_covariance = np.ones(self.num_chains) * scale_covariance
         self.num_burn_in = num_burn_in
 
-        if not isinstance(self.proposal_distribution, NormalDistribution):
+        if not isinstance(self.proposal_distribution, Normal):
             raise RuntimeError("Currently only Normal proposals are supported as MCMC Kernel.")
 
         self.temper = smc_utils.temper_factory(temper_type)
@@ -253,7 +253,7 @@ class MetropolisHastingsIterator(Iterator):
         else:
             # create random walk normal proposal
             mean = np.zeros(cov_mat.shape[0])
-            self.proposal_distribution = NormalDistribution(mean=mean, covariance=cov_mat)
+            self.proposal_distribution = Normal(mean=mean, covariance=cov_mat)
 
         self.gamma = gamma
 

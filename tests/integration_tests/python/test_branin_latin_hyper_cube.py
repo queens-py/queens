@@ -19,7 +19,7 @@ The test is based on the high-fidelity Branin function.
 
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.main import run_iterator
@@ -33,8 +33,8 @@ from queens.utils.io_utils import load_result
 def test_branin_latin_hyper_cube(global_settings):
     """Test case for latin hyper cube iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Uniform(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

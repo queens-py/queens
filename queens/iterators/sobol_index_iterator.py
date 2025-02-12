@@ -333,18 +333,18 @@ def extract_parameters_of_parameter_distributions(parameters):
     distribution_types = []
     distribution_parameters = []
     for parameter in parameters.dict.values():
-        if isinstance(parameter, uniform.UniformDistribution):
+        if isinstance(parameter, uniform.Uniform):
             upper_bound = parameter.upper_bound
             lower_bound = parameter.lower_bound
             distribution_name = "unif"
         # in queens normal distributions are parameterized with mean and var
         # in salib normal distributions are parameterized via mean and std
         # -> we need to reparameterize normal distributions
-        elif isinstance(parameter, normal.NormalDistribution):
+        elif isinstance(parameter, normal.Normal):
             lower_bound = parameter.mean.squeeze()
             upper_bound = np.sqrt(parameter.covariance.squeeze())
             distribution_name = "norm"
-        elif isinstance(parameter, lognormal.LogNormalDistribution):
+        elif isinstance(parameter, lognormal.LogNormal):
             lower_bound = parameter.mu.squeeze()
             upper_bound = parameter.sigma.squeeze()
             distribution_name = "lognorm"

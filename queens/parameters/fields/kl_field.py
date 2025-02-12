@@ -19,7 +19,7 @@ import logging
 import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.parameters.fields.random_fields import RandomField
 
 _logger = logging.getLogger(__name__)
@@ -91,9 +91,7 @@ class KarhunenLoeveRandomField(RandomField):
         self.calculate_covariance_matrix()
         self.eigendecomp_cov_matrix()
 
-        self.distribution = MeanFieldNormalDistribution(
-            mean=0, variance=1, dimension=self.dimension
-        )
+        self.distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
 
     def draw(self, num_samples):
         """Draw samples from the latent representation of the random field.

@@ -24,7 +24,7 @@ import numpy as np
 from SALib.analyze import morris as morris_analyzer
 from SALib.sample import morris
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
@@ -117,7 +117,7 @@ class ElementaryEffectsIterator(Iterator):
         """Generate samples for subsequent analysis and update model."""
         bounds = []
         for parameter in self.parameters.dict.values():
-            if not isinstance(parameter, UniformDistribution) or parameter.dimension != 1:
+            if not isinstance(parameter, Uniform) or parameter.dimension != 1:
                 raise ValueError("Parameters must be 1D uniformly distributed.")
             bounds.append([parameter.lower_bound.squeeze(), parameter.upper_bound.squeeze()])
 

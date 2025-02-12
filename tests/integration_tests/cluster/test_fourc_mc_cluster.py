@@ -22,7 +22,7 @@ import pytest
 
 import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processors.pvd import Pvd
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers import JobscriptDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -123,8 +123,8 @@ class TestDaskCluster:
         fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
         # Parameters
-        parameter_1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-        parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+        parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+        parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
         parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
         data_processor = Pvd(

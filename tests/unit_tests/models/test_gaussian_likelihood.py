@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
 
 
@@ -110,7 +110,7 @@ def test_init():
     assert gauss_lik_obj.forward_model == forward_model
     assert gauss_lik_obj.noise_type == noise_type
     assert gauss_lik_obj.noise_var_iterative_averaging == noise_var_iterative_averaging
-    assert isinstance(gauss_lik_obj.normal_distribution, NormalDistribution)
+    assert isinstance(gauss_lik_obj.normal_distribution, Normal)
     assert gauss_lik_obj.normal_distribution.mean == y_obs
     assert gauss_lik_obj.normal_distribution.covariance == np.eye(y_obs.size) * noise_value
 

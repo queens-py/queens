@@ -19,7 +19,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.nuts_iterator import NUTSIterator
 from queens.main import run_iterator
@@ -39,7 +39,7 @@ def test_gaussian_nuts(
 ):
     """Test case for nuts iterator."""
     # Parameters
-    x1 = NormalDistribution(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
+    x1 = Normal(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
     parameters = Parameters(x1=x1)
 
     # Setup iterator

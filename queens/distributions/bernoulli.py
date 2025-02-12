@@ -16,11 +16,11 @@
 
 import numpy as np
 
-from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.distributions.particles import ParticleDiscrete
 from queens.utils.logger_settings import log_init_args
 
 
-class BernoulliDistribution(ParticleDiscreteDistribution):
+class Bernoulli(ParticleDiscrete):
     """Bernoulli distribution."""
 
     @log_init_args

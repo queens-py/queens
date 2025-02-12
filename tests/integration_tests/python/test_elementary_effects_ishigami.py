@@ -21,7 +21,7 @@ import logging
 
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
 from queens.main import run_iterator
@@ -36,9 +36,9 @@ _logger = logging.getLogger(__name__)
 def test_elementary_effects_ishigami(global_settings):
     """Test case for elementary effects iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator

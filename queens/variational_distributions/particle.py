@@ -16,24 +16,24 @@
 
 import numpy as np
 
-from queens.distributions.particles import ParticleDiscreteDistribution
-from queens.variational_distributions.variational_distribution import VariationalDistribution
+from queens.distributions.particles import ParticleDiscrete
+from queens.variational_distributions.variational_distribution import Variational
 
 
-class ParticleVariational(VariationalDistribution):
+class ParticleVariational(Variational):
     r"""Variational distribution for particle distributions.
 
     The probabilities of the distribution are parameterized by softmax:
     :math:`p_i=p(\lambda_i)=\frac{\exp(\lambda_i)}{\sum_k exp(\lambda_k)}`
 
     Attributes:
-        particles_obj (ParticleDiscreteDistribution): Particle distribution object
+        particles_obj (ParticleDiscrete): Particle distribution object
         dimension (int): Number of random variables
     """
 
     def __init__(self, sample_space):
         """Initialize variational distribution."""
-        self.particles_obj = ParticleDiscreteDistribution(np.ones(len(sample_space)), sample_space)
+        self.particles_obj = ParticleDiscrete(np.ones(len(sample_space)), sample_space)
         super().__init__(self.particles_obj.dimension)
         self.n_parameters = len(sample_space)
 
@@ -47,7 +47,7 @@ class ParticleVariational(VariationalDistribution):
         Returns:
             variational_parameters (np.ndarray): Variational parameters
         """
-        self.particles_obj = ParticleDiscreteDistribution(probabilities, sample_space)
+        self.particles_obj = ParticleDiscrete(probabilities, sample_space)
         variational_parameters = np.log(probabilities).flatten()
         return variational_parameters
 
@@ -89,9 +89,7 @@ class ParticleVariational(VariationalDistribution):
         """
         probabilities = np.exp(variational_parameters)
         probabilities /= np.sum(probabilities)
-        self.particles_obj = ParticleDiscreteDistribution(
-            probabilities, self.particles_obj.sample_space
-        )
+        self.particles_obj = ParticleDiscrete(probabilities, self.particles_obj.sample_space)
         return probabilities, self.particles_obj.sample_space
 
     def draw(self, variational_parameters, n_draws=1):

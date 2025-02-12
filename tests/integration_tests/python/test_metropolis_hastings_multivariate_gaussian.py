@@ -22,7 +22,7 @@ Markov chain.
 import numpy as np
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators import MetropolisHastingsIterator
 from queens.main import run_iterator
@@ -42,8 +42,8 @@ def test_metropolis_hastings_multivariate_gaussian(
 ):
     """Test case for Metropolis Hastings iterator."""
     # Parameters
-    x1 = NormalDistribution(mean=2.0, covariance=1.0)
-    x2 = NormalDistribution(mean=-2.0, covariance=0.01)
+    x1 = Normal(mean=2.0, covariance=1.0)
+    x2 = Normal(mean=-2.0, covariance=0.01)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -52,7 +52,7 @@ def test_metropolis_hastings_multivariate_gaussian(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    proposal_distribution = NormalDistribution(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
+    proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)

@@ -17,11 +17,11 @@
 import numpy as np
 from scipy.stats import multinomial
 
-from queens.distributions.distributions import DiscreteDistribution
+from queens.distributions.distributions import Discrete
 from queens.utils.logger_settings import log_init_args
 
 
-class MultinomialDistribution(DiscreteDistribution):
+class Multinomial(Discrete):
     """Multinomial distribution."""
 
     @log_init_args

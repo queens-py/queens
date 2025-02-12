@@ -21,7 +21,7 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.global_settings import GlobalSettings
 from queens.iterators.black_box_variational_bayes import BBVIIterator
@@ -92,8 +92,8 @@ def test_bbvi_iterator_park91a_hifi(
     np.random.seed(211)
 
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

@@ -19,7 +19,7 @@ This test uses metamodel uncertainty.
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
@@ -34,9 +34,9 @@ from queens.utils.io_utils import load_result
 def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
     """Test case for Sobol indices based on GP realizations."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
@@ -121,9 +121,9 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
     """Test case for third-order Sobol indices."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
@@ -189,9 +189,9 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
 def test_sobol_indices_ishigami_gp_mean(global_settings):
     """Test case for Sobol indices based on GP mean."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator

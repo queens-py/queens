@@ -20,9 +20,9 @@ import numpy as np
 import pytest
 import scipy
 
-from queens.distributions.mixture import MixtureDistribution
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.distributions.mixture import Mixture
+from queens.distributions.normal import Normal
+from queens.distributions.particles import ParticleDiscrete
 from queens.variational_distributions import (
     FullRankNormalVariational,
     JointVariational,
@@ -100,7 +100,7 @@ def fixture_meanfield_reference_data():
     mean = np.ones((3, 1))
     cov = np.eye(3) * 2
     variational_parameters = np.concatenate([mean.flatten(), 0.5 * np.log(np.diag(cov))])
-    distribution = NormalDistribution(mean, cov)
+    distribution = Normal(mean, cov)
     input_samples = np.array([[0.1, 0.2, 0.3], [0.2, 0.1, 1]])
     score_function_values = np.array(
         [
@@ -132,7 +132,7 @@ def fixture_fullrank_reference_data():
     cov = np.matmul(lower_chol, lower_chol.T)
     cov_part = np.array([2, 1, 2, 1, 1, 2])
     variational_parameters = np.concatenate([mean.flatten(), cov_part])
-    distribution = NormalDistribution(mean, cov)
+    distribution = Normal(mean, cov)
     input_samples = np.array([[0.1, 0.2, 0.3], [0.2, 0.1, 1]])
 
     default_variational_parameters = np.ones(len(variational_parameters))
@@ -191,7 +191,7 @@ def fixture_joint_reference_data(mean_field_reference_data, fullrank_reference_d
         mean_field_reference_data.distribution_parameters[1],
         fullrank_reference_data.distribution_parameters[1],
     )
-    distribution = NormalDistribution(mean, cov)
+    distribution = Normal(mean, cov)
 
     # concatenate variational_parameters
     variational_parameters = np.concatenate(
@@ -254,11 +254,11 @@ def fixture_mixture_reference_data(mean_field_reference_data):
 
     mean_2 = -mean_1
     cov_2 = cov_1
-    distribution_2 = NormalDistribution(mean_2, cov_2)
+    distribution_2 = Normal(mean_2, cov_2)
     variational_parameters_2 = np.concatenate([mean_2.flatten(), 0.5 * np.log(np.diag(cov_2))])
     weights = np.array([0.1, 0.9])
 
-    distribution = MixtureDistribution(weights, [distribution_1, distribution_2])
+    distribution = Mixture(weights, [distribution_1, distribution_2])
 
     distribution_parameters_components = [(mean_1, cov_1), (mean_2, cov_2)]
     variational_parameters = np.concatenate(
@@ -302,7 +302,7 @@ def fixture_particles_reference_data():
     """Reference data for the particles distribution."""
     probabilities = np.array([0.1, 0.9])
     sample_space = np.array([[1], [2]])
-    distribution = ParticleDiscreteDistribution(probabilities, sample_space)
+    distribution = ParticleDiscrete(probabilities, sample_space)
     variational_parameters = np.log(probabilities)
     input_samples = [[1], [1], [2]]
 

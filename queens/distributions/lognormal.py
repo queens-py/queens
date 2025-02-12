@@ -18,18 +18,18 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from queens.distributions.distributions import ContinuousDistribution
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.distributions import Continuous
+from queens.distributions.normal import Normal
 from queens.utils.logger_settings import log_init_args
 
 
-class LogNormalDistribution(ContinuousDistribution):
+class LogNormal(Continuous):
     """LogNormal distribution.
 
     Support in (0, +inf).
 
     Attributes:
-        normal_distribution (NormalDistribution): Underlying normal
+        normal_distribution (Normal): Underlying normal
                                                   distribution.
         normal_distribution (obj): underlying normal distribution
     """
@@ -42,7 +42,7 @@ class LogNormalDistribution(ContinuousDistribution):
             normal_mean (array_like): mean of the normal distribution
             normal_covariance (array_like): covariance of the normal distribution
         """
-        self.normal_distribution = NormalDistribution(normal_mean, normal_covariance)
+        self.normal_distribution = Normal(normal_mean, normal_covariance)
 
         normal_covariance_diag = np.diag(self.normal_distribution.covariance)
 

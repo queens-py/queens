@@ -19,7 +19,7 @@ import logging
 import numpy as np
 
 from queens.data_processors.pvd import Pvd
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.fourc_driver import FourcDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -44,8 +44,8 @@ def test_fourc_mc(
     fourc_executable, _, _ = fourc_link_paths
 
     # Parameters
-    parameter_1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-    parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+    parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
     data_processor = Pvd(

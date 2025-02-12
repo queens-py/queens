@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
@@ -30,9 +30,9 @@ from test_utils.integration_tests import assert_sobol_index_iterator_results
 def test_sobol_indices_ishigami(global_settings):
     """Test case for Salib based Saltelli iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator

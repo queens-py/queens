@@ -92,7 +92,7 @@ class RPVIIterator(VariationalInferenceIterator):
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
                                               and the output directory
             result_description (dict): Settings for storing and visualizing the results
-            variational_distribution (VariationalDistribution): variational distribution object
+            variational_distribution (Variational): variational distribution object
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
             random_seed (int): Seed for the random number generators

@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.particles import ParticleDiscreteDistribution
+from queens.distributions.particles import ParticleDiscrete
 from test_utils.unit_tests.distributions import covariance_discrete
 
 
@@ -54,7 +54,7 @@ def fixture_reference_data(request):
 def fixture_distribution(reference_data):
     """Distribution fixture."""
     _, probabilities, sample_space, _, _ = reference_data
-    return ParticleDiscreteDistribution(probabilities, sample_space)
+    return ParticleDiscrete(probabilities, sample_space)
 
 
 @pytest.fixture(name="distribution_fcc")
@@ -62,7 +62,7 @@ def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_probabilities, _, reference_sample_space, _, _ = reference_data
 
-    distribution = ParticleDiscreteDistribution(
+    distribution = ParticleDiscrete(
         probabilities=reference_probabilities,
         sample_space=reference_sample_space,
     )
@@ -119,19 +119,19 @@ def test_init_covariance(reference_data, distributions):
 def test_init_failure_mismatching_probabilities():
     """Test if mismatching number of probability leads to failure."""
     with pytest.raises(ValueError, match="The number of probabilities"):
-        ParticleDiscreteDistribution([0.1, 1], [[1], [2], [3]])
+        ParticleDiscrete([0.1, 1], [[1], [2], [3]])
 
 
 def test_init_failure_negative_probabilities():
     """Test if negative values lead to errors."""
     with pytest.raises(ValueError, match="The parameter 'probabilities' has to be positive."):
-        ParticleDiscreteDistribution([0.1, -1], [[1], [2]])
+        ParticleDiscrete([0.1, -1], [[1], [2]])
 
 
 def test_init_failure_mismatching_dimension():
     """Test if mismatching dimensions of the event sa."""
     with pytest.raises(ValueError, match="Dimensions of the sample events do not match."):
-        ParticleDiscreteDistribution([0.1, 1], [[1], [1, 2]])
+        ParticleDiscrete([0.1, 1], [[1], [1, 2]])
 
 
 def test_draw(mocker, reference_data, distribution):

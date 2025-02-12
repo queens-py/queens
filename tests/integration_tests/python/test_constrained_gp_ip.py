@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
 from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
@@ -48,8 +48,8 @@ def fixture_approx_type(request):
 @pytest.fixture(name="parameters")
 def fixture_parameters():
     """Two uniformly distributed parameters."""
-    x1 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x1 = Uniform(lower_bound=0, upper_bound=1)
+    x2 = Uniform(lower_bound=0, upper_bound=1)
     parameters = Parameters(x1=x1, x2=x2)
     return parameters
 

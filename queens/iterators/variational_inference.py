@@ -68,7 +68,7 @@ class VariationalInferenceIterator(Iterator):
         max_feval (int): Maximum number of simulation runs for this analysis.
         num_parameters (int): Actual number of model input parameters that should be calibrated.
         stochastic_optimizer (obj): QUEENS stochastic optimizer object.
-        variational_distribution (VariationalDistribution): Variational distribution object.
+        variational_distribution (Variational): Variational distribution object.
         n_sims (int): Number of probabilistic model calls.
         variational_params (np.array): Row vector containing the variational parameters.
         elbo: Evidence lower bound.
@@ -107,7 +107,7 @@ class VariationalInferenceIterator(Iterator):
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
                                               and the output directory
             result_description (dict): Settings for storing and visualizing the results
-            variational_distribution (VariationalDistribution): Variational distribution object
+            variational_distribution (Variational): Variational distribution object
             variational_params_initialization (str): Flag to decide how to initialize the
                                                      variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration

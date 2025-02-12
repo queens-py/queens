@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.bernoulli import BernoulliDistribution
+from queens.distributions.bernoulli import Bernoulli
 
 
 @pytest.fixture(name="reference_data")
@@ -33,7 +33,7 @@ def fixture_reference_data():
 def fixture_distribution(reference_data):
     """Distribution fixture."""
     success_probability, _, _ = reference_data
-    return BernoulliDistribution(success_probability)
+    return Bernoulli(success_probability)
 
 
 def test_init_success(reference_data, distribution):
@@ -75,4 +75,4 @@ def test_init_failure(success_probability):
         ValueError,
         match="The success probability has to be 0<success_probability<1.",
     ):
-        BernoulliDistribution(success_probability)
+        Bernoulli(success_probability)

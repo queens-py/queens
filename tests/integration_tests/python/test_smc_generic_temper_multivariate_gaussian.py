@@ -22,7 +22,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
@@ -41,10 +41,10 @@ def test_smc_generic_temper_multivariate_gaussian(
 ):
     """Test SMC with a multivariate Gaussian and generic tempering."""
     # Parameters
-    x1 = NormalDistribution(mean=1.0, covariance=5.0)
-    x2 = NormalDistribution(mean=3.0, covariance=5.0)
-    x3 = NormalDistribution(mean=-3.0, covariance=5.0)
-    x4 = NormalDistribution(mean=1.0, covariance=5.0)
+    x1 = Normal(mean=1.0, covariance=5.0)
+    x2 = Normal(mean=3.0, covariance=5.0)
+    x3 = Normal(mean=-3.0, covariance=5.0)
+    x4 = Normal(mean=1.0, covariance=5.0)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
     # Setup iterator
@@ -53,7 +53,7 @@ def test_smc_generic_temper_multivariate_gaussian(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    mcmc_proposal_distribution = NormalDistribution(
+    mcmc_proposal_distribution = Normal(
         mean=[0.0, 0.0, 0.0, 0.0],
         covariance=[
             [1.0, 0.0, 0.0, 0.0],

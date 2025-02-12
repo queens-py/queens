@@ -18,7 +18,7 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from scipy.spatial.distance import pdist
 
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.parameters.fields.random_fields import RandomField
 
 
@@ -118,9 +118,7 @@ class FourierRandomField(RandomField):
             self.latent_index,
         )
 
-        self.distribution = MeanFieldNormalDistribution(
-            mean=0, variance=1, dimension=self.dimension
-        )
+        self.distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
 
     def draw(self, num_samples):
         """Draw samples from the latent representation of the random field.

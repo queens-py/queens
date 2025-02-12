@@ -17,8 +17,8 @@
 import numpy as np
 import pytest
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.bmfia_iterator import BMFIAIterator
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
@@ -63,8 +63,8 @@ def test_bmfia_smc_park(
     experimental_data_path = tmp_path
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
-    x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
+    x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
+    x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -94,9 +94,7 @@ def test_bmfia_smc_park(
         mean_function_type="identity_multi_fidelity",
         stochastic_optimizer=stochastic_optimizer,
     )
-    mcmc_proposal_distribution = NormalDistribution(
-        mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]]
-    )
+    mcmc_proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]])
     lf_driver = FunctionDriver(parameters=parameters, function="park91a_lofi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
@@ -163,8 +161,8 @@ def test_bmfia_rpvi_gp_park(
     experimental_data_path = tmp_path
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
-    x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
+    x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
+    x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -273,8 +271,8 @@ def test_bmfia_rpvi_nn_park(
     plot_dir = tmp_path
 
     # Parameters
-    x1 = NormalDistribution(covariance=0.09, mean=0.5)
-    x2 = NormalDistribution(covariance=0.09, mean=0.5)
+    x1 = Normal(covariance=0.09, mean=0.5)
+    x2 = Normal(covariance=0.09, mean=0.5)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

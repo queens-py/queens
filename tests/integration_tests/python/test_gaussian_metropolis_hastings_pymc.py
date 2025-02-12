@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
 from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
@@ -34,7 +34,7 @@ from queens.utils.io_utils import load_result
 def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
     """Test case for mh iterator."""
     # Parameters
-    x1 = NormalDistribution(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
+    x1 = Normal(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
     parameters = Parameters(x1=x1)
 
     # Setup iterator

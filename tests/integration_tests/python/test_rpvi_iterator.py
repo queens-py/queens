@@ -19,7 +19,7 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
 from queens.main import run_iterator
@@ -44,8 +44,8 @@ def test_rpvi_iterator_park91a_hifi(
     Based on the *park91a_hifi* function.
     """
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -122,8 +122,8 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 ):
     """Test rpvi on *park91a_hifi* function with analytical gradients."""
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -193,7 +193,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 
 likelihood_mean = np.array([-2.0, 1.0])
 likelihood_covariance = np.diag(np.array([0.1, 10.0]))
-likelihood = NormalDistribution(likelihood_mean, likelihood_covariance)
+likelihood = Normal(likelihood_mean, likelihood_covariance)
 
 
 def target_density(
@@ -216,8 +216,8 @@ def fixture_forward_model(request):
 def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, global_settings):
     """Test RPVI with univariate Gaussian."""
     # Parameters
-    x1 = NormalDistribution(mean=0.0, covariance=1.0)
-    x2 = NormalDistribution(mean=10.0, covariance=100.0)
+    x1 = Normal(mean=0.0, covariance=1.0)
+    x2 = Normal(mean=10.0, covariance=100.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

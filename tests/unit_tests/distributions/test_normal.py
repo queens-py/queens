@@ -20,7 +20,7 @@ import pytest
 import scipy.stats
 from jax import grad
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 
 
 # ------------- univariate --------------
@@ -45,7 +45,7 @@ def fixture_covariance_1d():
 @pytest.fixture(name="normal_1d", scope="module")
 def fixture_normal_1d(mean_1d, covariance_1d):
     """A 1d normal distribution."""
-    return NormalDistribution(mean=mean_1d, covariance=covariance_1d)
+    return Normal(mean=mean_1d, covariance=covariance_1d)
 
 
 @pytest.fixture(name="uncorrelated_vector_1d", scope="module")
@@ -85,7 +85,7 @@ def fixture_covariance_3d(low_chol_3d):
 @pytest.fixture(name="normal_3d", scope="module")
 def fixture_normal_3d(mean_3d, covariance_3d):
     """A multivariate normal distribution."""
-    return NormalDistribution(mean=mean_3d, covariance=covariance_3d)
+    return Normal(mean=mean_3d, covariance=covariance_3d)
 
 
 @pytest.fixture(name="num_draws", scope="module", params=[1, 4])
@@ -117,7 +117,7 @@ def test_init_normal_1d(normal_1d, mean_1d, covariance_1d):
 def test_init_normal_1d_incovariance(mean_1d, covariance_1d):
     """Test init method of Normal Distribution class."""
     with pytest.raises(np.linalg.LinAlgError, match=r"Cholesky decomposition failed *"):
-        NormalDistribution(mean=mean_1d, covariance=-covariance_1d)
+        Normal(mean=mean_1d, covariance=-covariance_1d)
 
 
 def test_cdf_normal_1d(normal_1d, mean_1d, covariance_1d, sample_pos_1d):
@@ -233,21 +233,21 @@ def test_init_normal_wrong_dimension(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[[1.0, 0.1], [1.0, 0.1]], [[0.2, 2.0], [0.2, 2.0]]])
     with pytest.raises(ValueError, match=r"Provided covariance is not a matrix.*"):
-        NormalDistribution(mean=mean_3d, covariance=covariance)
+        Normal(mean=mean_3d, covariance=covariance)
 
 
 def test_init_normal_not_quadratic(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0], [3.0, 0.3]])
     with pytest.raises(ValueError, match=r"Provided covariance matrix is not quadratic.*"):
-        NormalDistribution(mean=mean_3d, covariance=covariance)
+        Normal(mean=mean_3d, covariance=covariance)
 
 
 def test_init_normal_not_symmetric(mean_3d):
     """Test ValueError of init method of Normal Distribution class."""
     covariance = np.array([[1.0, 0.1], [0.2, 2.0]])
     with pytest.raises(ValueError, match=r"Provided covariance matrix is not symmetric.*"):
-        NormalDistribution(mean=mean_3d, covariance=covariance)
+        Normal(mean=mean_3d, covariance=covariance)
 
 
 def logpdf(x, logpdf_const, mean, precision):

@@ -241,19 +241,19 @@ def create_chaospy_distribution(distribution):
     Returns:
         distribution: Distribution object in chaospy format
     """
-    if isinstance(distribution, normal.NormalDistribution):
+    if isinstance(distribution, normal.Normal):
         distribution = cp.Normal(mu=distribution.mean, sigma=distribution.covariance ** (1 / 2))
-    elif isinstance(distribution, uniform.UniformDistribution):
+    elif isinstance(distribution, uniform.Uniform):
         distribution = cp.Uniform(
             lower=distribution.lower_bound,
             upper=distribution.upper_bound,
         )
-    elif isinstance(distribution, lognormal.LogNormalDistribution):
+    elif isinstance(distribution, lognormal.LogNormal):
         distribution = cp.LogNormal(
             mu=distribution.normal_mean,
             sigma=distribution.normal_covariance ** (1 / 2),
         )
-    elif isinstance(distribution, beta.BetaDistribution):
+    elif isinstance(distribution, beta.Beta):
         distribution = cp.Beta(
             alpha=distribution.a,
             beta=distribution.b,

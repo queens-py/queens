@@ -18,11 +18,11 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.logger_settings import log_init_args
 
 
-class BetaDistribution(ContinuousDistribution):
+class Beta(Continuous):
     """Beta distribution.
 
     A generalized one-dimensional beta distribution based on scipy stats. The generalized beta

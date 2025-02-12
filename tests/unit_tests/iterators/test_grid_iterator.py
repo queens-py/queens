@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.iterators.grid_iterator import GridIterator
 from queens.models.simulation_model import SimulationModel
 from queens.parameters.parameters import Parameters
@@ -53,21 +53,21 @@ def fixture_grid_dict_three():
 @pytest.fixture(name="parameters_one")
 def fixture_parameters_one():
     """Parameters with one uniform distribution."""
-    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    random_variable = Uniform(lower_bound=-2, upper_bound=2)
     return Parameters(x1=random_variable)
 
 
 @pytest.fixture(name="parameters_two")
 def fixture_parameters_two():
     """Parameters with two uniform distributions."""
-    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    random_variable = Uniform(lower_bound=-2, upper_bound=2)
     return Parameters(x1=random_variable, x2=deepcopy(random_variable))
 
 
 @pytest.fixture(name="parameters_three")
 def fixture_parameters_three():
     """Parameters with three uniform distributions."""
-    random_variable = UniformDistribution(lower_bound=-2, upper_bound=2)
+    random_variable = Uniform(lower_bound=-2, upper_bound=2)
     return Parameters(
         x1=random_variable, x2=deepcopy(random_variable), x3=deepcopy(random_variable)
     )

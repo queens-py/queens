@@ -18,7 +18,7 @@ import warnings
 
 import numpy as np
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.models.likelihood_models.likelihood_model import LikelihoodModel
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.logger_settings import log_init_args
@@ -107,7 +107,7 @@ class GaussianLikelihood(LikelihoodModel):
         else:
             raise NotImplementedError
 
-        normal_distribution = NormalDistribution(self.y_obs, covariance)
+        normal_distribution = Normal(self.y_obs, covariance)
 
         self.nugget_noise_variance = nugget_noise_variance
         self.noise_type = noise_type

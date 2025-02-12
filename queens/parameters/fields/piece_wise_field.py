@@ -15,7 +15,7 @@
 """Piece-wise random fields class."""
 
 from queens.distributions import VALID_TYPES as distribution_types
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.parameters.fields.random_fields import RandomField
 from queens.utils.import_utils import get_module_class
 
@@ -60,13 +60,13 @@ class PieceWiseRandomField(RandomField):
             distribution (obj): QUEENS distribution object of latent space
         """
         if latent_dict["type"] == "normal":
-            # use the MeanFieldNormalDistribution to prevent shape issues
-            distribution = MeanFieldNormalDistribution(
+            # use the MeanFieldNormal to prevent shape issues
+            distribution = MeanFieldNormal(
                 mean=latent_dict["mean"],
                 variance=latent_dict["covariance"],
                 dimension=self.dimension,
             )
-            latent_1d_distribution = MeanFieldNormalDistribution(
+            latent_1d_distribution = MeanFieldNormal(
                 mean=latent_dict["mean"],
                 variance=latent_dict["covariance"],
                 dimension=1,

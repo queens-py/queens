@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.distributions.uniform_discrete import UniformDiscreteDistribution
+from queens.distributions.uniform_discrete import UniformDiscrete
 from queens.iterators.iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
@@ -323,9 +323,7 @@ class MLMCIterator(Iterator):
         """
         var_estimate_bootstrap = 0
         for result in results_estimators:
-            dist = UniformDiscreteDistribution(
-                np.arange(stop=result.size, dtype=int).reshape(-1, 1)
-            )
+            dist = UniformDiscrete(np.arange(stop=result.size, dtype=int).reshape(-1, 1))
 
             bootstrap_sample_mean = np.zeros(self.num_bootstrap_samples)
             for i in range(self.num_bootstrap_samples):

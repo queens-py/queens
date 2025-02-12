@@ -22,8 +22,8 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
@@ -45,10 +45,10 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 ):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x3 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x4 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x1 = Uniform(lower_bound=-2, upper_bound=2)
+    x2 = Uniform(lower_bound=-2, upper_bound=2)
+    x3 = Uniform(lower_bound=-2, upper_bound=2)
+    x4 = Uniform(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
     # Setup iterator
@@ -57,7 +57,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    mcmc_proposal_distribution = NormalDistribution(
+    mcmc_proposal_distribution = Normal(
         mean=[0.0, 0.0, 0.0, 0.0],
         covariance=[
             [0.001, 0.0, 0.0, 0.0],

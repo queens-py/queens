@@ -19,7 +19,7 @@ This test is based on the low-fidelity Borehole function.
 
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -32,14 +32,14 @@ from queens.utils.io_utils import load_result
 def test_monte_carlo_borehole(global_settings):
     """Test case for Monte Carlo iterator."""
     # Parameters
-    rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
-    r = UniformDistribution(lower_bound=100, upper_bound=50000)
-    tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
-    hu = UniformDistribution(lower_bound=990, upper_bound=1110)
-    tl = UniformDistribution(lower_bound=63.1, upper_bound=116)
-    hl = UniformDistribution(lower_bound=700, upper_bound=820)
-    l = UniformDistribution(lower_bound=1120, upper_bound=1680)
-    kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
+    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
+    r = Uniform(lower_bound=100, upper_bound=50000)
+    tu = Uniform(lower_bound=63070, upper_bound=115600)
+    hu = Uniform(lower_bound=990, upper_bound=1110)
+    tl = Uniform(lower_bound=63.1, upper_bound=116)
+    hl = Uniform(lower_bound=700, upper_bound=820)
+    l = Uniform(lower_bound=1120, upper_bound=1680)
+    kw = Uniform(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
     # Setup iterator

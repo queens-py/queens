@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.monte_carlo_iterator import MonteCarloIterator
 from queens.main import run_iterator
@@ -33,8 +33,8 @@ from test_utils.integration_tests import assert_monte_carlo_iterator_results
 def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
     """Test case for GPflow based SVGP model."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Uniform(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

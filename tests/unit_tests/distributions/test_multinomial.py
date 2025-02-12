@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.multinomial import MultinomialDistribution
+from queens.distributions.multinomial import Multinomial
 
 
 @pytest.fixture(name="reference_data")
@@ -34,16 +34,14 @@ def fixture_reference_data():
 def fixture_distribution(reference_data):
     """Distribution fixture."""
     n_trials, probabilities, _, _ = reference_data
-    return MultinomialDistribution(n_trials, probabilities)
+    return Multinomial(n_trials, probabilities)
 
 
 @pytest.fixture(name="distribution_fcc")
 def fixture_distribution_fcc(reference_data):
     """Distribution fixture."""
     reference_n_trials, reference_probabilities, _, _ = reference_data
-    return MultinomialDistribution(
-        probabilities=reference_probabilities, n_trials=reference_n_trials
-    )
+    return Multinomial(probabilities=reference_probabilities, n_trials=reference_n_trials)
 
 
 # pylint: disable=duplicate-code

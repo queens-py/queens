@@ -19,7 +19,7 @@ import logging
 import numpy as np
 
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.parameters.fields import VALID_TYPES as VALID_FIELD_TYPES
 from queens.parameters.fields.random_fields import RandomField
 from queens.utils.import_utils import get_module_class
@@ -41,7 +41,7 @@ def from_config_create_parameters(parameters_options, pre_processor=None):
     joint_parameters_dict = {}
     for parameter_name, parameter_dict in parameters_options.items():
         parameter_class = get_module_class(parameter_dict, VALID_TYPES)
-        if issubclass(parameter_class, ContinuousDistribution):
+        if issubclass(parameter_class, Continuous):
             parameter_object = parameter_class(**parameter_dict)
         elif issubclass(parameter_class, RandomField):
             parameter_object = parameter_class(
@@ -93,14 +93,14 @@ class Parameters:
         """Initialize Parameters object.
 
         Args:
-            **parameters (ContinuousDistribution, RandomField): parameters as keyword arguments
+            **parameters (Continuous, RandomField): parameters as keyword arguments
         """
         joint_parameters_keys = []
         joint_parameters_dim = 0
         random_field_flag = False
 
         for parameter_name, parameter_obj in parameters.items():
-            if isinstance(parameter_obj, ContinuousDistribution):
+            if isinstance(parameter_obj, Continuous):
                 joint_parameters_keys = _add_parameters_keys(
                     joint_parameters_keys, parameter_name, parameter_obj.dimension
                 )

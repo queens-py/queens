@@ -95,8 +95,7 @@ def fixture_default_mf_likelihood(
         ".build_approximation"
     )
     mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
-        ".MeanFieldNormalDistribution",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormal",
         return_value=dummy_normal_distr,
     )
     mf_likelihood = BMFGaussianModel(
@@ -183,8 +182,7 @@ def test_init(mocker, dummy_simulation_model, default_interface, default_bmfia_i
         ".build_approximation"
     )
     mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood"
-        ".MeanFieldNormalDistribution",
+        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormal",
         return_value=mean_field_normal,
     )
     model = BMFGaussianModel(
@@ -378,7 +376,7 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
     )
 
     mocker.patch(
-        "queens.distributions.mean_field_normal.MeanFieldNormalDistribution.logpdf",
+        "queens.distributions.mean_field_normal.MeanFieldNormal.logpdf",
         return_value=0.1,
     )
     mp3 = mocker.patch(

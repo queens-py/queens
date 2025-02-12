@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform_discrete import UniformDiscreteDistribution
+from queens.distributions.uniform_discrete import UniformDiscrete
 from test_utils.unit_tests.distributions import covariance_discrete
 
 
@@ -36,7 +36,7 @@ def fixture_reference_data(request):
 def fixture_distribution(reference_data):
     """Distribution fixture."""
     _, _, sample_space, _ = reference_data
-    return UniformDiscreteDistribution(sample_space)
+    return UniformDiscrete(sample_space)
 
 
 @pytest.fixture(name="distribution_for_init", params=[0, 1])
@@ -52,7 +52,7 @@ def fixture_distribution_for_init(reference_data, distribution, request):
         _,
     ) = reference_data
 
-    return UniformDiscreteDistribution(sample_space=reference_sample_space)
+    return UniformDiscrete(sample_space=reference_sample_space)
 
 
 def test_init_success(reference_data, distribution_for_init):
@@ -82,4 +82,4 @@ def test_init_success(reference_data, distribution_for_init):
 def test_init_failure(sample_space):
     """Test if invalid options lead to errors."""
     with pytest.raises(ValueError, match="The sample space contains duplicate events"):
-        UniformDiscreteDistribution(sample_space)
+        UniformDiscrete(sample_space)

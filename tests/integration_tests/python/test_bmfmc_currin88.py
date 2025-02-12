@@ -21,7 +21,7 @@ The test is based on the high-fidelity Currin function.
 import numpy as np
 from scipy.stats import entropy
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.bmfmc_iterator import BMFMCIterator
 from queens.main import run_iterator
@@ -52,8 +52,8 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     lf_mc_data_name = "LF_MC_data.pickle"
     path_lf_mc_pickle_file = tmp_path / lf_mc_data_name
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-    x2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    x1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+    x2 = Uniform(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

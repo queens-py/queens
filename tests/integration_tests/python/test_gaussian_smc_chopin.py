@@ -20,7 +20,7 @@ The tested iterator is based on Chopin's 'particles' library.
 import numpy as np
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
 from queens.main import run_iterator
@@ -40,7 +40,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     # Parameters
-    x = NormalDistribution(mean=2.0, covariance=1.0)
+    x = Normal(mean=2.0, covariance=1.0)
     parameters = Parameters(x=x)
 
     # Setup iterator

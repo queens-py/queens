@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from mock import Mock, patch
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.iterators.data_iterator import DataIterator
 from queens.models import bmfmc_model
 from queens.models.bmfmc_model import BMFMCModel
@@ -58,8 +58,8 @@ class PreProcessor:
 @pytest.fixture(name="parameters")
 def fixture_parameters():
     """Create parameters."""
-    x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
-    x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x1 = Uniform(lower_bound=-2.0, upper_bound=2.0)
+    x2 = Uniform(lower_bound=-2.0, upper_bound=2.0)
     pre_processor = PreProcessor()
     random_field_coords = pre_processor.coords_dict["random_inflow"]
     random_field = KarhunenLoeveRandomField(

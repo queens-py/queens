@@ -20,7 +20,7 @@ This test uses Gaussian likelihood.
 import numpy as np
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
@@ -41,7 +41,7 @@ def test_gaussian_smc(
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     # Parameters
-    x = NormalDistribution(mean=2.0, covariance=1.0)
+    x = Normal(mean=2.0, covariance=1.0)
     parameters = Parameters(x=x)
 
     # Setup iterator
@@ -50,7 +50,7 @@ def test_gaussian_smc(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    mcmc_proposal_distribution = NormalDistribution(mean=0.0, covariance=1.0)
+    mcmc_proposal_distribution = Normal(mean=0.0, covariance=1.0)
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)

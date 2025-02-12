@@ -16,7 +16,7 @@
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
 from queens.main import run_iterator
@@ -35,16 +35,16 @@ def test_sobol_indices_sobol(global_settings):
     implementation (see *sobol.py*).
     """
     # Parameters
-    x1 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x3 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x4 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x5 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x6 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x7 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x8 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x9 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x10 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x1 = Uniform(lower_bound=0, upper_bound=1)
+    x2 = Uniform(lower_bound=0, upper_bound=1)
+    x3 = Uniform(lower_bound=0, upper_bound=1)
+    x4 = Uniform(lower_bound=0, upper_bound=1)
+    x5 = Uniform(lower_bound=0, upper_bound=1)
+    x6 = Uniform(lower_bound=0, upper_bound=1)
+    x7 = Uniform(lower_bound=0, upper_bound=1)
+    x8 = Uniform(lower_bound=0, upper_bound=1)
+    x9 = Uniform(lower_bound=0, upper_bound=1)
+    x10 = Uniform(lower_bound=0, upper_bound=1)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
     # Setup iterator

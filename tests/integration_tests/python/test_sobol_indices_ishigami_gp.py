@@ -19,7 +19,7 @@ This test uses a Gaussian process surrogate.
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.lhs_iterator import LHSIterator
 from queens.iterators.sobol_index_iterator import SobolIndexIterator
@@ -34,9 +34,9 @@ from queens.utils.io_utils import load_result
 def test_sobol_indices_ishigami_gp(global_settings):
     """Test Sobol indices estimation with Gaussian process surrogate."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator

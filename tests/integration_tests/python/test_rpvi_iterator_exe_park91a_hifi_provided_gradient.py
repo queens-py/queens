@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.data_processors import Csv
-from queens.distributions import NormalDistribution
+from queens.distributions import Normal
 from queens.drivers import MpiDriver
 from queens.iterators import RPVIIterator
 from queens.main import run_iterator
@@ -75,8 +75,8 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     executable = f"{python_path} {executable} p"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -188,8 +188,8 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     executable = f"{python_path} {executable} s"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -300,8 +300,8 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     adjoint_executable = f"{python_path} {adjoint_executable} a"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

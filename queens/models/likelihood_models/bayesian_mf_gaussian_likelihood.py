@@ -23,7 +23,7 @@ from multiprocessing import get_context
 import numpy as np
 import tqdm
 
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.distributions.mean_field_normal import MeanFieldNormal
 from queens.models.likelihood_models.likelihood_model import LikelihoodModel
 from queens.utils.ascii_art import print_bmfia_acceleration
 from queens.utils.logger_settings import log_init_args
@@ -118,7 +118,7 @@ class BMFGaussianModel(LikelihoodModel):
         dimension = y_obs.size
 
         # build distribution with dummy values; parameters might change during runtime
-        mean_field_normal = MeanFieldNormalDistribution(
+        mean_field_normal = MeanFieldNormal(
             mean=y_obs, variance=noise_variance, dimension=dimension
         )
 

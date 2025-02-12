@@ -19,12 +19,12 @@ import logging
 
 import numpy as np
 
-from queens.distributions.distributions import DiscreteDistribution
+from queens.distributions.distributions import Discrete
 
 _logger = logging.getLogger(__name__)
 
 
-class ParticleDiscreteDistribution(DiscreteDistribution):
+class ParticleDiscrete(Discrete):
     """Discrete probability distributions.
 
     Similar to particles in SMC, we use the approach where a distribution is approximated as

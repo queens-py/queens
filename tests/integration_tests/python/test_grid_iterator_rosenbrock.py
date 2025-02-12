@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.grid_iterator import GridIterator
 from queens.main import run_iterator
@@ -30,8 +30,8 @@ from queens.utils.io_utils import load_result
 def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_path):
     """Integration test for the grid iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
-    x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x1 = Uniform(lower_bound=-2.0, upper_bound=2.0)
+    x2 = Uniform(lower_bound=-2.0, upper_bound=2.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator

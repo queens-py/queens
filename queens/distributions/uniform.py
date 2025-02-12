@@ -18,11 +18,11 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.logger_settings import log_init_args
 
 
-class UniformDistribution(ContinuousDistribution):
+class Uniform(Continuous):
     """Uniform distribution class.
 
     Attributes:

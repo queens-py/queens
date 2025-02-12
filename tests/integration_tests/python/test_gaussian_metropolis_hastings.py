@@ -17,7 +17,7 @@
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 from queens.drivers.function_driver import FunctionDriver
 from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
 from queens.main import run_iterator
@@ -37,7 +37,7 @@ def test_gaussian_metropolis_hastings(
 ):
     """Test case for Metropolis Hastings iterator."""
     # Parameters
-    x = NormalDistribution(mean=2, covariance=1)
+    x = Normal(mean=2, covariance=1)
     parameters = Parameters(x=x)
 
     # Setup iterator
@@ -46,7 +46,7 @@ def test_gaussian_metropolis_hastings(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    proposal_distribution = NormalDistribution(mean=0.0, covariance=1.0)
+    proposal_distribution = Normal(mean=0.0, covariance=1.0)
     driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
     forward_model = SimulationModel(scheduler=scheduler, driver=driver)
