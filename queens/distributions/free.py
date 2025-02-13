@@ -14,11 +14,11 @@
 #
 """Free Variable."""
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.logger_settings import log_init_args
 
 
-class FreeVariable(ContinuousDistribution):
+class FreeVariable(Continuous):
     """Free variable class.
 
     This is not a proper distribution class. It is used for variables

@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.distributions.categorical import CategoricalDistribution
+from queens.distributions.categorical import Categorical
 
 
 @pytest.fixture(name="reference_distribution_data")
@@ -34,7 +34,7 @@ def fixture_categorical_distribution(reference_distribution_data):
     """Categorical distribution fixture."""
     weights, categories, _ = reference_distribution_data
 
-    categorical_distribution = CategoricalDistribution(weights, categories)
+    categorical_distribution = Categorical(weights, categories)
     return categorical_distribution
 
 
@@ -47,7 +47,7 @@ def test_probabilities(reference_distribution_data, categorical_distribution):
 def test_init(reference_distribution_data, categorical_distribution):
     """Test from config create."""
     weights, categories, _ = reference_distribution_data
-    distribution = CategoricalDistribution(probabilities=weights, categories=categories)
+    distribution = Categorical(probabilities=weights, categories=categories)
     np.testing.assert_equal(categorical_distribution.probabilities, distribution.probabilities)
     np.testing.assert_equal(categorical_distribution.categories, distribution.categories)
 

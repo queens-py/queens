@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 
 from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
-from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
+from queens.models.surrogates.gp_approximation_jitted import GPJitted
 from queens.stochastic_optimizers import Adam
 from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
     assert_surrogate_model_output,
@@ -36,7 +36,7 @@ def fixture_gp_model():
         rel_l1_change_threshold=0.005,
         rel_l2_change_threshold=0.005,
     )
-    model = GPJittedModel(
+    model = GPJitted(
         stochastic_optimizer=optimizer,
         kernel_type="squared_exponential",
         initial_hyper_params_lst=[1.0, 1.0, 0.01],

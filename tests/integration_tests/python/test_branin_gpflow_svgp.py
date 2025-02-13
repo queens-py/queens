@@ -17,14 +17,14 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.gp_approximation_gpflow_svgp import GPflowSVGPModel
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.gp_approximation_gpflow_svgp import GPflowSVGP
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
@@ -33,22 +33,22 @@ from test_utils.integration_tests import assert_monte_carlo_iterator_results
 def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
     """Test case for GPflow based SVGP model."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Uniform(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = MonteCarloIterator(
+    driver = Function(parameters=parameters, function="branin78_hifi")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    training_iterator = MonteCarlo(
         seed=42,
         num_samples=100,
         model=model,
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GPflowSVGPModel(
+    model = GPflowSVGP(
         plotting_options={
             "plot_booleans": [False, False],
             "plotting_dir": "dummy",
@@ -64,7 +64,7 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
         dimension_lengthscales=2,
         training_iterator=training_iterator,
     )
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         seed=44,
         num_samples=10,
         result_description={

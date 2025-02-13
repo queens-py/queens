@@ -20,13 +20,13 @@ function.
 
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.mlmc_iterator import MLMCIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.mlmc import MLMC
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -34,14 +34,14 @@ from queens.utils.io_utils import load_result
 def fixture_parameters():
     """Parameters for the integration tests of the MLMC iterator."""
     # Parameters
-    rw = UniformDistribution(lower_bound=0.05, upper_bound=0.15)
-    r = UniformDistribution(lower_bound=100, upper_bound=50000)
-    tu = UniformDistribution(lower_bound=63070, upper_bound=115600)
-    hu = UniformDistribution(lower_bound=990, upper_bound=1110)
-    tl = UniformDistribution(lower_bound=63.1, upper_bound=116)
-    hl = UniformDistribution(lower_bound=700, upper_bound=820)
-    l = UniformDistribution(lower_bound=1120, upper_bound=1680)
-    kw = UniformDistribution(lower_bound=9855, upper_bound=12045)
+    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
+    r = Uniform(lower_bound=100, upper_bound=50000)
+    tu = Uniform(lower_bound=63070, upper_bound=115600)
+    hu = Uniform(lower_bound=990, upper_bound=1110)
+    tl = Uniform(lower_bound=63.1, upper_bound=116)
+    hl = Uniform(lower_bound=700, upper_bound=820)
+    l = Uniform(lower_bound=1120, upper_bound=1680)
+    kw = Uniform(lower_bound=9855, upper_bound=12045)
     parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
 
     return parameters
@@ -51,7 +51,7 @@ def fixture_parameters():
 def fixture_scheduler(global_settings):
     """Scheduler for the integration tests of the MLMC iterator."""
     # Set up scheduler.
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
 
     return scheduler
 
@@ -60,11 +60,11 @@ def fixture_scheduler(global_settings):
 def fixture_models(parameters, scheduler):
     """Models for the integration tests of the MLMC iterator."""
     # Set up drivers.
-    driver0 = FunctionDriver(parameters=parameters, function="borehole83_lofi")
-    driver1 = FunctionDriver(parameters=parameters, function="borehole83_hifi")
+    driver0 = Function(parameters=parameters, function="borehole83_lofi")
+    driver1 = Function(parameters=parameters, function="borehole83_hifi")
     # Set up models.
-    model0 = SimulationModel(scheduler=scheduler, driver=driver0)
-    model1 = SimulationModel(scheduler=scheduler, driver=driver1)
+    model0 = Simulation(scheduler=scheduler, driver=driver0)
+    model1 = Simulation(scheduler=scheduler, driver=driver1)
 
     return [model0, model1]
 
@@ -72,7 +72,7 @@ def fixture_models(parameters, scheduler):
 def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
     """Test case for the iterator with a given number of samples."""
     # Set up iterator.
-    iterator = MLMCIterator(
+    iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
@@ -96,7 +96,7 @@ def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
 def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
     """Test case for the bootstrap estimate of the MLMC standard deviation."""
     # Set up iterator.
-    iterator = MLMCIterator(
+    iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
@@ -121,7 +121,7 @@ def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
 def test_mlmc_borehole_optimal_num_samples(global_settings, parameters, models):
     """Test case for the iterator with an optimal number of samples."""
     # Set up iterator.
-    iterator_optimal = MLMCIterator(
+    iterator_optimal = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,

@@ -20,12 +20,12 @@ This test uses the Rosenbrock residual function.
 import numpy as np
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.optimization_iterator import OptimizationIterator
+from queens.drivers.function import Function
+from queens.iterators.optimization import Optimization
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -37,10 +37,10 @@ def test_optimization_lsq_rosenbrock(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = OptimizationIterator(
+    driver = Function(parameters=parameters, function="rosenbrock60_residual")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Optimization(
         algorithm="LSQ",
         initial_guess=[-3.0, -4.0],
         result_description={"write_results": True},
@@ -69,10 +69,10 @@ def test_optimization_lsq_rosenbrock_error(global_settings):
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60_residual_3d")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = OptimizationIterator(
+    driver = Function(parameters=parameters, function="rosenbrock60_residual_3d")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Optimization(
         algorithm="LSQ",
         initial_guess=[-3.0, -4.0, -5.0],
         result_description={"write_results": True},

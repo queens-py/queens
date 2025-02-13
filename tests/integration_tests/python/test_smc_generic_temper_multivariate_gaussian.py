@@ -22,16 +22,16 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.drivers.function_driver import FunctionDriver
+from queens.distributions.normal import Normal
+from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from queens.iterators.metropolis_hastings import MetropolisHastings
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -41,10 +41,10 @@ def test_smc_generic_temper_multivariate_gaussian(
 ):
     """Test SMC with a multivariate Gaussian and generic tempering."""
     # Parameters
-    x1 = NormalDistribution(mean=1.0, covariance=5.0)
-    x2 = NormalDistribution(mean=3.0, covariance=5.0)
-    x3 = NormalDistribution(mean=-3.0, covariance=5.0)
-    x4 = NormalDistribution(mean=1.0, covariance=5.0)
+    x1 = Normal(mean=1.0, covariance=5.0)
+    x2 = Normal(mean=3.0, covariance=5.0)
+    x3 = Normal(mean=-3.0, covariance=5.0)
+    x4 = Normal(mean=1.0, covariance=5.0)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
     # Setup iterator
@@ -53,7 +53,7 @@ def test_smc_generic_temper_multivariate_gaussian(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    mcmc_proposal_distribution = NormalDistribution(
+    mcmc_proposal_distribution = Normal(
         mean=[0.0, 0.0, 0.0, 0.0],
         covariance=[
             [1.0, 0.0, 0.0, 0.0],
@@ -62,17 +62,17 @@ def test_smc_generic_temper_multivariate_gaussian(
             [0.0, 0.0, 0.0, 1.0],
         ],
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         nugget_noise_variance=1e-05,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = SequentialMonteCarloIterator(
+    iterator = SequentialMonteCarlo(
         seed=42,
         num_particles=200,
         temper_type="generic",
@@ -86,8 +86,8 @@ def test_smc_generic_temper_multivariate_gaussian(
     )
 
     # Actual analysis
-    with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
-        with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
+    with patch.object(SequentialMonteCarlo, "eval_log_likelihood", target_density):
+        with patch.object(MetropolisHastings, "eval_log_likelihood", target_density):
             run_iterator(iterator, global_settings=global_settings)
 
     # Load results

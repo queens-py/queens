@@ -22,7 +22,7 @@ import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.utils.process_outputs import write_results
-from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
+from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 from queens.visualization.variational_inference_visualization import VIVisualization
 
 _logger = logging.getLogger(__name__)
@@ -37,7 +37,7 @@ VALID_EXPORT_FIELDS = [
 ]
 
 
-class VariationalInferenceIterator(Iterator):
+class VariationalInference(Iterator):
     """Stochastic variational inference iterator.
 
     References:
@@ -68,7 +68,7 @@ class VariationalInferenceIterator(Iterator):
         max_feval (int): Maximum number of simulation runs for this analysis.
         num_parameters (int): Actual number of model input parameters that should be calibrated.
         stochastic_optimizer (obj): QUEENS stochastic optimizer object.
-        variational_distribution (VariationalDistribution): Variational distribution object.
+        variational_distribution (Variational): Variational distribution object.
         n_sims (int): Number of probabilistic model calls.
         variational_params (np.array): Row vector containing the variational parameters.
         elbo: Evidence lower bound.
@@ -107,7 +107,7 @@ class VariationalInferenceIterator(Iterator):
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
                                               and the output directory
             result_description (dict): Settings for storing and visualizing the results
-            variational_distribution (VariationalDistribution): Variational distribution object
+            variational_distribution (Variational): Variational distribution object
             variational_params_initialization (str): Flag to decide how to initialize the
                                                      variational parameters
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
@@ -256,7 +256,7 @@ class VariationalInferenceIterator(Iterator):
         elif self.variational_params_initialization_approach == "prior":
             if isinstance(
                 self.variational_distribution,
-                (MeanFieldNormalVariational, FullRankNormalVariational),
+                (MeanFieldNormal, FullRankNormal),
             ):
                 mu, cov = self._initialize_variational_params_from_prior()
                 var_params = self.variational_distribution.construct_variational_parameters(mu, cov)

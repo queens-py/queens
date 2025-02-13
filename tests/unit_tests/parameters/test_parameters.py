@@ -17,24 +17,24 @@
 import numpy as np
 import pytest
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
 from queens.parameters.parameters import Parameters, from_config_create_parameters
 
 
 @pytest.fixture(name="parameters_set_1", scope="module")
 def fixture_parameters_set_1():
     """Parameters dict without random field."""
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = NormalDistribution(mean=[0, 1], covariance=np.diag([1, 2]))
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Normal(mean=[0, 1], covariance=np.diag([1, 2]))
     return Parameters(x1=x1, x2=x2)
 
 
 @pytest.fixture(name="parameters_set_2", scope="module")
 def fixture_parameters_set_2():
     """Parameters dict without random field."""
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = NormalDistribution(mean=0, covariance=1)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Normal(mean=0, covariance=1)
     return Parameters(x1=x1, x2=x2)
 
 

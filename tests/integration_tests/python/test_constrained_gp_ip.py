@@ -17,18 +17,18 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
-from queens.iterators.adaptive_sampling_iterator import AdaptiveSamplingIterator
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
-from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from queens.iterators.adaptive_sampling import AdaptiveSampling
+from queens.iterators.monte_carlo import MonteCarlo
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.logpdf_gp_model import LogpdfGPModel
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.logpdf_gp import LogpdfGP
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -48,8 +48,8 @@ def fixture_approx_type(request):
 @pytest.fixture(name="parameters")
 def fixture_parameters():
     """Two uniformly distributed parameters."""
-    x1 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x1 = Uniform(lower_bound=0, upper_bound=1)
+    x2 = Uniform(lower_bound=0, upper_bound=1)
     parameters = Parameters(x1=x1, x2=x2)
     return parameters
 
@@ -58,15 +58,15 @@ def fixture_parameters():
 def fixture_likelihood_model(parameters, global_settings):
     """A Gaussian likelihood model."""
     np.random.seed(42)
-    driver = FunctionDriver(parameters=parameters, function=park91a_hifi_on_grid)
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
+    driver = Function(parameters=parameters, function=park91a_hifi_on_grid)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
 
     y_obs = park91a_hifi_on_grid(x1=0.3, x2=0.7)
     noise_var = 1e-4
     y_obs += np.random.randn(y_obs.size) * noise_var ** (1 / 2)
 
-    likelihood_model = GaussianLikelihood(
+    likelihood_model = Gaussian(
         forward_model=forward_model,
         noise_type="fixed_variance",
         noise_value=noise_var,
@@ -112,7 +112,7 @@ def test_constrained_gp_ip_park(
     quantile = 0.90
     seed = 41
 
-    logpdf_gp_model = LogpdfGPModel(
+    logpdf_gp_model = LogpdfGP(
         approx_type=approx_type,
         num_hyper=10,
         num_optimizations=3,
@@ -124,7 +124,7 @@ def test_constrained_gp_ip_park(
         jitter=1.0e-16,
     )
 
-    initial_train_iterator = MonteCarloIterator(
+    initial_train_iterator = MonteCarlo(
         model=None,
         parameters=parameters,
         global_settings=global_settings,
@@ -132,7 +132,7 @@ def test_constrained_gp_ip_park(
         num_samples=num_initial_samples,
     )
 
-    solving_iterator = SequentialMonteCarloChopinIterator(
+    solving_iterator = SequentialMonteCarloChopin(
         model=logpdf_gp_model,
         parameters=parameters,
         global_settings=global_settings,
@@ -147,7 +147,7 @@ def test_constrained_gp_ip_park(
         result_description={},
     )
 
-    adaptive_sampling_iterator = AdaptiveSamplingIterator(
+    adaptive_sampling_iterator = AdaptiveSampling(
         model=logpdf_gp_model,
         parameters=parameters,
         global_settings=global_settings,

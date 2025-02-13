@@ -21,15 +21,15 @@ The test is based on the high-fidelity Currin function.
 import numpy as np
 from scipy.stats import entropy
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.bmfmc_iterator import BMFMCIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.bmfmc import BMFMC
 from queens.main import run_iterator
-from queens.models.bmfmc_model import BMFMCModel
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
+from queens.models.bmfm import BMFM
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.gp_approximation_gpflow import GPFlowRegression
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from queens.utils.pdf_estimation import estimate_pdf
 
@@ -52,21 +52,21 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     lf_mc_data_name = "LF_MC_data.pickle"
     path_lf_mc_pickle_file = tmp_path / lf_mc_data_name
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-    x2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    x1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+    x2 = Uniform(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    probabilistic_mapping = GPFlowRegressionModel(
+    probabilistic_mapping = GPFlowRegression(
         train_likelihood_variance=False,
         number_restarts=2,
         number_training_iterations=1000,
         dimension_lengthscales=2,
     )
-    driver = FunctionDriver(parameters=parameters, function="currin88_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    hf_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = BMFMCModel(
+    driver = Function(parameters=parameters, function="currin88_hifi")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    hf_model = Simulation(scheduler=scheduler, driver=driver)
+    model = BMFM(
         predictive_var=False,
         BMFMC_reference=False,
         y_pdf_support_min=-0.5,
@@ -80,7 +80,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         parameters=parameters,
         global_settings=global_settings,
     )
-    iterator = BMFMCIterator(
+    iterator = BMFMC(
         global_settings=global_settings,
         result_description={
             "write_results": True,

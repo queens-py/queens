@@ -17,24 +17,19 @@
 import numpy as np
 import pytest
 
-from queens.data_processor import DataProcessorCsv
-from queens.distributions import NormalDistribution
-from queens.drivers import MpiDriver
-from queens.iterators import RPVIIterator
+from queens.data_processors import Csv
+from queens.distributions import Normal
+from queens.drivers import Mpi
+from queens.iterators import RPVI
 from queens.main import run_iterator
-from queens.models import (
-    DifferentiableSimulationModelAdjoint,
-    DifferentiableSimulationModelFD,
-    GaussianLikelihood,
-    SimulationModel,
-)
+from queens.models import DifferentiableAdjoint, DifferentiableFD, Gaussian, Simulation
 from queens.parameters import Parameters
-from queens.schedulers import LocalScheduler
+from queens.schedulers import Local
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.run_subprocess import run_subprocess
-from queens.variational_distributions import FullRankNormalVariational
+from queens.variational_distributions import FullRankNormal
 
 
 @pytest.fixture(name="python_path")
@@ -53,7 +48,7 @@ def fixture_mpi_run_path():
 
 @pytest.fixture(name="mpi_command", scope="session")
 def fixture_mpi_command(mpirun_path):
-    """Base command to call mpirun with MpiDriver."""
+    """Base command to call mpirun with Mpi."""
     return mpirun_path + " --bind-to none"
 
 
@@ -75,12 +70,12 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     executable = f"{python_path} {executable} p"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,
@@ -94,26 +89,26 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    gradient_data_processor = DataProcessorCsv(
+    gradient_data_processor = Csv(
         file_name_identifier="*_gradient.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
@@ -121,14 +116,14 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         gradient_data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -188,12 +183,12 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     executable = f"{python_path} {executable} s"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,
@@ -207,35 +202,35 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = DifferentiableSimulationModelFD(
+    forward_model = DifferentiableFD(
         scheduler=scheduler, driver=driver, finite_difference_method="2-point"
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,
@@ -300,12 +295,12 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     adjoint_executable = f"{python_path} {adjoint_executable} a"
     plot_dir = tmp_path
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,
@@ -319,52 +314,52 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    data_processor = DataProcessorCsv(
+    data_processor = Csv(
         file_name_identifier="*_output.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    driver = MpiDriver(
+    driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=executable,
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
-    gradient_data_processor = DataProcessorCsv(
+    gradient_data_processor = Csv(
         file_name_identifier="*_gradient.csv",
         file_options_dict={
             "delete_field_data": False,
             "filter": {"type": "entire_file"},
         },
     )
-    adjoint_driver = MpiDriver(
+    adjoint_driver = Mpi(
         parameters=parameters,
         input_templates=third_party_input_file,
         executable=adjoint_executable,
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = DifferentiableSimulationModelAdjoint(
+    forward_model = DifferentiableAdjoint(
         adjoint_file="grad_objective.csv",
         scheduler=scheduler,
         driver=driver,
         gradient_driver=adjoint_driver,
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=10,
         n_samples_per_iter=3,
         score_function_bool=True,

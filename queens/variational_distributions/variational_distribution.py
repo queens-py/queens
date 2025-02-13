@@ -17,7 +17,7 @@
 import abc
 
 
-class VariationalDistribution:
+class Variational:
     """Base class for probability distributions for variational inference.
 
     Attributes:

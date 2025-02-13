@@ -19,31 +19,31 @@ This test uses metamodel uncertainty.
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.lhs_iterator import LHSIterator
-from queens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
+from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.gp_approximation_gpflow import GPFlowRegression
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
 def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
     """Test case for Sobol indices based on GP realizations."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    driver = Function(parameters=parameters, function="ishigami90")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    simulation_model = Simulation(scheduler=scheduler, driver=driver)
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -51,7 +51,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -59,7 +59,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GPFlowRegressionModel(
+    model = GPFlowRegression(
         error_measures=["nash_sutcliffe_efficiency"],
         train_likelihood_variance=False,
         number_restarts=5,
@@ -69,7 +69,7 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=3,
@@ -121,16 +121,16 @@ def test_sobol_indices_ishigami_gp_uncertainty(global_settings):
 def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
     """Test case for third-order Sobol indices."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    driver = Function(parameters=parameters, function="ishigami90")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    simulation_model = Simulation(scheduler=scheduler, driver=driver)
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -138,7 +138,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -146,7 +146,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    gpflow_regression_model = GPFlowRegressionModel(
+    gpflow_regression_model = GPFlowRegression(
         error_measures=["nash_sutcliffe_efficiency"],
         train_likelihood_variance=False,
         number_restarts=5,
@@ -156,7 +156,7 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=20,
@@ -189,16 +189,16 @@ def test_sobol_indices_ishigami_gp_uncertainty_third_order(global_settings):
 def test_sobol_indices_ishigami_gp_mean(global_settings):
     """Test case for Sobol indices based on GP mean."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = LHSIterator(
+    driver = Function(parameters=parameters, function="ishigami90")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    simulation_model = Simulation(scheduler=scheduler, driver=driver)
+    training_iterator = LatinHypercubeSampling(
         seed=42,
         num_samples=100,
         num_iterations=10,
@@ -206,7 +206,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    testing_iterator = LHSIterator(
+    testing_iterator = LatinHypercubeSampling(
         seed=30,
         num_samples=100,
         num_iterations=10,
@@ -214,7 +214,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         parameters=parameters,
         global_settings=global_settings,
     )
-    gpflow_regression_model = GPFlowRegressionModel(
+    gpflow_regression_model = GPFlowRegression(
         error_measures=["nash_sutcliffe_efficiency"],
         train_likelihood_variance=False,
         number_restarts=5,
@@ -224,7 +224,7 @@ def test_sobol_indices_ishigami_gp_mean(global_settings):
         training_iterator=training_iterator,
         testing_iterator=testing_iterator,
     )
-    iterator = SobolIndexGPUncertaintyIterator(
+    iterator = SobolIndexGPUncertainty(
         seed_monte_carlo=42,
         number_monte_carlo_samples=1000,
         number_gp_realizations=1,

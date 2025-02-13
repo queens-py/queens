@@ -18,13 +18,13 @@ import numpy as np
 import pytest
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
+from queens.drivers.function import Function
 from queens.example_simulator_functions.rosenbrock60 import rosenbrock60
-from queens.iterators.points_iterator import PointsIterator
+from queens.iterators.points import Points
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -36,10 +36,10 @@ def test_points_iterator(inputs, expected_results, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = PointsIterator(
+    driver = Function(parameters=parameters, function="rosenbrock60")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Points(
         points=inputs,
         result_description={"write_results": True},
         model=model,
@@ -68,10 +68,10 @@ def test_points_iterator_failure(global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = PointsIterator(
+    driver = Function(parameters=parameters, function="rosenbrock60")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Points(
         points=inputs,
         result_description={"write_results": True},
         model=model,

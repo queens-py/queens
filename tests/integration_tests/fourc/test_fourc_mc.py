@@ -18,14 +18,14 @@ import logging
 
 import numpy as np
 
-from queens.data_processor.data_processor_pvd import DataProcessorPvd
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.fourc_driver import FourcDriver
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.data_processors.pvd import Pvd
+from queens.distributions.uniform import Uniform
+from queens.drivers.fourc import Fourc
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.local import Local
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io_utils import load_result, read_file
 
@@ -44,29 +44,29 @@ def test_fourc_mc(
     fourc_executable, _, _ = fourc_link_paths
 
     # Parameters
-    parameter_1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-    parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+    parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+    parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
     parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-    data_processor = DataProcessorPvd(
+    data_processor = Pvd(
         field_name="displacement",
         file_name_identifier=f"{global_settings.experiment_name}_*.pvd",
         file_options_dict={},
     )
 
-    scheduler = LocalScheduler(
+    scheduler = Local(
         experiment_name=global_settings.experiment_name,
         num_procs=2,
         num_jobs=2,
     )
-    driver = FourcDriver(
+    driver = Fourc(
         parameters=parameters,
         input_templates=fourc_input_file_template,
         executable=fourc_executable,
         data_processor=data_processor,
     )
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = MonteCarloIterator(
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = MonteCarlo(
         seed=42,
         num_samples=2,
         result_description={"write_results": True, "plot_results": False},

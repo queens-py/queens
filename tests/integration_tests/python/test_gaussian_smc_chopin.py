@@ -20,14 +20,14 @@ The tested iterator is based on Chopin's 'particles' library.
 import numpy as np
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
+from queens.distributions.normal import Normal
+from queens.drivers.function import Function
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -40,7 +40,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
     # Parameters
-    x = NormalDistribution(mean=2.0, covariance=1.0)
+    x = Normal(mean=2.0, covariance=1.0)
     parameters = Parameters(x=x)
 
     # Setup iterator
@@ -49,16 +49,16 @@ def test_gaussian_smc_chopin_adaptive_tempering(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = SequentialMonteCarloChopinIterator(
+    iterator = SequentialMonteCarloChopin(
         seed=42,
         num_particles=100,
         resampling_threshold=0.5,
@@ -75,7 +75,7 @@ def test_gaussian_smc_chopin_adaptive_tempering(
 
     # Actual analysis
     with patch.object(
-        SequentialMonteCarloChopinIterator, "eval_log_likelihood", target_density_gaussian_1d
+        SequentialMonteCarloChopin, "eval_log_likelihood", target_density_gaussian_1d
     ):
         run_iterator(iterator, global_settings=global_settings)
 

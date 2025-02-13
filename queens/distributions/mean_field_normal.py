@@ -18,11 +18,11 @@ import numpy as np
 import scipy.stats
 from scipy.special import erf  # pylint:disable=no-name-in-module
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.logger_settings import log_init_args
 
 
-class MeanFieldNormalDistribution(ContinuousDistribution):
+class MeanFieldNormal(Continuous):
     """Mean-field normal distribution.
 
     Attributes:
@@ -40,10 +40,8 @@ class MeanFieldNormalDistribution(ContinuousDistribution):
         """
         mean = np.array(mean)
         variance = np.array(variance)
-        mean = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(mean, dimension)
-        covariance = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-            variance, dimension
-        )
+        mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, dimension)
+        covariance = MeanFieldNormal.get_check_array_dimension_and_reshape(variance, dimension)
         self.standard_deviation = np.sqrt(covariance)
         super().__init__(mean, covariance, dimension)
 
@@ -53,9 +51,7 @@ class MeanFieldNormalDistribution(ContinuousDistribution):
         Args:
             variance (np.array): New variance vector
         """
-        covariance = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-            variance, self.dimension
-        )
+        covariance = MeanFieldNormal.get_check_array_dimension_and_reshape(variance, self.dimension)
         self.covariance = covariance
         self.standard_deviation = np.sqrt(covariance)
 
@@ -65,9 +61,7 @@ class MeanFieldNormalDistribution(ContinuousDistribution):
         Args:
             mean (np.array): New mean vector
         """
-        mean = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-            mean, self.dimension
-        )
+        mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, self.dimension)
         self.mean = mean
 
     def cdf(self, x):

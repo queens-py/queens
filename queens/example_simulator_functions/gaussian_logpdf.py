@@ -16,10 +16,10 @@
 
 import numpy as np
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 
 # 1d standard Gaussian
-STANDARD_NORMAL = NormalDistribution(0.0, 1)
+STANDARD_NORMAL = Normal(0.0, 1)
 
 # 2d Gaussian
 DIM = 2
@@ -30,7 +30,7 @@ COV_2D = [[1.0, 0.5], [0.5, 1.0]]
 A = np.eye(DIM, DIM)
 B = np.zeros(DIM)
 
-GAUSSIAN_2D = NormalDistribution(MEAN_2D, COV_2D)
+GAUSSIAN_2D = Normal(MEAN_2D, COV_2D)
 
 # 4d Gaussian
 COV_4D = [
@@ -42,7 +42,7 @@ COV_4D = [
 
 MEAN_4D = [0.806500709319150, 2.750827521892630, -3.388270291505472, 1.293259980552181]
 
-GAUSSIAN_4D = NormalDistribution(MEAN_4D, COV_4D)
+GAUSSIAN_4D = Normal(MEAN_4D, COV_4D)
 
 
 def gaussian_1d_logpdf(x):

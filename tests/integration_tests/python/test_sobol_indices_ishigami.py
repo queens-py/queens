@@ -16,13 +16,13 @@
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_sobol_index_iterator_results
 
@@ -30,16 +30,16 @@ from test_utils.integration_tests import assert_sobol_index_iterator_results
 def test_sobol_indices_ishigami(global_settings):
     """Test case for Salib based Saltelli iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x2 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
-    x3 = UniformDistribution(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x1 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x2 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
+    x3 = Uniform(lower_bound=-3.14159265359, upper_bound=3.14159265359)
     parameters = Parameters(x1=x1, x2=x2, x3=x3)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=True)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = SobolIndexIterator(
+    driver = Function(parameters=parameters, function="ishigami90")
+    scheduler = Pool(experiment_name=global_settings.experiment_name, verbose=True)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = SobolIndex(
         seed=42,
         calc_second_order=True,
         num_samples=16,

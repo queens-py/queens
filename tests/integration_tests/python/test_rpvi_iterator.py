@@ -19,19 +19,19 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
+from queens.distributions.normal import Normal
+from queens.drivers.function import Function
+from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.main import run_iterator
-from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.differentiable_fd import DifferentiableFD
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers.adam import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
-from queens.variational_distributions.mean_field_normal import MeanFieldNormalVariational
+from queens.variational_distributions.mean_field_normal import MeanFieldNormal
 
 
 def test_rpvi_iterator_park91a_hifi(
@@ -44,12 +44,12 @@ def test_rpvi_iterator_park91a_hifi(
     Based on the *park91a_hifi* function.
     """
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.025,
@@ -63,18 +63,18 @@ def test_rpvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = DifferentiableSimulationModelFD(
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = DifferentiableFD(
         scheduler=scheduler, driver=driver, finite_difference_method="2-point", step_size=1e-07
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=1000,
         n_samples_per_iter=2,
         score_function_bool=True,
@@ -122,12 +122,12 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 ):
     """Test rpvi on *park91a_hifi* function with analytical gradients."""
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.025,
@@ -141,16 +141,16 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=1000,
         n_samples_per_iter=2,
         score_function_bool=True,
@@ -193,7 +193,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
 
 likelihood_mean = np.array([-2.0, 1.0])
 likelihood_covariance = np.diag(np.array([0.1, 10.0]))
-likelihood = NormalDistribution(likelihood_mean, likelihood_covariance)
+likelihood = Normal(likelihood_mean, likelihood_covariance)
 
 
 def target_density(
@@ -216,12 +216,12 @@ def fixture_forward_model(request):
 def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, global_settings):
     """Test RPVI with univariate Gaussian."""
     # Parameters
-    x1 = NormalDistribution(mean=0.0, covariance=1.0)
-    x2 = NormalDistribution(mean=10.0, covariance=100.0)
+    x1 = Normal(mean=0.0, covariance=1.0)
+    x2 = Normal(mean=10.0, covariance=100.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.05,
         optimization_type="max",
@@ -234,16 +234,16 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100000,
         n_samples_per_iter=10,
         score_function_bool=False,
@@ -273,7 +273,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     )
 
     # Actual analysis
-    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
+    with patch.object(Gaussian, "evaluate_and_gradient", target_density):
         run_iterator(iterator, global_settings=global_settings)
 
     # Load results
@@ -311,8 +311,8 @@ def fixture_module_path(tmp_path):
 def fixture_write_custom_likelihood_model(module_path):
     """Create a python file with a custom likelihood class."""
     custom_class_lst = [
-        "from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",
-        "class MyLikelihood(GaussianLikelihood):\n",
+        "from queens.models.likelihoods.gaussian_likelihood import Gaussian\n",
+        "class MyLikelihood(Gaussian):\n",
         "   pass",
     ]
     with open(module_path, "w", encoding="utf-8") as f:

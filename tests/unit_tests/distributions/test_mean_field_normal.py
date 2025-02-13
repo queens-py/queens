@@ -21,7 +21,7 @@ import scipy
 from jax import config, grad
 from jax import numpy as jnp
 
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
+from queens.distributions.mean_field_normal import MeanFieldNormal
 
 config.update("jax_enable_x64", True)
 
@@ -32,7 +32,7 @@ def fixture_mean_field_normal():
     mean = np.zeros(5).reshape(-1)
     variance = np.ones(5).reshape(-1)
     dimension = 5
-    distribution = MeanFieldNormalDistribution(mean, variance, dimension)
+    distribution = MeanFieldNormal(mean, variance, dimension)
     return distribution
 
 
@@ -56,12 +56,12 @@ def test_from_config_create_distribution(mocker):
 
     # mock the get_check_array_dimension_and_reshape function
     mp1 = mocker.patch(
-        "queens.distributions.mean_field_normal.MeanFieldNormalDistribution"
+        "queens.distributions.mean_field_normal.MeanFieldNormal"
         ".get_check_array_dimension_and_reshape",
         return_value=distribution_options["mean"],
     )
 
-    distribution = MeanFieldNormalDistribution(**distribution_options)
+    distribution = MeanFieldNormal(**distribution_options)
     np.testing.assert_array_equal(
         distribution.mean, np.ones(distribution_options["dimension"]) * distribution_options["mean"]
     )
@@ -79,30 +79,26 @@ def test_get_check_array_dimension_and_reshape():
     # test instantiation with 1d array and  5 dimension
     test_array = np.array([1])
     dimension = 5
-    out_array = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-        test_array, dimension
-    )
+    out_array = MeanFieldNormal.get_check_array_dimension_and_reshape(test_array, dimension)
     np.testing.assert_array_equal(out_array, np.ones(dimension))
 
     # test instantiation with 5d array and  5 dimension
     test_array = np.array([[1, 3, 4, 5, 6]])
     dimension = 5
-    out_array = MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(
-        test_array, dimension
-    )
+    out_array = MeanFieldNormal.get_check_array_dimension_and_reshape(test_array, dimension)
     np.testing.assert_array_equal(out_array, test_array)
 
     # test instantiation with vector and wrong dimension
     test_array = np.array([1, 3])
     dimension = 5
     with pytest.raises(ValueError):
-        MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(test_array, dimension)
+        MeanFieldNormal.get_check_array_dimension_and_reshape(test_array, dimension)
 
     # test instantiation with float and dimension
     test_array = 1
     dimension = 5
     with pytest.raises(TypeError):
-        MeanFieldNormalDistribution.get_check_array_dimension_and_reshape(test_array, dimension)
+        MeanFieldNormal.get_check_array_dimension_and_reshape(test_array, dimension)
 
 
 def test_init():
@@ -111,7 +107,7 @@ def test_init():
     covariance = np.array([1.0])
     standard_deviation = np.sqrt(covariance)
     dimension = 1
-    distribution = MeanFieldNormalDistribution(mean, covariance, dimension)
+    distribution = MeanFieldNormal(mean, covariance, dimension)
     assert distribution.mean == mean
     assert distribution.covariance == covariance
     assert distribution.dimension == dimension

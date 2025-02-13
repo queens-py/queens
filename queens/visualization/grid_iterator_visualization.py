@@ -63,9 +63,9 @@ def _linear_tick_formatter(val):
 
 
 class GridIteratorVisualization:
-    """Visualization class for GridIterator.
+    """Visualization class for Grid.
 
-    Visualization class for GridIterator that contains several plotting,
+    Visualization class for Grid that contains several plotting,
     storing and visualization methods that can be used anywhere in QUEENS.
 
     Attributes:

@@ -17,13 +17,13 @@
 Modules containing probability distributions for variational inference.
 """
 
-from queens.variational_distributions.full_rank_normal import FullRankNormalVariational
-from queens.variational_distributions.joint import JointVariational
-from queens.variational_distributions.mean_field_normal import MeanFieldNormalVariational
-from queens.variational_distributions.mixture_model import MixtureModelVariational
-from queens.variational_distributions.particle import ParticleVariational
+from queens.variational_distributions.full_rank_normal import FullRankNormal
+from queens.variational_distributions.joint import Joint
+from queens.variational_distributions.mean_field_normal import MeanFieldNormal
+from queens.variational_distributions.mixture_model import MixtureModel
+from queens.variational_distributions.particle import Particle
 
 VALID_TYPES = {
-    "mean_field_variational": MeanFieldNormalVariational,
-    "full_rank_variational": FullRankNormalVariational,
+    "mean_field_variational": MeanFieldNormal,
+    "full_rank_variational": FullRankNormal,
 }

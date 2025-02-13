@@ -19,22 +19,22 @@ import logging
 import numpy as np
 import pytest
 
-from queens.data_processor.data_processor_ensight import DataProcessorEnsight
-from queens.drivers.fourc_driver import FourcDriver
-from queens.external_geometry.fourc_dat_geometry import FourcDatExternalGeometry
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.data_processors.ensight import Ensight
+from queens.drivers.fourc import Fourc
+from queens.external_geometries.fourc_dat import FourcDat
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
-from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
+from queens.schedulers.local import Local
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io_utils import load_result, read_file
 
 _logger = logging.getLogger(__name__)
 
 
-class DummyKLField(KarhunenLoeveRandomField):
+class DummyKLField(KarhunenLoeve):
     """Dummy Karhunen-Loeve random field."""
 
     def expanded_representation(self, samples):
@@ -61,7 +61,7 @@ def test_write_random_material_to_dat(
     fourc_input_preprocessed = dat_file_preprocessed
 
     # Parameters
-    random_field_preprocessor = FourcDatExternalGeometry(
+    random_field_preprocessor = FourcDat(
         list_geometric_sets=["DSURFACE 1"],
         associated_material_numbers_geometric_set=[[10, 11]],
         random_fields=[
@@ -86,11 +86,11 @@ def test_write_random_material_to_dat(
     parameters = Parameters(mat_param=mat_param)
 
     # Setup iterator
-    external_geometry = FourcDatExternalGeometry(
+    external_geometry = FourcDat(
         list_geometric_sets=["DSURFACE 1"],
         input_template=fourc_input_preprocessed,
     )
-    data_processor = DataProcessorEnsight(
+    data_processor = Ensight(
         file_name_identifier="*_structure.case",
         file_options_dict={
             "delete_field_data": False,
@@ -105,20 +105,20 @@ def test_write_random_material_to_dat(
         },
         external_geometry=external_geometry,
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
     )
-    driver = FourcDriver(
+    driver = Fourc(
         parameters=parameters,
         input_templates=fourc_input_preprocessed,
         executable=fourc_executable,
         post_processor=post_ensight,
         data_processor=data_processor,
     )
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = MonteCarloIterator(
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = MonteCarlo(
         seed=1,
         num_samples=3,
         result_description={"write_results": True, "plot_results": False},

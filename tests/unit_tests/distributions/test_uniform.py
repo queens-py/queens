@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import scipy.stats
 
-from queens.distributions.uniform import UniformDistribution
+from queens.distributions.uniform import Uniform
 
 
 # ------------- univariate --------------
@@ -43,7 +43,7 @@ def fixture_upper_bound_1d():
 @pytest.fixture(name="uniform_1d", scope="module")
 def fixture_uniform_1d(lower_bound_1d, upper_bound_1d):
     """A uniform distribution."""
-    return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
+    return Uniform(lower_bound=lower_bound_1d, upper_bound=upper_bound_1d)
 
 
 # ------------- multivariate --------------
@@ -74,7 +74,7 @@ def fixture_upper_bound_2d():
 @pytest.fixture(name="uniform_2d", scope="module")
 def fixture_uniform_2d(lower_bound_2d, upper_bound_2d):
     """A uniform distribution."""
-    return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
+    return Uniform(lower_bound=lower_bound_2d, upper_bound=upper_bound_2d)
 
 
 # -----------------------------------------------------------------------
@@ -103,7 +103,7 @@ def test_init_uniform_1d_wrong_interval(lower_bound_1d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r"Lower bound must be smaller than upper bound*"):
         upper_bound = lower_bound_1d - np.abs(lower_bound_1d)
-        return UniformDistribution(lower_bound=lower_bound_1d, upper_bound=upper_bound)
+        return Uniform(lower_bound=lower_bound_1d, upper_bound=upper_bound)
 
 
 def test_cdf_uniform_1d(uniform_1d, lower_bound_1d, upper_bound_1d, sample_pos_1d):
@@ -179,7 +179,7 @@ def test_init_uniform_2d_wrong_interval(lower_bound_2d):
     """Test init method of Uniform Distribution class."""
     with pytest.raises(ValueError, match=r"Lower bound must be smaller than upper bound*"):
         upper_bound = lower_bound_2d + np.array([0.1, -0.1])
-        return UniformDistribution(lower_bound=lower_bound_2d, upper_bound=upper_bound)
+        return Uniform(lower_bound=lower_bound_2d, upper_bound=upper_bound)
 
 
 def test_cdf_uniform_2d(uniform_2d, lower_bound_2d, upper_bound_2d, sample_pos_2d):

@@ -19,14 +19,14 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.nuts_iterator import NUTSIterator
+from queens.distributions.normal import Normal
+from queens.drivers.function import Function
+from queens.iterators.nuts import NUTS
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -39,7 +39,7 @@ def test_gaussian_nuts(
 ):
     """Test case for nuts iterator."""
     # Parameters
-    x1 = NormalDistribution(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
+    x1 = Normal(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
     parameters = Parameters(x1=x1)
 
     # Setup iterator
@@ -48,16 +48,16 @@ def test_gaussian_nuts(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    driver = FunctionDriver(parameters=parameters, function="patch_for_likelihood")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="patch_for_likelihood")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = NUTSIterator(
+    iterator = NUTS(
         seed=42,
         num_samples=10,
         num_burn_in=2,
@@ -71,9 +71,7 @@ def test_gaussian_nuts(
     )
 
     # Actual analysis
-    with patch.object(
-        GaussianLikelihood, "evaluate_and_gradient", target_density_gaussian_2d_with_grad
-    ):
+    with patch.object(Gaussian, "evaluate_and_gradient", target_density_gaussian_2d_with_grad):
         run_iterator(iterator, global_settings=global_settings)
 
     # Load results

@@ -17,26 +17,23 @@
 import numpy as np
 import pytest
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.bmfia_iterator import BMFIAIterator
-from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.bmfia import BMFIA
+from queens.iterators.reparameteriztion_based_variational import RPVI
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
-from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
-    BMFGaussianModel,
-    BmfiaInterface,
-)
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
-from queens.models.surrogate_models.gp_approximation_jitted import GPJittedModel
+from queens.models.likelihoods.bayesian_mf_gaussian import BMFGaussian, BmfiaInterface
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
+from queens.models.surrogates.gp_approximation_jitted import GPJitted
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
-from queens.variational_distributions import MeanFieldNormalVariational
+from queens.variational_distributions import MeanFieldNormal
 
 
 @pytest.fixture(name="expected_variational_mean")
@@ -63,8 +60,8 @@ def test_bmfia_smc_park(
     experimental_data_path = tmp_path
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
-    x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
+    x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
+    x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
@@ -85,7 +82,7 @@ def test_bmfia_smc_park(
         rel_l1_change_threshold=0.004,
         rel_l2_change_threshold=0.004,
     )
-    mf_approx = GPJittedModel(
+    mf_approx = GPJitted(
         kernel_type="squared_exponential",
         plot_refresh_rate=None,
         noise_var_lb=1e-06,
@@ -94,15 +91,13 @@ def test_bmfia_smc_park(
         mean_function_type="identity_multi_fidelity",
         stochastic_optimizer=stochastic_optimizer,
     )
-    mcmc_proposal_distribution = NormalDistribution(
-        mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]]
-    )
-    lf_driver = FunctionDriver(parameters=parameters, function="park91a_lofi_on_grid")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
-    hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    mcmc_proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]])
+    lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
+    hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
+    hf_model = Simulation(scheduler=scheduler, driver=hf_driver)
+    mf_subiterator = BMFIA(
         features_config="man_features",
         X_cols=[0],
         num_features=1,
@@ -112,7 +107,7 @@ def test_bmfia_smc_park(
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = BMFGaussianModel(
+    model = BMFGaussian(
         noise_value=0.001,
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
@@ -120,7 +115,7 @@ def test_bmfia_smc_park(
         forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
-    iterator = SequentialMonteCarloIterator(
+    iterator = SequentialMonteCarlo(
         seed=41,
         num_particles=10,
         temper_type="bayes",
@@ -163,12 +158,12 @@ def test_bmfia_rpvi_gp_park(
     experimental_data_path = tmp_path
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
-    x2 = UniformDistribution(lower_bound=0.01, upper_bound=0.99)
+    x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
+    x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
@@ -185,7 +180,7 @@ def test_bmfia_rpvi_gp_park(
         rel_l1_change_threshold=0.004,
         rel_l2_change_threshold=0.004,
     )
-    mf_approx = GPJittedModel(
+    mf_approx = GPJitted(
         data_scaling="standard_scaler",
         initial_hyper_params_lst=[0.05, 1.0, 0.05],
         kernel_type="squared_exponential",
@@ -193,14 +188,12 @@ def test_bmfia_rpvi_gp_park(
         mean_function_type="identity_multi_fidelity",
         stochastic_optimizer=stochastic_optimizer,
     )
-    lf_driver = FunctionDriver(
-        parameters=parameters, function="park91a_lofi_on_grid_with_gradients"
-    )
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
-    hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid_with_gradients")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
+    hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
+    hf_model = Simulation(scheduler=scheduler, driver=hf_driver)
+    mf_subiterator = BMFIA(
         features_config="man_features",
         num_features=1,
         X_cols=[0],
@@ -210,7 +203,7 @@ def test_bmfia_rpvi_gp_park(
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = BMFGaussianModel(
+    model = BMFGaussian(
         noise_value=0.0001,
         experimental_data_reader=experimental_data_reader,
         mf_interface=mf_interface,
@@ -218,7 +211,7 @@ def test_bmfia_rpvi_gp_park(
         forward_model=lf_model,
         mf_subiterator=mf_subiterator,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,
@@ -273,19 +266,19 @@ def test_bmfia_rpvi_nn_park(
     plot_dir = tmp_path
 
     # Parameters
-    x1 = NormalDistribution(covariance=0.09, mean=0.5)
-    x2 = NormalDistribution(covariance=0.09, mean=0.5)
+    x1 = Normal(covariance=0.09, mean=0.5)
+    x2 = Normal(covariance=0.09, mean=0.5)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    mf_approx = GaussianNeuralNetworkModel(
+    mf_approx = GaussianNeuralNetwork(
         activation_per_hidden_layer_lst=["elu", "elu"],
         adams_training_rate=0.001,
         data_scaling="standard_scaler",
@@ -300,14 +293,12 @@ def test_bmfia_rpvi_nn_park(
         num_processors_multi_processing=1,
         probabilistic_mapping_type="per_time_step",
     )
-    lf_driver = FunctionDriver(
-        parameters=parameters, function="park91a_lofi_on_grid_with_gradients"
-    )
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    lf_model = SimulationModel(scheduler=scheduler, driver=lf_driver)
-    hf_driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    hf_model = SimulationModel(scheduler=scheduler, driver=hf_driver)
-    mf_subiterator = BMFIAIterator(
+    lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid_with_gradients")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
+    hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
+    hf_model = Simulation(scheduler=scheduler, driver=hf_driver)
+    mf_subiterator = BMFIA(
         features_config="no_features",
         initial_design={"num_HF_eval": 50, "seed": 1, "type": "random"},
         hf_model=hf_model,
@@ -315,7 +306,7 @@ def test_bmfia_rpvi_nn_park(
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = BMFGaussianModel(
+    model = BMFGaussian(
         noise_value=0.0001,
         experimental_data_reader=experimental_data_reader,
         mf_approx=mf_approx,
@@ -330,7 +321,7 @@ def test_bmfia_rpvi_nn_park(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
     )
-    iterator = RPVIIterator(
+    iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
         random_seed=1,

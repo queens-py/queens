@@ -17,28 +17,28 @@
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.grid_iterator import GridIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.grid import Grid
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
 def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_path):
     """Integration test for the grid iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
-    x2 = UniformDistribution(lower_bound=-2.0, upper_bound=2.0)
+    x1 = Uniform(lower_bound=-2.0, upper_bound=2.0)
+    x2 = Uniform(lower_bound=-2.0, upper_bound=2.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = GridIterator(
+    driver = Function(parameters=parameters, function="rosenbrock60")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Grid(
         grid_design={
             "x1": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},
             "x2": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},

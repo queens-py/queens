@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 import scipy.stats
 
-from queens.distributions.exponential import ExponentialDistribution
+from queens.distributions.exponential import Exponential
 
 
 # ------------- univariate --------------
@@ -37,7 +37,7 @@ def fixture_rate_1d():
 @pytest.fixture(name="exponential_1d", scope="module")
 def fixture_exponential_1d(rate_1d):
     """An exponential distribution."""
-    return ExponentialDistribution(rate=rate_1d)
+    return Exponential(rate=rate_1d)
 
 
 # ------------- multivariate --------------
@@ -62,7 +62,7 @@ def fixture_rate_2d():
 @pytest.fixture(name="exponential_2d", scope="module")
 def fixture_exponential_2d(rate_2d):
     """An exponential distribution."""
-    return ExponentialDistribution(rate=rate_2d)
+    return Exponential(rate=rate_2d)
 
 
 # -----------------------------------------------------------------------
@@ -88,7 +88,7 @@ def test_init_exponential_1d(exponential_1d, rate_1d):
 def test_init_exponential_1d_wrong_rate(rate_1d):
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r"The parameter \'rate\' has to be positive.*"):
-        ExponentialDistribution(rate=-rate_1d)
+        Exponential(rate=-rate_1d)
 
 
 def test_cdf_exponential_1d(exponential_1d, rate_1d, sample_pos_1d):
@@ -164,7 +164,7 @@ def test_init_exponential_2d(exponential_2d, rate_2d):
 def test_init_exponential_2d_wrong_rate():
     """Test init method of Exponential Distribution class."""
     with pytest.raises(ValueError, match=r"The parameter \'rate\' has to be positive.*"):
-        ExponentialDistribution(rate=np.array([-1, 1]))
+        Exponential(rate=np.array([-1, 1]))
 
 
 def test_cdf_exponential_2d(exponential_2d, rate_2d, sample_pos_2d):

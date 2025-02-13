@@ -19,10 +19,10 @@ import scipy
 from numba import njit
 
 from queens.utils.logger_settings import log_init_args
-from queens.variational_distributions.variational_distribution import VariationalDistribution
+from queens.variational_distributions.variational_distribution import Variational
 
 
-class FullRankNormalVariational(VariationalDistribution):
+class FullRankNormal(Variational):
     r"""Full-rank multivariate normal distribution.
 
     Uses the parameterization (as in [1])

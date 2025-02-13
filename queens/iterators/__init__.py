@@ -18,52 +18,52 @@ Modules for parameter studies, uncertainty quantification, sensitivity
 analysis, Bayesian inverse analysis, and optimization.
 """
 
-from queens.iterators.black_box_variational_bayes import BBVIIterator
-from queens.iterators.bmfia_iterator import BMFIAIterator
-from queens.iterators.bmfmc_iterator import BMFMCIterator
+from queens.iterators.bbvi import BBVI
+from queens.iterators.bmfia import BMFIA
+from queens.iterators.bmfmc import BMFMC
 from queens.iterators.classification import ClassificationIterator
-from queens.iterators.data_iterator import DataIterator
-from queens.iterators.elementary_effects_iterator import ElementaryEffectsIterator
-from queens.iterators.grid_iterator import GridIterator
-from queens.iterators.hmc_iterator import HMCIterator
-from queens.iterators.lhs_iterator import LHSIterator
-from queens.iterators.lm_iterator import LMIterator
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from queens.iterators.metropolis_hastings_pymc_iterator import MetropolisHastingsPyMCIterator
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
-from queens.iterators.nuts_iterator import NUTSIterator
-from queens.iterators.optimization_iterator import OptimizationIterator
-from queens.iterators.points_iterator import PointsIterator
-from queens.iterators.polynomial_chaos_iterator import PolynomialChaosIterator
-from queens.iterators.reparameteriztion_based_variational_inference import RPVIIterator
-from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopinIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
-from queens.iterators.sobol_index_gp_uncertainty_iterator import SobolIndexGPUncertaintyIterator
-from queens.iterators.sobol_index_iterator import SobolIndexIterator
-from queens.iterators.sobol_sequence_iterator import SobolSequenceIterator
+from queens.iterators.data import Data
+from queens.iterators.elementary_effects import ElementaryEffects
+from queens.iterators.grid import Grid
+from queens.iterators.hamiltonian_monte_carlo import HamiltonianMonteCarlo
+from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
+from queens.iterators.levenberg_marquardt import LevenbergMarquardt
+from queens.iterators.metropolis_hastings import MetropolisHastings
+from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
+from queens.iterators.monte_carlo import MonteCarlo
+from queens.iterators.nuts import NUTS
+from queens.iterators.optimization import Optimization
+from queens.iterators.points import Points
+from queens.iterators.polynomial_chaos import PolynomialChaos
+from queens.iterators.reparameteriztion_based_variational import RPVI
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
+from queens.iterators.sobol_index import SobolIndex
+from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
+from queens.iterators.sobol_sequence import SobolSequence
 
 VALID_TYPES = {
-    "hmc": HMCIterator,
-    "lhs": LHSIterator,
-    "metropolis_hastings": MetropolisHastingsIterator,
-    "metropolis_hastings_pymc": MetropolisHastingsPyMCIterator,
-    "monte_carlo": MonteCarloIterator,
-    "nuts": NUTSIterator,
-    "optimization": OptimizationIterator,
-    "read_data_from_file": DataIterator,
-    "elementary_effects": ElementaryEffectsIterator,
-    "polynomial_chaos": PolynomialChaosIterator,
-    "sobol_indices": SobolIndexIterator,
-    "sobol_indices_gp_uncertainty": SobolIndexGPUncertaintyIterator,
-    "smc": SequentialMonteCarloIterator,
-    "smc_chopin": SequentialMonteCarloChopinIterator,
-    "sobol_sequence": SobolSequenceIterator,
-    "points": PointsIterator,
-    "bmfmc": BMFMCIterator,
-    "grid": GridIterator,
-    "lm": LMIterator,
-    "bbvi": BBVIIterator,
-    "bmfia": BMFIAIterator,
-    "rpvi": RPVIIterator,
+    "hmc": HamiltonianMonteCarlo,
+    "lhs": LatinHypercubeSampling,
+    "metropolis_hastings": MetropolisHastings,
+    "metropolis_hastings_pymc": MetropolisHastingsPyMC,
+    "monte_carlo": MonteCarlo,
+    "nuts": NUTS,
+    "optimization": Optimization,
+    "read_data_from_file": Data,
+    "elementary_effects": ElementaryEffects,
+    "polynomial_chaos": PolynomialChaos,
+    "sobol_indices": SobolIndex,
+    "sobol_indices_gp_uncertainty": SobolIndexGPUncertainty,
+    "smc": SequentialMonteCarlo,
+    "smc_chopin": SequentialMonteCarloChopin,
+    "sobol_sequence": SobolSequence,
+    "points": Points,
+    "bmfmc": BMFMC,
+    "grid": Grid,
+    "lm": LevenbergMarquardt,
+    "bbvi": BBVI,
+    "bmfia": BMFIA,
+    "rpvi": RPVI,
     "classification": ClassificationIterator,
 }

@@ -21,12 +21,12 @@ import numpy as np
 import pytest
 
 from queens.distributions.free import FreeVariable
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.optimization_iterator import OptimizationIterator
+from queens.drivers.function import Function
+from queens.iterators.optimization import Optimization
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -49,10 +49,10 @@ def test_optimization_paraboloid_constrained(algorithm, global_settings):
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="paraboloid")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = OptimizationIterator(
+    driver = Function(parameters=parameters, function="paraboloid")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = Optimization(
         initial_guess=[2.0, 0.0],
         algorithm=algorithm,
         result_description={"write_results": True, "plot_results": True},

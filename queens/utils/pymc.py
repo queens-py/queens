@@ -170,14 +170,14 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
         random_variable:     Random variable, distribution object in pymc format
     """
     shape = (explicit_shape, distribution.dimension)
-    if isinstance(distribution, normal.NormalDistribution):
+    if isinstance(distribution, normal.Normal):
         random_variable = pm.MvNormal(
             name,
             mu=distribution.mean,
             cov=distribution.covariance,
             shape=shape,
         )
-    elif isinstance(distribution, mean_field_normal.MeanFieldNormalDistribution):
+    elif isinstance(distribution, mean_field_normal.MeanFieldNormal):
         random_variable = pm.Normal(
             name,
             mu=distribution.mean,
@@ -185,7 +185,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             shape=shape,
         )
 
-    elif isinstance(distribution, uniform.UniformDistribution):
+    elif isinstance(distribution, uniform.Uniform):
         if np.all(distribution.lower_bound == 0):
             random_variable = pm.Uniform(
                 name,
@@ -208,7 +208,7 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
                 upper=distribution.upper_bound,
                 shape=shape,
             )
-    elif isinstance(distribution, lognormal.LogNormalDistribution):
+    elif isinstance(distribution, lognormal.LogNormal):
         if distribution.covariance.size == 1:
             std = distribution.covariance[0, 0] ** (1 / 2)
         else:
@@ -220,13 +220,13 @@ def from_config_create_pymc_distribution(distribution, name, explicit_shape):
             sigma=std,
             shape=shape,
         )
-    elif isinstance(distribution, exponential.ExponentialDistribution):
+    elif isinstance(distribution, exponential.Exponential):
         random_variable = pm.Exponential(
             name,
             lam=distribution.rate,
             shape=shape,
         )
-    elif isinstance(distribution, beta.BetaDistribution):
+    elif isinstance(distribution, beta.Beta):
         random_variable = pm.Beta(
             name,
             alpha=distribution.a,

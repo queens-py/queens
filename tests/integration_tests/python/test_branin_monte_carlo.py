@@ -19,28 +19,28 @@ This test is based on the high-fidelity Branin function.
 
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
 def test_branin_monte_carlo(global_settings):
     """Test case for Monte Carlo iterator."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Uniform(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = MonteCarloIterator(
+    driver = Function(parameters=parameters, function="branin78_hifi")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = MonteCarlo(
         seed=42,
         num_samples=1000,
         result_description={"write_results": True, "plot_results": False},

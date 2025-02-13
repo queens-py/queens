@@ -16,11 +16,11 @@
 
 import numpy as np
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.logger_settings import log_init_args
 
 
-class ExponentialDistribution(ContinuousDistribution):
+class Exponential(Continuous):
     r"""Exponential distribution class.
 
     For a multivariate distribution the components are assumed to be independent.

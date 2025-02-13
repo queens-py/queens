@@ -17,30 +17,30 @@
 Modules for probability distributions.
 """
 
-from queens.distributions.bernoulli import BernoulliDistribution
-from queens.distributions.beta import BetaDistribution
-from queens.distributions.categorical import CategoricalDistribution
-from queens.distributions.exponential import ExponentialDistribution
+from queens.distributions.bernoulli import Bernoulli
+from queens.distributions.beta import Beta
+from queens.distributions.categorical import Categorical
+from queens.distributions.exponential import Exponential
 from queens.distributions.free import FreeVariable
-from queens.distributions.lognormal import LogNormalDistribution
-from queens.distributions.mean_field_normal import MeanFieldNormalDistribution
-from queens.distributions.multinomial import MultinomialDistribution
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.particles import ParticleDiscreteDistribution
-from queens.distributions.uniform import UniformDistribution
-from queens.distributions.uniform_discrete import UniformDiscreteDistribution
+from queens.distributions.lognormal import LogNormal
+from queens.distributions.mean_field_normal import MeanFieldNormal
+from queens.distributions.multinomial import Multinomial
+from queens.distributions.normal import Normal
+from queens.distributions.particles import ParticleDiscrete
+from queens.distributions.uniform import Uniform
+from queens.distributions.uniform_discrete import UniformDiscrete
 
 VALID_TYPES = {
-    "normal": NormalDistribution,
-    "mean_field_normal": MeanFieldNormalDistribution,
-    "uniform": UniformDistribution,
-    "lognormal": LogNormalDistribution,
-    "beta": BetaDistribution,
-    "exponential": ExponentialDistribution,
+    "normal": Normal,
+    "mean_field_normal": MeanFieldNormal,
+    "uniform": Uniform,
+    "lognormal": LogNormal,
+    "beta": Beta,
+    "exponential": Exponential,
     "free": FreeVariable,
-    "categorical": CategoricalDistribution,
-    "bernoulli": BernoulliDistribution,
-    "multinomial": MultinomialDistribution,
-    "particles": ParticleDiscreteDistribution,
-    "uniform_discrete": UniformDiscreteDistribution,
+    "categorical": Categorical,
+    "bernoulli": Bernoulli,
+    "multinomial": Multinomial,
+    "particles": ParticleDiscrete,
+    "uniform_discrete": UniformDiscrete,
 }

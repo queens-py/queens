@@ -20,13 +20,13 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
-from queens.data_processor.data_processor_pvd import DataProcessorPvd
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers import JobscriptDriver
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+import queens.schedulers.cluster as cluster_scheduler  # pylint: disable=consider-using-from-import
+from queens.data_processors.pvd import Pvd
+from queens.distributions.uniform import Uniform
+from queens.drivers import Jobscript
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.utils import config_directories
 from queens.utils.io_utils import load_result
@@ -123,17 +123,17 @@ class TestDaskCluster:
         fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
 
         # Parameters
-        parameter_1 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
-        parameter_2 = UniformDistribution(lower_bound=0.0, upper_bound=1.0)
+        parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+        parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
         parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
 
-        data_processor = DataProcessorPvd(
+        data_processor = Pvd(
             field_name="displacement",
             file_name_identifier="*.pvd",
             file_options_dict={},
         )
 
-        scheduler = cluster_scheduler.ClusterScheduler(
+        scheduler = cluster_scheduler.Cluster(
             workload_manager=cluster_settings["workload_manager"],
             walltime="00:10:00",
             num_jobs=1,
@@ -146,7 +146,7 @@ class TestDaskCluster:
             queue=cluster_settings.get("queue"),
         )
 
-        driver = JobscriptDriver(
+        driver = Jobscript(
             parameters=parameters,
             input_templates=fourc_input_file_template,
             jobscript_template=cluster_settings["jobscript_template"],
@@ -154,8 +154,8 @@ class TestDaskCluster:
             data_processor=data_processor,
             extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
-        model = SimulationModel(scheduler=scheduler, driver=driver)
-        iterator = MonteCarloIterator(
+        model = Simulation(scheduler=scheduler, driver=driver)
+        iterator = MonteCarlo(
             seed=42,
             num_samples=2,
             result_description={"write_results": True, "plot_results": False},

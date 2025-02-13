@@ -24,8 +24,8 @@ algorithm’,      Geophysical Journal International, 194(3), pp.
 
 import numpy as np
 
-from queens.distributions.mixture import MixtureDistribution
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.mixture import Mixture
+from queens.distributions.normal import Normal
 
 DIM = 4
 
@@ -38,12 +38,10 @@ COV = (STD**2) * np.eye(DIM)
 WEIGHT_1 = 0.1
 WEIGHT_2 = 1 - WEIGHT_1
 
-GAUSSIAN_COMPONENT_1 = NormalDistribution(MEAN_1, COV)
-GAUSSIAN_COMPONENT_2 = NormalDistribution(MEAN_2, COV)
+GAUSSIAN_COMPONENT_1 = Normal(MEAN_1, COV)
+GAUSSIAN_COMPONENT_2 = Normal(MEAN_2, COV)
 
-GAUSSIAN_MIXTURE = MixtureDistribution(
-    [WEIGHT_1, WEIGHT_2], [GAUSSIAN_COMPONENT_1, GAUSSIAN_COMPONENT_2]
-)
+GAUSSIAN_MIXTURE = Mixture([WEIGHT_1, WEIGHT_2], [GAUSSIAN_COMPONENT_1, GAUSSIAN_COMPONENT_2])
 
 
 def gaussian_mixture_4d_logpdf(samples):

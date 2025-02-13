@@ -22,20 +22,20 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import NormalDistribution
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
 )
-from queens.iterators.metropolis_hastings_iterator import MetropolisHastingsIterator
-from queens.iterators.sequential_monte_carlo_iterator import SequentialMonteCarloIterator
+from queens.iterators.metropolis_hastings import MetropolisHastings
+from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -45,10 +45,10 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 ):
     """Test SMC with a multivariate Gaussian mixture (multimodal)."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x3 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x4 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x1 = Uniform(lower_bound=-2, upper_bound=2)
+    x2 = Uniform(lower_bound=-2, upper_bound=2)
+    x3 = Uniform(lower_bound=-2, upper_bound=2)
+    x4 = Uniform(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
     # Setup iterator
@@ -57,7 +57,7 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
         csv_data_base_dir=tmp_path,
         output_label="y_obs",
     )
-    mcmc_proposal_distribution = NormalDistribution(
+    mcmc_proposal_distribution = Normal(
         mean=[0.0, 0.0, 0.0, 0.0],
         covariance=[
             [0.001, 0.0, 0.0, 0.0],
@@ -66,17 +66,17 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
             [0.0, 0.0, 0.0, 0.001],
         ],
     )
-    driver = FunctionDriver(parameters=parameters, function="agawal09a")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="agawal09a")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         nugget_noise_variance=1e-05,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = SequentialMonteCarloIterator(
+    iterator = SequentialMonteCarlo(
         seed=42,
         num_particles=15,
         temper_type="bayes",
@@ -91,8 +91,8 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
 
     # Actual analysis
     # mock methods related to likelihood
-    with patch.object(SequentialMonteCarloIterator, "eval_log_likelihood", target_density):
-        with patch.object(MetropolisHastingsIterator, "eval_log_likelihood", target_density):
+    with patch.object(SequentialMonteCarlo, "eval_log_likelihood", target_density):
+        with patch.object(MetropolisHastings, "eval_log_likelihood", target_density):
             run_iterator(iterator, global_settings=global_settings)
 
     # Load results

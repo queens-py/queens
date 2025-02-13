@@ -20,16 +20,14 @@ This test uses a Monte Carlo simulation.
 import numpy as np
 import pytest
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.monte_carlo_iterator import MonteCarloIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.bayesian_neural_network import (
-    GaussianBayesianNeuralNetworkModel,
-)
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.bayesian_neural_network import GaussianBayesianNeuralNetwork
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
@@ -37,15 +35,15 @@ from test_utils.integration_tests import assert_monte_carlo_iterator_results
 def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, global_settings):
     """Test case for Bayesian neural network model."""
     # Parameters
-    x1 = UniformDistribution(lower_bound=-5, upper_bound=10)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=15)
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = Uniform(lower_bound=0, upper_bound=15)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="branin78_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
-    training_iterator = MonteCarloIterator(
+    driver = Function(parameters=parameters, function="branin78_hifi")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    simulation_model = Simulation(scheduler=scheduler, driver=driver)
+    training_iterator = MonteCarlo(
         seed=42,
         num_samples=100,
         result_description=None,
@@ -53,7 +51,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GaussianBayesianNeuralNetworkModel(
+    model = GaussianBayesianNeuralNetwork(
         eval_fit=None,
         error_measures=[
             "sum_squared",
@@ -73,7 +71,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
         verbosity_on=True,
         training_iterator=training_iterator,
     )
-    iterator = MonteCarloIterator(
+    iterator = MonteCarlo(
         seed=44,
         num_samples=10,
         result_description={

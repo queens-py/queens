@@ -16,15 +16,15 @@
 
 import numpy as np
 
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.normal import Normal
 
 
 def test_create_export_dict():
     """Test creation routine of distribution dict."""
-    distribution = NormalDistribution(mean=0.0, covariance=1.0)
+    distribution = Normal(mean=0.0, covariance=1.0)
     exported_dict = distribution.export_dict()
     ref_dict = {
-        "type": "NormalDistribution",
+        "type": "Normal",
         "mean": np.array([0.0]),
         "covariance": np.array([[1.0]]),
         "dimension": 1,

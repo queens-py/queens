@@ -17,13 +17,13 @@
 import numpy as np
 from sklearn.neural_network._multilayer_perceptron import MLPClassifier
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
 from queens.iterators.classification import ClassificationIterator
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.classifier import ActiveLearningClassifier
 from queens.utils.io_utils import load_result
 
@@ -46,16 +46,16 @@ def test_classification_iterator(tmp_path, global_settings):
         return x > 80
 
     # Parameters
-    x1 = UniformDistribution(lower_bound=-2, upper_bound=2)
-    x2 = UniformDistribution(lower_bound=-2, upper_bound=2)
+    x1 = Uniform(lower_bound=-2, upper_bound=2)
+    x2 = Uniform(lower_bound=-2, upper_bound=2)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
     classifier_obj = MLPClassifier()
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
-    driver = FunctionDriver(parameters=parameters, function="rosenbrock60")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    driver = Function(parameters=parameters, function="rosenbrock60")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = ClassificationIterator(
         num_sample_points=10000,
         num_model_calls=12,

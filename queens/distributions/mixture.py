@@ -20,14 +20,14 @@ import numpy as np
 from scipy.special import logsumexp
 
 from queens.distributions import VALID_TYPES
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils.import_utils import get_module_class
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class MixtureDistribution(ContinuousDistribution):
+class Mixture(Continuous):
     """Mixture models."""
 
     @log_init_args
@@ -69,7 +69,7 @@ class MixtureDistribution(ContinuousDistribution):
             distribution_options (dict): description of the distribution
 
         Returns:
-            MixtureDistribution: mixture model
+            Mixture: mixture model
         """
         distribution_options_copy = distribution_options.copy()
         distribution_options_copy.pop("type")

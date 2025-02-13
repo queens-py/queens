@@ -17,10 +17,10 @@
 import numpy as np
 
 from queens.utils.logger_settings import log_init_args
-from queens.variational_distributions.variational_distribution import VariationalDistribution
+from queens.variational_distributions.variational_distribution import Variational
 
 
-class MeanFieldNormalVariational(VariationalDistribution):
+class MeanFieldNormal(Variational):
     r"""Mean field multivariate normal distribution.
 
     Uses the parameterization (as in [1]):  :math:`parameters=[\mu, \lambda]`

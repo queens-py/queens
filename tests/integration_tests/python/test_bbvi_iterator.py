@@ -21,20 +21,20 @@ import pytest
 from mock import Mock, patch
 from scipy.stats import multivariate_normal as mvn
 
-from queens.distributions.normal import NormalDistribution
-from queens.drivers.function_driver import FunctionDriver
+from queens.distributions.normal import Normal
+from queens.drivers.function import Function
 from queens.global_settings import GlobalSettings
-from queens.iterators.black_box_variational_bayes import BBVIIterator
+from queens.iterators.bbvi import BBVI
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.iterative_averaging_utils import MovingAveraging
-from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
+from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 
 
 def test_bbvi_density_match(
@@ -47,12 +47,12 @@ def test_bbvi_density_match(
 
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
-        "queens.iterators.black_box_variational_bayes.BBVIIterator.pre_run",
+        "queens.iterators.bbvi.BBVI.pre_run",
         return_value=None,
     )
 
     # actual main call of bbvi with patched density for posterior
-    with patch.object(BBVIIterator, "get_log_posterior_unnormalized", target_density):
+    with patch.object(BBVI, "get_log_posterior_unnormalized", target_density):
         variational_distr_obj = dummy_bbvi_instance.variational_distribution
         mean = np.array([0.1, 0.7, 0.2, 0.3, 0.25])
         cov = np.exp(np.diag([0.5, 0.5, 0.5, 0.5, 0.5]) * 2)
@@ -92,12 +92,12 @@ def test_bbvi_iterator_park91a_hifi(
     np.random.seed(211)
 
     # Parameters
-    x1 = NormalDistribution(mean=0.6, covariance=0.2)
-    x2 = NormalDistribution(mean=0.3, covariance=0.1)
+    x1 = Normal(mean=0.6, covariance=0.2)
+    x2 = Normal(mean=0.3, covariance=0.1)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.01,
         optimization_type="max",
@@ -112,17 +112,17 @@ def test_bbvi_iterator_park91a_hifi(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    driver = FunctionDriver(parameters=parameters, function="park91a_hifi_on_grid")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         noise_var_iterative_averaging=noise_var_iterative_averaging,
         experimental_data_reader=experimental_data_reader,
         forward_model=forward_model,
     )
-    iterator = BBVIIterator(
+    iterator = BBVI(
         max_feval=100,
         n_samples_per_iter=2,
         memory=20,
@@ -172,7 +172,7 @@ def test_bbvi_iterator_park91a_hifi(
 
 @pytest.fixture(name="dummy_bbvi_instance")
 def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
-    """A BBVIIterator instance."""
+    """A BBVI instance."""
     #  ----- interesting params one might want to change ---------------------------
     n_samples_per_iter = 5
     max_feval = 10 * n_samples_per_iter
@@ -218,7 +218,7 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
         parameters = Mock()
         parameters.num_parameters = num_variables
 
-        bbvi_instance = BBVIIterator(
+        bbvi_instance = BBVI(
             model=model,
             parameters=parameters,
             global_settings=global_settings,
@@ -266,4 +266,4 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
 @pytest.fixture(name="my_variational_distribution")
 def fixture_my_variational_distribution():
     """A variational distribution."""
-    return MeanFieldNormalVariational(dimension=5)
+    return MeanFieldNormal(dimension=5)

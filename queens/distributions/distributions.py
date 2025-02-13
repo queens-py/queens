@@ -86,7 +86,7 @@ class Distribution(abc.ABC):
                 )
 
 
-class ContinuousDistribution(Distribution):
+class Continuous(Distribution):
     """Base class for continuous probability distributions.
 
     Attributes:
@@ -175,7 +175,7 @@ class ContinuousDistribution(Distribution):
             )
 
 
-class DiscreteDistribution(Distribution):
+class Discrete(Distribution):
     """Discrete distribution base class.
 
     Attributes:

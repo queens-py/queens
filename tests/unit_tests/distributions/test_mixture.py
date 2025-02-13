@@ -17,8 +17,8 @@
 import numpy as np
 import pytest
 
-from queens.distributions.mixture import MixtureDistribution
-from queens.distributions.normal import NormalDistribution
+from queens.distributions.mixture import Mixture
+from queens.distributions.normal import Normal
 
 
 @pytest.fixture(name="component_data", params=[1, 2])
@@ -34,8 +34,8 @@ def fixture_component_data(request):
 def fixture_reference_mixture_model_data(component_data):
     """Referencei data model fixture."""
     component_data0, component_data1 = component_data
-    normal0 = NormalDistribution(*component_data0)
-    normal1 = NormalDistribution(*component_data1)
+    normal0 = Normal(*component_data0)
+    normal1 = Normal(*component_data1)
     weights = [0.3, 0.7]
     return (weights, normal0, normal1)
 
@@ -44,7 +44,7 @@ def fixture_reference_mixture_model_data(component_data):
 def fixture_mixture_model(reference_mixture_model_data):
     """Mixture model fixture."""
     weights, normal1, normal2 = reference_mixture_model_data
-    mixture_model = MixtureDistribution(weights, (normal1, normal2))
+    mixture_model = Mixture(weights, (normal1, normal2))
     return mixture_model
 
 
@@ -191,7 +191,7 @@ def test_fcc(reference_mixture_model_data):
             "covariance": normal1.covariance.tolist(),
         },
     }
-    mixture = MixtureDistribution.from_config_create_distribution(config)
+    mixture = Mixture.from_config_create_distribution(config)
 
     np.testing.assert_array_equal(weights, mixture.weights)
     np.testing.assert_array_equal(normal0.mean, mixture.component_distributions[0].mean)

@@ -20,11 +20,11 @@ from pathlib import Path
 
 import black
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.drivers.driver import Driver
 from queens.iterators.iterator import Iterator
-from queens.models.bmfmc_model import BMFMCModel
-from queens.parameters.fields.random_fields import RandomField
+from queens.models.bmfm import BMFM
+from queens.parameters.random_fields.random_field import RandomField
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.fcc_utils import VALID_TYPES, check_for_reference
 from queens.utils.import_utils import get_module_attribute, get_option
@@ -279,9 +279,9 @@ def create_initialization_call(obj_description, python_code):
         return f"{class_name}"
 
     # add parameters
-    if issubclass(object_class, (Iterator, Driver, BMFMCModel)):
+    if issubclass(object_class, (Iterator, Driver, BMFM)):
         obj_description["parameters"] = VariableName("parameters")
-    if issubclass(object_class, (Iterator, BMFMCModel)):
+    if issubclass(object_class, (Iterator, BMFM)):
         obj_description["global_settings"] = VariableName("gs")
 
     if issubclass(object_class, Scheduler):
@@ -331,7 +331,7 @@ def from_config_create_parameters(parameters_options, python_code):
         parameter_class, distribution_class = get_module_class(
             parameter_dict, VALID_TYPES, python_code
         )
-        if issubclass(parameter_class, ContinuousDistribution):
+        if issubclass(parameter_class, Continuous):
             new_obj = create_initialization_call_from_class_and_arguments(
                 distribution_class, parameter_dict
             )

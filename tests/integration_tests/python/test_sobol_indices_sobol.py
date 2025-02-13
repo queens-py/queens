@@ -16,13 +16,13 @@
 
 import numpy as np
 
-from queens.distributions.uniform import UniformDistribution
-from queens.drivers.function_driver import FunctionDriver
-from queens.iterators.sobol_index_iterator import SobolIndexIterator
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_sobol_index_iterator_results
 
@@ -35,23 +35,23 @@ def test_sobol_indices_sobol(global_settings):
     implementation (see *sobol.py*).
     """
     # Parameters
-    x1 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x2 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x3 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x4 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x5 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x6 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x7 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x8 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x9 = UniformDistribution(lower_bound=0, upper_bound=1)
-    x10 = UniformDistribution(lower_bound=0, upper_bound=1)
+    x1 = Uniform(lower_bound=0, upper_bound=1)
+    x2 = Uniform(lower_bound=0, upper_bound=1)
+    x3 = Uniform(lower_bound=0, upper_bound=1)
+    x4 = Uniform(lower_bound=0, upper_bound=1)
+    x5 = Uniform(lower_bound=0, upper_bound=1)
+    x6 = Uniform(lower_bound=0, upper_bound=1)
+    x7 = Uniform(lower_bound=0, upper_bound=1)
+    x8 = Uniform(lower_bound=0, upper_bound=1)
+    x9 = Uniform(lower_bound=0, upper_bound=1)
+    x10 = Uniform(lower_bound=0, upper_bound=1)
     parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4, x5=x5, x6=x6, x7=x7, x8=x8, x9=x9, x10=x10)
 
     # Setup iterator
-    driver = FunctionDriver(parameters=parameters, function="sobol_g_function")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
-    iterator = SobolIndexIterator(
+    driver = Function(parameters=parameters, function="sobol_g_function")
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
+    model = Simulation(scheduler=scheduler, driver=driver)
+    iterator = SobolIndex(
         seed=42,
         calc_second_order=True,
         num_samples=128,

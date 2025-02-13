@@ -18,12 +18,12 @@ import numpy as np
 import scipy.linalg
 import scipy.stats
 
-from queens.distributions.distributions import ContinuousDistribution
+from queens.distributions.distributions import Continuous
 from queens.utils import numpy_utils
 from queens.utils.logger_settings import log_init_args
 
 
-class NormalDistribution(ContinuousDistribution):
+class Normal(Continuous):
     """Normal distribution.
 
     Attributes:
