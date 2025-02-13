@@ -51,7 +51,9 @@ cloudpickle==3.1.0
     # via
     #   dask
     #   distributed
+    #   gymnasium
     #   pymc
+    #   stable-baselines3
     #   tensorflow-probability
 cons==0.4.6
     # via
@@ -109,14 +111,20 @@ execnet==2.1.1
     # via pytest-xdist
 fabric==3.2.2
     # via -r requirements.in
+farama-notifications==0.0.4
+    # via gymnasium
 filelock==3.16.1
-    # via pytensor
+    # via
+    #   pytensor
+    #   torch
 flatbuffers==24.3.25
     # via tensorflow
 fonttools==4.54.1
     # via matplotlib
 fsspec==2024.10.0
-    # via dask
+    # via
+    #   dask
+    #   torch
 gast==0.6.0
     # via
     #   tensorflow
@@ -131,6 +139,8 @@ grpcio==1.67.1
     # via
     #   tensorboard
     #   tensorflow
+gymnasium==1.0.0
+    # via stable-baselines3
 h5netcdf==1.4.0
     # via arviz
 h5py==3.12.1
@@ -167,6 +177,7 @@ jinja2==3.1.4
     #   -r requirements.in
     #   bokeh
     #   distributed
+    #   torch
 joblib==1.4.2
     # via
     #   particles
@@ -209,6 +220,7 @@ matplotlib==3.9.2
     #   salib
     #   scikit-activeml
     #   seaborn
+    #   stable-baselines3
     #   vtk
 mdurl==0.1.2
     # via markdown-it-py
@@ -222,6 +234,8 @@ ml-dtypes==0.4.1
     #   tensorflow
 mock==5.1.0
     # via -r requirements.in
+mpmath==1.3.0
+    # via sympy
 msgpack==1.1.0
     # via distributed
 multipledispatch==1.0.0
@@ -238,6 +252,8 @@ mypy-extensions==1.0.0
     # via black
 namex==0.0.8
     # via keras
+networkx==3.4.2
+    # via torch
 numba==0.60.0
     # via
     #   -r requirements.in
@@ -256,6 +272,7 @@ numpy==1.26.4
     #   diversipy
     #   gnuplotlib
     #   gpflow
+    #   gymnasium
     #   h5py
     #   jax
     #   jaxlib
@@ -277,6 +294,7 @@ numpy==1.26.4
     #   scikit-learn
     #   scipy
     #   seaborn
+    #   stable-baselines3
     #   tensorboard
     #   tensorflow
     #   tensorflow-probability
@@ -317,6 +335,7 @@ pandas==2.2.3
     #   pymc
     #   salib
     #   seaborn
+    #   stable-baselines3
     #   xarray
 paramiko==3.5.0
     # via fabric
@@ -450,6 +469,10 @@ six==1.16.0
     #   tensorflow-probability
 sortedcontainers==2.4.0
     # via distributed
+stable-baselines3==2.4.1
+    # via -r requirements.in
+sympy==1.13.1
+    # via torch
 tabulate==0.9.0
     # via gpflow
 tblib==3.0.0
@@ -463,11 +486,12 @@ tensorboard-data-server==0.7.2
 tensorflow==2.18.0
     # via
     #   -r requirements.in
-    #   gpflow
     #   tensorflow-probability
     #   tf-keras
 tensorflow-io-gcs-filesystem==0.37.1
     # via tensorflow
+tensorflow-macos==2.15.1
+    # via gpflow
 tensorflow-probability[tf]==0.24.0
     # via
     #   -r requirements.in
@@ -490,6 +514,8 @@ toolz==1.0.0
     #   logical-unification
     #   minikanren
     #   partd
+torch==2.5.1
+    # via stable-baselines3
 tornado==6.4.1
     # via
     #   bokeh
@@ -502,10 +528,12 @@ typing-extensions==4.12.2
     #   chex
     #   etils
     #   gpflow
+    #   gymnasium
     #   optree
     #   pymc
     #   pyvista
     #   tensorflow
+    #   torch
 tzdata==2024.2
     # via pandas
 urllib3==2.2.3
