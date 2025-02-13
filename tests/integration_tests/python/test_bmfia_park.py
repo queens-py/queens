@@ -33,7 +33,7 @@ from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
-from queens.variational_distributions import MeanFieldNormalVariational
+from queens.variational_distributions import MeanFieldNormal
 
 
 @pytest.fixture(name="expected_variational_mean")
@@ -163,7 +163,7 @@ def test_bmfia_rpvi_gp_park(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,
@@ -271,7 +271,7 @@ def test_bmfia_rpvi_nn_park(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     experimental_data_reader = ExperimentalDataReader(
         file_name_identifier="*.csv",
         csv_data_base_dir=experimental_data_path,

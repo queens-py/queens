@@ -29,7 +29,7 @@ from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.run_subprocess import run_subprocess
-from queens.variational_distributions import FullRankNormalVariational
+from queens.variational_distributions import FullRankNormal
 
 
 @pytest.fixture(name="python_path")
@@ -75,7 +75,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,
@@ -188,7 +188,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,
@@ -300,7 +300,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.02,

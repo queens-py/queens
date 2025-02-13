@@ -31,7 +31,7 @@ from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers.adam import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
-from queens.variational_distributions.mean_field_normal import MeanFieldNormalVariational
+from queens.variational_distributions.mean_field_normal import MeanFieldNormal
 
 
 def test_rpvi_iterator_park91a_hifi(
@@ -49,7 +49,7 @@ def test_rpvi_iterator_park91a_hifi(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.025,
@@ -127,7 +127,7 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         optimization_type="max",
         learning_rate=0.025,
@@ -221,7 +221,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = MeanFieldNormalVariational(dimension=2)
+    variational_distribution = MeanFieldNormal(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.05,
         optimization_type="max",

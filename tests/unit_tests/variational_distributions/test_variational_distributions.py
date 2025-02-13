@@ -24,11 +24,11 @@ from queens.distributions.mixture import Mixture
 from queens.distributions.normal import Normal
 from queens.distributions.particles import ParticleDiscrete
 from queens.variational_distributions import (
-    FullRankNormalVariational,
-    JointVariational,
-    MeanFieldNormalVariational,
-    MixtureModelVariational,
-    ParticleVariational,
+    FullRankNormal,
+    Joint,
+    MeanFieldNormal,
+    MixtureModel,
+    Particle,
 )
 
 
@@ -67,31 +67,31 @@ DISTRIBUTION_NAMES = ["mean_field", "fullrank", "particles", "mixture", "joint"]
 @pytest.fixture(name="mean_field_distribution")
 def fixture_mean_field_distribution():
     """Mean field Normal distribution."""
-    return MeanFieldNormalVariational(3)
+    return MeanFieldNormal(3)
 
 
 @pytest.fixture(name="fullrank_distribution")
 def fixture_fullrank_distribution():
     """Fullrank Normal distribution."""
-    return FullRankNormalVariational(3)
+    return FullRankNormal(3)
 
 
 @pytest.fixture(name="mixture_distribution")
 def fixture_mixture_distribution(mean_field_distribution):
     """Mixutre models of mean field distributions."""
-    return MixtureModelVariational(mean_field_distribution, mean_field_distribution.dimension, 2)
+    return MixtureModel(mean_field_distribution, mean_field_distribution.dimension, 2)
 
 
 @pytest.fixture(name="particles_distribution")
 def fixture_particles_distribution():
     """Particles distribution."""
-    return ParticleVariational([[1], [2]])
+    return Particle([[1], [2]])
 
 
 @pytest.fixture(name="joint_distribution")
 def fixture_joint_distribution(mean_field_distribution, fullrank_distribution):
     """Joint distribution."""
-    return JointVariational([mean_field_distribution, fullrank_distribution], 6)
+    return Joint([mean_field_distribution, fullrank_distribution], 6)
 
 
 @pytest.fixture(name="mean_field_reference_data")

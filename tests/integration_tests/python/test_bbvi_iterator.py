@@ -34,7 +34,7 @@ from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 from queens.utils.iterative_averaging_utils import MovingAveraging
-from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
+from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 
 
 def test_bbvi_density_match(
@@ -97,7 +97,7 @@ def test_bbvi_iterator_park91a_hifi(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    variational_distribution = FullRankNormalVariational(dimension=2)
+    variational_distribution = FullRankNormal(dimension=2)
     stochastic_optimizer = Adam(
         learning_rate=0.01,
         optimization_type="max",
@@ -266,4 +266,4 @@ def target_density(self, x=None, pdf=False):  # pylint: disable=unused-argument
 @pytest.fixture(name="my_variational_distribution")
 def fixture_my_variational_distribution():
     """A variational distribution."""
-    return MeanFieldNormalVariational(dimension=5)
+    return MeanFieldNormal(dimension=5)

@@ -19,7 +19,7 @@ import numpy as np
 from queens.variational_distributions.variational_distribution import Variational
 
 
-class MixtureModelVariational(Variational):
+class MixtureModel(Variational):
     r"""Mixture model variational distribution class.
 
     Every component is a member of the same distribution family. Uses the parameterization:

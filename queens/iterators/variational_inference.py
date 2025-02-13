@@ -22,7 +22,7 @@ import numpy as np
 
 from queens.iterators.iterator import Iterator
 from queens.utils.process_outputs import write_results
-from queens.variational_distributions import FullRankNormalVariational, MeanFieldNormalVariational
+from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 from queens.visualization.variational_inference_visualization import VIVisualization
 
 _logger = logging.getLogger(__name__)
@@ -256,7 +256,7 @@ class VariationalInference(Iterator):
         elif self.variational_params_initialization_approach == "prior":
             if isinstance(
                 self.variational_distribution,
-                (MeanFieldNormalVariational, FullRankNormalVariational),
+                (MeanFieldNormal, FullRankNormal),
             ):
                 mu, cov = self._initialize_variational_params_from_prior()
                 var_params = self.variational_distribution.construct_variational_parameters(mu, cov)

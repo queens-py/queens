@@ -20,7 +20,7 @@ from queens.distributions.particles import ParticleDiscrete
 from queens.variational_distributions.variational_distribution import Variational
 
 
-class ParticleVariational(Variational):
+class Particle(Variational):
     r"""Variational distribution for particle distributions.
 
     The probabilities of the distribution are parameterized by softmax:

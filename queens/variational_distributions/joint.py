@@ -20,7 +20,7 @@ import scipy
 from queens.variational_distributions.variational_distribution import Variational
 
 
-class JointVariational(Variational):
+class Joint(Variational):
     r"""Joint variational distribution class.
 
     This distribution allows to join distributions in an independent fashion:
