@@ -25,8 +25,8 @@ from queens.external_geometries.fourc_dat import FourcDat
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
-from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
 from queens.parameters.parameters import Parameters
+from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
 from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io_utils import load_result, read_file
@@ -34,7 +34,7 @@ from queens.utils.io_utils import load_result, read_file
 _logger = logging.getLogger(__name__)
 
 
-class DummyKLField(KarhunenLoeveRandomField):
+class DummyKLField(KarhunenLoeve):
     """Dummy Karhunen-Loeve random field."""
 
     def expanded_representation(self, samples):

@@ -20,8 +20,8 @@ import numpy as np
 
 from queens.distributions import VALID_TYPES as VALID_DISTRIBUTION_TYPES
 from queens.distributions.distributions import Continuous
-from queens.parameters.fields import VALID_TYPES as VALID_FIELD_TYPES
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.random_fields import VALID_TYPES as VALID_FIELD_TYPES
+from queens.parameters.random_fields.random_field import RandomField
 from queens.utils.import_utils import get_module_class
 from queens.utils.logger_settings import log_init_args
 

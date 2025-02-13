@@ -19,10 +19,10 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from scipy.spatial.distance import pdist
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.random_fields.random_field import RandomField
 
 
-class FourierRandomField(RandomField):
+class Fourier(RandomField):
     """FOURIER expansion of random fields class.
 
     Attributes:

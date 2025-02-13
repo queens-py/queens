@@ -16,11 +16,11 @@
 
 from queens.distributions import VALID_TYPES as distribution_types
 from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.random_fields.random_field import RandomField
 from queens.utils.import_utils import get_module_class
 
 
-class PieceWiseRandomField(RandomField):
+class PieceWise(RandomField):
     """Piece-wise random field class.
 
     The field is constructed at each node or element which is given by the

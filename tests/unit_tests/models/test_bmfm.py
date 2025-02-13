@@ -23,8 +23,8 @@ from queens.iterators.data import Data
 from queens.models import bmfm
 from queens.models.bmfm import BMFM
 from queens.models.simulation_model import Simulation
-from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
 from queens.parameters.parameters import Parameters
+from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
 
 # pylint: disable=invalid-name
 
@@ -62,7 +62,7 @@ def fixture_parameters():
     x2 = Uniform(lower_bound=-2.0, upper_bound=2.0)
     pre_processor = PreProcessor()
     random_field_coords = pre_processor.coords_dict["random_inflow"]
-    random_field = KarhunenLoeveRandomField(
+    random_field = KarhunenLoeve(
         coords=random_field_coords, corr_length=0.08, std=0.1, mean=0.0, explained_variance=0.98
     )
     return Parameters(x1=x1, x2=x2, random_inflow=random_field)

@@ -17,12 +17,12 @@
 Modules for random fields.
 """
 
-from queens.parameters.fields.fourier_field import FourierRandomField
-from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
-from queens.parameters.fields.piece_wise_field import PieceWiseRandomField
+from queens.parameters.random_fields.fourier import Fourier
+from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
+from queens.parameters.random_fields.piece_wise import PieceWise
 
 VALID_TYPES = {
-    "kl": KarhunenLoeveRandomField,
-    "fourier": FourierRandomField,
-    "piece-wise": PieceWiseRandomField,
+    "kl": KarhunenLoeve,
+    "fourier": Fourier,
+    "piece-wise": PieceWise,
 }

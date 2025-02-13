@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""KL Random fields class."""
+"""Karhunen-Loève Random fields class."""
 
 import logging
 
@@ -20,12 +20,12 @@ import numpy as np
 from scipy.spatial.distance import pdist, squareform
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.random_fields.random_field import RandomField
 
 _logger = logging.getLogger(__name__)
 
 
-class KarhunenLoeveRandomField(RandomField):
+class KarhunenLoeve(RandomField):
     """Karhunen Loeve RandomField class.
 
     Attributes:

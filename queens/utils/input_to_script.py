@@ -24,7 +24,7 @@ from queens.distributions.distributions import Continuous
 from queens.drivers.driver import Driver
 from queens.iterators.iterator import Iterator
 from queens.models.bmfm import BMFM
-from queens.parameters.fields.random_fields import RandomField
+from queens.parameters.random_fields.random_field import RandomField
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.fcc_utils import VALID_TYPES, check_for_reference
 from queens.utils.import_utils import get_module_attribute, get_option
