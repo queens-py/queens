@@ -25,7 +25,7 @@ from queens.external_geometries import VALID_TYPES as VALID_EXTERNAL_GEOMETRY_TY
 from queens.iterators import VALID_TYPES as VALID_ITERATOR_TYPES
 from queens.iterators.iterator import Iterator
 from queens.models import VALID_TYPES as VALID_MODEL_TYPES
-from queens.models.bmfmc_model import BMFMCModel
+from queens.models.bmfm import BMFM
 from queens.parameters.fields import VALID_TYPES as VALID_RANDOM_FIELD_TYPES
 from queens.parameters.parameters import from_config_create_parameters
 from queens.schedulers import VALID_TYPES as VALID_SCHEDULER_TYPES
@@ -143,9 +143,9 @@ def from_config_create_object(obj_description, global_settings=None, parameters=
     object_class = get_module_class(obj_description, VALID_TYPES)
     if isinstance(object_class, types.FunctionType):
         return object_class
-    if issubclass(object_class, (Iterator, Driver, BMFMCModel)):
+    if issubclass(object_class, (Iterator, Driver, BMFM)):
         obj_description["parameters"] = parameters
-    if issubclass(object_class, (Iterator, BMFMCModel)):
+    if issubclass(object_class, (Iterator, BMFM)):
         obj_description["global_settings"] = global_settings
     if issubclass(object_class, Scheduler):
         obj_description["experiment_name"] = global_settings.experiment_name

@@ -32,8 +32,8 @@ from queens.example_simulator_functions.gaussian_mixture_logpdf import (
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
@@ -68,8 +68,8 @@ def test_smc_bayes_temper_multivariate_gaussian_mixture(
     )
     driver = Function(parameters=parameters, function="agawal09a")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         nugget_noise_variance=1e-05,

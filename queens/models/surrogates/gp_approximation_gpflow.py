@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import tensorflow_probability as tfp
 
-from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.gpf_utils import extract_block_diag, init_scaler, set_transform_function
 from queens.utils.logger_settings import log_init_args
 from queens.utils.tensorflow_utils import configure_tensorflow
@@ -40,7 +40,7 @@ else:
     configure_tensorflow(tf)
 
 
-class GPFlowRegressionModel(SurrogateModel):
+class GPFlowRegression(Surrogate):
     """Class for creating GP regression model based on GPFlow.
 
     This class constructs a GP regression, using a GPFlow model.

@@ -20,13 +20,13 @@ import numpy as np
 import pytest
 
 from queens.iterators.bmfia import BMFIA
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 
 
 @pytest.fixture(name="dummy_simulation_model")
 def fixture_dummy_simulation_model():
     """Dummy model."""
-    model = SimulationModel(scheduler=Mock(), driver=Mock())
+    model = Simulation(scheduler=Mock(), driver=Mock())
     return model
 
 

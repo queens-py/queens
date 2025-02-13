@@ -23,7 +23,7 @@ from queens.distributions.lognormal import LogNormal
 from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
 
@@ -33,7 +33,7 @@ def fixture_default_simulation_model():
     """Default simulation model."""
     driver = Function(parameters=Mock(), function="ishigami90")
     scheduler = LocalScheduler(experiment_name="dummy_experiment_name")
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     return model
 
 

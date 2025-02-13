@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
+from queens.models.differentiable_fd import DifferentiableFD
 from queens.models.model import Model
 from queens.utils.valid_options_utils import InvalidOptionError
 
@@ -27,7 +27,7 @@ from queens.utils.valid_options_utils import InvalidOptionError
 @pytest.fixture(name="default_fd_model")
 def fixture_default_fd_model():
     """A default finite difference model."""
-    model_obj = DifferentiableSimulationModelFD(
+    model_obj = DifferentiableFD(
         scheduler=Mock(),
         driver=Mock(),
         finite_difference_method="2-point",
@@ -44,7 +44,7 @@ def test_init():
     step_size = 1e-6
     bounds = [-10, np.inf]
 
-    model_obj = DifferentiableSimulationModelFD(
+    model_obj = DifferentiableFD(
         scheduler=scheduler,
         driver=driver,
         finite_difference_method=finite_difference_method,
@@ -58,7 +58,7 @@ def test_init():
     np.testing.assert_equal(model_obj.bounds, np.array(bounds))
 
     with pytest.raises(InvalidOptionError):
-        DifferentiableSimulationModelFD(
+        DifferentiableFD(
             scheduler=scheduler,
             driver=driver,
             finite_difference_method="invalid_method",

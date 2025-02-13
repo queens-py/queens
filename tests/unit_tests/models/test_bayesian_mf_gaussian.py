@@ -21,11 +21,8 @@ import numpy as np
 import pytest
 from mock import Mock, patch
 
-from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
-    BMFGaussianModel,
-    BmfiaInterface,
-)
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.bayesian_mf_gaussian import BMFGaussian, BmfiaInterface
+from queens.models.simulation_model import Simulation
 
 
 # ------------ fixtures and params ---------------
@@ -90,15 +87,12 @@ def fixture_default_mf_likelihood(
         coord_labels,
         output_label,
     )
+    mocker.patch("queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian.build_approximation")
     mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
-        ".build_approximation"
-    )
-    mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormal",
+        "queens.models.likelihoods.bayesian_mf_gaussian.MeanFieldNormal",
         return_value=dummy_normal_distr,
     )
-    mf_likelihood = BMFGaussianModel(
+    mf_likelihood = BMFGaussian(
         forward_model=forward_model,
         mf_interface=mf_interface,
         mf_subiterator=bmfia_subiterator,
@@ -177,15 +171,12 @@ def test_init(mocker, dummy_simulation_model, default_interface, default_bmfia_i
         coord_labels,
         output_label,
     )
+    mocker.patch("queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian.build_approximation")
     mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BMFGaussianModel"
-        ".build_approximation"
-    )
-    mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.MeanFieldNormal",
+        "queens.models.likelihoods.bayesian_mf_gaussian.MeanFieldNormal",
         return_value=mean_field_normal,
     )
-    model = BMFGaussianModel(
+    model = BMFGaussian(
         forward_model=forward_model,
         mf_interface=mf_interface,
         mf_subiterator=bmfia_subiterator,
@@ -220,13 +211,12 @@ def test_evaluate(default_mf_likelihood, mocker):
     samples = np.array([[2, 3]])
     # on purpose transpose y_lf_mat here to check if this is wrong orientation is corrected
     mp1 = mocker.patch(
-        "queens.models.simulation_model.SimulationModel.evaluate",
+        "queens.models.simulation_model.Simulation.evaluate",
         return_value={"result": y_lf_mat.T},
     )
 
     mp2 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "BMFGaussianModel.evaluate_from_output",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian.evaluate_from_output",
         return_value=likelihood_output,
     )
 
@@ -247,8 +237,7 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
     forward_model_output = np.array([[5], [6]])
     mf_log_likelihood_exp = np.array([[7], [9]])
     mp1 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "BMFGaussianModel.evaluate_mf_likelihood",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian.evaluate_mf_likelihood",
         return_value=mf_log_likelihood_exp,
     )
 
@@ -263,14 +252,10 @@ def test_evaluate_from_output(default_mf_likelihood, mocker):
 
     # test with adaptivity
     mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "BMFGaussianModel._adaptivity_trigger",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian._adaptivity_trigger",
         return_value=True,
     )
-    mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "BMFGaussianModel._refine_mf_likelihood"
-    )
+    mocker.patch("queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian._refine_mf_likelihood")
     with pytest.raises(NotImplementedError):
         default_mf_likelihood.evaluate_from_output(mf_log_likelihood_exp, y_lf_mat)
 
@@ -298,7 +283,7 @@ def test_evaluate_mf_likelihood(default_mf_likelihood, mocker):
         return_value=(z_mat),
     )
     mp2 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface.evaluate",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BmfiaInterface.evaluate",
         return_value=(m_f_mat, var_y_mat),
     )
 
@@ -335,8 +320,8 @@ def test_grad(default_mf_likelihood):
     like_grad = np.random.rand(3, 2)
     default_mf_likelihood.response = {"forward_model_output": forward_model_output}
 
-    with patch.object(BMFGaussianModel, "partial_grad_evaluate", return_value=partial_grad) as mp1:
-        with patch.object(SimulationModel, "grad", return_value=like_grad) as mp2:
+    with patch.object(BMFGaussian, "partial_grad_evaluate", return_value=partial_grad) as mp1:
+        with patch.object(Simulation, "grad", return_value=like_grad) as mp2:
             grad_out = default_mf_likelihood.grad(samples, upstream_gradient)
             mp1.assert_called_once_with(samples, forward_model_output)
             mp2.assert_called_once()
@@ -370,8 +355,7 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
         return_value=z_mat,
     )
     mp2 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
-        ".evaluate_and_gradient",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BmfiaInterface.evaluate_and_gradient",
         return_value=(m_f_mat, var_y_mat, grad_m_f_mat, grad_var_y_mat),
     )
 
@@ -380,8 +364,7 @@ def test_partial_grad_evaluate(mocker, default_mf_likelihood):
         return_value=0.1,
     )
     mp3 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "BMFGaussianModel.grad_log_pdf_d_ylf",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BMFGaussian.grad_log_pdf_d_ylf",
         return_value=np.array([[0.2]]),
     )
     grad_out = default_mf_likelihood.partial_grad_evaluate(
@@ -447,12 +430,11 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
     y_obs = np.array([[5, 5, 5], [6, 6, 6]])
 
     mo_1 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood."
-        "print_bmfia_acceleration",
+        "queens.models.likelihoods.bayesian_mf_gaussian.print_bmfia_acceleration",
         return_value=None,
     )
 
-    BMFGaussianModel.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, default_bmfia_iterator)
+    BMFGaussian.initialize_bmfia_iterator(coords_mat, time_vec, y_obs, default_bmfia_iterator)
 
     # actual tests / asserts
     mo_1.assert_called_once()
@@ -477,12 +459,11 @@ def test_build_approximation(default_bmfia_iterator, default_interface, mocker):
         return_value=(z_train, y_hf_train),
     )
     mo_2 = mocker.patch(
-        "queens.models.likelihood_models.bayesian_mf_gaussian_likelihood.BmfiaInterface"
-        ".build_approximation",
+        "queens.models.likelihoods.bayesian_mf_gaussian.BmfiaInterface.build_approximation",
         return_value=None,
     )
 
-    BMFGaussianModel.build_approximation(
+    BMFGaussian.build_approximation(
         default_bmfia_iterator,
         default_interface,
         approx,

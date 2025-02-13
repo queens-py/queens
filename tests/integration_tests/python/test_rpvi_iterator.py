@@ -23,9 +23,9 @@ from queens.distributions.normal import Normal
 from queens.drivers.function import Function
 from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.main import run_iterator
-from queens.models.differentiable_simulation_model_fd import DifferentiableSimulationModelFD
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.differentiable_fd import DifferentiableFD
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.stochastic_optimizers.adam import Adam
@@ -65,10 +65,10 @@ def test_rpvi_iterator_park91a_hifi(
     )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = DifferentiableSimulationModelFD(
+    forward_model = DifferentiableFD(
         scheduler=scheduler, driver=driver, finite_difference_method="2-point", step_size=1e-07
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
@@ -143,8 +143,8 @@ def test_rpvi_iterator_park91a_hifi_provided_gradient(
     )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
@@ -236,8 +236,8 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1,
         experimental_data_reader=experimental_data_reader,
@@ -273,7 +273,7 @@ def test_gaussian_rpvi(tmp_path, _create_experimental_data, forward_model, globa
     )
 
     # Actual analysis
-    with patch.object(GaussianLikelihood, "evaluate_and_gradient", target_density):
+    with patch.object(Gaussian, "evaluate_and_gradient", target_density):
         run_iterator(iterator, global_settings=global_settings)
 
     # Load results
@@ -311,8 +311,8 @@ def fixture_module_path(tmp_path):
 def fixture_write_custom_likelihood_model(module_path):
     """Create a python file with a custom likelihood class."""
     custom_class_lst = [
-        "from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood\n",
-        "class MyLikelihood(GaussianLikelihood):\n",
+        "from queens.models.likelihoods.gaussian_likelihood import Gaussian\n",
+        "class MyLikelihood(Gaussian):\n",
         "   pass",
     ]
     with open(module_path, "w", encoding="utf-8") as f:

@@ -18,7 +18,7 @@ import pytest
 from mock import Mock
 
 from queens.iterators.monte_carlo import MonteCarlo
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.fcc_utils import (
     VALID_TYPES,
@@ -116,8 +116,8 @@ def test_from_config_create_object_iterator(mocker, config_1, global_settings, p
 
 def test_from_config_create_object_model(parameters, mocker, config_1):
     """Test case for from_config_create_object function."""
-    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=SimulationModel)
-    mp2 = mocker.patch("queens.models.simulation_model.SimulationModel.__init__", return_value=None)
+    mp1 = mocker.patch("queens.utils.fcc_utils.get_module_class", return_value=Simulation)
+    mp2 = mocker.patch("queens.models.simulation_model.Simulation.__init__", return_value=None)
     from_config_create_object(config_1, parameters)
 
     assert mp1.called_once_with(config_1, VALID_TYPES)

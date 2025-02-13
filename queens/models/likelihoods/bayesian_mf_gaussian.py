@@ -24,7 +24,7 @@ import numpy as np
 import tqdm
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
-from queens.models.likelihood_models.likelihood_model import LikelihoodModel
+from queens.models.likelihoods.likelihood import Likelihood
 from queens.utils.ascii_art import print_bmfia_acceleration
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import get_option
@@ -32,7 +32,7 @@ from queens.utils.valid_options_utils import get_option
 _logger = logging.getLogger(__name__)
 
 
-class BMFGaussianModel(LikelihoodModel):
+class BMFGaussian(Likelihood):
     """Multi fidelity likelihood function.
 
     Multi-fidelity likelihood of the Bayesian multi-fidelity inverse
@@ -56,7 +56,7 @@ class BMFGaussianModel(LikelihoodModel):
                                                 conducted
 
     Returns:
-        Instance of BMFGaussianModel. This is a multi-fidelity version of the
+        Instance of BMFGaussian. This is a multi-fidelity version of the
         Gaussian noise likelihood model.
 
 
@@ -111,7 +111,7 @@ class BMFGaussianModel(LikelihoodModel):
         super().__init__(forward_model, y_obs)
 
         if not isinstance(mf_interface, BmfiaInterface):
-            raise ValueError("The interface type must be 'bmfia_interface' for BMFGaussianModel!")
+            raise ValueError("The interface type must be 'bmfia_interface' for BMFGaussian!")
 
         # ----------------------- initialize the mean field normal distribution ------------------
         noise_variance = np.array(noise_value)
@@ -204,7 +204,7 @@ class BMFGaussianModel(LikelihoodModel):
             mf_log_likelihood (np.array): Vector of log-likelihood values per model input.
         """
         if self._adaptivity_trigger():
-            raise NotImplementedError("Adaptivity is not yet implemented for BMFGaussianModel!")
+            raise NotImplementedError("Adaptivity is not yet implemented for BMFGaussian!")
 
         # evaluate the modified multi-fidelity likelihood expression with LF model response
         mf_log_likelihood = self.evaluate_mf_likelihood(samples, forward_model_output)

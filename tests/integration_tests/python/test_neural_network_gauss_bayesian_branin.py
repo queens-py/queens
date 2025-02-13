@@ -24,10 +24,8 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.bayesian_neural_network import (
-    GaussianBayesianNeuralNetworkModel,
-)
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.bayesian_neural_network import GaussianBayesianNeuralNetwork
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -44,7 +42,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
     # Setup iterator
     driver = Function(parameters=parameters, function="branin78_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    simulation_model = SimulationModel(scheduler=scheduler, driver=driver)
+    simulation_model = Simulation(scheduler=scheduler, driver=driver)
     training_iterator = MonteCarlo(
         seed=42,
         num_samples=100,
@@ -53,7 +51,7 @@ def test_neural_network_gauss_bayesian_branin(expected_mean, expected_var, globa
         parameters=parameters,
         global_settings=global_settings,
     )
-    model = GaussianBayesianNeuralNetworkModel(
+    model = GaussianBayesianNeuralNetwork(
         eval_fit=None,
         error_measures=[
             "sum_squared",

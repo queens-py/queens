@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.utils.fd_jacobian import fd_jacobian, get_positions
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options_utils import check_if_valid_options
@@ -28,7 +28,7 @@ _logger = logging.getLogger(__name__)
 VALID_FINITE_DIFFERENCE_METHODS = ["2-point", "3-point"]
 
 
-class DifferentiableSimulationModelFD(SimulationModel):
+class DifferentiableFD(Simulation):
     """Finite difference model.
 
     Attributes:

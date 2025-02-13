@@ -143,7 +143,7 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
         "queens.iterators.bmfmc.BMFMC.diverse_subset_design",
         return_value="diverse",
     )
-    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
+    mocker.patch("queens.models.bmfm.BMFM.calculate_extended_gammas")
 
     method = default_bmfmc_iterator.get_design_method("random")
     assert method() == "random"
@@ -157,7 +157,7 @@ def test_get_design_method(mocker, default_bmfmc_iterator):
 
 def test_diverse_subset_design(mocker, default_bmfmc_iterator):
     """Test diverse_subset_design method of BMFMC."""
-    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
+    mocker.patch("queens.models.bmfm.BMFM.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
     default_bmfmc_iterator.model.gammas_ext_mc = np.random.random((10, 2))
@@ -177,7 +177,7 @@ def test_diverse_subset_design(mocker, default_bmfmc_iterator):
 
 def test_random_design(mocker, default_bmfmc_iterator):
     """Test random_design method of BMFMC."""
-    mocker.patch("queens.models.bmfmc_model.BMFMCModel.calculate_extended_gammas")
+    mocker.patch("queens.models.bmfm.BMFM.calculate_extended_gammas")
     n_points = 3
     np.random.seed(1)
     default_bmfmc_iterator.model.gammas_ext_mc = np.random.random((10, 2))

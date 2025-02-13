@@ -23,7 +23,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.fourc import Fourc
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
 from queens.utils.config_directories import experiment_directory
@@ -65,7 +65,7 @@ def test_fourc_mc(
         executable=fourc_executable,
         data_processor=data_processor,
     )
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = MonteCarlo(
         seed=42,
         num_samples=2,

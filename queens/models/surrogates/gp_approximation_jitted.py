@@ -19,8 +19,8 @@ import logging
 import numpy as np
 from scipy.linalg import cho_solve
 
-import queens.models.surrogate_models.utils.kernel_utils_jitted as utils_jitted
-from queens.models.surrogate_models.surrogate_model import SurrogateModel
+import queens.models.surrogates.utils.kernel_utils_jitted as utils_jitted
+from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.valid_options_utils import get_option
@@ -29,7 +29,7 @@ from queens.visualization.gnuplot_vis import gnuplot_gp_convergence
 _logger = logging.getLogger(__name__)
 
 
-class GPJittedModel(SurrogateModel):
+class GPJitted(Surrogate):
     """A jitted Gaussian process implementation using numba.
 
     It just-in-time compiles linear algebra operations.
@@ -104,7 +104,7 @@ class GPJittedModel(SurrogateModel):
         if kernel_type is None:
             raise ValueError(
                 "You did not specify a valid kernel! Valid kernels are "
-                f"{GPJittedModel.valid_kernels_dict.keys()}, but you specified "
+                f"{GPJitted.valid_kernels_dict.keys()}, but you specified "
                 f"{kernel_type}."
             )
 
@@ -113,10 +113,10 @@ class GPJittedModel(SurrogateModel):
 
         # check mean function and subtract from y_train
         valid_mean_function_types = {
-            "zero": (GPJittedModel.zero_mean_fun, GPJittedModel.gradient_zero_mean_fun),
+            "zero": (GPJitted.zero_mean_fun, GPJitted.gradient_zero_mean_fun),
             "identity_multi_fidelity": (
-                GPJittedModel.identity_multi_fidelity_mean_fun,
-                GPJittedModel.gradient_identity_multi_fidelity_mean_fun,
+                GPJitted.identity_multi_fidelity_mean_fun,
+                GPJitted.gradient_identity_multi_fidelity_mean_fun,
             ),
         }
 
@@ -271,11 +271,11 @@ class GPJittedModel(SurrogateModel):
         Returns:
             jitted_kernel (obj): Jitted kernel method.
         """
-        jitted_kernel = GPJittedModel.valid_kernels_dict.get(self.kernel_type)
+        jitted_kernel = GPJitted.valid_kernels_dict.get(self.kernel_type)
         if jitted_kernel is None:
             raise ValueError(
                 "You did not specify a valid kernel type in the input file!"
-                f"Valid kernel types are {GPJittedModel.valid_kernels_dict.keys()} "
+                f"Valid kernel types are {GPJitted.valid_kernels_dict.keys()} "
                 f"but you specified {self.kernel_type}."
                 "Abort..."
             )

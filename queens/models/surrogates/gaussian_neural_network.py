@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import tensorflow_probability as tfp
 
-from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.logger_settings import log_init_args
 from queens.utils.random_process_scaler import VALID_SCALER
 from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
@@ -44,7 +44,7 @@ else:
 _logger = logging.getLogger(__name__)
 
 
-class GaussianNeuralNetworkModel(SurrogateModel):
+class GaussianNeuralNetwork(Surrogate):
     """Class for creating a neural network that parameterizes a Gaussian.
 
     The network can handle heteroskedastic noise and an arbitrary nonlinear functions.

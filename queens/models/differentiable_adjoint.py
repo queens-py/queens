@@ -16,7 +16,7 @@
 
 import logging
 
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io_utils import write_to_csv
 from queens.utils.logger_settings import log_init_args
@@ -24,7 +24,7 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class DifferentiableSimulationModelAdjoint(SimulationModel):
+class DifferentiableAdjoint(Simulation):
     """Adjoint model.
 
     Attributes:

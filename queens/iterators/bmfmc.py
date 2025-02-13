@@ -45,7 +45,7 @@ class BMFMC(Iterator):
         itself.
 
     Attributes:
-        model (obj): Instance of the BMFMCModel.
+        model (obj): Instance of the BMFM.
         result_description (dict): Dictionary containing settings for plotting and saving
                                    data/results.
         X_train (np.array): Corresponding input for the simulations that are used to train the
@@ -130,12 +130,12 @@ class BMFMC(Iterator):
         1.  Reading the sampling data from the low-fidelity model in QUEENS.
         2.  Based on LF data, determine optimal *X_train* for which the high-fidelity model should
             be evaluated :math:`Y_{HF}=y_{HF}(X)`.
-        3.  Update the BMFMCModel with the partial training data set of *X_train*, *Y_LF_train*
-            (*Y_HF_train* is determined in the BMFMCModel).
-        4.  Evaluate the BMFMCModel, which means that the posterior statistics
+        3.  Update the BMFM with the partial training data set of *X_train*, *Y_LF_train*
+            (*Y_HF_train* is determined in the BMFM).
+        4.  Evaluate the BMFM, which means that the posterior statistics
             :math:`\mathbb{E}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` and
             :math:`\mathbb{V}_{f}\left[p(y_{HF}^*|f,\mathcal{D})\right]` are computed based
-            on the BMFMC algorithm, which is implemented in the BMFMCModel.
+            on the BMFMC algorithm, which is implemented in the BMFM.
         """
         # -------- Load MC data from model -----------------------
         self.model.load_sampling_data()
@@ -157,7 +157,7 @@ class BMFMC(Iterator):
         *   **random**: Divides the :math:`y_{LF}` data set in bins and selects training
             candidates randomly from each bin until :math:`n_{train}` is reached.
         *   **diverse subset**: Determine the most important input features :math:`\gamma_i`
-            (this information is provided by the BMFMCModel), and find a space
+            (this information is provided by the BMFM), and find a space
             filling subset (diverse subset), given the LF sampling data with
             respect to the most important features :math:`\gamma_i`. The
             number of features to be considered can be set in the input file.

@@ -24,7 +24,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.mlmc import MLMC
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -63,8 +63,8 @@ def fixture_models(parameters, scheduler):
     driver0 = Function(parameters=parameters, function="borehole83_lofi")
     driver1 = Function(parameters=parameters, function="borehole83_hifi")
     # Set up models.
-    model0 = SimulationModel(scheduler=scheduler, driver=driver0)
-    model1 = SimulationModel(scheduler=scheduler, driver=driver1)
+    model0 = Simulation(scheduler=scheduler, driver=driver0)
+    model1 = Simulation(scheduler=scheduler, driver=driver1)
 
     return [model0, model1]
 

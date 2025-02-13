@@ -21,7 +21,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.classification import ClassificationIterator
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.classifier import ActiveLearningClassifier
@@ -55,7 +55,7 @@ def test_classification_iterator(tmp_path, global_settings):
     classifier = ActiveLearningClassifier(n_params=2, batch_size=4, classifier_obj=classifier_obj)
     driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = ClassificationIterator(
         num_sample_points=10000,
         num_model_calls=12,

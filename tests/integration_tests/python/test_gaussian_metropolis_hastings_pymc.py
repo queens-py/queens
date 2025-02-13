@@ -23,8 +23,8 @@ from queens.drivers.function import Function
 from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
 from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
@@ -45,8 +45,8 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
     )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         experimental_data_reader=experimental_data_reader,
@@ -66,7 +66,7 @@ def test_gaussian_mh(tmp_path, _create_experimental_data_zero, global_settings):
     )
 
     # Actual analysis
-    with patch.object(GaussianLikelihood, "evaluate", target_density):
+    with patch.object(Gaussian, "evaluate", target_density):
         run_iterator(iterator, global_settings=global_settings)
 
     # Load results

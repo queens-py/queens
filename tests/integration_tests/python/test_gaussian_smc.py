@@ -25,8 +25,8 @@ from queens.drivers.function import Function
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.experimental_data_reader import ExperimentalDataReader
@@ -53,8 +53,8 @@ def test_gaussian_smc(
     mcmc_proposal_distribution = Normal(mean=0.0, covariance=1.0)
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         experimental_data_reader=experimental_data_reader,

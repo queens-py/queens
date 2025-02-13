@@ -21,7 +21,7 @@ import numpy as np
 from queens.models.model import Model
 
 
-class LikelihoodModel(Model):
+class Likelihood(Model):
     """Base class for likelihood models.
 
     Attributes:

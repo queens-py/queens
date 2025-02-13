@@ -22,7 +22,7 @@ from mock import Mock
 
 from queens.distributions.uniform import Uniform
 from queens.iterators.grid import Grid
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 
 
@@ -105,7 +105,7 @@ def fixture_expected_samples_three():
 @pytest.fixture(name="default_model")
 def fixture_default_model():
     """A default simulation model."""
-    model = SimulationModel(scheduler=Mock(), driver=Mock())
+    model = Simulation(scheduler=Mock(), driver=Mock())
     return model
 
 
@@ -161,8 +161,8 @@ def test_init(
 
 
 def test_model_evaluate(default_grid_iterator, mocker):
-    """Test the evaluate method of the SimulationModel class."""
-    mp = mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=None)
+    """Test the evaluate method of the Simulation class."""
+    mp = mocker.patch("queens.models.simulation_model.Simulation.evaluate", return_value=None)
     default_grid_iterator.model.evaluate(None)
     mp.assert_called_once()
 
@@ -228,7 +228,7 @@ def test_pre_run_three(
 
 def test_core_run(mocker, default_grid_iterator, expected_samples_two):
     """Test the core_run method of the Grid class."""
-    mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=2)
+    mocker.patch("queens.models.simulation_model.Simulation.evaluate", return_value=2)
     default_grid_iterator.samples = expected_samples_two
     default_grid_iterator.core_run()
     np.testing.assert_array_equal(default_grid_iterator.samples, expected_samples_two)

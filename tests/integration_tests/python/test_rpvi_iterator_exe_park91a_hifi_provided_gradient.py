@@ -22,12 +22,7 @@ from queens.distributions import Normal
 from queens.drivers import Mpi
 from queens.iterators import RPVI
 from queens.main import run_iterator
-from queens.models import (
-    DifferentiableSimulationModelAdjoint,
-    DifferentiableSimulationModelFD,
-    GaussianLikelihood,
-    SimulationModel,
-)
+from queens.models import DifferentiableAdjoint, DifferentiableFD, Gaussian, Simulation
 from queens.parameters import Parameters
 from queens.schedulers import LocalScheduler
 from queens.stochastic_optimizers import Adam
@@ -121,8 +116,8 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         gradient_data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
@@ -226,10 +221,10 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         data_processor=data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = DifferentiableSimulationModelFD(
+    forward_model = DifferentiableFD(
         scheduler=scheduler, driver=driver, finite_difference_method="2-point"
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,
@@ -352,13 +347,13 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         data_processor=gradient_data_processor,
         mpi_cmd=mpi_command,
     )
-    forward_model = DifferentiableSimulationModelAdjoint(
+    forward_model = DifferentiableAdjoint(
         adjoint_file="grad_objective.csv",
         scheduler=scheduler,
         driver=driver,
         gradient_driver=adjoint_driver,
     )
-    model = GaussianLikelihood(
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         experimental_data_reader=experimental_data_reader,

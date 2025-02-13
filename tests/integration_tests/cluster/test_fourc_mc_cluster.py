@@ -26,7 +26,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers import Jobscript
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.utils import config_directories
 from queens.utils.io_utils import load_result
@@ -154,7 +154,7 @@ class TestDaskCluster:
             data_processor=data_processor,
             extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
-        model = SimulationModel(scheduler=scheduler, driver=driver)
+        model = Simulation(scheduler=scheduler, driver=driver)
         iterator = MonteCarlo(
             seed=42,
             num_samples=2,

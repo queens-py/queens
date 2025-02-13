@@ -19,13 +19,13 @@ import warnings
 import numpy as np
 
 from queens.distributions.normal import Normal
-from queens.models.likelihood_models.likelihood_model import LikelihoodModel
+from queens.models.likelihoods.likelihood import Likelihood
 from queens.utils.exceptions import InvalidOptionError
 from queens.utils.logger_settings import log_init_args
 from queens.utils.numpy_utils import add_nugget_to_diagonal
 
 
-class GaussianLikelihood(LikelihoodModel):
+class Gaussian(Likelihood):
     r"""Gaussian likelihood model with fixed or dynamic noise.
 
     The noise can be modelled by a full covariance matrix, independent variances or a unified
@@ -46,7 +46,7 @@ class GaussianLikelihood(LikelihoodModel):
         normal_distribution (obj): Underlying normal distribution object
 
     Returns:
-        Instance of GaussianLikelihood Class
+        Instance of Gaussian Class
     """
 
     @log_init_args
@@ -74,14 +74,14 @@ class GaussianLikelihood(LikelihoodModel):
         """
         if y_obs is not None and experimental_data_reader is not None:
             warnings.warn(
-                "You provided 'y_obs' and 'experimental_data_reader' to GaussianLikelihood. "
+                "You provided 'y_obs' and 'experimental_data_reader' to Gaussian. "
                 "Only provided 'y_obs' is used."
             )
         if y_obs is None:
             if experimental_data_reader is None:
                 raise InvalidOptionError(
                     "You must either provide 'y_obs' or an "
-                    "'experimental_data_reader' for GaussianLikelihood."
+                    "'experimental_data_reader' for Gaussian."
                 )
             y_obs = experimental_data_reader.get_experimental_data()[0]
 

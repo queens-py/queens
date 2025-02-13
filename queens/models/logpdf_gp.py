@@ -35,8 +35,8 @@ _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)
 
 
-class LogpdfGPModel(Model):
-    """LogpdfGPModel Class.
+class LogpdfGP(Model):
+    """LogpdfGP Class.
 
     Attributes:
         approx_type (str): Approximation type (GPMAP-I', 'CGPMAP-II' or 'CFBGP')
@@ -81,7 +81,7 @@ class LogpdfGPModel(Model):
         quantile=0.9,
         jitter=1.0e-16,
     ):
-        """Initialize LogpdfGPModel.
+        """Initialize LogpdfGP.
 
         Args:
             approx_type (str): Approximation type (GPMAP-I', 'CGPMAP-II' or 'CFBGP')

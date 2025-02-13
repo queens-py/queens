@@ -26,8 +26,8 @@ from queens.drivers.function import Function
 from queens.global_settings import GlobalSettings
 from queens.iterators.bbvi import BBVI
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.stochastic_optimizers import Adam
@@ -114,8 +114,8 @@ def test_bbvi_iterator_park91a_hifi(
     )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = GaussianLikelihood(
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
+    model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         noise_var_iterative_averaging=noise_var_iterative_averaging,

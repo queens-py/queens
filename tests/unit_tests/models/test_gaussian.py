@@ -21,7 +21,7 @@ import pytest
 from mock import Mock
 
 from queens.distributions.normal import Normal
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.likelihoods.gaussian import Gaussian
 
 
 # ---------------- some fixtures ---------------------------------- #
@@ -77,7 +77,7 @@ def fixture_my_lik_model():
     noise_type = "fixed_variance"
     y_obs = np.array([[3.0]])
 
-    gauss_lik_obj = GaussianLikelihood(
+    gauss_lik_obj = Gaussian(
         forward_model=forward_model,
         noise_type=noise_type,
         noise_value=noise_value,
@@ -98,7 +98,7 @@ def test_init():
     noise_var_iterative_averaging = None
     y_obs = np.array([[3.0]])
 
-    gauss_lik_obj = GaussianLikelihood(
+    gauss_lik_obj = Gaussian(
         forward_model=forward_model,
         noise_type=noise_type,
         noise_value=noise_value,
@@ -126,10 +126,7 @@ def test_evaluate(mocker, my_lik_model):
 
     # test update of covariance for MAP
     my_lik_model.noise_type = "MAP_abc"
-    m1 = mocker.patch(
-        "queens.models.likelihood_models.gaussian_likelihood."
-        "GaussianLikelihood.update_covariance"
-    )
+    m1 = mocker.patch("queens.models.likelihoods.gaussian.Gaussian.update_covariance")
     response = my_lik_model.evaluate(samples)["result"]
     assert m1.called_once_with(3.0)
 

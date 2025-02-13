@@ -24,7 +24,7 @@ from mock import Mock
 
 from queens.distributions.free import FreeVariable
 from queens.iterators.levenberg_marquardt import LevenbergMarquardt
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 
 _logger = logging.getLogger(__name__)
@@ -70,7 +70,7 @@ def fixture_output_html(global_settings):
 def fixture_default_lm_iterator(global_settings):
     """A default LevenbergMarquardt instance."""
     parameters = Parameters(x1=FreeVariable(1), x2=FreeVariable(1))
-    model = SimulationModel(scheduler=Mock(), driver=Mock())
+    model = Simulation(scheduler=Mock(), driver=Mock())
 
     my_lm_iterator = LevenbergMarquardt(
         model=model,
@@ -152,7 +152,7 @@ def test_init(global_settings):
 
 def test_model_evaluate(default_lm_iterator, mocker):
     """Test model evaluation in LevenbergMarquardt."""
-    mp = mocker.patch("queens.models.simulation_model.SimulationModel.evaluate", return_value=None)
+    mp = mocker.patch("queens.models.simulation_model.Simulation.evaluate", return_value=None)
     default_lm_iterator.model.evaluate(None)
     mp.assert_called_once()
 
@@ -165,7 +165,7 @@ def test_residual(default_lm_iterator, mocker):
     )
 
     m2 = mocker.patch(
-        "queens.models.simulation_model.SimulationModel.evaluate",
+        "queens.models.simulation_model.Simulation.evaluate",
         return_value=None,
     )
 
@@ -188,7 +188,7 @@ def test_jacobian(default_lm_iterator, fix_true_false_param, mocker):
     )
 
     m3 = mocker.patch(
-        "queens.models.simulation_model.SimulationModel.evaluate",
+        "queens.models.simulation_model.Simulation.evaluate",
         return_value=None,
     )
 

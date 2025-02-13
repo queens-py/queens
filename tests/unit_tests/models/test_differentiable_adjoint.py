@@ -20,17 +20,15 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.models import differentiable_simulation_model_adjoint
-from queens.models.differentiable_simulation_model_adjoint import (
-    DifferentiableSimulationModelAdjoint,
-)
+from queens.models import differentiable_adjoint
+from queens.models.differentiable_adjoint import DifferentiableAdjoint
 
 
 # ------------------ some fixtures ------------------------------- #
 @pytest.fixture(name="default_adjoint_model")
 def fixture_default_adjoint_model():
     """A default adjoint model."""
-    model_obj = DifferentiableSimulationModelAdjoint(
+    model_obj = DifferentiableAdjoint(
         scheduler=Mock(),
         driver=Mock(),
         gradient_driver=Mock(),
@@ -48,7 +46,7 @@ def test_init():
     adjoint_file = "my_adjoint_file"
 
     # Test without grad handler
-    model_obj = DifferentiableSimulationModelAdjoint(
+    model_obj = DifferentiableAdjoint(
         scheduler=scheduler,
         driver=driver,
         gradient_driver=gradient_driver,
@@ -76,7 +74,7 @@ def test_evaluate(default_adjoint_model):
 def test_grad(default_adjoint_model):
     """Test grad method."""
     experiment_dir = Path("path_to_experiment_dir")
-    differentiable_simulation_model_adjoint.write_to_csv = Mock()
+    differentiable_adjoint.write_to_csv = Mock()
     default_adjoint_model.scheduler.next_job_id = 7
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
     default_adjoint_model.scheduler.evaluate = lambda x, driver, job_ids: {"result": x**2}
@@ -91,20 +89,20 @@ def test_grad(default_adjoint_model):
     expected_grad = samples**2
     np.testing.assert_almost_equal(expected_grad, grad_out)
 
-    assert differentiable_simulation_model_adjoint.write_to_csv.call_count == 2
+    assert differentiable_adjoint.write_to_csv.call_count == 2
     assert (
-        differentiable_simulation_model_adjoint.write_to_csv.call_args_list[0].args[0]
+        differentiable_adjoint.write_to_csv.call_args_list[0].args[0]
         == experiment_dir / "5" / default_adjoint_model.adjoint_file
     )
     assert (
-        differentiable_simulation_model_adjoint.write_to_csv.call_args_list[1].args[0]
+        differentiable_adjoint.write_to_csv.call_args_list[1].args[0]
         == experiment_dir / "6" / default_adjoint_model.adjoint_file
     )
     np.testing.assert_equal(
-        differentiable_simulation_model_adjoint.write_to_csv.call_args_list[0].args[1],
+        differentiable_adjoint.write_to_csv.call_args_list[0].args[1],
         upstream_gradient[0].reshape(1, -1),
     )
     np.testing.assert_equal(
-        differentiable_simulation_model_adjoint.write_to_csv.call_args_list[1].args[1],
+        differentiable_adjoint.write_to_csv.call_args_list[1].args[1],
         upstream_gradient[1].reshape(1, -1),
     )

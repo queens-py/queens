@@ -24,7 +24,7 @@ from queens.drivers.fourc import Fourc
 from queens.external_geometries.fourc_dat import FourcDat
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.fields.kl_field import KarhunenLoeveRandomField
 from queens.parameters.parameters import Parameters
 from queens.schedulers.local_scheduler import LocalScheduler
@@ -117,7 +117,7 @@ def test_write_random_material_to_dat(
         post_processor=post_ensight,
         data_processor=data_processor,
     )
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = MonteCarlo(
         seed=1,
         num_samples=3,

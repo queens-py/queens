@@ -20,7 +20,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -42,7 +42,7 @@ def test_sobol_indices_borehole(global_settings):
     # Setup iterator
     driver = Function(parameters=parameters, function="borehole83_lofi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, num_jobs=2)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = SobolIndex(
         seed=42,
         calc_second_order=True,

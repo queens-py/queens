@@ -26,7 +26,7 @@ from queens.visualization.surrogate_visualization import SurrogateVisualization
 _logger = logging.getLogger(__name__)
 
 
-class SurrogateModel(Model):
+class Surrogate(Model):
     """Surrogate model class.
 
     Attributes:
@@ -263,7 +263,7 @@ class SurrogateModel(Model):
             "sum_abs": lambda: np.sum(np.abs(y_test - y_posterior_mean)),
             "mean_abs": lambda: np.mean(np.abs(y_test - y_posterior_mean)),
             "abs_max": lambda: np.max(np.abs(y_test - y_posterior_mean)),
-            "nash_sutcliffe_efficiency": lambda: SurrogateModel.compute_nash_sutcliffe_efficiency(
+            "nash_sutcliffe_efficiency": lambda: Surrogate.compute_nash_sutcliffe_efficiency(
                 y_test, y_posterior_mean
             ),
         }.get(measure, NotImplementedError("Desired error measure is unknown!"))()

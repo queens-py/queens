@@ -24,9 +24,9 @@ from queens.iterators.adaptive_sampling import AdaptiveSampling
 from queens.iterators.monte_carlo import MonteCarlo
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
-from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
-from queens.models.logpdf_gp_model import LogpdfGPModel
-from queens.models.simulation_model import SimulationModel
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.logpdf_gp import LogpdfGP
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -60,13 +60,13 @@ def fixture_likelihood_model(parameters, global_settings):
     np.random.seed(42)
     driver = Function(parameters=parameters, function=park91a_hifi_on_grid)
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    forward_model = SimulationModel(scheduler=scheduler, driver=driver)
+    forward_model = Simulation(scheduler=scheduler, driver=driver)
 
     y_obs = park91a_hifi_on_grid(x1=0.3, x2=0.7)
     noise_var = 1e-4
     y_obs += np.random.randn(y_obs.size) * noise_var ** (1 / 2)
 
-    likelihood_model = GaussianLikelihood(
+    likelihood_model = Gaussian(
         forward_model=forward_model,
         noise_type="fixed_variance",
         noise_value=noise_var,
@@ -112,7 +112,7 @@ def test_constrained_gp_ip_park(
     quantile = 0.90
     seed = 41
 
-    logpdf_gp_model = LogpdfGPModel(
+    logpdf_gp_model = LogpdfGP(
         approx_type=approx_type,
         num_hyper=10,
         num_optimizations=3,

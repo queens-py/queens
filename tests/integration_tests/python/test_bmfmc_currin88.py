@@ -25,9 +25,9 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.bmfmc import BMFMC
 from queens.main import run_iterator
-from queens.models.bmfmc_model import BMFMCModel
-from queens.models.simulation_model import SimulationModel
-from queens.models.surrogate_models.gp_approximation_gpflow import GPFlowRegressionModel
+from queens.models.bmfm import BMFM
+from queens.models.simulation_model import Simulation
+from queens.models.surrogates.gp_approximation_gpflow import GPFlowRegression
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -57,7 +57,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    probabilistic_mapping = GPFlowRegressionModel(
+    probabilistic_mapping = GPFlowRegression(
         train_likelihood_variance=False,
         number_restarts=2,
         number_training_iterations=1000,
@@ -65,8 +65,8 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
     )
     driver = Function(parameters=parameters, function="currin88_hifi")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    hf_model = SimulationModel(scheduler=scheduler, driver=driver)
-    model = BMFMCModel(
+    hf_model = Simulation(scheduler=scheduler, driver=driver)
+    model = BMFM(
         predictive_var=False,
         BMFMC_reference=False,
         y_pdf_support_min=-0.5,

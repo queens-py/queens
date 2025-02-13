@@ -23,7 +23,7 @@ import black
 from queens.distributions.distributions import Continuous
 from queens.drivers.driver import Driver
 from queens.iterators.iterator import Iterator
-from queens.models.bmfmc_model import BMFMCModel
+from queens.models.bmfm import BMFM
 from queens.parameters.fields.random_fields import RandomField
 from queens.schedulers.scheduler import Scheduler
 from queens.utils.fcc_utils import VALID_TYPES, check_for_reference
@@ -279,9 +279,9 @@ def create_initialization_call(obj_description, python_code):
         return f"{class_name}"
 
     # add parameters
-    if issubclass(object_class, (Iterator, Driver, BMFMCModel)):
+    if issubclass(object_class, (Iterator, Driver, BMFM)):
         obj_description["parameters"] = VariableName("parameters")
-    if issubclass(object_class, (Iterator, BMFMCModel)):
+    if issubclass(object_class, (Iterator, BMFM)):
         obj_description["global_settings"] = VariableName("gs")
 
     if issubclass(object_class, Scheduler):

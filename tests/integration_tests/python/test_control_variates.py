@@ -20,7 +20,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.control_variates import ControlVariates
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -57,7 +57,7 @@ def fixture_control_variate(parameters, scheduler):
     # Set up driver.
     driver = Function(parameters=parameters, function="borehole83_lofi")
     # Set up model.
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
 
     return model
 
@@ -68,7 +68,7 @@ def fixture_model_main(parameters, scheduler):
     # Set up driver.
     driver = Function(parameters=parameters, function="borehole83_hifi")
     # Set up model.
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
 
     return model
 

@@ -21,7 +21,7 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.grid import Grid
 from queens.main import run_iterator
-from queens.models.simulation_model import SimulationModel
+from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool_scheduler import PoolScheduler
 from queens.utils.io_utils import load_result
@@ -37,7 +37,7 @@ def test_grid_iterator(expected_response, expected_grid, global_settings, tmp_pa
     # Setup iterator
     driver = Function(parameters=parameters, function="rosenbrock60")
     scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
-    model = SimulationModel(scheduler=scheduler, driver=driver)
+    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = Grid(
         grid_design={
             "x1": {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"},

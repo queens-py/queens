@@ -20,7 +20,7 @@ from typing import TYPE_CHECKING
 import numpy as np
 import tensorflow_probability as tfp
 
-from queens.models.surrogate_models.surrogate_model import SurrogateModel
+from queens.models.surrogates.surrogate import Surrogate
 from queens.utils.logger_settings import log_init_args
 from queens.utils.tensorflow_utils import configure_keras, configure_tensorflow
 
@@ -43,7 +43,7 @@ else:
     configure_keras(keras)
 
 
-class GaussianBayesianNeuralNetworkModel(SurrogateModel):
+class GaussianBayesianNeuralNetwork(Surrogate):
     """A Bayesian Neural network.
 
     Class for creating a Bayesian neural network with Gaussian conditional

@@ -18,7 +18,7 @@ import numpy as np
 import pytest
 
 from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
-from queens.models.surrogate_models.gaussian_neural_network import GaussianNeuralNetworkModel
+from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
 from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
     assert_surrogate_model_output,
 )
@@ -27,7 +27,7 @@ from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
 @pytest.fixture(name="my_model")
 def fixture_my_model():
     """A Gaussian neural network model."""
-    model = GaussianNeuralNetworkModel(
+    model = GaussianNeuralNetwork(
         activation_per_hidden_layer_lst=["elu", "elu", "elu", "elu"],
         nodes_per_hidden_layer_lst=[20, 20, 20, 20],
         adams_training_rate=0.001,
