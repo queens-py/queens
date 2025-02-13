@@ -24,7 +24,7 @@ from queens.iterators import RPVI
 from queens.main import run_iterator
 from queens.models import DifferentiableAdjoint, DifferentiableFD, Gaussian, Simulation
 from queens.parameters import Parameters
-from queens.schedulers import LocalScheduler
+from queens.schedulers import Local
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
@@ -89,7 +89,7 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
@@ -202,7 +202,7 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,
@@ -314,7 +314,7 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
         output_label="y_obs",
         coordinate_labels=["x3", "x4"],
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,

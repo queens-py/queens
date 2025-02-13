@@ -29,7 +29,7 @@ from queens.models.simulation_model import Simulation
 from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
 from queens.models.surrogates.gp_approximation_jitted import GPJitted
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
@@ -93,7 +93,7 @@ def test_bmfia_smc_park(
     )
     mcmc_proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[0.01, 0.0], [0.0, 0.01]])
     lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = Simulation(scheduler=scheduler, driver=hf_driver)
@@ -189,7 +189,7 @@ def test_bmfia_rpvi_gp_park(
         stochastic_optimizer=stochastic_optimizer,
     )
     lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid_with_gradients")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = Simulation(scheduler=scheduler, driver=hf_driver)
@@ -294,7 +294,7 @@ def test_bmfia_rpvi_nn_park(
         probabilistic_mapping_type="per_time_step",
     )
     lf_driver = Function(parameters=parameters, function="park91a_lofi_on_grid_with_gradients")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     lf_model = Simulation(scheduler=scheduler, driver=lf_driver)
     hf_driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     hf_model = Simulation(scheduler=scheduler, driver=hf_driver)

@@ -25,7 +25,7 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.local import Local
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io_utils import load_result, read_file
 
@@ -54,7 +54,7 @@ def test_fourc_mc(
         file_options_dict={},
     )
 
-    scheduler = LocalScheduler(
+    scheduler = Local(
         experiment_name=global_settings.experiment_name,
         num_procs=2,
         num_jobs=2,

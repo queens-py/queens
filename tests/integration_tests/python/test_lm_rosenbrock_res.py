@@ -23,7 +23,7 @@ from queens.iterators.levenberg_marquardt import LevenbergMarquardt
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 
 
 def test_lm_rosenbrock_res(global_settings):
@@ -35,7 +35,7 @@ def test_lm_rosenbrock_res(global_settings):
 
     # Setup iterator
     driver = Function(parameters=parameters, function="rosenbrock60_residual")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
     iterator = LevenbergMarquardt(
         jac_rel_step=1e-05,

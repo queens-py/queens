@@ -24,7 +24,7 @@ from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.models.surrogates.gp_approximation_gpflow_svgp import GPflowSVGP
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_monte_carlo_iterator_results
 
@@ -39,7 +39,7 @@ def test_branin_gpflow_svgp(expected_mean, expected_var, global_settings):
 
     # Setup iterator
     driver = Function(parameters=parameters, function="branin78_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
     training_iterator = MonteCarlo(
         seed=42,

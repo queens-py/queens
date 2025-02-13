@@ -28,7 +28,7 @@ from queens.utils.pool_utils import create_pool
 _logger = logging.getLogger(__name__)
 
 
-class PoolScheduler(Scheduler):
+class Pool(Scheduler):
     """Pool scheduler class for QUEENS.
 
     Attributes:
@@ -37,7 +37,7 @@ class PoolScheduler(Scheduler):
 
     @log_init_args
     def __init__(self, experiment_name, num_jobs=1, verbose=True):
-        """Initialize PoolScheduler.
+        """Initialize Pool.
 
         Args:
             experiment_name (str): name of the current experiment

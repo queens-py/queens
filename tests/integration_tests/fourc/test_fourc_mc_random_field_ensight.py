@@ -27,7 +27,7 @@ from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
 from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
-from queens.schedulers.local_scheduler import LocalScheduler
+from queens.schedulers.local import Local
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io_utils import load_result, read_file
 
@@ -105,7 +105,7 @@ def test_write_random_material_to_dat(
         },
         external_geometry=external_geometry,
     )
-    scheduler = LocalScheduler(
+    scheduler = Local(
         num_procs=1,
         num_jobs=1,
         experiment_name=global_settings.experiment_name,

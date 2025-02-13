@@ -25,7 +25,7 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -44,7 +44,7 @@ def test_monte_carlo_borehole(global_settings):
 
     # Setup iterator
     driver = Function(parameters=parameters, function="borehole83_lofi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     model = Simulation(scheduler=scheduler, driver=driver)
     iterator = MonteCarlo(
         seed=42,

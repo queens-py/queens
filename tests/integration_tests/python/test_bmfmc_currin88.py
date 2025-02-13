@@ -29,7 +29,7 @@ from queens.models.bmfm import BMFM
 from queens.models.simulation_model import Simulation
 from queens.models.surrogates.gp_approximation_gpflow import GPFlowRegression
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from queens.utils.pdf_estimation import estimate_pdf
 
@@ -64,7 +64,7 @@ def test_bmfmc_iterator_currin88_random_vars_diverse_design(
         dimension_lengthscales=2,
     )
     driver = Function(parameters=parameters, function="currin88_hifi")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     hf_model = Simulation(scheduler=scheduler, driver=driver)
     model = BMFM(
         predictive_var=False,

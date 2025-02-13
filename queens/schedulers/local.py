@@ -18,14 +18,14 @@ import logging
 
 from dask.distributed import Client, LocalCluster
 
-from queens.schedulers.dask_scheduler import DaskScheduler
+from queens.schedulers.dask import Dask
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class LocalScheduler(DaskScheduler):
+class Local(Dask):
     """Local scheduler class for QUEENS."""
 
     @log_init_args

@@ -29,7 +29,7 @@ from queens.main import run_iterator
 from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io_utils import load_result
 
@@ -54,7 +54,7 @@ def test_metropolis_hastings_multivariate_gaussian(
     )
     proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
     driver = Function(parameters=parameters, function="patch_for_likelihood")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",

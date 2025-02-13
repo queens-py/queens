@@ -28,7 +28,7 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.logpdf_gp import LogpdfGP
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -59,7 +59,7 @@ def fixture_likelihood_model(parameters, global_settings):
     """A Gaussian likelihood model."""
     np.random.seed(42)
     driver = Function(parameters=parameters, function=park91a_hifi_on_grid)
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
 
     y_obs = park91a_hifi_on_grid(x1=0.3, x2=0.7)

@@ -26,7 +26,7 @@ from queens.iterators.mlmc import MLMC
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 
 
@@ -51,7 +51,7 @@ def fixture_parameters():
 def fixture_scheduler(global_settings):
     """Scheduler for the integration tests of the MLMC iterator."""
     # Set up scheduler.
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name)
+    scheduler = Pool(experiment_name=global_settings.experiment_name)
 
     return scheduler
 

@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-import queens.schedulers.cluster_scheduler as cluster_scheduler  # pylint: disable=consider-using-from-import
+import queens.schedulers.cluster as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processors.pvd import Pvd
 from queens.distributions.uniform import Uniform
 from queens.drivers import Jobscript
@@ -133,7 +133,7 @@ class TestDaskCluster:
             file_options_dict={},
         )
 
-        scheduler = cluster_scheduler.ClusterScheduler(
+        scheduler = cluster_scheduler.Cluster(
             workload_manager=cluster_settings["workload_manager"],
             walltime="00:10:00",
             num_jobs=1,

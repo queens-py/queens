@@ -73,7 +73,7 @@ from queens.iterators import MonteCarlo
 from queens.main import run_iterator
 from queens.models import Simulation
 from queens.parameters import Parameters
-from queens.schedulers import LocalScheduler
+from queens.schedulers import Local
 
 if __name__ == "__main__":
     # Set up the global settings
@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # Set up the model
     driver = Function(parameters=parameters, function="ishigami90")
-    scheduler = LocalScheduler(
+    scheduler = Local(
         experiment_name=global_settings.experiment_name, num_jobs=2, num_procs=4
     )
     model = Simulation(scheduler=scheduler, driver=driver)

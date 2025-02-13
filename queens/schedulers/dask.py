@@ -30,7 +30,7 @@ _logger = logging.getLogger(__name__)
 SHUTDOWN_CLIENTS = []
 
 
-class DaskScheduler(Scheduler):
+class Dask(Scheduler):
     """Abstract base class for schedulers in QUEENS.
 
     Attributes:

@@ -22,7 +22,7 @@ from queens.iterators.sobol_index import SobolIndex
 from queens.main import run_iterator
 from queens.models.simulation_model import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.pool_scheduler import PoolScheduler
+from queens.schedulers.pool import Pool
 from queens.utils.io_utils import load_result
 from test_utils.integration_tests import assert_sobol_index_iterator_results
 
@@ -37,7 +37,7 @@ def test_sobol_indices_ishigami(global_settings):
 
     # Setup iterator
     driver = Function(parameters=parameters, function="ishigami90")
-    scheduler = PoolScheduler(experiment_name=global_settings.experiment_name, verbose=True)
+    scheduler = Pool(experiment_name=global_settings.experiment_name, verbose=True)
     model = Simulation(scheduler=scheduler, driver=driver)
     iterator = SobolIndex(
         seed=42,
