@@ -155,7 +155,9 @@ class Grid(Iterator):
                 )
 
         grid_coords = np.meshgrid(*grid_point_list)
-        self.samples = np.empty([np.prod(self.num_grid_points_per_axis), self.num_parameters])
+        self.samples = np.empty(
+            [np.prod(self.num_grid_points_per_axis), self.num_parameters], dtype=object
+        )
         for i in range(self.num_parameters):
             self.samples[:, i] = grid_coords[i].flatten()
 
@@ -165,6 +167,11 @@ class Grid(Iterator):
 
     def post_run(self):
         """Analyze the results."""
+        # convert samples array (if provided) from general object to float for
+        # visualization
+        if self.samples is not None:
+            self.samples = self.samples.astype(float)
+
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"]:
