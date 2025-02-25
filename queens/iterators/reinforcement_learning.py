@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -21,14 +21,16 @@ from collections import defaultdict
 import numpy as np
 
 from queens.iterators.iterator import Iterator
-from queens.models.rl_models.rl_model import RLModel
+from queens.models.reinforcement_learning.reinforcement_learning import (
+    ReinforcementLearning as RLModel,
+)
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import process_outputs, write_results
 
 _logger = logging.getLogger(__name__)
 
 
-class RLIterator(Iterator):
+class ReinforcementLearning(Iterator):
     """Iterator for enabling the solution of RL problems.
 
     For an introduction to RL with QUEENS, we refer to the documentation of
@@ -38,7 +40,7 @@ class RLIterator(Iterator):
         _interaction_steps (int): Number of interaction steps to be performed.
             This variable is only relevant in ``"evaluation"`` mode and determines
             the number of interaction steps that should be performed with the model.
-        _mode (str): Mode of the RLIterator. This variable can be either
+        _mode (str): Mode of the ReinforcementLearning iterator. This variable can be either
             ``"training"`` or ``"evaluation"``, depending on whether the user
             wants to train an RL model or use a trained model for evaluation
             purposes, e.g., as surrogate.
@@ -47,15 +49,15 @@ class RLIterator(Iterator):
             the initial observation of the environment, i.e., the starting
             point of the interaction loop.
         output (dict): Dictionary for storing the output of the iterator in
-            ``"evaluation"`` mode. Since an ``RLIterator`` instance behaves differently
-            than other iterators in the sense that the outputs are only collected
+            ``"evaluation"`` mode. Since an ``ReinforcementLearning`` iterator instance behaves
+            differently than other iterators in the sense that the outputs are only collected
             iteratively via an interaction loop, the dictionary contains lists
             during an evaluation run, which are filled dynamically. Once the evaluation
             run is complete, these lists are converted to ``numpy`` arrarys, so that
             the resulting dict associates string keys, with ``numpy`` arrays.
-            The ``output`` dict of an ``RLIterator`` instance contains x keys:
+            The ``output`` dict of an ``ReinforcementLearning`` iterator instance contains 6 keys:
 
-            * ``"result"``: This key is kept for compatibility with other *QUEENS*
+            * ``"result"``: This key is kept for compatibility with other QUEENS
               iterators and contains the recorded actions.
             * ``"action"``: Contains the actions that were predicted by the agent
               as result of the provided observations.
@@ -71,8 +73,8 @@ class RLIterator(Iterator):
         samples (np.ndarray): Observations that were used as model inputs during the
             evaluation interaction loop. Similarly to the :py:attr:`output` member,
             the samples are only generated iteratively during an evaluation run
-            of an ``RLIterator`` instance. Thus, this variable is initially initialized
-            as list and only converted to a numpy array at the end of each evaluation
+            of an ``ReinforcementLearning`` iterator instance. Thus, this variable is initially
+            initialized as list and only converted to a numpy array at the end of each evaluation
             run.
     """
 
@@ -87,19 +89,19 @@ class RLIterator(Iterator):
         interaction_steps=1000,
         initial_observation=None,
     ):
-        """Initialize an RLIterator.
+        """Initialize an ReinforcementLearning iterator.
 
         Args:
             model (RLModel): Model to be evaluated by the iterator.
             parameters (Parameters): Parameters object.
                 .. note::
                         This parameter is required by the base class, but is
-                        currently not used in the RLIterator.
+                        currently not used in the ReinforcementLearning iterator.
             global_settings (GlobalSettings): Settings of the QUEENS experiment including its name
                 and the output directory.
             result_description (dict): Description of desired results.
-            mode (str): Mode of the RLIterator. This variable can be either ``"training"``
-                or ``"evaluation"``.
+            mode (str): Mode of the ReinforcementLearning iterator. This variable can be either
+                ``"training"`` or ``"evaluation"``.
             interaction_steps (int): Number of interaction steps to be performed.
             initial_observation (np.ndarray): Initial observation of the environment.
         """
@@ -107,7 +109,7 @@ class RLIterator(Iterator):
         if not isinstance(model, RLModel):
             raise ValueError(
                 "Unsupported model:\n"
-                "`RLIterator` only supports models that inherit from `RLModel`."
+                "`ReinforcementLearning` only supports models that inherit from `RLModel`."
             )
 
         super().__init__(model, parameters, global_settings)
@@ -123,21 +125,21 @@ class RLIterator(Iterator):
 
     @property
     def mode(self):
-        """Access the mode of the RLIterator.
+        """Access the mode of the ReinforcementLearning iterator.
 
         Returns:
-            str: Mode of the RLIterator.
+            str: Mode of the ReinforcementLearning iterator.
         """
         return self._mode
 
     @mode.setter
     def mode(self, mode):
-        """Set the mode of the RLIterator.
+        """Set the mode of the ReinforcementLearning iterator.
 
         Perform sanity checks to ensure that mode has a valid value.
 
         Args:
-            mode (str): Mode of the RLIterator.
+            mode (str): Mode of the ReinforcementLearning iterator.
         """
         if mode not in ["training", "evaluation"]:
             raise ValueError(
@@ -172,13 +174,13 @@ class RLIterator(Iterator):
         self._interaction_steps = steps
 
     def pre_run(self):
-        """Prepare the core run of the RLIterator (not needed here)."""
-        _logger.info("Initialize RLIterator.")
+        """Prepare the core run of the ReinforcementLearning iterator (not needed here)."""
+        _logger.info("Initialize ReinforcementLearning.")
 
     def core_run(self):
-        """Core run of RLIterator.
+        """Core run of ReinforcementLearning iterator.
 
-        Depending on the :py:attr:`_mode` of the RLIterator, the agent is either
+        Depending on the :py:attr:`_mode` of the ReinforcementLearning iterator, the agent is either
         trained or used for evaluation. In case of evaluation, the results of
         the interactions are stored in the :py:attr:`output` dictionary.
         """

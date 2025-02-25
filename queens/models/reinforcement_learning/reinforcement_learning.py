@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Functionality for performing Reinforcement Learning (RL) with *QUEENS*.
+"""Functionality for performing Reinforcement Learning (RL) with QUEENS.
 
 .. note::
         If you have no prior experience with RL, a good starting point might be
@@ -20,7 +20,7 @@
         https://spinningup.openai.com/en/latest/spinningup/rl_intro.html.
 
 In the follwing, we provide a brief overview of RL concepts and terminology and
-their relation to *QUEENS*.
+their relation to QUEENS.
 
 In its essence, Reinformcement Learning (RL) is a type of machine learning which
 tries to mimick they way how humans learn to accomplish a new task, namely by performing
@@ -37,7 +37,7 @@ The goal of the agent is to learn a **policy** (i.e., a mapping from observation
 allowing it to solve the task encoded in the environment by maximizing the cumulative
 reward signal obtained after performing an action.
 
-In *QUEENS* terminology, the environment in it's most general form can be thought
+In QUEENS terminology, the environment in it's most general form can be thought
 of as a **model** which encodes the problem at hand, e.g., in the form of a physical simulation,
 and can be evaluated in forward fashion.
 The RL agent is trained by letting the algorithm repeatedly interact with the environment
@@ -45,27 +45,27 @@ and learning a suitable policy from the collected experience. Once the agent is 
 it can be used to make predictions about the next action to perform based on a given
 observation. As such, the agent can be considered as a **surrogate model** as
 it first needs to be trained before being able to make predictions. Following the
-*QUEENS* terminology for models, a **sample** corresponds to an **observation** and
+QUEENS terminology for models, a **sample** corresponds to an **observation** and
 the **response** of the RL model corresponds to the **action** to be taken.
 
-This interpretation of RL in the context of *QUEENS* has been reflected in the
-design of the :py:class:`RLModel` class.
+This interpretation of RL in the context of QUEENS has been reflected in the
+design of the :py:class:`ReinforcementLearning` model class.
 """
 
 import logging
 
 from queens.models.model import Model
-from queens.models.rl_models.utils.sb3_utils import save_model
+from queens.models.reinforcement_learning.utils.stable_baselines3 import save_model
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-class RLModel(Model):
-    """Main class for administering RL tasks within *QUEENS*.
+class ReinforcementLearning(Model):
+    """Main class for administering RL tasks within QUEENS.
 
-    The training or evaluation of an RLModel instance can be performed by using
-    an instance of type :py:class:`queens.iterators.RLIterator`.
+    The training or evaluation of an ReinforcementLearning model instance can be performed by using
+    an instance of type :py:class:`queens.iterators.ReinforcementLearning`.
 
     Attributes:
         _agent (object): An instance of a *stable-baselines3* agent.
@@ -95,7 +95,7 @@ class RLModel(Model):
 
     @log_init_args
     def __init__(self, agent, deterministic_actions=False, render_mode=None, total_timesteps=10000):
-        """Initialize an RLModel instance.
+        """Initialize an ReinforcementLearning instance.
 
         Args:
             agent (object): An instance of a *stable-baselines3* agent.

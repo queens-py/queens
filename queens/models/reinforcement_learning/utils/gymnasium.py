@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,12 +12,11 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Utility functions for working with *gymnasium* environments.
+"""Utility functions for working with gymnasium environments.
 
-This module essentially provides a function to create a *gymnasium*
-environment from its name to facilitate the creation of *gymnasium*
-environments in *QUEENS* for users who are not familiar with the
-package.
+This module essentially provides a function to create a gymnasium
+environment from its name to facilitate the creation of gymnasium
+environments in QUEENS for users who are not familiar with the package.
 """
 
 import logging
@@ -29,18 +28,18 @@ _supported_gym_environments = list(gym.envs.registry.keys())
 
 
 def create_gym_environment(env_name, env_options=None, seed=None):
-    """Convenience function to create a *gymnasium* environment.
+    """Convenience function to create a gymnasium environment.
 
     Args:
-        env_name (str): Name of the *gymnasium* environment to create.
+        env_name (str): Name of the gymnasium environment to create.
         env_options (dict, optional): Dictionary of options to pass to the environment.
         seed (int, optional): Seed to use for the environment.
 
     Returns:
-        env (gymnasium.Env): An instance of the created *gymnasium* environment.
+        env (gymnasium.Env): An instance of the created gymnasium environment.
 
     Raises:
-        ValueError: If the provided environment name is not known to *gymnasium*.
+        ValueError: If the provided environment name is not known to gymnasium.
     """
     if env_name not in _supported_gym_environments:
         raise ValueError(
