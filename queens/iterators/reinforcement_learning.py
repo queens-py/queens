@@ -29,7 +29,7 @@ from queens.models.reinforcement_learning.reinforcement_learning import (
     ReinforcementLearning as RLModel,
 )
 from queens.utils.logger_settings import log_init_args
-from queens.utils.process_outputs import process_outputs, write_results
+from queens.utils.process_outputs import write_results
 
 _logger = logging.getLogger(__name__)
 
@@ -237,7 +237,7 @@ class ReinforcementLearning(Iterator):
                     self.model.save(self.global_settings)
                 else:  # self._mode == "evaluation"
                     _logger.info("Processing interaction output...")
-                    results = process_outputs(self.output, self.result_description, self.samples)
+                    results = {"samples": self.samples, "outputs": self.output}
                     _logger.info("Storing processed output for further processing.")
                     write_results(results, self.global_settings.result_file(".pickle"))
 

@@ -105,28 +105,28 @@ def test_rl_integration(agent_name, environment_name, global_settings):
 
     # TODO  # pylint: disable=W0511
     # Check entries of results dictionary
-    assert "raw_output_data" in results
-    assert "result" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["result"], np.ndarray)
-    assert "action" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["action"], np.ndarray)
-    assert "new_obs" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["new_obs"], np.ndarray)
-    assert "reward" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["reward"], np.ndarray)
-    assert "done" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["done"], np.ndarray)
-    assert "info" in results["raw_output_data"]
-    assert isinstance(results["raw_output_data"]["info"], np.ndarray)
-    assert "input_data" in results
-    assert isinstance(results["input_data"], np.ndarray)
+    assert "outputs" in results
+    assert "result" in results["outputs"]
+    assert isinstance(results["outputs"]["result"], np.ndarray)
+    assert "action" in results["outputs"]
+    assert isinstance(results["outputs"]["action"], np.ndarray)
+    assert "new_obs" in results["outputs"]
+    assert isinstance(results["outputs"]["new_obs"], np.ndarray)
+    assert "reward" in results["outputs"]
+    assert isinstance(results["outputs"]["reward"], np.ndarray)
+    assert "done" in results["outputs"]
+    assert isinstance(results["outputs"]["done"], np.ndarray)
+    assert "info" in results["outputs"]
+    assert isinstance(results["outputs"]["info"], np.ndarray)
+    assert "samples" in results
+    assert isinstance(results["samples"], np.ndarray)
 
     # retrieve the data as numpy arrays
-    expected_results = results["raw_output_data"]["actions"]
+    expected_results = results["outputs"]["actions"]
     # extract the number of observations...
-    n_obs = results["input_data"].shape[-1]
+    n_obs = results["samples"].shape[-1]
     # ... and reshape the array to allow for batch evaluation
-    inputs = results["input_data"].reshape(-1, n_obs)
+    inputs = results["samples"].reshape(-1, n_obs)
 
     ### STEP 5 - Evaluate model B on the inputs of model A ###
     predictions = model_b.predict(inputs)
