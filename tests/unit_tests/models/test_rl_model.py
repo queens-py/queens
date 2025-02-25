@@ -82,13 +82,13 @@ def test_rl_model_training_and_evaluation(custom_agent):
     model = RLModel(custom_agent, total_timesteps=100, deterministic_actions=True)
 
     # Check whether the model is not trained yet
-    assert model.is_trained is False
+    assert not model.is_trained
 
     # Train the model
     model.train()
 
     # Check whether the model is trained
-    assert model.is_trained is True
+    assert model.is_trained
 
     # Generate an initial observation
     obs = model.reset(seed=SEED)
