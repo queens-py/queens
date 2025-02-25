@@ -12,7 +12,11 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Base class for RL capabilities."""
+"""Functionality for training and evaluating an RL model with QUEENS.
+
+For an introduction to RL in the context of QUEENS, we refer to the documentation of the
+:py:mod:`queens.models.reinforcement_learning` module.
+"""
 
 import logging
 import time
@@ -31,16 +35,13 @@ _logger = logging.getLogger(__name__)
 
 
 class ReinforcementLearning(Iterator):
-    """Iterator for enabling the solution of RL problems.
-
-    For an introduction to RL with QUEENS, we refer to the documentation of
-    the :py:mod:`queens.models.rl_models.rl_model` module.
+    """Iterator for enabling the training or evaluation of an RL model.
 
     Attributes:
         _interaction_steps (int): Number of interaction steps to be performed.
             This variable is only relevant in ``"evaluation"`` mode and determines
             the number of interaction steps that should be performed with the model.
-        _mode (str): Mode of the ReinforcementLearning iterator. This variable can be either
+        _mode (str): Mode of the ``ReinforcementLearning`` iterator. This variable can be either
             ``"training"`` or ``"evaluation"``, depending on whether the user
             wants to train an RL model or use a trained model for evaluation
             purposes, e.g., as surrogate.
@@ -89,18 +90,18 @@ class ReinforcementLearning(Iterator):
         interaction_steps=1000,
         initial_observation=None,
     ):
-        """Initialize an ReinforcementLearning iterator.
+        """Initialize an ``ReinforcementLearning`` iterator.
 
         Args:
             model (RLModel): Model to be evaluated by the iterator.
             parameters (Parameters): Parameters object.
                 .. note::
                         This parameter is required by the base class, but is
-                        currently not used in the ReinforcementLearning iterator.
+                        currently not used in the ``ReinforcementLearning`` iterator.
             global_settings (GlobalSettings): Settings of the QUEENS experiment including its name
                 and the output directory.
             result_description (dict): Description of desired results.
-            mode (str): Mode of the ReinforcementLearning iterator. This variable can be either
+            mode (str): Mode of the ``ReinforcementLearning`` iterator. This variable can be either
                 ``"training"`` or ``"evaluation"``.
             interaction_steps (int): Number of interaction steps to be performed.
             initial_observation (np.ndarray): Initial observation of the environment.
@@ -125,21 +126,21 @@ class ReinforcementLearning(Iterator):
 
     @property
     def mode(self):
-        """Access the mode of the ReinforcementLearning iterator.
+        """Access the mode of the ``ReinforcementLearning`` iterator.
 
         Returns:
-            str: Mode of the ReinforcementLearning iterator.
+            str: Mode of the ``ReinforcementLearning`` iterator.
         """
         return self._mode
 
     @mode.setter
     def mode(self, mode):
-        """Set the mode of the ReinforcementLearning iterator.
+        """Set the mode of the ``ReinforcementLearning`` iterator.
 
         Perform sanity checks to ensure that mode has a valid value.
 
         Args:
-            mode (str): Mode of the ReinforcementLearning iterator.
+            mode (str): Mode of the ``ReinforcementLearning`` iterator.
         """
         if mode not in ["training", "evaluation"]:
             raise ValueError(
@@ -174,15 +175,15 @@ class ReinforcementLearning(Iterator):
         self._interaction_steps = steps
 
     def pre_run(self):
-        """Prepare the core run of the ReinforcementLearning iterator (not needed here)."""
+        """Prepare the core run of the RL iterator (not needed here)."""
         _logger.info("Initialize ReinforcementLearning.")
 
     def core_run(self):
-        """Core run of ReinforcementLearning iterator.
+        """Core run of ``ReinforcementLearning`` iterator.
 
-        Depending on the :py:attr:`_mode` of the ReinforcementLearning iterator, the agent is either
-        trained or used for evaluation. In case of evaluation, the results of
-        the interactions are stored in the :py:attr:`output` dictionary.
+        Depending on the :py:attr:`_mode` of the ``ReinforcementLearning`` iterator, the agent is
+        either trained or used for evaluation. In case of evaluation, the results of the
+        interactions are stored in the :py:attr:`output` dictionary.
         """
         _logger.info("Welcome to Reinforcement Learning core run.")
         if self.mode == "training":
