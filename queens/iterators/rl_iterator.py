@@ -68,7 +68,7 @@ class RLIterator(Iterator):
             * ``"done"``: Flag indicating whether the undertaken action completed
               an episode.
         result_description (dict):  Description of desired results.
-        samples (ndarray): Observations that were used as model inputs during the
+        samples (np.ndarray): Observations that were used as model inputs during the
             evaluation interaction loop. Similarly to the :py:attr:`output` member,
             the samples are only generated iteratively during an evaluation run
             of an ``RLIterator`` instance. Thus, this variable is initially initialized
@@ -183,7 +183,7 @@ class RLIterator(Iterator):
         the interactions are stored in the :py:attr:`output` dictionary.
         """
         _logger.info("Welcome to Reinforcement Learning core run.")
-        if self._mode == "training":
+        if self.mode == "training":
             _logger.info("Starting agent training.")
             start = time.time()
             # Start the model training
@@ -260,5 +260,5 @@ class RLIterator(Iterator):
         with ``mode==evaluation``.
         """
         self.samples = np.array(self.samples)
-        for key in self.output.keys():
-            self.output[key] = np.array(self.output[key])
+        for key, value in self.output.items():
+            self.output[key] = np.array(value)
