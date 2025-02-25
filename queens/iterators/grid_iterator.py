@@ -168,6 +168,11 @@ class GridIterator(Iterator):
 
     def post_run(self):
         """Analyze the results."""
+        # convert samples array (if provided) from general object to float for
+        # visualization
+        if self.samples is not None:
+            self.samples = self.samples.astype(float)
+
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, self.samples)
             if self.result_description["write_results"]:
