@@ -23,6 +23,8 @@ import logging
 
 import gymnasium as gym
 
+from queens.utils.valid_options_utils import check_if_valid_options
+
 _logger = logging.getLogger(__name__)
 _supported_gym_environments = list(gym.envs.registry.keys())
 
@@ -39,13 +41,9 @@ def create_gym_environment(env_name, env_options=None, seed=None):
         env (gymnasium.Env): An instance of the created gymnasium environment.
 
     Raises:
-        ValueError: If the provided environment name is not known to gymnasium.
+        InvalidOptionError: If the provided environment name is not known to gymnasium.
     """
-    if env_name not in _supported_gym_environments:
-        raise ValueError(
-            f"Environment `{env_name}` is not known to gymnasium.\n"
-            f"Supported environments are: {_supported_gym_environments}"
-        )
+    check_if_valid_options(_supported_gym_environments, env_name, "Unknown gymnasium environment!")
 
     # if no options are provided, create an empty dictionary to be able to
     # unpack it without errors

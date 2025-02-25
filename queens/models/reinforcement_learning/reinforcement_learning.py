@@ -53,7 +53,7 @@ class ReinforcementLearning(Model):
             .. note::
                     Not all render modes can be used with all environments.
         _total_timesteps (int): Total number of timesteps to train the agent.
-        _vec_env (object): A vectorized environment for evaluation.
+        _vectorized_environment (object): A vectorized environment for evaluation.
         frames (list): A list with frames depicting the states of the environment
             generated from performing an evaluation interaction loop.
         is_trained (bool): Flag indicating whether the agent has been trained.
@@ -81,7 +81,7 @@ class ReinforcementLearning(Model):
         # Store the provided agent instance
         self._agent = agent
         # Retrieve a (vectorized) stable-baseline3 environment for evaluation
-        self._vec_env = self._agent.get_env()
+        self._vectorized_environment = self._agent.get_env()
 
         self._deterministic_actions = deterministic_actions
         self._total_timesteps = total_timesteps
@@ -152,8 +152,8 @@ class ReinforcementLearning(Model):
         """
         if seed is not None:
             _logger.debug("Using seed %d for resetting the environment", seed)
-            self._vec_env.seed(seed=seed)
-        return self._vec_env.reset()
+            self._vectorized_environment.seed(seed=seed)
+        return self._vectorized_environment.reset()
 
     def grad(self, samples, upstream_gradient):
         """Evaluate the gradient of the model wrt. the provided input samples.
@@ -232,7 +232,7 @@ class ReinforcementLearning(Model):
                 the constructor of the environment and the value of member
                 :py:attr:`_render_mode`.
         """
-        frame = self._vec_env.render(mode=self._render_mode)
+        frame = self._vectorized_environment.render(mode=self._render_mode)
         if self._render_mode != "human":
             style = "an image" if self._render_mode == "rgb_array" else "a textual representation"
             _logger.debug("Storing %s of the environment for further processing.", style)
@@ -264,7 +264,7 @@ class ReinforcementLearning(Model):
             info (dict): Additional information.
         """
         _logger.debug("Applying an action to the environment.")
-        return self._vec_env.step(action)
+        return self._vectorized_environment.step(action)
 
     def train(self):
         """Train the RL agent."""

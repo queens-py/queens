@@ -134,19 +134,19 @@ class ReinforcementLearning(Iterator):
         return self._mode
 
     @mode.setter
-    def mode(self, mode):
+    def mode(self, value):
         """Set the mode of the ``ReinforcementLearning`` iterator.
 
         Perform sanity checks to ensure that mode has a valid value.
 
         Args:
-            mode (str): Mode of the ``ReinforcementLearning`` iterator.
+            value (str): Mode of the ``ReinforcementLearning`` iterator.
         """
-        if mode not in ["training", "evaluation"]:
+        if value not in ["training", "evaluation"]:
             raise ValueError(
-                f"Unsupported mode: {mode}\n" "The mode must be either `training` or `evaluation`."
+                f"Unsupported mode: {value}\nThe mode must be either `training` or `evaluation`."
             )
-        self._mode = mode
+        self._mode = value
 
     @property
     def interaction_steps(self):
@@ -158,21 +158,21 @@ class ReinforcementLearning(Iterator):
         return self._interaction_steps
 
     @interaction_steps.setter
-    def interaction_steps(self, steps):
+    def interaction_steps(self, value):
         """Set the number of interaction steps.
 
         Perform sanity checks to ensure that the number of interaction steps
         has a valid value.
 
         Args:
-            steps (int): Number of interaction steps to be performed.
+            value (int): Number of interaction steps to be performed.
         """
-        if steps < 0:
+        if not isinstance(value, int) or value < 0:
             raise ValueError(
-                f"Unsupported number of interaction steps: {steps}\n"
+                f"Unsupported number of interaction steps: {value}\n"
                 "The number of interaction steps must be a positive integer."
             )
-        self._interaction_steps = steps
+        self._interaction_steps = value
 
     def pre_run(self):
         """Prepare the core run of the RL iterator (not needed here)."""
