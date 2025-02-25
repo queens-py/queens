@@ -89,11 +89,10 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
     Args:
         agent_name (str): The name of the agent to create.
         policy_name (str): The name of the policy to use with the agent.
-        env (gymnasium.Env): The environment to train the agent on. For a convenience
-            function to create a predefined *gymnasium* environment, see
-            :py:meth:`queens.models.rl_models.utils.gym_utils.create_gym_environment`.
-        agent_options (dict, optional): A dictionary of optional parameters to pass
-            to the agent.
+        env (gymnasium.Env): The environment to train the agent on. For a convenience function to
+            create a predefined gymnasium environment, see
+            :py:meth:`queens.models.reinforcement_learning.utils.gymnasium.create_gym_environment`.
+        agent_options (dict, optional): A dictionary of optional parameters to pass to the agent.
 
     Returns:
         agent (stable_baselines3.BaseAlgorithm): An instance of the created agent.

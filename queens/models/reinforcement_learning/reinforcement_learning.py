@@ -12,44 +12,10 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Functionality for performing Reinforcement Learning (RL) with QUEENS.
+"""Functionality for constructing an RL model with QUEENS.
 
-.. note::
-        If you have no prior experience with RL, a good starting point might be
-        the introduction of Spinning Up in Deep RL by OpenAI:
-        https://spinningup.openai.com/en/latest/spinningup/rl_intro.html.
-
-In the follwing, we provide a brief overview of RL concepts and terminology and
-their relation to QUEENS.
-
-In its essence, Reinformcement Learning (RL) is a type of machine learning which
-tries to mimick they way how humans learn to accomplish a new task, namely by performing
-trial-and-error interactions with their environment and learning from the gathered experience.
-
-In RL, this interaction happens between a so-called **agent** (i.e., a learning algorithm)
-and an **environment** (i.e., the task or problem to be solved). The agent can perform
-**actions** in the environment in order to modify its state and receives **observations**
-(i.e., of the new state of the environment after applying the action) and **rewards**
-(i.e., a numerical reward signal quantifying how well the undertaken action was
-with respect to solving the problem encoded in the environment) in return.
-One interaction step between the agent and the environment is called a **timestep**.
-The goal of the agent is to learn a **policy** (i.e., a mapping from observations to actions)
-allowing it to solve the task encoded in the environment by maximizing the cumulative
-reward signal obtained after performing an action.
-
-In QUEENS terminology, the environment in it's most general form can be thought
-of as a **model** which encodes the problem at hand, e.g., in the form of a physical simulation,
-and can be evaluated in forward fashion.
-The RL agent is trained by letting the algorithm repeatedly interact with the environment
-and learning a suitable policy from the collected experience. Once the agent is trained,
-it can be used to make predictions about the next action to perform based on a given
-observation. As such, the agent can be considered as a **surrogate model** as
-it first needs to be trained before being able to make predictions. Following the
-QUEENS terminology for models, a **sample** corresponds to an **observation** and
-the **response** of the RL model corresponds to the **action** to be taken.
-
-This interpretation of RL in the context of QUEENS has been reflected in the
-design of the :py:class:`ReinforcementLearning` model class.
+For an introduction to RL in the context of QUEENS, we refer to the documentation of the
+:py:mod:`queens.models.reinforcement_learning` module.
 """
 
 import logging
@@ -62,10 +28,11 @@ _logger = logging.getLogger(__name__)
 
 
 class ReinforcementLearning(Model):
-    """Main class for administering RL tasks within QUEENS.
+    """Main class for constructing an RL model with QUEENS.
 
-    The training or evaluation of an ReinforcementLearning model instance can be performed by using
-    an instance of type :py:class:`queens.iterators.ReinforcementLearning`.
+    The training or evaluation of an ``ReinforcementLearning`` model instance can be performed by
+    using an instance of type
+    :py:class:`queens.iterators.reinforcement_learning.ReinforcementLearning`.
 
     Attributes:
         _agent (object): An instance of a *stable-baselines3* agent.
@@ -253,15 +220,17 @@ class ReinforcementLearning(Model):
     def render(self):
         """Render the current state of the environment.
 
-        Depending on the value of :py:attr:`_render_mode` the state of the
-        environment will be either visualized in a pop-up window
-        (``self._render_mode=="human"``) or a
+        Depending on the value of :py:attr:`_render_mode` the state of the environment will be
+        either visualized in a pop-up window (``self._render_mode=="human"``), as an rgb-image
+        (``self._render_mode=="rgb_array"``), or as a string representation
+        (``self._render_mode=="ansi"``). If the scene is rendered but no pop-window generated, a
+        representation of the scene will be appended to the member :py:attr:`frames`.
 
         .. note::
                 Internally delegates the call to the ``render()`` method of the
                 vectorized environment. Render settings can be controlled via
                 the constructor of the environment and the value of member
-                :py:attr`_render_mode`.
+                :py:attr:`_render_mode`.
         """
         frame = self._vec_env.render(mode=self._render_mode)
         if self._render_mode != "human":
@@ -272,7 +241,8 @@ class ReinforcementLearning(Model):
     def save(self, gs):
         """Save the trained agent to a file.
 
-        Delegates the call to :py:meth:`queens.models.rl_models.utils.sb3_utils.save_model`.
+        Delegates the call to
+        :py:meth:`queens.models.reinforcement_learning.utils.stable_baselines3.save_model`.
 
         Args:
             gs (queens.utils.global_settings.GlobalSettings): Global settings object
