@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,15 +12,15 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Utiltiy functions for working with *stable-baselines3* agents.
+"""Utiltiy functions for working with stable-baselines3 agents.
 
-This module provides utility functions for working with *stable-
-baselines3* agents in *QUEENS*. The idea is to enable a *QUEENS* user
-who is not familiar with the *stable-baselines* reinforcement learning
-library but wants to try out RL for their problem to easily create and
-use a reinforcement learning agent in *QUEENS* without first studying
-the package. If you are familiar with *stable-baselines3*, you can as
-well create the agents yourself.
+This module provides utility functions for working with stable-
+baselines3 agents in QUEENS. The idea is to enable a QUEENS user who is
+not familiar with the stable-baselines3 reinforcement learning library
+but wants to try out RL for their problem to easily create and use a
+reinforcement learning agent in QUEENS without first studying the
+package. If you are familiar with stable-baselines3, you can as well
+create the agents yourself.
 """
 
 import inspect
@@ -36,14 +36,14 @@ _logger = logging.getLogger(__name__)
 
 
 def _create_supported_agents_dict():
-    """Create a dictionary of supported *stable-baselines3* agents.
+    """Create a dictionary of supported stable-baselines3 agents.
 
-    In order to work even with updates of the *stable-baselines3* library, this
+    In order to work even with updates of the stable-baselines3 library, this
     function dynamically looks up the supported agents based on the currently
     installed library version.
 
     Returns:
-        supported_agents (dict): A dictionary of the currently supported *stable-baselines3* agents.
+        supported_agents (dict): A dictionary of the currently supported stable-baselines3 agents.
     """
     # Get all agent classes in the stable_baselines3 module
     supported_agents = {
@@ -58,16 +58,16 @@ _supported_sb3_agents = _create_supported_agents_dict()
 
 
 def get_supported_sb3_policies(agent_class):
-    """Looks up the supported policies for a *stable-baselines3* agent class.
+    """Looks up the supported policies for a stable-baselines3 agent class.
 
     Args:
-        agent_class (class): A *stable-baselines3* agent class.
+        agent_class (class): A stable-baselines3 agent class.
 
     Returns:
         list: A list of strings representing the supported policies for the given agent class.
 
     Raises:
-        ValueError: If the provided class is not a *stable-baselines3* agent class.
+        ValueError: If the provided class is not a stable-baselines3 agent class.
     """
     if issubclass(agent_class, sb3.common.base_class.BaseAlgorithm):
         return list(agent_class.policy_aliases.keys())
@@ -79,10 +79,10 @@ def get_supported_sb3_policies(agent_class):
 
 
 def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
-    """Creates a *stable-baselines3* agent based on its name as string.
+    """Creates a stable-baselines3 agent based on its name as string.
 
     Looks up whether the provided agent name corresponds to an agent supported by
-    *stable-baselines3* and creates an instance of the agent with the provided policy
+    stable-baselines3 and creates an instance of the agent with the provided policy
     and environment. Options for modifying the agent's optional parameters can be
     provided as a dictionary.
 
@@ -99,7 +99,7 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
         agent (stable_baselines3.BaseAlgorithm): An instance of the created agent.
 
     Raises:
-        ValueError: If the provided agent name is not supported by *stable-baselines3*
+        ValueError: If the provided agent name is not supported by stable-baselines3
             or does not support the provided policy
     """
     # Check that a valid agent has been provided
@@ -133,7 +133,7 @@ def make_deterministic(seed, disable_gpu=True):
     """Make the random number generation deterministic for an agent training.
 
     This is achieved by setting the random seed for all python libraries
-    that are involved in training and *stable-baselines3* agent.
+    that are involved in training and stable-baselines3 agent.
 
     .. note::
             This function should be called before creating the agent.
@@ -168,7 +168,7 @@ def make_deterministic(seed, disable_gpu=True):
 
 
 def load_model(agent_name, path, experiment_name, env=None):
-    """Convenience function for loading a *stable-baselines3* agent from file.
+    """Convenience function for loading a stable-baselines3 agent from file.
 
     Checks whether the agent is of an off-policy type and if so loads its
     replay buffer as well. The latter is required if a continuation of the
@@ -227,7 +227,7 @@ def load_model(agent_name, path, experiment_name, env=None):
 
 
 def save_model(agent, gs):
-    """Save a (trained) *stable-baselines3* agent to a file.
+    """Save a (trained) stable-baselines3 agent to a file.
 
     Checks whether the agent is of an off-policy type and if so stores its
     replay buffer as well. The latter is required if a continuation of the

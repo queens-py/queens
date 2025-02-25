@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -17,11 +17,16 @@
 import numpy as np
 import pytest
 
-from queens.iterators.rl_iterator import RLIterator
+from queens.iterators.reinforcement_learning import ReinforcementLearning as RLIterator
 from queens.main import run_iterator
-from queens.models.rl_models.rl_model import RLModel
-from queens.models.rl_models.utils.gym_utils import create_gym_environment
-from queens.models.rl_models.utils.sb3_utils import create_sb3_agent, make_deterministic
+from queens.models.reinforcement_learning.reinforcement_learning import (
+    ReinforcementLearning as RLModel,
+)
+from queens.models.reinforcement_learning.utils.gymnasium import create_gym_environment
+from queens.models.reinforcement_learning.utils.stable_baselines3 import (
+    create_sb3_agent,
+    make_deterministic,
+)
 from queens.parameters.parameters import Parameters
 from queens.utils.io_utils import load_result
 

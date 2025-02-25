@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -12,3 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
+"""Reinforcement Learning.
+
+Modules for reinforcement learning capabilities.
+"""

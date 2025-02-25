@@ -1,6 +1,6 @@
 #
 # SPDX-License-Identifier: LGPL-3.0-or-later
-# Copyright (c) 2025, QUEENS contributors.
+# Copyright (c) 2024-2025, QUEENS contributors.
 #
 # This file is part of QUEENS.
 #
@@ -18,9 +18,12 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.models.rl_models.rl_model import RLModel
-from queens.models.rl_models.utils.gym_utils import create_gym_environment
-from queens.models.rl_models.utils.sb3_utils import create_sb3_agent, make_deterministic
+from queens.models.reinforcement_learning.reinforcement_learning import ReinforcementLearning
+from queens.models.reinforcement_learning.utils.gymnasium import create_gym_environment
+from queens.models.reinforcement_learning.utils.stable_baselines3 import (
+    create_sb3_agent,
+    make_deterministic,
+)
 
 SEED = 429
 
@@ -51,7 +54,7 @@ def test_rl_model_init(render_mode):
     """Unit tests for the RLModel class."""
     # Create the model
     agent = Mock()
-    model = RLModel(agent, render_mode=render_mode, total_timesteps=1_000)
+    model = ReinforcementLearning(agent, render_mode=render_mode, total_timesteps=1_000)
 
     # Check whether setting up the model worked correctly
     assert model._agent == agent  # pylint: disable=W0212
@@ -79,7 +82,7 @@ def test_rl_model_init(render_mode):
 def test_rl_model_training_and_evaluation(custom_agent):
     """Test the training of the RLModel class."""
     # Create the model and make it fully deterministic
-    model = RLModel(custom_agent, total_timesteps=100, deterministic_actions=True)
+    model = ReinforcementLearning(custom_agent, total_timesteps=100, deterministic_actions=True)
 
     # Check whether the model is not trained yet
     assert not model.is_trained
