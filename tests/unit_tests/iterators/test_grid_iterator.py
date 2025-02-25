@@ -42,6 +42,15 @@ def fixture_grid_dict_two():
     return grid_dict_dummy
 
 
+@pytest.fixture(name="grid_dict_mixed_data_types")
+def fixture_grid_dict_mixed_data_types():
+    """A grid dictionary with two axes."""
+    axis_description_1 = {"num_grid_points": 5, "axis_type": "lin", "data_type": "FLOAT"}
+    axis_description_2 = {"num_grid_points": 2, "axis_type": "lin", "data_type": "INT"}
+    grid_dict_dummy = {"x1": axis_description_1, "x2": axis_description_2}
+    return grid_dict_dummy
+
+
 @pytest.fixture(name="grid_dict_three")
 def fixture_grid_dict_three():
     """A grid dictionary with three axes."""
@@ -87,6 +96,16 @@ def fixture_expected_samples_two():
     x2 = np.linspace(-2, 2, 5)
     x1, x2 = np.meshgrid(x1, x2)
     samples = np.array([x1.flatten(), x2.flatten()]).T
+    return samples
+
+
+@pytest.fixture(name="expected_samples_mixed_datatypes")
+def fixture_expected_samples_mixed_data_types():
+    """Expected samples for two parameters(different datatypes: float/int)."""
+    x1 = np.linspace(-2, 2, 5)
+    x2 = np.array([-2, 2], dtype=int)
+    x1, x2 = np.meshgrid(x1, x2)
+    samples = np.array([x1.flatten(), x2.flatten()], dtype="object").T
     return samples
 
 
@@ -204,6 +223,29 @@ def test_pre_run_two(
     )
     grid_iterator.pre_run()
     np.testing.assert_array_equal(grid_iterator.samples, expected_samples_two)
+
+
+def test_pre_run_mixed_data_types(
+    grid_dict_mixed_data_types,
+    parameters_two,
+    expected_samples_mixed_datatypes,
+    default_model,
+    global_settings,
+):
+    """Test the pre_run method for two parameters (float and int)."""
+    grid_iterator = GridIterator(
+        model=default_model,
+        parameters=parameters_two,
+        global_settings=global_settings,
+        result_description={},
+        grid_design=grid_dict_mixed_data_types,
+    )
+    grid_iterator.pre_run()
+
+    # assert if the columns possess the required datatypes and if the
+    # sample arrays match
+    assert grid_iterator.samples.dtype == object
+    np.testing.assert_array_equal(grid_iterator.samples, expected_samples_mixed_datatypes)
 
 
 def test_pre_run_three(

@@ -1,6 +1,7 @@
 #!/bin/bash
 source /etc/profile
 module load mpi/openmpi-4.1.5
+module load gcc/13-2-0
 ##########################################
 #                                        #
 #  Specify your paths                    #
