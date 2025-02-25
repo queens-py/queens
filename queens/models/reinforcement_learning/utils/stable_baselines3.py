@@ -32,29 +32,15 @@ import numpy as np
 import stable_baselines3 as sb3
 import torch
 
+from queens.utils.valid_options_utils import check_if_valid_options
+
 _logger = logging.getLogger(__name__)
 
-
-def _create_supported_agents_dict():
-    """Create a dictionary of supported stable-baselines3 agents.
-
-    In order to work even with updates of the stable-baselines3 library, this
-    function dynamically looks up the supported agents based on the currently
-    installed library version.
-
-    Returns:
-        supported_agents (dict): A dictionary of the currently supported stable-baselines3 agents.
-    """
-    # Get all agent classes in the stable_baselines3 module
-    supported_agents = {
-        name: obj
-        for name, obj in inspect.getmembers(sb3)
-        if inspect.isclass(obj) and issubclass(obj, sb3.common.base_class.BaseAlgorithm)
-    }
-    return supported_agents
-
-
-_supported_sb3_agents = _create_supported_agents_dict()
+_supported_sb3_agents = {
+    name: obj
+    for name, obj in inspect.getmembers(sb3)
+    if inspect.isclass(obj) and issubclass(obj, sb3.common.base_class.BaseAlgorithm)
+}
 
 
 def get_supported_sb3_policies(agent_class):
@@ -67,15 +53,17 @@ def get_supported_sb3_policies(agent_class):
         list: A list of strings representing the supported policies for the given agent class.
 
     Raises:
-        ValueError: If the provided class is not a stable-baselines3 agent class.
+        ValueError: If the provided class is not a stable-baselines3 agent class or does not provide
+            a ``policy_aliases`` attribute.
     """
     if issubclass(agent_class, sb3.common.base_class.BaseAlgorithm):
-        return list(agent_class.policy_aliases.keys())
+        if hasattr(agent_class, "policy_aliases"):
+            return list(agent_class.policy_aliases.keys())
+        error_message = f"{agent_class.__name__} does not provide a 'policy_aliases' attribute."
+    else:
+        error_message = f"{agent_class.__name__} is not a stable-baselines3 agent."
 
-    raise ValueError(
-        f"{agent_class.__name__} is not a stable-baselines3 agent.\n"
-        "Cannot find supported policies for this class!"
-    )
+    raise ValueError(error_message)
 
 
 def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
@@ -99,24 +87,20 @@ def create_sb3_agent(agent_name, policy_name, env, agent_options=None):
 
     Raises:
         ValueError: If the provided agent name is not supported by stable-baselines3
-            or does not support the provided policy
+        InvalidOptionError: If the provided agent name is not known to stable-baselines3 or the
+            provided policy name is not supported by the chosen agent class.
     """
     # Check that a valid agent has been provided
-    agent_name = agent_name.upper()
-    if agent_name not in _supported_sb3_agents.keys():
-        raise ValueError(f"Unsupported agent: {agent_name}")
+    check_if_valid_options(_supported_sb3_agents, agent_name, "Agent unknown to stable-baselines3!")
 
     # Retrieve the corresponding agent class
     agent_class = _supported_sb3_agents[agent_name]
 
     # Check that the provided policy is compatible with the chosen agent
     supported_sb3_policies = get_supported_sb3_policies(agent_class)
-    if policy_name not in supported_sb3_policies:
-        raise ValueError(
-            f"Unsupported policy: `{policy_name}` for agent `{agent_name}`:\n"
-            f"Agent {agent_name} only supports the following policies: "
-            f"{supported_sb3_policies}!"
-        )
+    check_if_valid_options(
+        supported_sb3_policies, policy_name, f"Unsupported policy for agent {agent_name}!"
+    )
 
     # if no options are provided, create an empty dictionary to be able to
     # unpack it without errors
@@ -183,21 +167,17 @@ def load_model(agent_name, path, experiment_name, env=None):
     Returns:
         agent (stable_baselines3.BaseAlgorithm): The loaded agent.
     """
-    # Check whether the provided path is a Path object and convert it to a string
-    if not isinstance(path, str):
-        path = path.as_posix()
+    # Determine the file stem (works for both Path objects and strings)
     file_stem = f"{path}/{experiment_name}"
 
     # Check that a valid agent has been provided
-    agent_name = agent_name.upper()
-    if agent_name not in _supported_sb3_agents.keys():
-        raise ValueError(f"Unsupported agent: {agent_name}")
+    check_if_valid_options(_supported_sb3_agents, agent_name, "Agent unknown to stable-baselines3!")
     # Retrieve the corresponding agent class
     agent_class = _supported_sb3_agents[agent_name]
 
     # Load the agent from file
-    agent_file = f"{file_stem}_agent"
-    _logger.info("Loading agent from file %s.zip", agent_file)
+    agent_file = f"{file_stem}_agent.zip"
+    _logger.info("Loading agent from file %s", agent_file)
     agent = agent_class.load(agent_file, env=env)
 
     if env is None:
@@ -212,9 +192,9 @@ def load_model(agent_name, path, experiment_name, env=None):
     # Check and load replay buffer if it exists
     if hasattr(agent, "replay_buffer"):
         _logger.debug("Agent is of off-policy type. Attempting to load replay buffer.")
-        replay_buffer_file = f"{file_stem}_replay_buffer"
-        if os.path.exists(f"{replay_buffer_file}.pkl"):
-            _logger.debug("Loading replay buffer from file %s.pkl", replay_buffer_file)
+        replay_buffer_file = f"{file_stem}_replay_buffer.pickle"
+        if os.path.exists(replay_buffer_file):
+            _logger.debug("Loading replay buffer from file %s", replay_buffer_file)
             agent.load_replay_buffer(replay_buffer_file)
         else:
             _logger.warning(
@@ -240,7 +220,7 @@ def save_model(agent, gs):
     """
     # Save the agent to file
     agent_file = gs.result_file(".zip", suffix="_agent")
-    _logger.info("Saving agent to %s", agent_file.as_posix())
+    _logger.info("Saving agent to %s", agent_file)
     agent.save(agent_file)
 
     # Check and save replay buffer if it exists
@@ -249,6 +229,6 @@ def save_model(agent, gs):
             "Agent is of off-policy type and has a replay buffer. "
             "Saving the replay buffer as well."
         )
-        replay_buffer_file = gs.result_file(".pkl", suffix="_replay_buffer")
-        _logger.debug("Writing replay buffer to %s", replay_buffer_file.as_posix())
+        replay_buffer_file = gs.result_file(".pickle", suffix="_replay_buffer")
+        _logger.debug("Writing replay buffer to %s", replay_buffer_file)
         agent.save_replay_buffer(replay_buffer_file)

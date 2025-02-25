@@ -61,7 +61,7 @@ def test_rl_model_init(render_mode):
     assert model._deterministic_actions is False  # pylint: disable=W0212
     assert model._render_mode == render_mode  # pylint: disable=W0212
     assert model._total_timesteps == 1_000  # pylint: disable=W0212
-    assert model._vec_env is not None  # pylint: disable=W0212
+    assert model._vectorized_environment is not None  # pylint: disable=W0212
     assert isinstance(model.frames, list) and len(model.frames) == 0
     assert model.is_trained is False
 
