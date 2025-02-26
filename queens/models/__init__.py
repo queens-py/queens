@@ -28,6 +28,7 @@ from queens.models.likelihood_models.bayesian_mf_gaussian_likelihood import (
     BmfiaInterface,
 )
 from queens.models.likelihood_models.gaussian_likelihood import GaussianLikelihood
+from queens.models.reinforcement_learning.reinforcement_learning import ReinforcementLearning
 from queens.models.simulation_model import SimulationModel
 from queens.models.surrogate_models.bayesian_neural_network import (
     GaussianBayesianNeuralNetworkModel,
@@ -52,4 +53,5 @@ VALID_TYPES = {
     "gp_jitted": GPJittedModel,
     "gp_approximation_gpflow_svgp": GPflowSVGPModel,
     "gaussian_nn": GaussianNeuralNetworkModel,
+    "reinforcement_learning": ReinforcementLearning,
 }
