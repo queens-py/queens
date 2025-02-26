@@ -40,7 +40,7 @@ def test_fourc_mc(
 ):
     """Test simple 4C run."""
     # generate json input file from template
-    fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
+    fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.4C.yaml"
     fourc_executable, _, _ = fourc_link_paths
 
     # Parameters
