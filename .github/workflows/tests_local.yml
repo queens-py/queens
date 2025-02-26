@@ -32,6 +32,11 @@ jobs:
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/build/ config/4C_build
+      - name: Delete unnecessary 4C docker image stuff
+        run: |
+          rm -rf /home/user/4C/.git
+          find /home/user/4C -mindepth 1 -maxdepth 1 -type d -not -name build -exec rm -rf '{}' \;
+          sudo apt-get clean
       - name: Create Python environment
         id: environment
         uses: ./.github/actions/create_python_environment
