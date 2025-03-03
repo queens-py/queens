@@ -120,7 +120,7 @@ class TestDaskCluster:
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
             global_settings (GlobalSettings): object containing experiment name and tmp_path
         """
-        fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.dat"
+        fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.4C.yaml"
 
         # Parameters
         parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)

@@ -6,7 +6,7 @@ repos:
       # Run the linter.
       # Needs to placed before black, isort, and other formatters
       - id: ruff
-        args: [ --fix ]
+        args: [--fix]
   - repo: local
     hooks:
       - id: trailing-whitespace
@@ -27,7 +27,7 @@ repos:
       - id: check-license-header
         name: check for correct license header
         entry: licenseheaders
-        args: ["-t", "license_header.tmpl", '--files']
+        args: ["-t", "license_header.tmpl", "--files"]
         language: python
         types: ["python"]
         pass_filenames: true
@@ -40,7 +40,7 @@ repos:
       - id: commitizen
         name: commitizen
         entry: cz
-        args: ['check', '--commit-msg-file', '.git/COMMIT_EDITMSG']
+        args: ["check", "--commit-msg-file", ".git/COMMIT_EDITMSG"]
         pass_filenames: false
         language: system
         stages: [commit-msg, manual]
@@ -65,7 +65,7 @@ repos:
         args:
           - > # This is needed to lint the jinja templates
             -d={extends: default, rules: {braces: {max-spaces-inside: 1}
-            , brackets: disable, document-start: disable}}
+            , brackets: disable, document-start: disable, "line-length": {"max": 100}}}
           - -f=colored
         language: python
         types: ["yaml"]
