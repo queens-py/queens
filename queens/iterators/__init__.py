@@ -41,6 +41,7 @@ from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloC
 from queens.iterators.sobol_index import SobolIndex
 from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
 from queens.iterators.sobol_sequence import SobolSequence
+from queens.iterators.reinforcement_learning import ReinforcementLearning
 
 VALID_TYPES = {
     "hmc": HamiltonianMonteCarlo,
@@ -66,4 +67,5 @@ VALID_TYPES = {
     "bmfia": BMFIA,
     "rpvi": RPVI,
     "classification": ClassificationIterator,
+    "reinforcement_learning": ReinforcementLearning,
 }

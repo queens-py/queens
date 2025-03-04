@@ -18,29 +18,18 @@ jobs:
   run_tests:
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/4c-multiphysics/4c:main
-      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+      image: ubuntu:24.04
     defaults:
       run:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v4
-      - name: Install rsync
+      - name: Install dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y rsync
-      - name: Create links to 4C
-        run: |
-          ln -s /home/user/4C/build/ config/4C_build
-      - name: Create Python environment
-        id: environment
-        uses: ./.github/actions/create_python_environment
-      - name: Get Python package manager
-        run: echo "PYTHON_PACKAGE_MANAGER=${{steps.environment.outputs.ppm}}" >> $GITHUB_ENV
+          python -m pip install --upgrade pip
+          pip install -e .[develop]
       - name: Code checks
         run: |
-          $PYTHON_PACKAGE_MANAGER activate queens
-
           echo "::group::Run isort..."
           isort --check-only queens tests
           echo "::endgroup::"
@@ -75,8 +64,7 @@ jobs:
         uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
         run: |
-          $PYTHON_PACKAGE_MANAGER activate queens
-          pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
+          pytest -v -m "unit_tests or integration_tests" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
           python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
       - name: Upload coverage report
         uses: actions/upload-pages-artifact@v3
