@@ -32,7 +32,8 @@ from queens.models.reinforcement_learning.utils.stable_baselines3 import (
 SEED = 429
 
 
-def create_iterator(agent_name, environment_name, global_settings):
+@pytest.fixture(name="custom_iterator")
+def create_custom_iterator(agent_name, environment_name, global_settings):
     """Create a fully-functional RLIterator instance."""
     env = create_gym_environment(environment_name, seed=SEED)
     agent = create_sb3_agent(agent_name, "MlpPolicy", env, agent_options={"seed": SEED})
@@ -104,12 +105,11 @@ def test_rl_iterator_initialization_and_properties(mode, steps):
         ("DDPG", "Pendulum-v1"),
     ],
 )
-def test_save_and_load(agent_name, environment_name, global_settings):
+def test_save_and_load(agent_name, environment_name, custom_iterator, global_settings):
     """Test saving and loading of an RLIterator instance."""
     ### STEP 1 - Create, train, and save iterator A ###
-    iterator = create_iterator(agent_name, environment_name, global_settings)
-    run_iterator(iterator, global_settings)
-    rl_model = iterator.model
+    run_iterator(custom_iterator, global_settings)
+    rl_model = custom_iterator.model
 
     ### STEP 2 - Create a new agent instance and load state of trained agent ###
     sb3_agent = load_model(
