@@ -103,7 +103,7 @@ def test_rl_integration(agent_name, environment_name, global_settings):
     ### STEP 4 - Load stored result of model A evaluation ###
     results = load_result(global_settings.result_file(".pickle"))
 
-    # TODO  # pylint: disable=W0511
+    # TODO # pylint: disable=fixme
     # Check entries of results dictionary
     assert "outputs" in results
     assert "result" in results["outputs"]

@@ -47,7 +47,6 @@ def fixture_custom_agent(agent_name, environment_name):
         "human",
         "rgb_array",
         "ansi",
-        pytest.param("rgb-array", marks=pytest.mark.xfail(strict=True, raises=ValueError)),
     ],
 )
 def test_rl_model_init(render_mode):
@@ -57,13 +56,24 @@ def test_rl_model_init(render_mode):
     model = ReinforcementLearning(agent, render_mode=render_mode, total_timesteps=1_000)
 
     # Check whether setting up the model worked correctly
-    assert model._agent == agent  # pylint: disable=W0212
-    assert model._deterministic_actions is False  # pylint: disable=W0212
-    assert model._render_mode == render_mode  # pylint: disable=W0212
-    assert model._total_timesteps == 1_000  # pylint: disable=W0212
-    assert model._vectorized_environment is not None  # pylint: disable=W0212
+    # pylint: disable=protected-access
+    assert model._agent == agent
+    assert not model._deterministic_actions
+    assert model._render_mode == render_mode
+    assert model._total_timesteps == 1_000
+    assert model._vectorized_environment is not None
+    # pylint: enable=protected-access
     assert isinstance(model.frames, list) and len(model.frames) == 0
-    assert model.is_trained is False
+    assert not model.is_trained
+
+
+def test_rl_model_init_failure():
+    """Unit tests for the RLModel class."""
+    # Create the model
+    agent = Mock()
+
+    with pytest.raises(ValueError):
+        ReinforcementLearning(agent, render_mode="incorret render mode", total_timesteps=1_000)
 
 
 @pytest.mark.parametrize(

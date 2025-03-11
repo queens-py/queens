@@ -52,9 +52,6 @@ def create_custom_iterator(agent_name, environment_name, global_settings):
     [
         ("evaluation", 1_000),
         ("training", 500),
-        pytest.param("interaction", 100, marks=pytest.mark.xfail(strict=True, raises=ValueError)),
-        pytest.param("evaluation", -5, marks=pytest.mark.xfail(strict=True, raises=ValueError)),
-        pytest.param("training", -10_000, marks=pytest.mark.xfail(strict=True, raises=ValueError)),
     ],
 )
 def test_rl_iterator_initialization_and_properties(mode, steps):
@@ -90,6 +87,42 @@ def test_rl_iterator_initialization_and_properties(mode, steps):
     np.testing.assert_array_equal(iterator.initial_observation, obs)
     assert iterator.samples is None
     assert iterator.output is None
+
+
+@pytest.mark.parametrize(
+    "mode,steps",
+    [
+        ("interaction", 100),
+        ("evaluation", -5),
+        ("training", -10_000),
+    ],
+)
+def test_rl_iterator_initialization_failure(mode, steps):
+    """Test the constructor."""
+    # prepare the mock parameters
+    model = Mock(spec=RLModel)
+    parameters = Mock()
+    global_settings = Mock()
+
+    # prepare the meaningful parameters
+    result_description = {
+        "write_results": True,
+    }
+
+    # generate a random observation
+    obs = np.random.random(size=(5, 1))
+
+    # create the iterator instance
+    with pytest.raises(ValueError):
+        RLIterator(
+            model,
+            parameters,
+            global_settings,
+            result_description=result_description,
+            mode=mode,
+            interaction_steps=steps,
+            initial_observation=obs,
+        )
 
 
 @pytest.mark.parametrize(

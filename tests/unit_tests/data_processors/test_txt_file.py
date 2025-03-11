@@ -57,7 +57,7 @@ def test_check_file_size_exceeds_limit(default_data_processor, dummy_txt_file):
     """Throw a MemoryError for a file exceeding the size limit."""
     default_data_processor.max_file_size_in_mega_byte = 0.04
     with pytest.raises(MemoryError):
-        default_data_processor._check_file_size(dummy_txt_file)  # pylint: disable=W0212
+        default_data_processor._check_file_size(dummy_txt_file)  # pylint: disable=protected-access
 
 
 def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
@@ -91,7 +91,7 @@ def test_extract_lines_with_regex(default_data_processor, default_raw_data):
         "CORE::LINALG::Solver:  1)   Setup                                   2.2577e+00 (19)      "
         "2.2580e+00 (19)      2.2583e+00 (19)      1.1884e-01 (19)"
     )
-    matches = default_data_processor._extract_lines_with_regex(  # pylint: disable=W0212
+    matches = default_data_processor._extract_lines_with_regex(  # pylint: disable=protected-access
         default_raw_data, regex
     )
 
@@ -104,11 +104,15 @@ def test_extract_quantities_from_line(default_data_processor, default_raw_data):
     """This test checks the extraction quantities from a line."""
     regex_global = r"CORE::LINALG::Solver:  1\)   Setup"
     regex_numeric_vals = r"\b\d+\.\d+[eE][+-]?\d+\b"
-    matches_global = default_data_processor._extract_lines_with_regex(  # pylint: disable=W0212
-        default_raw_data, regex_global
+    matches_global = (
+        default_data_processor._extract_lines_with_regex(  # pylint: disable=protected-access
+            default_raw_data, regex_global
+        )
     )
-    numeric_vals = default_data_processor._extract_quantities_from_line(  # pylint: disable=W0212
-        matches_global[0][1], regex_numeric_vals
+    numeric_vals = (
+        default_data_processor._extract_quantities_from_line(  # pylint: disable=protected-access
+            matches_global[0][1], regex_numeric_vals
+        )
     )
 
     assert len(numeric_vals) == 4
@@ -126,7 +130,7 @@ def test_extract_section_from_raw_data_start_and_end_marker(
     regex_simulation_start = r"^=+ Standard Lagrange multiplier strategy =+$"
     regex_simulation_end = r"TimeMonitor results over \d+ processors"
     simulation_raw_data = (
-        default_data_processor._extract_section_from_raw_data(  # pylint: disable=W0212
+        default_data_processor._extract_section_from_raw_data(  # pylint: disable=protected-access
             default_raw_data,
             "start_end",
             regex_start=regex_simulation_start,
@@ -143,7 +147,7 @@ def test_extract_section_from_raw_data_end_marker(default_data_processor, defaul
     regex_simulation_start = "Parallel balance: t=0/restart"
     regex_simulation_end = r"TimeMonitor results over \d+ processors"
     simulation_raw_data = (
-        default_data_processor._extract_section_from_raw_data(  # pylint: disable=W0212
+        default_data_processor._extract_section_from_raw_data(  # pylint: disable=protected-access
             default_raw_data,
             "start_end",
             regex_start=regex_simulation_start,
@@ -154,7 +158,7 @@ def test_extract_section_from_raw_data_end_marker(default_data_processor, defaul
 
     regex_timestep_end = r"^Parallel balance \(eles\): \d+\.\d+e[+-]\d+ \(limit \d+\.\d+\)$"
     timestep_raw_data = (
-        default_data_processor._extract_section_from_raw_data(  # pylint: disable=W0212
+        default_data_processor._extract_section_from_raw_data(  # pylint: disable=protected-access
             simulation_raw_data[0], "end", regex_end=regex_timestep_end
         )
     )
@@ -172,7 +176,7 @@ def test_extract_section_from_raw_data_start_marker(default_data_processor, defa
     regex_simulation_start = r"^=+ Standard Lagrange multiplier strategy =+$"
     regex_simulation_end = r"TimeMonitor results over \d+ processors"
     simulation_raw_data = (
-        default_data_processor._extract_section_from_raw_data(  # pylint: disable=W0212
+        default_data_processor._extract_section_from_raw_data(  # pylint: disable=protected-access
             default_raw_data,
             "start_end",
             regex_start=regex_simulation_start,
@@ -183,7 +187,7 @@ def test_extract_section_from_raw_data_start_marker(default_data_processor, defa
 
     regex_timestep_start = r"\*{58}"
     timestep_raw_data = (
-        default_data_processor._extract_section_from_raw_data(  # pylint: disable=W0212
+        default_data_processor._extract_section_from_raw_data(  # pylint: disable=protected-access
             simulation_raw_data[0], "start", regex_start=regex_timestep_start
         )
     )
