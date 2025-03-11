@@ -35,13 +35,13 @@ from queens.iterators.nuts import NUTS
 from queens.iterators.optimization import Optimization
 from queens.iterators.points import Points
 from queens.iterators.polynomial_chaos import PolynomialChaos
+from queens.iterators.reinforcement_learning import ReinforcementLearning
 from queens.iterators.reparameteriztion_based_variational import RPVI
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.iterators.sobol_index import SobolIndex
 from queens.iterators.sobol_index_gp_uncertainty import SobolIndexGPUncertainty
 from queens.iterators.sobol_sequence import SobolSequence
-from queens.iterators.reinforcement_learning import ReinforcementLearning
 
 VALID_TYPES = {
     "hmc": HamiltonianMonteCarlo,

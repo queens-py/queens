@@ -23,7 +23,7 @@ import logging
 
 import gymnasium as gym
 
-from queens.utils.valid_options_utils import check_if_valid_options
+from queens.utils.valid_options import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 _supported_gym_environments = list(gym.envs.registry.keys())

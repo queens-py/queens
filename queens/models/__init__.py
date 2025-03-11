@@ -23,6 +23,7 @@ from queens.models.bmfmc import BMFMC
 from queens.models.finite_difference import FiniteDifference
 from queens.models.likelihoods.bmf_gaussian import BMFGaussian, BmfiaInterface
 from queens.models.likelihoods.gaussian import Gaussian
+from queens.models.reinforcement_learning.reinforcement_learning import ReinforcementLearning
 from queens.models.simulation import Simulation
 from queens.models.surrogates.bayesian_neural_network import GaussianBayesianNeuralNetwork
 from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
@@ -30,7 +31,6 @@ from queens.models.surrogates.gaussian_process import GaussianProcess
 from queens.models.surrogates.heteroskedastic_gaussian_process import HeteroskedasticGaussianProcess
 from queens.models.surrogates.jitted_gaussian_process import JittedGaussianProcess
 from queens.models.surrogates.variational_gaussian_process import VariationalGaussianProcess
-from queens.models.reinforcement_learning.reinforcement_learning import ReinforcementLearning
 
 VALID_TYPES = {
     "simulation_model": Simulation,

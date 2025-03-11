@@ -28,7 +28,7 @@ from queens.models.reinforcement_learning.utils.stable_baselines3 import (
     make_deterministic,
 )
 from queens.parameters.parameters import Parameters
-from queens.utils.io_utils import load_result
+from queens.utils.io import load_result
 
 SEED = 429
 

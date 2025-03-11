@@ -32,7 +32,7 @@ import numpy as np
 import stable_baselines3 as sb3
 import torch
 
-from queens.utils.valid_options_utils import check_if_valid_options
+from queens.utils.valid_options import check_if_valid_options
 
 _logger = logging.getLogger(__name__)
 

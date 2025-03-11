@@ -20,7 +20,7 @@ For an introduction to RL in the context of QUEENS, we refer to the documentatio
 
 import logging
 
-from queens.models.model import Model
+from queens.models._model import Model
 from queens.models.reinforcement_learning.utils.stable_baselines3 import save_model
 from queens.utils.logger_settings import log_init_args
 

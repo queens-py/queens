@@ -24,7 +24,7 @@ from collections import defaultdict
 
 import numpy as np
 
-from queens.iterators.iterator import Iterator
+from queens.iterators._iterator import Iterator
 from queens.models.reinforcement_learning.reinforcement_learning import (
     ReinforcementLearning as RLModel,
 )
