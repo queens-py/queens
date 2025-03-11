@@ -18,6 +18,7 @@ runs:
       run: |
         $PYTHON_PACKAGE_MANAGER env create -f environment.yml
         $PYTHON_PACKAGE_MANAGER activate queens
+        pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
         pip install -e .[develop]
         $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
         $PYTHON_PACKAGE_MANAGER list
