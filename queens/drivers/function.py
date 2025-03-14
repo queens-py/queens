@@ -102,6 +102,10 @@ class Function(Driver):
                     gradient = np.expand_dims(gradient, axis=0)
                 return result, gradient
             # here no gradient return
+            # take scalars and convert them to numpy floats
+            if not isinstance(result_array, np.floating):
+                result_array = np.float64(result_array)
+
             if not result_array.shape:
                 result_array = np.expand_dims(result_array, axis=0)
             return result_array, None

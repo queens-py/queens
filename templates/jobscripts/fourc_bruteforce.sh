@@ -1,5 +1,6 @@
 #!/bin/bash
 module load mpi/openmpi/gcc/4.1.5
+module load gcc/13-2-0
 ##########################################
 #                                        #
 #  Specify your paths                    #
