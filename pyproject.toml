@@ -148,3 +148,5 @@ filelock = ">=3"
 cons = ">=0.4.5"
 # namex is under Apache 2.0 see https://github.com/fchollet/namex?tab=License-1-ov-file
 namex = "==0.0.8"
+# setuptools is under MIT License
+setuptools = ">=79.0.0"
