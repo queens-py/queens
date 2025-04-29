@@ -4,8 +4,10 @@ doc/build
 doc/source/*.rst
 doc/source/*.md
 
-# but keep index.rst
+# but keep static rst files
 !doc/source/index.rst
+!doc/source/tutorials.rst
+!doc/source/tutorials.onboarding.rst
 
 # C extensions
 *.so

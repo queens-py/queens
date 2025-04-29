@@ -60,8 +60,8 @@ def relative_to_doc_source(relative_path):
 def create_tutorial_from_readme():
     """Create tutorial from readme."""
     example = get_queens_example_from_readme(".")
-    tutorial_template = get_template_path_by_name("tutorials.rst.j2")
-    tutorial = relative_to_doc_source("tutorials.rst")
+    tutorial_template = get_template_path_by_name("tutorials.monte_carlo_uq.rst.j2")
+    tutorial = relative_to_doc_source("tutorials.monte_carlo_uq.rst")
 
     inject({"example_text": example.replace("\n", "\n   ")}, tutorial_template, tutorial)
 
