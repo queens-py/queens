@@ -19,15 +19,11 @@ Steps to get started with QUEENS
 
         git clone git@github.com:<your_username>/queens.git
 
-#. Read through our `README <https://github.com/queens-py/queens/blob/main/README.md>`_ and
-   follow the instructions in the "Getting Started" section to set up your local environment.
-
-#. Run the unit and integration tests as described in our
-   `testing README <https://github.com/queens-py/queens/blob/main/tests/README.md>`_ to ensure
-   everything is working correctly.
+#. Read through our `introduction <https://queens-py.github.io/queens/intro.html>`_ and
+   follow the instructions in the "Installation" section to set up your local environment.
 
 #. If you plan to contribute to the project, please read through our
-   `contributing guidelines <https://github.com/queens-py/queens/blob/main/CONTRIBUTING.md>`_ and
+   `contributing guidelines <https://queens-py.github.io/queens/contributing.html>`_ and
    follow the instructions there to
 
    #. install QUEENS in developer mode and
@@ -36,32 +32,24 @@ Steps to get started with QUEENS
 #. Install an integrated development environment (IDE) of your choice if you do not already have
    one.
    We recommend using `PyCharm <https://www.jetbrains.com/pycharm/>`_ or
-   `VS Code <https://code.visualstudio.com/download>`_.
-   For VS Code, we recommend the following extensions, which can be installed via
-   :code:`code --install-extension <extension>` or via the extensions marketplace:
+   `VS Code <https://code.visualstudio.com/download>`_ with some
+   `additional extensions <https://thedeveloperspace.com/10-essential-vs-code-extensions-for-python-
+   development-in-2024/>`_.
 
-   * ms-python.python
-   * ms-python.vscode-pylance
-   * stkb.rewrap
-
-   We further recommend adding the following settings to your
+   For VS Code, we further recommend adding the following settings to your
    :code:`~/.config/Code/User/settings.json` after finding out the path to your QUEENS environment
    via :code:`conda info --envs`:
 
    .. code-block:: json
 
-            "editor.wordWrap": "wordWrapColumn",
-            "editor.wordWrapColumn": 100,
-            "editor.wrappingIndent": "same",
             "python.pythonPath": "<path_to_your_QUEENS_environment>/bin/python",
             "python.defaultInterpreterPath": "<path_to_your_QUEENS_environment>/bin/python",
             "editor.formatOnSave": True,
             "python.formatting.provider": "black",
             "python.formatting.blackPath": "<path_to_your_QUEENS_environment>/bin/black",
 
-#. Browse through our `documentation <https://queens-py.github.io/queens/overview.html>`_ and some
-   open `issues <https://github.com/queens-py/queens/issues>`_ and
-   `pull requests <https://github.com/queens-py/queens/pulls>`_ to get a first impression.
+#. Browse through our `documentation <https://queens-py.github.io/queens/overview.html>`_ and our
+   other tutorials to get a first impression.
 
 #. *Optional*: If you are comfortable with it, feel free to introduce yourself in our
    `discussions forum <https://github.com/queens-py/queens/discussions/categories/introduce-
