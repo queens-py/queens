@@ -8,26 +8,18 @@ project, especially if you are new to open-source development.
 Steps to get started with QUEENS
 --------------------------------
 
-#. Create a GitHub account if you do not have one and add your
-   `SSH key <https://docs.github.com/en/authentication/connecting-to-github-with-ssh/generating-a-
-   new-ssh-key-and-adding-it-to-the-ssh-agent>`_ to your GitHub account.
-
-#. Fork the QUEENS repository to your GitHub account and clone your forked repository to your local
-   machine via SSH:
+#. Clone the QUEENS repository to your local machine via SSH:
 
    .. code-block:: bash
 
-        git clone git@github.com:<your_username>/queens.git
+        git clone git@github.com:queens-py/queens.git
 
 #. Read through our `introduction <https://queens-py.github.io/queens/intro.html>`_ and
    follow the instructions in the "Installation" section to set up your local environment.
 
 #. If you plan to contribute to the project, please read through our
    `contributing guidelines <https://queens-py.github.io/queens/contributing.html>`_ and
-   follow the instructions there to
-
-   #. install QUEENS in developer mode and
-   #. configure our git-hooks.
+   follow the instructions there to configure our git-hooks.
 
 #. Install an integrated development environment (IDE) of your choice if you do not already have
    one.
@@ -36,7 +28,7 @@ Steps to get started with QUEENS
    `additional extensions <https://thedeveloperspace.com/10-essential-vs-code-extensions-for-python-
    development-in-2024/>`_.
 
-   For VS Code, we further recommend adding the following settings to your
+   *Optional*: For VS Code, we further recommend adding the following settings to your
    :code:`~/.config/Code/User/settings.json` after finding out the path to your QUEENS environment
    via :code:`conda info --envs`:
 
@@ -60,6 +52,11 @@ Steps to get started with QUEENS
 #. Last but not least, we ask you to follow our
    `code of conduct <https://github.com/queens-py/queens/blob/main/CODE_OF_CONDUCT.md>`_ so we can
    all thrive in the Qommunity 💂‍♀️👑💂‍♂️
+
+.. note::
+   If you find that any of the information in this onboarding guide is outdated or incorrect, please
+   let us know by creating an issue or a pull request on
+   `GitHub <https://github.com/queens-py/queens/issues>`_.
 
 
 Additional information for rookies
