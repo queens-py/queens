@@ -185,31 +185,6 @@ def fixture_global_mock_local_base_dir(monkeypatch, tmp_path):
     _logger.debug("local base dir is mocked to: %s", config_directories.base_directory())
 
 
-@pytest.fixture(name="mock_value_experiments_base_folder_name", scope="session")
-def fixture_mock_value_experiments_base_folder_name():
-    """Value to mock the experiments base folder name."""
-    return "pytest"
-
-
-@pytest.fixture(name="global_mock_experiments_base_folder_name", autouse=True)
-def fixture_global_mock_experiments_base_folder_name(
-    mock_value_experiments_base_folder_name, monkeypatch
-):
-    """Mock the name of the folders containing experiments in base directory.
-
-    Note that locally, this adds on top of the
-    global_mock_local_base_dir
-    """
-    monkeypatch.setattr(
-        config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
-    )
-    _logger.debug("Mocking of EXPERIMENTS_BASE_FOLDER_NAME was successful.")
-    _logger.debug(
-        "EXPERIMENTS_BASE_FOLDER_NAME is mocked to: %s",
-        config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
-    )
-
-
 @pytest.fixture(name="inputdir", scope="session")
 def fixture_inputdir():
     """Return the path to the json input-files of the function test."""

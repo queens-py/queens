@@ -21,9 +21,8 @@ from queens.utils.path import create_folder_if_not_existent
 
 _logger = logging.getLogger(__name__)
 
-BASE_DATA_DIR = "queens-simulation-data"
-EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
-TESTS_BASE_FOLDER_NAME = "tests"
+BASE_DATA_DIR = "queens-experiments"
+BASE_DATA_DIR_FOR_TESTS = "queens-tests"
 
 
 def base_directory():
@@ -33,22 +32,13 @@ def base_directory():
     return base_dir
 
 
-def experiments_base_directory():
-    """Hold all experiment data on the computing machine."""
-    base_dir = base_directory()
-    experiments_base_dir = base_dir / EXPERIMENTS_BASE_FOLDER_NAME
-    create_directory(experiments_base_dir)
-    return experiments_base_dir
-
-
 def experiment_directory(experiment_name):
     """Directory for data of a specific experiment on the computing machine.
 
     Args:
         experiment_name (str): Experiment name
     """
-    experiments_base_dir = experiments_base_directory()
-    experiment_dir = experiments_base_dir / experiment_name
+    experiment_dir = base_directory() / experiment_name
     create_directory(experiment_dir)
     return experiment_dir
 
