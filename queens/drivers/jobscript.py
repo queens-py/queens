@@ -201,7 +201,7 @@ class Jobscript(Driver):
             Result and potentially the gradient.
         """
         job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
-            job_id, experiment_dir, experiment_name
+            job_id, experiment_dir
         )
 
         sample_dict = self.parameters.sample_as_dict(sample)
@@ -244,13 +244,12 @@ class Jobscript(Driver):
 
         return results
 
-    def _manage_paths(self, job_id, experiment_dir, experiment_name):
+    def _manage_paths(self, job_id, experiment_dir):
         """Manage paths for driver run.
 
         Args:
             job_id (int): Job ID.
             experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): Name of QUEENS experiment.
 
         Returns:
             job_dir (Path): Path to job directory.
@@ -263,17 +262,14 @@ class Jobscript(Driver):
         output_dir = job_dir / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        output_prefix = experiment_name + "_" + str(job_id)
+        output_prefix = "output"
         output_file = output_dir / output_prefix
+        log_file = output_dir / (output_prefix + ".log")
 
         input_files = {}
         for input_template_name, input_template_path in self.input_templates.items():
-            input_file_str = (
-                f"{experiment_name}_{input_template_name}_{job_id}" + input_template_path.suffix
-            )
+            input_file_str = input_template_name + input_template_path.suffix
             input_files[input_template_name] = job_dir / input_file_str
-
-        log_file = output_dir / (output_prefix + ".log")
 
         return job_dir, output_dir, output_file, input_files, log_file
 
