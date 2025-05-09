@@ -132,10 +132,10 @@ def fixture_experiment_name():
 
 
 @pytest.fixture(name="injected_input_files")
-def fixture_injected_input_files(tmp_path, job_id, experiment_name):
+def fixture_injected_input_files(tmp_path, job_id):
     """Fixture for the create input files."""
-    input_file_1 = tmp_path / str(job_id) / f"{experiment_name}_input_1_{job_id}.yaml"
-    input_file_2 = tmp_path / str(job_id) / f"{experiment_name}_input_2_{job_id}.yaml"
+    input_file_1 = tmp_path / str(job_id) / "input_1.yaml"
+    input_file_2 = tmp_path / str(job_id) / "input_2.yaml"
     injected_input_files = {"input_1": input_file_1, "input_2": input_file_2}
 
     return injected_input_files
@@ -150,7 +150,7 @@ def fixture_job_options(tmp_path, job_id, experiment_name, injected_input_files)
     job_options = JobOptions(
         job_dir=tmp_path / str(job_id),
         output_dir=tmp_path / str(job_id) / "output",
-        output_file=tmp_path / str(job_id) / f"output/{experiment_name}_{job_id}",
+        output_file=tmp_path / str(job_id) / "output/output",
         job_id=job_id,
         num_procs=num_procs,
         experiment_dir=experiment_dir,

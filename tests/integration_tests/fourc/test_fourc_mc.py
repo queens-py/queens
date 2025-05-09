@@ -50,7 +50,7 @@ def test_fourc_mc(
 
     data_processor = PvdFile(
         field_name="displacement",
-        file_name_identifier=f"{global_settings.experiment_name}_*.pvd",
+        file_name_identifier="output-structure.pvd",
         file_options_dict={},
     )
 
@@ -92,5 +92,5 @@ def test_fourc_mc(
         _logger.info(list(job_dir.iterdir()))
         output_dir = job_dir / "output"
         _logger.info(list(output_dir.iterdir()))
-        _logger.info(read_file(output_dir / "test_fourc_mc_0.log"))
+        _logger.info(read_file(output_dir / "output.log"))
         raise error
