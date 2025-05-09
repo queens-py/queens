@@ -39,7 +39,6 @@ class AdaptiveSampling(Iterator):
 
     Attributes:
         likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
-        initial_train_iterator (Iterator): Iterator to draw initial training samples (e.g. MC, LHS)
         solving_iterator (Iterator): Iterator to solve inverse problem
                                      (SequentialMonteCarloChopin,
                                      MetropolisHastings and Grid supported)
@@ -60,7 +59,7 @@ class AdaptiveSampling(Iterator):
         parameters,
         global_settings,
         likelihood_model,
-        initial_train_iterator,
+        initial_train_samples,
         solving_iterator,
         num_new_samples,
         num_steps,
@@ -71,35 +70,34 @@ class AdaptiveSampling(Iterator):
         """Initialise AdaptiveSampling.
 
         Args:
-            model (Model): Model to be evaluated by iterator
-            parameters (Parameters): Parameters object
+            model (Model): Model to be evaluated by iterator.
+            parameters (Parameters): Parameters object.
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                              and the output directory
-            likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
-            initial_train_iterator (Iterator): Iterator to draw initial training samples (e.g. MC,
-                                               LHS)
+                                              and the output directory.
+            likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported).
+            initial_train_samples (np.ndarray): Initial training samples for surrogate model.
             solving_iterator (Iterator): Iterator to solve inverse problem
                                          (SequentialMonteCarloChopin,
-                                         MetropolisHastings and Grid supported)
-            num_new_samples (int): Number of new training samples in each adaptive step
-            num_steps (int): Number of adaptive sampling steps
-            seed (int, opt): Seed for random number generation
-            restart_file (str, opt): Result file path for restarts
-            cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold
+                                         MetropolisHastings and Grid supported).
+            num_new_samples (int): Number of new training samples in each adaptive step.
+            num_steps (int): Number of adaptive sampling steps.
+            seed (int, opt): Seed for random number generation.
+            restart_file (str, opt): Result file path for restarts.
+            cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold.
         """
         super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.likelihood_model = likelihood_model
-        self.initial_train_iterator = initial_train_iterator
         self.solving_iterator = solving_iterator
         self.num_new_samples = num_new_samples
         self.num_steps = num_steps
         self.restart_file = restart_file
         self.cs_div_criterion = cs_div_criterion
-        self.x_train = None
-        self.x_train_new = None
-        self.y_train = None
-        self.model_outputs = None
+
+        self.x_train_new = initial_train_samples
+        self.x_train = np.empty((0, self.parameters.num_parameters))
+        self.y_train = np.empty((0, 1))
+        self.model_outputs = np.empty((0, self.likelihood_model.y_obs.size))
 
     def pre_run(self):
         """Pre run."""
@@ -112,13 +110,6 @@ class AdaptiveSampling(Iterator):
             self.y_train = results["y_train"][-1]
             self.x_train_new = results["x_train_new"][-1]
 
-        else:
-            self.initial_train_iterator.pre_run()
-            self.x_train_new = self.initial_train_iterator.samples
-            self.x_train = np.empty((0, self.parameters.num_parameters))
-            self.y_train = np.empty((0, 1))
-            self.model_outputs = np.empty((0, self.likelihood_model.normal_distribution.mean.size))
-
     def core_run(self):
         """Core run."""
         for i in range(self.num_steps):
@@ -126,9 +117,7 @@ class AdaptiveSampling(Iterator):
             self.x_train = np.concatenate([self.x_train, self.x_train_new], axis=0)
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
             _logger.info("Number of solver evaluations: %i", self.x_train.shape[0])
-            self.model.initialize(
-                self.x_train, self.y_train, self.likelihood_model.normal_distribution.mean.size
-            )
+            self.model.initialize(self.x_train, self.y_train, self.likelihood_model.y_obs.size)
             self.solving_iterator.pre_run()
 
             def _m(self_, _, xp):
