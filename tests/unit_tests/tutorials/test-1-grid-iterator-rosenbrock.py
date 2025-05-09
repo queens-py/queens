@@ -1,0 +1,58 @@
+#
+# SPDX-License-Identifier: LGPL-3.0-or-later
+# Copyright (c) 2024-2025, QUEENS contributors.
+#
+# This file is part of QUEENS.
+#
+# QUEENS is free software: you can redistribute it and/or modify it under the terms of the GNU
+# Lesser General Public License as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version. QUEENS is distributed in the hope that it will
+# be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more details. You
+# should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
+# see <https://www.gnu.org/licenses/>.
+#
+
+import pytest
+from testbook import testbook
+
+
+# tested jupyter notebooks should be mentioned below
+@testbook(
+    "tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
+    execute=[1],
+)
+def test_result_output(tb):
+    """Parameterized test case for Jupyter notebook output.
+
+    The notebook is run and it is checked that the output of a specific cell matches given input.
+    """
+
+    # execute the notebook
+    assert """[[3.609e+03]
+ [9.040e+02]
+ [4.010e+02]
+ [9.000e+02]
+ [3.601e+03]
+ [2.509e+03]
+ [4.040e+02]
+ [1.010e+02]
+ [4.000e+02]
+ [2.501e+03]
+ [1.609e+03]
+ [1.040e+02]
+ [1.000e+00]
+ [1.000e+02]
+ [1.601e+03]
+ [9.090e+02]
+ [4.000e+00]
+ [1.010e+02]
+ [0.000e+00]
+ [9.010e+02]
+ [4.090e+02]
+ [1.040e+02]
+ [4.010e+02]
+ [1.000e+02]
+ [4.010e+02]]""" in tb.cell_output_text(
+        1
+    )
