@@ -12,6 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
+"""Unit tests for jupyter notebook tutorials."""
 
 import pytest
 from testbook import testbook
