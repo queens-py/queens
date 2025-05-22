@@ -124,9 +124,11 @@ class AdaptiveSampling(Iterator):
                 x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
                 epn = xp.shared["exponents"][-1]
                 target = self_.current_target(epn)
-                for j, par in enumerate(xp.theta.dtype.names):
-                    xp.theta[par][0] = x_train_ml[j]
-                target(xp)
+                particles = np.lib.recfunctions.structured_to_unstructured(xp.theta)
+                if not (particles == x_train_ml).all(-1).any():
+                    for j, par in enumerate(xp.theta.dtype.names):
+                        xp.theta[par][0] = x_train_ml[j]
+                    target(xp)
                 return self_.move(xp, target)
 
             if isinstance(self.solving_iterator, SequentialMonteCarloChopin):
