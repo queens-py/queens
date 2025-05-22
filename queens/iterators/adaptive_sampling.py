@@ -22,7 +22,6 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from jax import jit
-from particles.resampling import stratified
 
 from queens.iterators._iterator import Iterator
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
@@ -162,14 +161,41 @@ class AdaptiveSampling(Iterator):
         Choose new training samples from approximated posterior distribution.
 
         Args:
-            particles (np.ndarray): Particles of approximated posterior
-            weights (np.ndarray): Particle weights of approximated posterior
+            particles (np.ndarray): Unique particles of approximated posterior.
+            weights (np.ndarray): Unique non-zero particle weights of approximated posterior.
 
         Returns:
             x_train_new (np.ndarray): New training samples
         """
-        indices = stratified(weights, self.num_new_samples)
+        # Filter particles, that are present in training sample set
+        indices = (particles[:, np.newaxis] == self.x_train).all(-1).any(-1)
+        particles = particles[~indices]
+        weights = weights[~indices]
+        weights /= np.sum(weights)
+
+        if len(weights) == 0:
+            _logger.warning(
+                "Adaptive sampling of new training samples failed. "
+                "Drawing new training samples from prior..."
+            )
+            return self.parameters.draw_samples(self.num_new_samples)
+
+        num_adaptive_samples = min(len(weights), self.num_new_samples)
+        indices = np.random.choice(
+            np.arange(len(weights)), num_adaptive_samples, p=weights, replace=False
+        )
         x_train_new = particles[indices]
+
+        if num_adaptive_samples < self.num_new_samples:
+            num_prior_samples = self.num_new_samples - num_adaptive_samples
+            _logger.warning(
+                "Adaptive sampling of new training samples partly failed. "
+                "Drawing %i new training samples from prior...",
+                num_prior_samples,
+            )
+            prior_samples = self.parameters.draw_samples(num_prior_samples)
+            x_train_new = np.concatenate([x_train_new, prior_samples], axis=0)
+
         return x_train_new
 
     def write_results(self, particles, weights, log_posterior, iteration):
