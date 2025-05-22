@@ -113,7 +113,10 @@ class AdaptiveSampling(Iterator):
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
             _logger.info("Number of solver evaluations: %i", self.x_train.shape[0])
             self.model.initialize(self.x_train, self.y_train, self.likelihood_model.y_obs.size)
-            self.solving_iterator.pre_run()
+
+            random_state = np.random.get_state()
+            self.solving_iterator.pre_run()  # We don't want that the random seed is set here.
+            np.random.set_state(random_state)
 
             def _m(self_, _, xp):
                 x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
