@@ -25,8 +25,6 @@ from jax import jit
 from particles.resampling import stratified
 
 from queens.iterators._iterator import Iterator
-from queens.iterators.grid import Grid
-from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.utils.io import load_result
 
@@ -40,8 +38,7 @@ class AdaptiveSampling(Iterator):
     Attributes:
         likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
         solving_iterator (Iterator): Iterator to solve inverse problem
-                                     (SequentialMonteCarloChopin,
-                                     MetropolisHastings and Grid supported)
+                                     (only SequentialMonteCarloChopin works out of the box)
         num_new_samples (int): Number of new training samples in each adaptive step
         num_steps (int): Number of adaptive sampling steps
         seed (int, opt): Seed for random number generation
@@ -77,8 +74,7 @@ class AdaptiveSampling(Iterator):
             likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported).
             initial_train_samples (np.ndarray): Initial training samples for surrogate model.
             solving_iterator (Iterator): Iterator to solve inverse problem
-                                         (SequentialMonteCarloChopin,
-                                         MetropolisHastings and Grid supported).
+                                         (only SequentialMonteCarloChopin works out of the box).
             num_new_samples (int): Number of new training samples in each adaptive step.
             num_steps (int): Number of adaptive sampling steps.
             seed (int, opt): Seed for random number generation.
@@ -138,7 +134,7 @@ class AdaptiveSampling(Iterator):
 
             self.solving_iterator.core_run()
 
-            particles, weights, log_posterior = self.get_particles_and_weights()
+            particles, weights, log_posterior = self.solving_iterator.get_particles_and_weights()
             self.x_train_new = self.choose_new_samples(particles, weights)
 
             cs_div = self.write_results(particles, weights, log_posterior, i)
@@ -227,41 +223,6 @@ class AdaptiveSampling(Iterator):
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return cs_div
-
-    def get_particles_and_weights(self):
-        """Get particles and weights of solving iterator.
-
-        Returns:
-            particles (np.ndarray): particles from approximated posterior distribution
-            weights (np.ndarray): weights corresponding to particles
-            log_posterior (np.ndarray): log_posterior values corresponding to particles
-        """
-        if isinstance(self.solving_iterator, SequentialMonteCarloChopin):
-            particles = self.solving_iterator.smc_obj.fk.model.particles_array_to_numpy(
-                self.solving_iterator.smc_obj.X.theta
-            )
-            weights = self.solving_iterator.smc_obj.W.reshape(-1)
-            particles, unique_indices, unique_count = np.unique(
-                particles, axis=0, return_index=True, return_counts=True
-            )
-            weights = weights[unique_indices] * unique_count
-            weights /= np.sum(weights)
-            log_posterior = self.solving_iterator.smc_obj.X.lpost[unique_indices]
-        elif isinstance(self.solving_iterator, MetropolisHastings):
-            particles = self.solving_iterator.chains[self.solving_iterator.num_burn_in + 1 :]
-            particles = particles.reshape(-1, self.parameters.num_parameters)
-            log_posterior = self.solving_iterator.log_posterior[
-                self.solving_iterator.num_burn_in + 1 :
-            ].reshape(-1)
-            weights = np.ones(log_posterior.size) / log_posterior.size
-        elif isinstance(self.solving_iterator, Grid):
-            particles = self.solving_iterator.samples
-            log_posterior = self.solving_iterator.output
-            log_posterior_ = log_posterior - np.max(log_posterior)
-            weights = np.exp(log_posterior_) / np.sum(np.exp(log_posterior_))
-        else:
-            raise NotImplementedError
-        return particles, weights, log_posterior
 
     def post_run(self):
         """Post run."""
