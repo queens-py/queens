@@ -54,6 +54,7 @@ class Local(Dask):
         _logger.info(
             "To view the Dask dashboard open this link in your browser: %s", client.dashboard_link
         )
+        # pylint: disable=duplicate-code
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
@@ -63,11 +64,4 @@ class Local(Dask):
             restart_workers=restart_workers,
             verbose=verbose,
         )
-
-    def restart_worker(self, worker):
-        """Restart a worker.
-
-        Args:
-            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
-        """
-        self.client.restart_workers(workers=list(worker))
+        # pylint: enable=duplicate-code
