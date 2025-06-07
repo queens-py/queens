@@ -17,6 +17,9 @@
 import abc
 import logging
 from pathlib import Path
+from typing import final
+
+from queens.utils.logger_settings import setup_logger_on_dask_worker
 
 _logger = logging.getLogger(__name__)
 
@@ -27,6 +30,7 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
+        logger_on_dask_worker (logging.Logger): Logger instance used on the dask worker
     """
 
     def __init__(self, parameters, files_to_copy=None):
@@ -46,8 +50,32 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
-    @abc.abstractmethod
+        self.logger_on_dask_worker = None
+
+    @final
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+        """Run driver.
+
+        Args:
+            sample (dict): Dict containing sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            Result and potentially the gradient
+        """
+        if self.logger_on_dask_worker is None:
+            self.logger_on_dask_worker = setup_logger_on_dask_worker(
+                name=type(self).__name__, experiment_dir=experiment_dir, level=logging.INFO
+            )
+        self.logger_on_dask_worker.info("Running job %i", job_id)
+
+        return self._run(sample, job_id, num_procs, experiment_dir, experiment_name)
+
+    @abc.abstractmethod
+    def _run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Abstract method for driver run.
 
         Args:

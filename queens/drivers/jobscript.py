@@ -187,7 +187,7 @@ class Jobscript(Driver):
 
         return jobscript_template
 
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
@@ -239,7 +239,7 @@ class Jobscript(Driver):
             self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
-            results = self._get_results(output_dir)
+            results = self._get_results(output_dir, experiment_dir)
             metadata.outputs = results
 
         return results
@@ -293,11 +293,12 @@ class Jobscript(Driver):
                 f"{process_returncode}.",
             )
 
-    def _get_results(self, output_dir):
+    def _get_results(self, output_dir, experiment_dir=None):
         """Get results from driver run.
 
         Args:
             output_dir (Path): Path to output directory.
+            experiment_dir (Path | None): Path to QUEENS experiment directory.
 
         Returns:
             result (np.array): Result from the driver run.
@@ -305,13 +306,13 @@ class Jobscript(Driver):
         """
         result = None
         if self.data_processor:
-            result = self.data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got result: %s", result)
+            result = self.data_processor.get_data_from_file(output_dir, experiment_dir)
+            self.logger_on_dask_worker.info("Got result: %s", result)
 
         gradient = None
         if self.gradient_data_processor:
-            gradient = self.gradient_data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got gradient: %s", gradient)
+            gradient = self.gradient_data_processor.get_data_from_file(output_dir, experiment_dir)
+            self.logger_on_dask_worker.info("Got gradient: %s", gradient)
         return result, gradient
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):

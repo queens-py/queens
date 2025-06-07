@@ -19,6 +19,9 @@ import inspect
 import logging
 import sys
 
+from dask.distributed import get_worker
+
+from queens.utils.config_directories import logging_directory_on_dask_worker
 from queens.utils.printing import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
@@ -270,3 +273,45 @@ def log_init_args(method):
         method(*args, **kwargs)
 
     return wrapper
+
+
+def setup_logger_on_dask_worker(name="worker", experiment_dir=None, level=logging.INFO):
+    """Setup a logger on a dask worker.
+
+    Args:
+        name (str): Name of the logger.
+        experiment_dir (Path): Path to the experiment directory.
+        level (int): Logging level.
+
+    Returns:
+        logger (logging.Logger): Logger instance.
+    """
+    logger = logging.getLogger(name)
+
+    if logger.hasHandlers():
+        return logger  # Already configured (avoid duplicate handlers)
+
+    logger.setLevel(level)
+    formatter = NewLineFormatter(
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
+    )
+
+    if experiment_dir is not None:
+        log_dir = logging_directory_on_dask_worker(experiment_dir)
+
+        try:
+            worker = get_worker()
+            log_file = log_dir / f"{worker.name}.log"
+        except ValueError:
+            # Not inside a Dask worker — maybe running locally
+            log_file = log_dir / f"{name}_client.log"
+
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    logger.addHandler(stream_handler)
+
+    return logger
