@@ -73,6 +73,21 @@ def experiment_directory(
     return experiment_dir
 
 
+def logging_directory_on_dask_worker(experiment_dir):
+    """Directory for log-files of dask workers.
+
+    This is called on the Dask Worker thus the experiment directory should lready exist
+    and can be passed directly.
+
+
+    Args:
+        experiment_dir (Path): Directory for data of a specific experiment on the computing machine.
+    """
+    log_dir = experiment_dir / "dask_workers_logs"
+    create_directory(log_dir)
+    return log_dir
+
+
 def create_directory(dir_path: str | Path) -> None:
     """Create a directory either local or remote.
 

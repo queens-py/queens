@@ -112,7 +112,7 @@ class Function(Driver):
 
         return reshaped_output_function
 
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
         """Run the driver.
 
         Args:
