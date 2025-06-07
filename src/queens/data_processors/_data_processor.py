@@ -18,6 +18,8 @@ import abc
 import logging
 from pathlib import Path
 
+from queens.utils.logger_settings import setup_logger_on_dask_worker
+
 _logger = logging.getLogger(__name__)
 
 
@@ -55,6 +57,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                        implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
+            logger_on_dask_worker (logging.Logger): Logger instance used on the dask worker
         """
         if not file_name_identifier:
             raise ValueError(
@@ -90,15 +93,23 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
 
-    def get_data_from_file(self, base_dir_file):
+        self.logger_on_dask_worker = None
+
+    def get_data_from_file(self, base_dir_file, experiment_dir=None):
         """Get data of interest from file.
 
         Args:
             base_dir_file (Path): Path of the base directory that contains the file of interest
+            experiment_dir (Path): Path of QUEENS experiment.
 
         Returns:
             processed_data (np.array): Final data from data processor module
         """
+        if self.logger_on_dask_worker is None:
+            self.logger_on_dask_worker = setup_logger_on_dask_worker(
+                name=type(self).__name__, experiment_dir=experiment_dir, level=logging.INFO
+            )
+
         if not base_dir_file:
             raise ValueError(
                 "The data processor requires a base_directory for the "
@@ -109,7 +120,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The argument 'base_dir_file' must be of type 'Path' "
                 f"but is of type {type(base_dir_file)}. Abort..."
             )
-
+        self.logger_on_dask_worker.info("\nProcessing the following files:")
+        self.logger_on_dask_worker.info(str(base_dir_file))
         file_path = self._check_file_exist_and_is_unique(base_dir_file)
         processed_data = None
         if file_path:
