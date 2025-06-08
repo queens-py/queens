@@ -199,6 +199,7 @@ class Cluster(Dask):
             local_port_dashboard,
         )
 
+        # pylint: disable=duplicate-code
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
@@ -208,17 +209,7 @@ class Cluster(Dask):
             restart_workers=restart_workers,
             verbose=verbose,
         )
-
-    def restart_worker(self, worker):
-        """Restart a worker.
-
-        This method retires a dask worker. The Client.adapt method of dask takes cares of submitting
-        new workers subsequently.
-
-        Args:
-            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
-        """
-        self.client.retire_workers(workers=list(worker))
+        # pylint: enable=duplicate-code
 
     def copy_files_to_experiment_dir(self, paths):
         """Copy file to experiment directory.
