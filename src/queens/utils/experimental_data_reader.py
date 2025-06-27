@@ -18,7 +18,7 @@ from pathlib import Path
 
 import numpy as np
 
-from queens.data_processors.csv_file import CsvFile
+from queens.data_processors.csv_file import CsvFile, EntireFileFilter
 from queens.utils.logger_settings import log_init_args
 
 
@@ -63,12 +63,9 @@ class ExperimentalDataReader:
         if data_processor is None:
             self.data_processor = CsvFile(
                 file_name_identifier=self.file_name,
-                file_options_dict={
-                    "header_row": 0,
-                    "index_column": False,
-                    "returned_filter_format": "dict",
-                    "filter": {"type": "entire_file"},
-                },
+                header_row=0,
+                index_column=False,
+                pandas_filter=EntireFileFilter(result_format="dict"),
             )
 
     def get_experimental_data(self):
@@ -84,7 +81,7 @@ class ExperimentalDataReader:
             time_label (str): Name of the time variable in csv file
             coordinate_labels (lst): List of column-wise coordinate labels in csv files
         """
-        experimental_data_dict = self.data_processor.get_data_from_file(self.base_dir)
+        experimental_data_dict = self.data_processor.get_data_from_output_directory(self.base_dir)
 
         # arrange the experimental data coordinates
         experimental_coordinates = None

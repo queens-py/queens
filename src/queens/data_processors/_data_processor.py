@@ -30,56 +30,31 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                              paths are relative to the particular simulation output
                                              folder: *experiment_dir/<job_id>/output/<here
                                              comes your regex>* .
-        file_options_dict (dict): Dictionary with read-in options for
-                                  the file.
         file_name_identifier (str): Identifier for files.
                                     The file prefix can contain BASIC regex expression
                                     and subdirectories. Examples are wildcards `*` or
                                     expressions like `[ab]`.
     """
 
-    def __init__(
-        self,
-        file_name_identifier=None,
-        file_options_dict=None,
-        files_to_be_deleted_regex_lst=None,
-    ):
+    def __init__(self, file_name_identifier=None, files_to_be_deleted_regex_lst=None):
         """Init data processor class.
 
         Args:
             file_name_identifier (str): Identifier for files.
                                         The file prefix can contain regex expression and
                                         subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for
-                                      the file. The respective child class will
-                                       implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
         """
-        if not file_name_identifier:
-            raise ValueError(
-                f"No option 'file_name_identifier' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! "
-            )
         if not isinstance(file_name_identifier, str):
             raise TypeError(
                 "The option 'file_name_identifier' must be of type 'str' "
                 f"but is of type {type(file_name_identifier)}. "
             )
 
-        if file_options_dict is None:
-            raise ValueError(
-                f"No option 'file_options_dict' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! "
-            )
-        if not isinstance(file_options_dict, dict):
-            raise TypeError(
-                "The option 'file_options_dict' must be of type 'dict' "
-                f"but is of type {type(file_options_dict)}. "
-            )
-
         if files_to_be_deleted_regex_lst is None:
             files_to_be_deleted_regex_lst = []
+
         if not isinstance(files_to_be_deleted_regex_lst, list):
             raise TypeError(
                 "The option 'files_to_be_deleted_regex_lst' must be of type 'list' "
@@ -87,37 +62,43 @@ class DataProcessor(metaclass=abc.ABCMeta):
             )
 
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
-        self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
 
-    def get_data_from_file(self, base_dir_file):
-        """Get data of interest from file.
+    def get_data_from_file(self, file_path):
+        """Get data from file.
 
         Args:
-            base_dir_file (Path): Path of the base directory that contains the file of interest
+            file_path (pathlib.Path): Path to result file
 
         Returns:
-            processed_data (np.array): Final data from data processor module
+            np.ndarray: resukts
         """
-        if not base_dir_file:
-            raise ValueError(
-                "The data processor requires a base_directory for the "
-                "files to operate on! Your input was empty! "
-            )
-        if not isinstance(base_dir_file, Path):
+        raw_data = self.get_raw_data_from_file(file_path)
+        filtered_data = self.filter_and_manipulate_raw_data(raw_data)
+        processed_data = self._subsequent_data_manipulation(filtered_data)
+
+        return processed_data
+
+    def get_data_from_output_directory(self, output_dir):
+        """Get data of interest from file in the output_dir.
+
+        Args:
+            output_dir (Path): Path of the directory that contains the file of interest
+
+        Returns:
+            np.ndarray: Final data from data processor module
+        """
+        if not isinstance(output_dir, Path):
             raise TypeError(
                 "The argument 'base_dir_file' must be of type 'Path' "
-                f"but is of type {type(base_dir_file)}. "
+                f"but is of type {type(output_dir)}. "
             )
 
-        file_path = self._check_file_exist_and_is_unique(base_dir_file)
+        file_path = self._check_file_exist_and_is_unique(output_dir)
         processed_data = None
         if file_path:
-            raw_data = self.get_raw_data_from_file(file_path)
-            filtered_data = self.filter_and_manipulate_raw_data(raw_data)
-            processed_data = self._subsequent_data_manipulation(filtered_data)
-
-        self._clean_up(base_dir_file)
+            processed_data = self.get_data_from_file(file_path)
+        self._clean_up(output_dir)
         return processed_data
 
     def _check_file_exist_and_is_unique(self, base_dir_file):
@@ -159,7 +140,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
             raw_data (obj): Raw data from file.
         """
 
-    @abc.abstractmethod
     def filter_and_manipulate_raw_data(self, raw_data):
         """Filter or clean the raw data for given criteria.
 
@@ -169,6 +149,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         Returns:
             processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         """
+        return raw_data
 
     def _subsequent_data_manipulation(self, processed_data):
         """Subsequent manipulate the data_processor data.

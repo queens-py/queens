@@ -135,7 +135,6 @@ class TestDaskCluster:
         data_processor = PvdFile(
             field_name="displacement",
             file_name_identifier="output-structure.pvd",
-            file_options_dict={},
         )
 
         scheduler = cluster_scheduler.Cluster(
