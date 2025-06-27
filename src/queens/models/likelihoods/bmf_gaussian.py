@@ -327,7 +327,7 @@ class BMFGaussian(Likelihood):
         m_f_mat, var_y_mat = self.mf_interface.evaluate(z_mat)
         assert np.array_equal(
             m_f_mat.shape[1], np.atleast_2d(self.y_obs).shape[1]
-        ), "Column dimension of the probab. regression output and y_obs do not agree! Abort..."
+        ), "Column dimension of the probab. regression output and y_obs do not agree! "
 
         # iterate here over all surrogates simultaneously such that the
         # new m is a vector of all, e.g., first entries in all surrogates
@@ -720,7 +720,7 @@ class BmfiaInterface:
         if len(probabilistic_mapping_obj_lst) != z_lf.T.shape[0]:
             raise IndexError(
                 "The length of the list with probabilistic mapping objects "
-                "must agree with the row numbers in Z_LF.T (coordinate dimension)! Abort..."
+                "must agree with the row numbers in Z_LF.T (coordinate dimension)! "
             )
 
         for z_test_per_coordinate, probabilistic_mapping_obj in zip(
@@ -1143,14 +1143,14 @@ class BmfiaInterface:
                 "multi-processing pool in the BMFIA-interface! You specified "
                 f"{num_processors_multi_processing}, number of processors, which is not a "
                 "valid choice. A valid choice is an integer between 0 and the "
-                "number of available processors on your resource. Abort..."
+                "number of available processors on your resource. "
             )
         if num_processors_multi_processing > num_processors_available:
             raise RuntimeError(
                 f"You specified {num_processors_multi_processing} for the multi-processing "
                 f"pool but the system only has {num_processors_available}! "
                 f"Please specify a number of processors that is smaller or equal "
-                f"to {num_processors_available}! Abort..."
+                f"to {num_processors_available}! "
             )
 
         num_processors_for_job = min(num_processors_multi_processing, num_coords)

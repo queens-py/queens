@@ -59,23 +59,23 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if not file_name_identifier:
             raise ValueError(
                 f"No option 'file_name_identifier' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! Abort..."
+                "DataProcessor object cannot be instantiated! "
             )
         if not isinstance(file_name_identifier, str):
             raise TypeError(
                 "The option 'file_name_identifier' must be of type 'str' "
-                f"but is of type {type(file_name_identifier)}. Abort..."
+                f"but is of type {type(file_name_identifier)}. "
             )
 
         if file_options_dict is None:
             raise ValueError(
                 f"No option 'file_options_dict' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! Abort..."
+                "DataProcessor object cannot be instantiated! "
             )
         if not isinstance(file_options_dict, dict):
             raise TypeError(
                 "The option 'file_options_dict' must be of type 'dict' "
-                f"but is of type {type(file_options_dict)}. Abort..."
+                f"but is of type {type(file_options_dict)}. "
             )
 
         if files_to_be_deleted_regex_lst is None:
@@ -83,7 +83,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if not isinstance(files_to_be_deleted_regex_lst, list):
             raise TypeError(
                 "The option 'files_to_be_deleted_regex_lst' must be of type 'list' "
-                f"but is of type {type(files_to_be_deleted_regex_lst)}. Abort..."
+                f"but is of type {type(files_to_be_deleted_regex_lst)}. "
             )
 
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
@@ -102,12 +102,12 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if not base_dir_file:
             raise ValueError(
                 "The data processor requires a base_directory for the "
-                "files to operate on! Your input was empty! Abort..."
+                "files to operate on! Your input was empty! "
             )
         if not isinstance(base_dir_file, Path):
             raise TypeError(
                 "The argument 'base_dir_file' must be of type 'Path' "
-                f"but is of type {type(base_dir_file)}. Abort..."
+                f"but is of type {type(base_dir_file)}. "
             )
 
         file_path = self._check_file_exist_and_is_unique(base_dir_file)
@@ -136,7 +136,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 "The data_processor module found several files for the "
                 "provided 'file_name_prefix'!"
                 "The files are: {file_list}."
-                "The file prefix must lead to a unique file. Abort..."
+                "The file prefix must lead to a unique file. "
             )
         if len(file_list) == 1:
             file_path = file_list[0]

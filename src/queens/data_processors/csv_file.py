@@ -112,21 +112,21 @@ class CsvFile(DataProcessor):
         if header_row and not isinstance(header_row, int):
             raise ValueError(
                 "The option 'header_row' in the data_processor settings must be of type 'int'! "
-                f"You provided type '{type(header_row)}'. Abort..."
+                f"You provided type '{type(header_row)}'. "
             )
 
         use_cols_lst = file_options_dict.get("use_cols_lst")
         if use_cols_lst and not isinstance(use_cols_lst, list):
             raise TypeError(
                 "The option 'use_cols_lst' must be of type 'list' "
-                f"but you provided type {type(use_cols_lst)}. Abort..."
+                f"but you provided type {type(use_cols_lst)}. "
             )
 
         skip_rows = file_options_dict.get("skip_rows", 0)
         if not isinstance(skip_rows, int):
             raise ValueError(
                 "The option 'skip_rows' in the data_processor settings must be of type 'int'! "
-                f"You provided type '{type(skip_rows)}'. Abort..."
+                f"You provided type '{type(skip_rows)}'. "
             )
 
         index_column = file_options_dict.get("index_column", False)
@@ -135,7 +135,7 @@ class CsvFile(DataProcessor):
                 "The option 'index_column' must be either of type 'int' or 'str', "
                 f"but you provided type {type(index_column)}! Either your original data "
                 "type is wrong or the column does not exist in the csv-data file! "
-                "Abort..."
+                ""
             )
 
         returned_filter_format = file_options_dict.get("returned_filter_format", "numpy")
@@ -147,40 +147,40 @@ class CsvFile(DataProcessor):
         if not isinstance(filter_type, str):
             raise ValueError(
                 "The option 'type' in the data_processor settings must be of type 'str'! "
-                f"You provided type '{type(filter_type)}'. Abort..."
+                f"You provided type '{type(filter_type)}'. "
             )
 
         use_rows_lst = filter_options_dict.get("rows", [])
         if not isinstance(use_rows_lst, list):
             raise TypeError(
                 "The option 'rows' must be of type 'list' "
-                f"but you provided type {type(use_rows_lst)}. Abort..."
+                f"but you provided type {type(use_rows_lst)}. "
             )
         if not all(isinstance(row_idx, int) for row_idx in use_rows_lst):
             raise TypeError(
                 "The option 'rows' must be a list of `int` "
-                f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. Abort..."
+                f"but you provided type {[type(row_idx) for row_idx in use_rows_lst]}. "
             )
 
         filter_range = filter_options_dict.get("range", [])
         if filter_range and not isinstance(filter_range, list):
             raise TypeError(
                 "The option 'range' has to be of type 'list', "
-                f"but you provided type {type(filter_range)}. Abort..."
+                f"but you provided type {type(filter_range)}. "
             )
 
         filter_target_values = filter_options_dict.get("target_values", [])
         if not isinstance(filter_target_values, list):
             raise TypeError(
                 "The option 'target_values' has to be of type 'list', "
-                f"but you provided type {type(filter_target_values)}. Abort..."
+                f"but you provided type {type(filter_target_values)}. "
             )
 
         filter_tol = filter_options_dict.get("tolerance", 0.0)
         if not isinstance(filter_tol, float):
             raise TypeError(
                 "The option 'tolerance' has to be of type 'float', "
-                f"but you provided type {type(filter_tol)}. Abort..."
+                f"but you provided type {type(filter_tol)}. "
             )
 
         self.use_cols_lst = use_cols_lst

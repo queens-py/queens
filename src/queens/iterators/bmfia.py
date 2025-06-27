@@ -136,11 +136,11 @@ class BMFIA(Iterator):
         # check correct inputs
         assert isinstance(
             initial_design_dict, dict
-        ), "Input argument 'initial_design_dict' must be of type 'dict'! Abort..."
+        ), "Input argument 'initial_design_dict' must be of type 'dict'! "
 
         assert (
             "type" in initial_design_dict.keys()
-        ), "No key 'type' found in 'initial_design_dict'. Abort..."
+        ), "No key 'type' found in 'initial_design_dict'. "
 
         # choose design method
         if initial_design_dict["type"] == "random":
@@ -292,13 +292,11 @@ class BMFIA(Iterator):
         # check dimensions of the input
         assert (
             y_lf_mat.ndim == 2
-        ), f"Dimension of y_lf_mat must be 2 but you provided dim={y_lf_mat.ndim}. Abort..."
-        assert (
-            x_mat.ndim == 2
-        ), f"Dimension of x_mat must be 2 but you provided dim={x_mat.ndim}. Abort..."
+        ), f"Dimension of y_lf_mat must be 2 but you provided dim={y_lf_mat.ndim}. "
+        assert x_mat.ndim == 2, f"Dimension of x_mat must be 2 but you provided dim={x_mat.ndim}. "
         assert (
             coords_mat.ndim == 2
-        ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. Abort..."
+        ), f"Dimension of coords_mat must be 2 but you provided dim={coords_mat.ndim}. "
 
         feature_dict = {
             "man_features": self._get_man_features,
@@ -343,22 +341,22 @@ class BMFIA(Iterator):
         try:
             idx_lst = self.x_cols
             # Catch wrong data type
-            assert isinstance(idx_lst, list), "Entries of X_cols must be in list format! Abort..."
+            assert isinstance(idx_lst, list), "Entries of X_cols must be in list format! "
             # Catch empty list
             assert (
                 idx_lst != []
-            ), "The index list for selection of manual features must not be empty!, Abort..."
+            ), "The index list for selection of manual features must not be empty!, "
             gamma_mat = x_mat[:, idx_lst]
             assert (
                 gamma_mat.shape[0] == y_lf_mat.shape[0]
-            ), "Dimensions of gamma_mat and y_lf_mat do not agree! Abort..."
+            ), "Dimensions of gamma_mat and y_lf_mat do not agree! "
             z_lst = []
             for y_per_coordinate in y_lf_mat.T:
                 z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), gamma_mat]))
 
             z_mat = np.array(z_lst).squeeze().T
 
-            assert z_mat.ndim == 3, "z_mat should be a 3d tensor if man features are used! Abort..."
+            assert z_mat.ndim == 3, "z_mat should be a 3d tensor if man features are used! "
 
         except KeyError as my_error:
             raise KeyError(
@@ -378,10 +376,10 @@ class BMFIA(Iterator):
         """
         assert isinstance(
             self.num_features, int
-        ), "Number of informative features must be an integer! Abort..."
+        ), "Number of informative features must be an integer! "
         assert (
             self.num_features >= 1
-        ), "Number of informative features must be an integer greater than one! Abort..."
+        ), "Number of informative features must be an integer greater than one! "
 
         z_mat = self.update_probabilistic_mapping_with_features()
         return z_mat
@@ -404,32 +402,28 @@ class BMFIA(Iterator):
         try:
             idx_lst = self.coord_cols
             # Catch wrong data type
-            assert isinstance(
-                idx_lst, list
-            ), "Entries of coord_cols must be in list format! Abort..."
+            assert isinstance(idx_lst, list), "Entries of coord_cols must be in list format! "
             # Catch empty list
             assert (
                 idx_lst != []
-            ), "The index list for selection of manual features must not be empty!, Abort..."
+            ), "The index list for selection of manual features must not be empty!, "
 
             coord_feature = coords_mat[:, idx_lst]
             assert (
                 coord_feature.shape[0] == y_lf_mat.shape[0]
-            ), "Dimensions of coords_feature and y_lf_mat do not agree! Abort..."
+            ), "Dimensions of coords_feature and y_lf_mat do not agree! "
 
             z_lst = []
             for y_per_coordinate in y_lf_mat.T:
                 z_lst.append(np.hstack([y_per_coordinate.reshape(-1, 1), coord_feature]))
 
             z_mat = np.array(z_lst).squeeze().T
-            assert (
-                z_mat.ndim == 3
-            ), "z_mat should be a 3d tensor if coord_features are used! Abort..."
+            assert z_mat.ndim == 3, "z_mat should be a 3d tensor if coord_features are used! "
 
         except KeyError as my_error:
             raise KeyError(
                 "The settings for the probabilistic mapping need a key 'coord_cols' "
-                "if you want to use the feature configuration 'coord_features'! Abort..."
+                "if you want to use the feature configuration 'coord_features'! "
             ) from my_error
 
         return z_mat
@@ -469,9 +463,7 @@ class BMFIA(Iterator):
 
     def update_probabilistic_mapping_with_features(self):
         """Update multi-fidelity mapping with optimal lf-features."""
-        raise NotImplementedError(
-            "Optimal features for inverse problems are not yet implemented! Abort..."
-        )
+        raise NotImplementedError("Optimal features for inverse problems are not yet implemented! ")
 
     def eval_model(self):
         """Evaluate the LF and HF model to for the training inputs.

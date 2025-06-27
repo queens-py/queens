@@ -124,7 +124,7 @@ class HeteroskedasticGaussianProcess(Surrogate):
                 f"You configured {num_samples_stats} number of samples for the calculation "
                 "of the empirical posterior statistics. This number is either too low for "
                 "reliable results or not a valid input. Please provide a valide integrer input "
-                "greater than 100. Abort ..."
+                "greater than 100. "
             )
         self.num_posterior_samples = num_posterior_samples
         self.num_inducing_points = num_inducing_points

@@ -280,7 +280,7 @@ class JittedGaussianProcess(Surrogate):
                 "You did not specify a valid kernel type in the input file!"
                 f"Valid kernel types are {JittedGaussianProcess.valid_kernels_dict.keys()} "
                 f"but you specified {self.kernel_type}."
-                "Abort..."
+                ""
             )
 
         return jitted_kernel

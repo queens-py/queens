@@ -110,7 +110,7 @@ class BMFIAVisualization:
             if samples.shape[1] > 2:
                 raise RuntimeError(
                     f"At the moment we only support posterior plots up to two dimensions. "
-                    f"Your posterior has {samples.shape[1]}-dimensions. Abort ...."
+                    f"Your posterior has {samples.shape[1]}-dimensions. "
                 )
 
             sns.set_theme(style="whitegrid")
@@ -151,7 +151,7 @@ def plot_model_dependency(z_train, Y_HF_train, regression_obj_lst):
     elif z_train.ndim == 3:  # one array is already 3 dim due potentially several GPs
         _plot_3d_dependency(z_train, Y_HF_train, regression_obj_lst)
     else:
-        raise RuntimeError("Dimension of intended surrogate is too high to be plotted! Abort")
+        raise RuntimeError("Dimension of intended surrogate is too high to be plotted!")
 
 
 def _plot_3d_dependency(z_train, y_hf_train, regression_obj_lst):
