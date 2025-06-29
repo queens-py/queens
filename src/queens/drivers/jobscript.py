@@ -305,12 +305,12 @@ class Jobscript(Driver):
         """
         result = None
         if self.data_processor:
-            result = self.data_processor.get_data_from_file(output_dir)
+            result = self.data_processor.get_data_from_output_directory(output_dir)
             _logger.debug("Got result: %s", result)
 
         gradient = None
         if self.gradient_data_processor:
-            gradient = self.gradient_data_processor.get_data_from_file(output_dir)
+            gradient = self.gradient_data_processor.get_data_from_output_directory(output_dir)
             _logger.debug("Got gradient: %s", gradient)
         return result, gradient
 

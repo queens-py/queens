@@ -96,17 +96,9 @@ def test_rpvi_iterator_exe_park91a_hifi_provided_gradient(
     )
     data_processor = CsvFile(
         file_name_identifier="*_output.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
     )
     gradient_data_processor = CsvFile(
         file_name_identifier="*_gradient.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
     )
     driver = Mpi(
         parameters=parameters,
@@ -209,10 +201,6 @@ def test_rpvi_iterator_exe_park91a_hifi_finite_differences_gradient(
     )
     data_processor = CsvFile(
         file_name_identifier="*_output.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
     )
     driver = Mpi(
         parameters=parameters,
@@ -321,10 +309,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     data_processor = CsvFile(
         file_name_identifier="*_output.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
     )
     driver = Mpi(
         parameters=parameters,
@@ -335,10 +319,6 @@ def test_rpvi_iterator_exe_park91a_hifi_adjoint_gradient(
     )
     gradient_data_processor = CsvFile(
         file_name_identifier="*_gradient.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
     )
     adjoint_driver = Mpi(
         parameters=parameters,

@@ -258,8 +258,7 @@ class GridIteratorVisualization:
         if self.scale_types_list[idx] == "lin":
             return _linear_tick_formatter
         raise ValueError(
-            f"Your axis scaling type {self.scale_types_list[idx]} is not a valid "
-            f"option! Abort..."
+            f"Your axis scaling type {self.scale_types_list[idx]} is not a valid " f"option! "
         )
 
 

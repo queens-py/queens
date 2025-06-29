@@ -199,7 +199,7 @@ class VariationalInference(Iterator):
         _logger.info("Initialize Optimization run.")
         if self.parameters.random_field_flag:
             raise NotImplementedError(
-                "Variational inference for random fields is not yet implemented! Abort..."
+                "Variational inference for random fields is not yet implemented! "
             )
         self._initialize_variational_params()
 
@@ -301,7 +301,7 @@ class VariationalInference(Iterator):
         else:
             raise ValueError(
                 f"The transformation type {self.variational_transformation} for the "
-                f"variational density is unknown! Abort..."
+                f"variational density is unknown! "
             )
 
         return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
@@ -325,7 +325,7 @@ class VariationalInference(Iterator):
         else:
             raise ValueError(
                 f"The transformation type {self.variational_transformation} for the "
-                f"variational density is unknown! Abort..."
+                f"variational density is unknown! "
             )
         return x_mat_trans
 

@@ -198,7 +198,7 @@ class BMFMC(Iterator):
                 f"You specified the non-valid method"
                 f" '{self.initial_design['method']}'. This is not "
                 f"implemented! The only valid methods are 'random' or "
-                f"'diverse_subset'. Abort..."
+                f"'diverse_subset'. "
             )
 
         return run_design_method

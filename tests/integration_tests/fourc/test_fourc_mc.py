@@ -51,7 +51,6 @@ def test_fourc_mc(
     data_processor = PvdFile(
         field_name="displacement",
         file_name_identifier="output-structure.pvd",
-        file_options_dict={},
     )
 
     scheduler = Local(

@@ -336,7 +336,7 @@ class GaussianBayesianNeuralNetwork(Surrogate):
         elif support == "f":
             predict_method = self.predict_f
         else:
-            raise RuntimeError("No suitable prediction method could be selected. Abort...")
+            raise RuntimeError("No suitable prediction method could be selected. ")
 
         output = predict_method(x_test, full_cov=full_cov)
 

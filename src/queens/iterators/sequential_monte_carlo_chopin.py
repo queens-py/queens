@@ -123,9 +123,7 @@ class SequentialMonteCarloChopin(Iterator):
     def _initialize_prior_model(self):
         """Initialize the prior model form the problem description."""
         if self.parameters.random_field_flag:
-            raise NotImplementedError(
-                "Particles SMC for random fields is not yet implemented! Abort..."
-            )
+            raise NotImplementedError("Particles SMC for random fields is not yet implemented! ")
 
         # Important that has to be a OrderedDict otherwise there is a mismatch between particles
         # and QUEENS parameters

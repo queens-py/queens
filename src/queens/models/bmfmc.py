@@ -441,8 +441,7 @@ class BMFMC(Model):
                 self.Y_HF_mc = self.hf_data_iterator.read_pickle_file().get("output")[:, 0]
             except FileNotFoundError as ex:
                 raise FileNotFoundError(
-                    "The file containing the high-fidelity Monte-Carlo data "
-                    "was not found! Abort..."
+                    "The file containing the high-fidelity Monte-Carlo data was not found!"
                 ) from ex
 
     def get_hf_training_data(self):
@@ -457,7 +456,7 @@ class BMFMC(Model):
         if self.X_train is None:
             raise ValueError(
                 "The training input X_train cannot be 'None'! The training inputs "
-                "should have been calculated in the iterator! Abort..."
+                "should have been calculated in the iterator! "
             )
 
         # check how we should get the corresponding HF simulation output
@@ -490,7 +489,7 @@ class BMFMC(Model):
             raise RuntimeError(
                 "Please make sure to provide either a pickle file with "
                 "high-fidelity Monte-Carlo data or an appropriate high-fidelity "
-                "model to compute the high-fidelity training data! Abort..."
+                "model to compute the high-fidelity training data! "
             )
 
     def build_approximation(self, approx_case=True):
@@ -636,7 +635,7 @@ class BMFMC(Model):
                 raise ValueError(
                     f"You specified {self.num_features} features, "
                     "which is an "
-                    f"invalid value! Please only specify integer values greater than zero! Abort..."
+                    f"invalid value! Please only specify integer values greater than zero! "
                 )
             self.update_probabilistic_mapping_with_features()
         elif self.features_config == "no_features":
@@ -710,7 +709,7 @@ class BMFMC(Model):
         if self.training_indices is not None:
             self.Z_train = self.Z_mc[self.training_indices, :]
         else:
-            raise ValueError("The training indices are still set to None! Abort...")
+            raise ValueError("The training indices are still set to None! ")
 
         # update dataset for probabilistic mapping with new feature dimensions
         self.interface.build_approximation(self.Z_train, self.Y_HF_train)
@@ -938,7 +937,7 @@ class BmfmcInterface:
         if gradient_bool:
             raise NotImplementedError(
                 "The gradient response is not implemented for this interface. Please set "
-                "`gradient_bool=False`. Abort..."
+                "`gradient_bool=False`. "
             )
 
         output = self.probabilistic_mapping.predict(samples, support=support, full_cov=full_cov)

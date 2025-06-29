@@ -48,7 +48,6 @@ class TxtFile(DataProcessor):
     def __init__(
         self,
         file_name_identifier=None,
-        file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
         remove_logger_prefix_from_raw_data=True,
         logger_prefix=r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
@@ -61,7 +60,6 @@ class TxtFile(DataProcessor):
             file_name_identifier (str):             Identifier of file name.
                                                     The file prefix can contain a regex expression
                                                     and subdirectories.
-            file_options_dict (dict):               Dictionary with read-in options for the file:
             files_to_be_deleted_regex_lst (lst):    List with paths to files that should be deleted.
                                                     The paths can contain regex expressions.
             remove_logger_prefix_from_raw_data(bool):   Defaults to True. Removes the logger_prefix
@@ -75,7 +73,6 @@ class TxtFile(DataProcessor):
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
-            file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
         self.remove_logger_prefix_from_raw_data = remove_logger_prefix_from_raw_data
@@ -112,21 +109,6 @@ class TxtFile(DataProcessor):
                 error,
             )
             return None
-
-    def filter_and_manipulate_raw_data(self, raw_data):
-        """Filter the raw data from the txt file.
-
-        The TxtFile class provides some basic filtering functionality,
-        however it is up to the user to define the specifics of how the raw data
-        should be filtered.
-
-        Args:
-            raw_data (lst): List of strings Raw data from file.
-
-        Return:
-            To be implemented by user.
-        """
-        return raw_data
 
     def _check_file_size(self, file_path):
         """Check the file size of the input file.

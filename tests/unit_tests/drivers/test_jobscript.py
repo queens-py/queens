@@ -95,16 +95,13 @@ def fixture_executable(tmp_path):
 @pytest.fixture(name="data_processor")
 def fixture_data_processor():
     """Dummy data processor."""
-    return NumpyFile(
-        file_name_identifier="dummy.npy",
-        file_options_dict={},
-    )
+    return NumpyFile(file_name_identifier="dummy.npy")
 
 
 @pytest.fixture(name="gradient_data_processor")
 def fixture_gradient_data_processor():
     """Dummy gradient data processor."""
-    return TxtFile(file_name_identifier="dummy.txt", file_options_dict={})
+    return TxtFile(file_name_identifier="dummy.txt")
 
 
 @pytest.fixture(name="jobscript_file_name")
