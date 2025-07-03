@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
+from example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
 from queens.models.surrogates.gaussian_neural_network import GaussianNeuralNetwork
 from test_utils.integration_tests import (  # pylint: disable=wrong-import-order
     assert_surrogate_model_output,

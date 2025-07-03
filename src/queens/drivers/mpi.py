@@ -36,7 +36,7 @@ class Mpi(Jobscript):
         gradient_data_processor=None,
         mpi_cmd="/usr/bin/mpirun --bind-to none",
     ):
-        """Initialize Fourc object.
+        """Initialize MPI object.
 
         Args:
             parameters (Parameters): Parameters object

@@ -18,13 +18,13 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from queens.example_simulator_functions.gaussian_logpdf import (
+from example_simulator_functions.gaussian_logpdf import (
     GAUSSIAN_2D,
     STANDARD_NORMAL,
     gaussian_1d_logpdf,
     gaussian_2d_logpdf,
 )
-from queens.example_simulator_functions.park91a import park91a_hifi
+from example_simulator_functions.park91a import park91a_hifi
 from test_utils.integration_tests import get_input_park91a
 
 

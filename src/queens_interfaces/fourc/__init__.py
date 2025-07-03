@@ -12,19 +12,8 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Data Processor.
+"""Modules interfacing 4C.
 
-Modules for extracting and processing data from simulation output files.
+Modules for interfacing the for multiphysics code 4C (
+https://github.com/4C-multiphysics/4C)
 """
-
-from queens.data_processors.csv_file import CsvFile
-from queens.data_processors.numpy_file import NumpyFile
-from queens.data_processors.pvd_file import PvdFile
-from queens.data_processors.txt_file import TxtFile
-
-VALID_TYPES = {
-    "csv": CsvFile,
-    "numpy": NumpyFile,
-    "pvd": PvdFile,
-    "txt": TxtFile,
-}

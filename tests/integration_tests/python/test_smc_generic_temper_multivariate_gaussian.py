@@ -22,9 +22,9 @@ import pandas as pd
 import pytest
 from mock import patch
 
+from example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.example_simulator_functions.gaussian_logpdf import GAUSSIAN_4D, gaussian_4d_logpdf
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator

@@ -18,17 +18,17 @@ Modules containing example simulator functions for testing and
 benchmarking.
 """
 
-from queens.example_simulator_functions.agawal09 import agawal09a
-from queens.example_simulator_functions.borehole83 import borehole83_hifi, borehole83_lofi
-from queens.example_simulator_functions.branin78 import branin78_hifi, branin78_lofi, branin78_medfi
-from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
-from queens.example_simulator_functions.gardner14a import gardner14a
-from queens.example_simulator_functions.ishigami90 import ishigami90
-from queens.example_simulator_functions.ma09 import ma09
-from queens.example_simulator_functions.oakley_ohagan04 import oakley_ohagan04
-from queens.example_simulator_functions.parabola_residual import parabola_residual
-from queens.example_simulator_functions.paraboloid import paraboloid
-from queens.example_simulator_functions.park91a import (
+from example_simulator_functions.agawal09 import agawal09a
+from example_simulator_functions.borehole83 import borehole83_hifi, borehole83_lofi
+from example_simulator_functions.branin78 import branin78_hifi, branin78_lofi, branin78_medfi
+from example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
+from example_simulator_functions.gardner14a import gardner14a
+from example_simulator_functions.ishigami90 import ishigami90
+from example_simulator_functions.ma09 import ma09
+from example_simulator_functions.oakley_ohagan04 import oakley_ohagan04
+from example_simulator_functions.parabola_residual import parabola_residual
+from example_simulator_functions.paraboloid import paraboloid
+from example_simulator_functions.park91a import (
     park91a_hifi,
     park91a_hifi_on_grid,
     park91a_hifi_on_grid_with_gradients,
@@ -36,16 +36,16 @@ from queens.example_simulator_functions.park91a import (
     park91a_lofi_on_grid,
     park91a_lofi_on_grid_with_gradients,
 )
-from queens.example_simulator_functions.park91b import park91b_hifi, park91b_lofi
-from queens.example_simulator_functions.perdikaris17 import perdikaris17_hifi, perdikaris17_lofi
-from queens.example_simulator_functions.rosenbrock60 import (
+from example_simulator_functions.park91b import park91b_hifi, park91b_lofi
+from example_simulator_functions.perdikaris17 import perdikaris17_hifi, perdikaris17_lofi
+from example_simulator_functions.rosenbrock60 import (
     rosenbrock60,
     rosenbrock60_residual,
     rosenbrock60_residual_1d,
     rosenbrock60_residual_3d,
 )
-from queens.example_simulator_functions.sinus import sinus_test_fun
-from queens.example_simulator_functions.sobol_g_function import sobol_g_function
+from example_simulator_functions.sinus import sinus_test_fun
+from example_simulator_functions.sobol_g_function import sobol_g_function
 from queens.utils.valid_options import get_option
 
 VALID_EXAMPLE_SIMULATOR_FUNCTIONS = {

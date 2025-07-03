@@ -1,9 +1,18 @@
+========
 Packages
 ========
 
 Here, we present a brief overview of the fundamental packages of QUEENS.
 
-{% for module in modules %}
+QUEENS
+======
+
+.. toctree::
+   :maxdepth: 1
+
+   queens
+
+{% for module in queens_modules %}
 {{ module["name"] }}
 {{ "-"*len(module["name"]) }}
 
@@ -14,3 +23,35 @@ Here, we present a brief overview of the fundamental packages of QUEENS.
 
 {{ module["description"] }}
 {% endfor %}
+
+QUEENS interfaces
+=================
+
+.. toctree::
+   :maxdepth: 1
+
+   {{ queens_interfaces["module"] }}
+
+{{ queens_interfaces["description"] }}
+
+{% for module in queens_interfaces_modules %}
+{{ module["name"] }}
+{{ "-"*len(module["name"]) }}
+
+.. toctree::
+   :maxdepth: 1
+
+   {{ module["module"] }}
+
+{{ module["description"] }}
+{% endfor %}
+
+Example simulator functions
+===========================
+
+.. toctree::
+   :maxdepth: 1
+
+   {{ example_simulator_functions["module"] }}
+
+{{ example_simulator_functions["description"] }}

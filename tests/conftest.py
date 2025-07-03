@@ -25,7 +25,7 @@ import pytest
 from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
-from queens.utils.path import relative_path_from_queens_source, relative_path_from_root
+from queens.utils.path import relative_path_from_root
 
 _logger = logging.getLogger(__name__)
 
@@ -219,7 +219,7 @@ def fixture_fourc_link_paths(config_dir):
 @pytest.fixture(name="example_simulator_fun_dir", scope="session")
 def fixture_example_simulator_fun_dir():
     """Return the path to the example simulator functions."""
-    input_files_path = relative_path_from_queens_source("example_simulator_functions")
+    input_files_path = relative_path_from_root("src/example_simulator_functions")
     return input_files_path
 
 
