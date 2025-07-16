@@ -20,3 +20,4 @@ docformatter>=1.5.1
 yamllint>=1.19.0
 ruff
 myst-parser
+testbook

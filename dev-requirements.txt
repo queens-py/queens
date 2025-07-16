@@ -133,7 +133,9 @@ mistune==3.0.2
 myst-parser==4.0.0
     # via -r dev-requirements.in
 nbclient==0.10.0
-    # via nbconvert
+    # via
+    #   nbconvert
+    #   testbook
 nbconvert==7.16.4
     # via nbsphinx
 nbformat==5.10.4
@@ -141,6 +143,7 @@ nbformat==5.10.4
     #   nbclient
     #   nbconvert
     #   nbsphinx
+    #   testbook
 nbsphinx==0.9.5
     # via -r dev-requirements.in
 nodeenv==1.9.1
@@ -263,6 +266,8 @@ termcolor==2.5.0
     # via
     #   -c requirements.txt
     #   commitizen
+testbook==0.4.2
+    # via -r dev-requirements.in
 tinycss2==1.4.0
     # via nbconvert
 toml==0.10.2
