@@ -129,4 +129,4 @@ class Particle(Discrete):
         self.check_1d()
         indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side="left")
         indices = np.clip(indices, 0, len(self.probabilities))
-        return self.sample_space[indices]
+        return self.sample_space[indices].reshape(-1)

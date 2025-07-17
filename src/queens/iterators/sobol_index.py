@@ -45,6 +45,8 @@ class SobolIndex(Iterator):
         num_bootstrap_samples (int): Number of bootstrap samples for confidence intervals.
         confidence_level (float): Confidence level for the intervals.
         result_description (dict): Description of the desired results.
+        samples_unit_hypercube (bool):  Whether Saltelli's sequence is sampled uniformly from
+                                        the unit hypercube.
         samples (np.array): Samples used for analysis.
         output (dict): Model outputs corresponding to samples.
         salib_problem (dict): Problem definition for SALib.
@@ -66,6 +68,7 @@ class SobolIndex(Iterator):
         confidence_level,
         result_description,
         skip_values=None,
+        samples_unit_hypercube=False,
     ):
         """Initialize Saltelli SALib iterator object.
 
@@ -83,6 +86,8 @@ class SobolIndex(Iterator):
                                        of base 2. None triggers the SALib default value:
                                        a power of 2 >= N, or 16; whichever is greater.
                                        (default: None).
+            samples_unit_hypercube (bool):  Whether Saltelli's sequence is sampled uniformly from
+                                            the unit hypercube.
         """
         super().__init__(model, parameters, global_settings)
 
@@ -93,6 +98,7 @@ class SobolIndex(Iterator):
         self.num_bootstrap_samples = num_bootstrap_samples
         self.confidence_level = confidence_level
         self.result_description = result_description
+        self.samples_unit_hypercube = samples_unit_hypercube
 
         self.samples = None
         self.output = None
@@ -109,9 +115,13 @@ class SobolIndex(Iterator):
             raise RuntimeError(
                 "The SaltelliIterator does not work in conjunction with random fields."
             )
-        distribution_types, distribution_parameters = extract_parameters_of_parameter_distributions(
-            self.parameters
-        )
+        if self.samples_unit_hypercube:
+            distribution_types = ["unif"] * self.num_params
+            distribution_parameters = [[0, 1]] * self.num_params
+        else:
+            distribution_types, distribution_parameters = (
+                extract_parameters_of_parameter_distributions(self.parameters)
+            )
 
         self.salib_problem = {
             "num_vars": self.parameters.num_parameters,
@@ -127,6 +137,8 @@ class SobolIndex(Iterator):
             calc_second_order=self.calc_second_order,
             skip_values=self.skip_values,
         )
+        if self.samples_unit_hypercube:
+            self.samples = self.parameters.inverse_cdf_transform(self.samples)
         _logger.debug(self.samples)
 
     def get_all_samples(self):
