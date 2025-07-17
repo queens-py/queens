@@ -18,9 +18,9 @@ import numpy as np
 import pytest
 from mock import patch
 
+from example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
-from queens.example_simulator_functions.gaussian_logpdf import gaussian_2d_logpdf
 from queens.iterators.metropolis_hastings_pymc import MetropolisHastingsPyMC
 from queens.main import run_iterator
 from queens.models.likelihoods.gaussian import Gaussian

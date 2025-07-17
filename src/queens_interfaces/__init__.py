@@ -12,13 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""External geometry.
+"""QUEENS interfaces.
 
-Modules for preprocessing geometry from external simulation software.
+QUEENS interfaces for different packages.
 """
-
-from queens.external_geometries.fourc_dat import FourcDat
-
-VALID_TYPES = {
-    "fourc_dat": FourcDat,
-}

@@ -20,7 +20,7 @@ from pathlib import Path
 import numpy as np
 from numpy import genfromtxt
 
-from queens.example_simulator_functions import park91a_hifi
+from example_simulator_functions import park91a_hifi
 
 
 def park91a_hifi_coords(x1, x2, x3, x4):

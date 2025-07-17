@@ -25,8 +25,8 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
-from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
+from example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
+from example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 from queens.utils.path import relative_path_from_root
 from queens.utils.pdf_estimation import estimate_bandwidth_for_kde
 from queens.utils.process_outputs import write_results

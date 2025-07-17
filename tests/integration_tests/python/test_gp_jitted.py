@@ -19,7 +19,7 @@ from copy import deepcopy
 import numpy as np
 import pytest
 
-from queens.example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
+from example_simulator_functions.sinus import gradient_sinus_test_fun, sinus_test_fun
 from queens.models.surrogates.jitted_gaussian_process import JittedGaussianProcess
 from queens.stochastic_optimizers import Adam
 from test_utils.integration_tests import (  # pylint: disable=wrong-import-order

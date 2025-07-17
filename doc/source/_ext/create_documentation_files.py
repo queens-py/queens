@@ -190,8 +190,6 @@ def create_overview():
     overview_template = get_template_path_by_name("overview.rst.j2")
     overview_path = relative_to_doc_source("overview.rst")
 
-    queens_base_path = relative_path_from_root("src/queens")
-
     def get_module_description(python_file):
         """Get module description.
 
@@ -204,7 +202,8 @@ def create_overview():
         module_documentation = pydoc.importfile(str(python_file)).__doc__.split("\n\n")
         return "\n\n".join([m.replace("\n", " ") for m in module_documentation[1:]])
 
-    modules = []
+    queens_base_path = relative_path_from_root("src/queens")
+    queens_modules = []
     for path in sorted(queens_base_path.iterdir()):
         if path.name.startswith("__") or not path.is_dir():
             continue
@@ -212,7 +211,7 @@ def create_overview():
         description = get_module_description(path / "__init__.py")
         name = path.stem
 
-        modules.append(
+        queens_modules.append(
             {
                 "name": name.replace("_", " ").title(),
                 "module": "queens." + name,
@@ -220,7 +219,56 @@ def create_overview():
             }
         )
 
-    inject({"modules": modules, "len": len}, overview_template, overview_path)
+    queens_interfaces_path = relative_path_from_root("src/queens_interfaces")
+    queens_interfaces_modules = []
+    for path in sorted(queens_interfaces_path.iterdir()):
+        if path.name.startswith("__") or not path.is_dir():
+            continue
+
+        description = get_module_description(path / "__init__.py")
+        name = path.stem
+
+        queens_interfaces_modules.append(
+            {
+                "name": name.replace("_", " ").title(),
+                "module": "queens_interfaces." + name,
+                "description": description,
+            }
+        )
+
+    name = queens_interfaces_path.stem
+    description = get_module_description(queens_interfaces_path / "__init__.py")
+    queens_interfaces = {
+        "name": name.replace("_", " ").title(),
+        "module": "queens_interfaces",
+        "description": description,
+    }
+
+    example_simulator_functions = relative_path_from_root(
+        "src/example_simulator_functions/__init__.py"
+    )
+    example_simulator_functions_module = []
+
+    description = get_module_description(example_simulator_functions)
+    name = example_simulator_functions.parent.stem
+
+    example_simulator_functions_module = {
+        "name": name.replace("_", " ").title(),
+        "module": "example_simulator_functions",
+        "description": description,
+    }
+
+    inject(
+        {
+            "queens_modules": queens_modules,
+            "queens_interfaces_modules": queens_interfaces_modules,
+            "queens_interfaces": queens_interfaces,
+            "example_simulator_functions": example_simulator_functions_module,
+            "len": len,
+        },
+        overview_template,
+        overview_path,
+    )
 
 
 def download_images():

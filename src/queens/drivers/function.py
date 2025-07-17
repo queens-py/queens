@@ -19,8 +19,8 @@ import logging
 
 import numpy as np
 
+from example_simulator_functions import example_simulator_function_by_name
 from queens.drivers._driver import Driver
-from queens.example_simulator_functions import example_simulator_function_by_name
 from queens.utils.imports import get_module_attribute
 from queens.utils.logger_settings import log_init_args
 

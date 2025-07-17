@@ -17,7 +17,7 @@
 import numpy as np
 import pytest
 
-from queens.example_simulator_functions import (
+from example_simulator_functions import (
     VALID_EXAMPLE_SIMULATOR_FUNCTIONS,
     example_simulator_function_by_name,
 )

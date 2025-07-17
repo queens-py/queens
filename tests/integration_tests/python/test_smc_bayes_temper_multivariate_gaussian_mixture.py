@@ -22,13 +22,13 @@ import pandas as pd
 import pytest
 from mock import patch
 
-from queens.distributions.normal import Normal
-from queens.distributions.uniform import Uniform
-from queens.drivers.function import Function
-from queens.example_simulator_functions.gaussian_mixture_logpdf import (
+from example_simulator_functions.gaussian_mixture_logpdf import (
     GAUSSIAN_COMPONENT_1,
     gaussian_mixture_4d_logpdf,
 )
+from queens.distributions.normal import Normal
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
 from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator

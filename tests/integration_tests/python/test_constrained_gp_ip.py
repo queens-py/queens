@@ -17,9 +17,9 @@
 import numpy as np
 import pytest
 
+from example_simulator_functions.park91a import park91a_hifi_on_grid
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
 from queens.iterators.adaptive_sampling import AdaptiveSampling
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
