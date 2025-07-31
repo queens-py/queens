@@ -87,6 +87,7 @@ class Dask(Scheduler):
         num_procs,
         client,
         restart_workers,
+        max_wait_time=0.0,
         verbose=True,
     ):
         """Initialize scheduler.
@@ -98,6 +99,13 @@ class Dask(Scheduler):
             num_procs (int): number of processors per job
             client (Client): Dask client that connects to and submits computation to a Dask cluster
             restart_workers (bool): If true, restart workers after each finished job
+            max_wait_time (float, opt): Maximum wait time before a job is started in seconds.
+                                        Defaults to 0.0 (so all jobs are started immediately).
+                                        The wait time for each job is uniformly distributed between
+                                        0 and max_wait_time.
+                                        Starting many jobs (several hundreds) at the same time can
+                                        overwhelm the hardware of a resource, the randomized wait
+                                        time can help to spread the load.
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         super().__init__(
@@ -109,6 +117,7 @@ class Dask(Scheduler):
         self.num_procs = num_procs
         self.client = client
         self.restart_workers = restart_workers
+        self.max_wait_time = max_wait_time
 
         # Register this plugin on all workers
         if self.restart_workers:
@@ -133,7 +142,7 @@ class Dask(Scheduler):
         # by starting many jobs at the same time
         # -> introduce a random wait time for jobs to spread the load
         def run_driver(*args, **kwargs):
-            random_wait_time = random.uniform(3, 7)
+            random_wait_time = random.uniform(0.0, self.max_wait_time)
             time.sleep(random_wait_time)
             return driver.run(*args, **kwargs)
 
