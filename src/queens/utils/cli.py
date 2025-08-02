@@ -26,7 +26,7 @@ from queens.utils.input_to_script import create_script_from_input_file
 from queens.utils.io import print_pickled_data
 from queens.utils.logger_settings import reset_logging, setup_cli_logging
 from queens.utils.metadata import write_metadata_to_csv
-from queens.utils.path import PATH_TO_QUEENS
+from queens.utils.path import PATH_TO_ROOT
 from queens.utils.printing import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
@@ -201,7 +201,7 @@ def build_html_coverage_report():
         'pytest -m "unit_tests or integration_tests or integration_tests_fourc" '
         "--cov --cov-report=html:html_coverage_report"
     )
-    command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
+    command_list = ["cd", str(PATH_TO_ROOT), "&&", pytest_command_string]
     command_string = " ".join(command_list)
     run_subprocess(command_string)
 
@@ -211,7 +211,7 @@ def remove_html_coverage_report():
     _logger.info("Remove html coverage report...")
 
     pytest_command_string = "rm -r html_coverage_report/; rm .coverage*"
-    command_list = ["cd", str(PATH_TO_QUEENS), "&&", pytest_command_string]
+    command_list = ["cd", str(PATH_TO_ROOT), "&&", pytest_command_string]
     command_string = " ".join(command_list)
     run_subprocess(command_string)
 

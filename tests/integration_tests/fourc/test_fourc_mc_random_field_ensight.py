@@ -34,6 +34,10 @@ from queens.utils.io import load_result, read_file
 _logger = logging.getLogger(__name__)
 
 
+# Skip this test as it is no longer compatible with 4C, will be fixed with #176
+pytestmark = pytest.mark.skip
+
+
 class DummyKLField(KarhunenLoeve):
     """Dummy Karhunen-Loeve random field."""
 

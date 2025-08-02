@@ -42,15 +42,15 @@ jobs:
           $PYTHON_PACKAGE_MANAGER activate queens
 
           echo "::group::Run isort..."
-          isort --check-only queens tests
+          isort --check-only src/* tests
           echo "::endgroup::"
 
           echo "::group::Run black..."
-          black --check queens tests
+          black --check src/* tests
           echo "::endgroup::"
 
           echo "::group::Run pylint..."
-          pylint --rcfile=.pylintrc --disable=duplicate-code queens tests
+          pylint --rcfile=.pylintrc --disable=duplicate-code src/ tests
           echo "::endgroup::"
 
           echo "::group::Run ruff..."
@@ -58,7 +58,7 @@ jobs:
           echo "::endgroup::"
 
           # echo "::group::Create code quality report..."
-          # pylint queens tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
+          # pylint src/ tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
           # echo "::endgroup::"
 

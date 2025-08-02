@@ -16,40 +16,40 @@
 
 from pathlib import Path
 
-PATH_TO_SOURCE = Path(__file__).parents[1]
-PATH_TO_QUEENS = Path(__file__).parents[2]
+PATH_TO_QUEENS_SOURCE = Path(__file__).parents[1]
+PATH_TO_ROOT = Path(__file__).parents[3]
 
 
-def relative_path_from_source(relative_path):
-    """Create relative path from *queens/*.
+def relative_path_from_queens_source(relative_path):
+    """Create relative path from *src/queens/*.
 
-    As an example to create: *queens/queens/folder/file.A*.
+    As an example to create: *src/queens/folder/file.A*.
 
-    Call *relative_path_from_source("folder/file.A")* .
+    Call *relative_path_from_queens_source("folder/file.A")* .
 
     Args:
-        relative_path (str): "Path" starting from *queens/queens/*
+        relative_path (str): "Path" starting from *src/queens/*
     Returns:
         PosixPath: Absolute path to the file
     """
-    full_path = PATH_TO_SOURCE / relative_path
+    full_path = PATH_TO_QUEENS_SOURCE / relative_path
     return full_path
 
 
-def relative_path_from_queens(relative_path):
-    """Create relative path from *queens/*.
+def relative_path_from_root(relative_path):
+    """Create relative path from root directory.
 
-    As an example to create: *queens/queens/folder/file.A* .
+    As an example to create: *src/queens/folder/file.A* .
 
-    Call *relative_path_from_source("queens/folder/file.A")* .
+    Call *relative_path_from_root("src/queens/folder/file.A")* .
 
     Args:
-        relative_path (str): "Path" starting from *queens/*
+        relative_path (str): "Path" starting from the root directory
 
     Returns:
         PosixPath: Absolute path to the file
     """
-    full_path = PATH_TO_QUEENS / relative_path
+    full_path = PATH_TO_ROOT / relative_path
     return full_path
 
 

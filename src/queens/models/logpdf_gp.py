@@ -433,7 +433,7 @@ class LogpdfGP(Model):
             erfc_arg < 5, jsp.special.erfinv(quantile * erfc_term - 1), -erfc_arg
         )
         log_likelihood = log_likelihood * jnp.sqrt(2) * std + mean
-        log_likelihood = jnp.clip(log_likelihood, a_min=None, a_max=upper_bound)
+        log_likelihood = jnp.clip(log_likelihood, min=None, max=upper_bound)
         return log_likelihood
 
     @staticmethod

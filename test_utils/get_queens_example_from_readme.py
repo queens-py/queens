@@ -17,7 +17,7 @@
 
 from pathlib import Path
 
-from queens.utils.path import relative_path_from_queens
+from queens.utils.path import relative_path_from_root
 
 
 def extract_from_markdown_file_by_marker(marker_name, md_file):
@@ -48,7 +48,7 @@ def get_queens_example_from_readme(output_dir):
     Args:
         output_dir (str): Output directory for the QUEENS run.
     """
-    readme_path = relative_path_from_queens("README.md")
+    readme_path = relative_path_from_root("README.md")
 
     example_source = (
         extract_from_markdown_file_by_marker("example", readme_path)

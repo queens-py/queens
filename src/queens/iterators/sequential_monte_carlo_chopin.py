@@ -58,6 +58,8 @@ class SequentialMonteCarloChopin(Iterator):
         feynman_kac_model (str): Feynman Kac model for the smc object.
         num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps).
         waste_free (bool): If *True*, all intermediate Markov steps are kept.
+        remove_zero_weight_particles (bool): If True, particles with zero weights are removed.
+        merge_identical_particles (bool): If True, identical particles are merged.
     """
 
     @log_init_args
@@ -75,6 +77,8 @@ class SequentialMonteCarloChopin(Iterator):
         feynman_kac_model,
         num_rejuvenation_steps,
         waste_free,
+        remove_zero_weight_particles=True,
+        merge_identical_particles=True,
     ):
         """Initialize the SMC iterator.
 
@@ -92,6 +96,8 @@ class SequentialMonteCarloChopin(Iterator):
             feynman_kac_model (str): Feynman Kac model for the smc object
             num_rejuvenation_steps (int): Number of rejuvenation steps (e.g. MCMC steps)
             waste_free (bool): if True, all intermediate Markov steps are kept
+            remove_zero_weight_particles (bool): If True, particles with zero weights are removed.
+            merge_identical_particles (bool): If True, identical particles are merged.
         """
         super().__init__(model, parameters, global_settings)
         self.result_description = result_description
@@ -106,6 +112,8 @@ class SequentialMonteCarloChopin(Iterator):
         self.feynman_kac_model = feynman_kac_model
         self.num_rejuvenation_steps = num_rejuvenation_steps
         self.waste_free = waste_free
+        self.remove_zero_weight_particles = remove_zero_weight_particles
+        self.merge_identical_particles = merge_identical_particles
         self._initialize_prior_model()
 
     def eval_log_likelihood(self, samples):
@@ -177,6 +185,36 @@ class SequentialMonteCarloChopin(Iterator):
             )
         return feynman_kac_model
 
+    def get_particles_and_weights(self):
+        """Get particles and weights of solving iterator.
+
+        Returns:
+            particles_smc (np.ndarray): particles from approximated posterior distribution
+            weights (np.ndarray): weights corresponding to particles
+            log_posterior (np.ndarray): log_posterior values corresponding to particles
+        """
+        particles_smc = self.smc_obj.fk.model.particles_array_to_numpy(self.smc_obj.X.theta)
+        weights = self.smc_obj.W.reshape(-1)
+        log_posterior = self.smc_obj.X.lpost
+
+        if self.remove_zero_weight_particles:
+            # Filter particles with zero weight
+            non_zero_weight_indices = weights > 0
+            particles_smc = particles_smc[non_zero_weight_indices]
+            weights = weights[non_zero_weight_indices]
+            log_posterior = log_posterior[non_zero_weight_indices]
+
+        if self.merge_identical_particles:
+            # Merge identical particles
+            particles_smc, unique_indices, unique_count = np.unique(
+                particles_smc, axis=0, return_index=True, return_counts=True
+            )
+            weights = weights[unique_indices] * unique_count
+            weights /= np.sum(weights)
+            log_posterior = log_posterior[unique_indices]
+
+        return particles_smc, weights, log_posterior
+
     def pre_run(self):
         """Draw initial sample."""
         _logger.info("Initialize run.")
@@ -227,8 +265,7 @@ class SequentialMonteCarloChopin(Iterator):
     def post_run(self):
         """Analyze the resulting importance sample."""
         # SMC data
-        particles_smc = self.smc_obj.fk.model.particles_array_to_numpy(self.smc_obj.X.theta)
-        weights = self.smc_obj.W.reshape(-1, 1)
+        particles_smc, weights, log_posterior = self.get_particles_and_weights()
 
         # First and second moment
         mean = self.smc_obj.fk.model.particles_array_to_numpy(
@@ -242,7 +279,7 @@ class SequentialMonteCarloChopin(Iterator):
                 {
                     "particles": particles_smc,
                     "weights": weights,
-                    "log_posterior": self.smc_obj.X.lpost,
+                    "log_posterior": log_posterior,
                     "mean": mean,
                     "var": variance,
                     "n_sims": self.model.num_evaluations,

@@ -17,13 +17,13 @@
 import pytest
 
 from queens.data_processors.txt_file import TxtFile
-from queens.utils.path import relative_path_from_queens
+from queens.utils.path import relative_path_from_root
 
 
 @pytest.fixture(name="dummy_txt_file", scope="session")
 def fixture_dummy_txt_file():
     """Create dummy txt-file for tests."""
-    txt_file_path = relative_path_from_queens(
+    txt_file_path = relative_path_from_root(
         "tests/unit_tests/data_processors/queens_example_log.txt"
     )
     return txt_file_path
@@ -67,7 +67,7 @@ def test_get_raw_data_from_file_remove_logger_prefix(default_raw_data):
     inserted by the queens logger. The "filtered" queens log files is
     compared to the original 4C log file.
     """
-    file_path_fourc_log = relative_path_from_queens(
+    file_path_fourc_log = relative_path_from_root(
         "tests/unit_tests/data_processors/fourc_example_log.txt"
     )
     with open(file_path_fourc_log, "r", encoding="utf-8") as file:

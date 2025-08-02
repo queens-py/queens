@@ -24,7 +24,7 @@ from pathlib import Path
 from queens.schedulers._dask import SHUTDOWN_CLIENTS
 from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.logger_settings import reset_logging, setup_basic_logging
-from queens.utils.path import PATH_TO_QUEENS
+from queens.utils.path import PATH_TO_ROOT
 from queens.utils.printing import get_str_table
 from queens.utils.run_subprocess import run_subprocess
 
@@ -66,7 +66,7 @@ class GlobalSettings:
         setup_basic_logging(log_file_path=log_file_path, debug=self.debug)
 
         return_code, _, stdout, stderr = run_subprocess(
-            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "rev-parse", "HEAD"]),
+            " ".join(["cd", f"{PATH_TO_ROOT}", ";", "git", "rev-parse", "HEAD"]),
             raise_error_on_subprocess_failure=False,
         )
         if not return_code:
@@ -78,7 +78,7 @@ class GlobalSettings:
             _logger.warning("Setting git hash to: %s!", git_hash)
 
         return_code, _, git_branch, stderr = run_subprocess(
-            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "rev-parse", "--abbrev-ref", "HEAD"]),
+            " ".join(["cd", f"{PATH_TO_ROOT}", ";", "git", "rev-parse", "--abbrev-ref", "HEAD"]),
             raise_error_on_subprocess_failure=False,
         )
         git_branch = git_branch.strip()
@@ -89,7 +89,7 @@ class GlobalSettings:
             _logger.warning("Setting git branch to: %s!", git_branch)
 
         return_code, _, git_status, stderr = run_subprocess(
-            " ".join(["cd", f"{PATH_TO_QUEENS}", ";", "git", "status", "--porcelain"]),
+            " ".join(["cd", f"{PATH_TO_ROOT}", ";", "git", "status", "--porcelain"]),
             raise_error_on_subprocess_failure=False,
         )
         git_clean_working_tree = not git_status

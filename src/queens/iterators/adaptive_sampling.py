@@ -22,11 +22,8 @@ import jax
 import jax.numpy as jnp
 import numpy as np
 from jax import jit
-from particles.resampling import stratified
 
 from queens.iterators._iterator import Iterator
-from queens.iterators.grid import Grid
-from queens.iterators.metropolis_hastings import MetropolisHastings
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.utils.io import load_result
 
@@ -39,10 +36,8 @@ class AdaptiveSampling(Iterator):
 
     Attributes:
         likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
-        initial_train_iterator (Iterator): Iterator to draw initial training samples (e.g. MC, LHS)
         solving_iterator (Iterator): Iterator to solve inverse problem
-                                     (SequentialMonteCarloChopin,
-                                     MetropolisHastings and Grid supported)
+                                     (only SequentialMonteCarloChopin works out of the box)
         num_new_samples (int): Number of new training samples in each adaptive step
         num_steps (int): Number of adaptive sampling steps
         seed (int, opt): Seed for random number generation
@@ -60,7 +55,7 @@ class AdaptiveSampling(Iterator):
         parameters,
         global_settings,
         likelihood_model,
-        initial_train_iterator,
+        initial_train_samples,
         solving_iterator,
         num_new_samples,
         num_steps,
@@ -71,35 +66,33 @@ class AdaptiveSampling(Iterator):
         """Initialise AdaptiveSampling.
 
         Args:
-            model (Model): Model to be evaluated by iterator
-            parameters (Parameters): Parameters object
+            model (Model): Model to be evaluated by iterator.
+            parameters (Parameters): Parameters object.
             global_settings (GlobalSettings): settings of the QUEENS experiment including its name
-                                              and the output directory
-            likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
-            initial_train_iterator (Iterator): Iterator to draw initial training samples (e.g. MC,
-                                               LHS)
+                                              and the output directory.
+            likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported).
+            initial_train_samples (np.ndarray): Initial training samples for surrogate model.
             solving_iterator (Iterator): Iterator to solve inverse problem
-                                         (SequentialMonteCarloChopin,
-                                         MetropolisHastings and Grid supported)
-            num_new_samples (int): Number of new training samples in each adaptive step
-            num_steps (int): Number of adaptive sampling steps
-            seed (int, opt): Seed for random number generation
-            restart_file (str, opt): Result file path for restarts
-            cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold
+                                         (only SequentialMonteCarloChopin works out of the box).
+            num_new_samples (int): Number of new training samples in each adaptive step.
+            num_steps (int): Number of adaptive sampling steps.
+            seed (int, opt): Seed for random number generation.
+            restart_file (str, opt): Result file path for restarts.
+            cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold.
         """
         super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.likelihood_model = likelihood_model
-        self.initial_train_iterator = initial_train_iterator
         self.solving_iterator = solving_iterator
         self.num_new_samples = num_new_samples
         self.num_steps = num_steps
         self.restart_file = restart_file
         self.cs_div_criterion = cs_div_criterion
-        self.x_train = None
-        self.x_train_new = None
-        self.y_train = None
-        self.model_outputs = None
+
+        self.x_train_new = initial_train_samples
+        self.x_train = np.empty((0, self.parameters.num_parameters))
+        self.y_train = np.empty((0, 1))
+        self.model_outputs = np.empty((0, self.likelihood_model.y_obs.size))
 
     def pre_run(self):
         """Pre run."""
@@ -112,13 +105,6 @@ class AdaptiveSampling(Iterator):
             self.y_train = results["y_train"][-1]
             self.x_train_new = results["x_train_new"][-1]
 
-        else:
-            self.initial_train_iterator.pre_run()
-            self.x_train_new = self.initial_train_iterator.samples
-            self.x_train = np.empty((0, self.parameters.num_parameters))
-            self.y_train = np.empty((0, 1))
-            self.model_outputs = np.empty((0, self.likelihood_model.normal_distribution.mean.size))
-
     def core_run(self):
         """Core run."""
         for i in range(self.num_steps):
@@ -126,18 +112,21 @@ class AdaptiveSampling(Iterator):
             self.x_train = np.concatenate([self.x_train, self.x_train_new], axis=0)
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
             _logger.info("Number of solver evaluations: %i", self.x_train.shape[0])
-            self.model.initialize(
-                self.x_train, self.y_train, self.likelihood_model.normal_distribution.mean.size
-            )
-            self.solving_iterator.pre_run()
+            self.model.initialize(self.x_train, self.y_train, self.likelihood_model.y_obs.size)
+
+            random_state = np.random.get_state()
+            self.solving_iterator.pre_run()  # We don't want that the random seed is set here.
+            np.random.set_state(random_state)
 
             def _m(self_, _, xp):
                 x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
                 epn = xp.shared["exponents"][-1]
                 target = self_.current_target(epn)
-                for j, par in enumerate(xp.theta.dtype.names):
-                    xp.theta[par][0] = x_train_ml[j]
-                target(xp)
+                particles = np.lib.recfunctions.structured_to_unstructured(xp.theta)
+                if not (particles == x_train_ml).all(-1).any():
+                    for j, par in enumerate(xp.theta.dtype.names):
+                        xp.theta[par][0] = x_train_ml[j]
+                    target(xp)
                 return self_.move(xp, target)
 
             if isinstance(self.solving_iterator, SequentialMonteCarloChopin):
@@ -147,7 +136,7 @@ class AdaptiveSampling(Iterator):
 
             self.solving_iterator.core_run()
 
-            particles, weights, log_posterior = self.get_particles_and_weights()
+            particles, weights, log_posterior = self.solving_iterator.get_particles_and_weights()
             self.x_train_new = self.choose_new_samples(particles, weights)
 
             cs_div = self.write_results(particles, weights, log_posterior, i)
@@ -175,14 +164,41 @@ class AdaptiveSampling(Iterator):
         Choose new training samples from approximated posterior distribution.
 
         Args:
-            particles (np.ndarray): Particles of approximated posterior
-            weights (np.ndarray): Particle weights of approximated posterior
+            particles (np.ndarray): Unique particles of approximated posterior.
+            weights (np.ndarray): Unique non-zero particle weights of approximated posterior.
 
         Returns:
             x_train_new (np.ndarray): New training samples
         """
-        indices = stratified(weights, self.num_new_samples)
+        # Filter particles, that are present in training sample set
+        indices = (particles[:, np.newaxis] == self.x_train).all(-1).any(-1)
+        particles = particles[~indices]
+        weights = weights[~indices]
+        weights /= np.sum(weights)
+
+        if len(weights) == 0:
+            _logger.warning(
+                "Adaptive sampling of new training samples failed. "
+                "Drawing new training samples from prior..."
+            )
+            return self.parameters.draw_samples(self.num_new_samples)
+
+        num_adaptive_samples = min(len(weights), self.num_new_samples)
+        indices = np.random.choice(
+            np.arange(len(weights)), num_adaptive_samples, p=weights, replace=False
+        )
         x_train_new = particles[indices]
+
+        if num_adaptive_samples < self.num_new_samples:
+            num_prior_samples = self.num_new_samples - num_adaptive_samples
+            _logger.warning(
+                "Adaptive sampling of new training samples partly failed. "
+                "Drawing %i new training samples from prior...",
+                num_prior_samples,
+            )
+            prior_samples = self.parameters.draw_samples(num_prior_samples)
+            x_train_new = np.concatenate([x_train_new, prior_samples], axis=0)
+
         return x_train_new
 
     def write_results(self, particles, weights, log_posterior, iteration):
@@ -236,41 +252,6 @@ class AdaptiveSampling(Iterator):
             pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
         return cs_div
-
-    def get_particles_and_weights(self):
-        """Get particles and weights of solving iterator.
-
-        Returns:
-            particles (np.ndarray): particles from approximated posterior distribution
-            weights (np.ndarray): weights corresponding to particles
-            log_posterior (np.ndarray): log_posterior values corresponding to particles
-        """
-        if isinstance(self.solving_iterator, SequentialMonteCarloChopin):
-            particles = self.solving_iterator.smc_obj.fk.model.particles_array_to_numpy(
-                self.solving_iterator.smc_obj.X.theta
-            )
-            weights = self.solving_iterator.smc_obj.W.reshape(-1)
-            particles, unique_indices, unique_count = np.unique(
-                particles, axis=0, return_index=True, return_counts=True
-            )
-            weights = weights[unique_indices] * unique_count
-            weights /= np.sum(weights)
-            log_posterior = self.solving_iterator.smc_obj.X.lpost[unique_indices]
-        elif isinstance(self.solving_iterator, MetropolisHastings):
-            particles = self.solving_iterator.chains[self.solving_iterator.num_burn_in + 1 :]
-            particles = particles.reshape(-1, self.parameters.num_parameters)
-            log_posterior = self.solving_iterator.log_posterior[
-                self.solving_iterator.num_burn_in + 1 :
-            ].reshape(-1)
-            weights = np.ones(log_posterior.size) / log_posterior.size
-        elif isinstance(self.solving_iterator, Grid):
-            particles = self.solving_iterator.samples
-            log_posterior = self.solving_iterator.output
-            log_posterior_ = log_posterior - np.max(log_posterior)
-            weights = np.exp(log_posterior_) / np.sum(np.exp(log_posterior_))
-        else:
-            raise NotImplementedError
-        return particles, weights, log_posterior
 
     def post_run(self):
         """Post run."""

@@ -54,11 +54,17 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 
 <!---installation marker, do not remove this comment-->
 Clone the QUEENS repository to your local machine. Navigate to its base directory, then:
-```
+```bash
 conda env create
 conda activate queens
 pip install -e .
 ```
+
+**Note**: This installs QUEENS without any fixed dependency versions. In most cases this is no problem and gives you more freedom to install additional packages within your environment. Should there be a problem you can play it safe with fixed versions via
+```bash
+pip install -e .[safe]
+```
+
 <!---installation marker, do not remove this comment-->
 
 ## :crown: Workflow example

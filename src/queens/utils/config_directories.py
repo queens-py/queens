@@ -21,34 +21,43 @@ from queens.utils.path import create_folder_if_not_existent
 
 _logger = logging.getLogger(__name__)
 
-BASE_DATA_DIR = "queens-simulation-data"
-EXPERIMENTS_BASE_FOLDER_NAME = "experiments"
-TESTS_BASE_FOLDER_NAME = "tests"
+BASE_DATA_DIR = "queens-experiments"
 
 
 def base_directory():
-    """Hold all queens related data."""
+    """Holds all queens experiments.
+
+    The base directory holds individual folders for each queens experiment on the compute machine.
+    Per default, it is located and structured as follows::
+
+        $HOME/queens-experiments
+          ├── experiment_name_1
+          ├── experiment_name_2
+
+    For remote cluster test runs, a separate base directory structure is used::
+
+        $HOME/queens-tests
+          ├── pytest-0
+          │   ├── test_name_1
+          │   └── test_name_2
+          ├── pytest-1
+              ├── test_name_1
+              └── test_name_2
+    """
     base_dir = Path().home() / BASE_DATA_DIR
     create_directory(base_dir)
     return base_dir
 
 
-def experiments_base_directory():
-    """Hold all experiment data on the computing machine."""
-    base_dir = base_directory()
-    experiments_base_dir = base_dir / EXPERIMENTS_BASE_FOLDER_NAME
-    create_directory(experiments_base_dir)
-    return experiments_base_dir
-
-
 def experiment_directory(experiment_name):
     """Directory for data of a specific experiment on the computing machine.
+
+    Refer to base_directory() for an explanation of the directory structure.
 
     Args:
         experiment_name (str): Experiment name
     """
-    experiments_base_dir = experiments_base_directory()
-    experiment_dir = experiments_base_dir / experiment_name
+    experiment_dir = base_directory() / experiment_name
     create_directory(experiment_dir)
     return experiment_dir
 

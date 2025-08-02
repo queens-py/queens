@@ -23,9 +23,9 @@ from pathlib import Path
 import requests
 
 from queens.utils.injector import inject
-from queens.utils.path import relative_path_from_queens
+from queens.utils.path import relative_path_from_root
 
-sys.path.insert(1, str(relative_path_from_queens("test_utils").resolve()))
+sys.path.insert(1, str(relative_path_from_root("test_utils").resolve()))
 from get_queens_example_from_readme import (  # pylint: disable=import-error, wrong-import-position,wrong-import-order
     extract_from_markdown_file_by_marker,
     get_queens_example_from_readme,
@@ -54,7 +54,7 @@ def relative_to_doc_source(relative_path):
     Returns:
         pathlib.Path: Path relative from documentation
     """
-    return relative_path_from_queens("doc/source/" + relative_path)
+    return relative_path_from_root("doc/source/" + relative_path)
 
 
 def create_tutorial_from_readme():
@@ -141,7 +141,7 @@ def clean_markdown_file(md_path, new_path):
     Returns:
         str: file name of the new markdown file
     """
-    md_text = clean_markdown(relative_path_from_queens(md_path).read_text())
+    md_text = clean_markdown(relative_path_from_root(md_path).read_text())
     new_path = Path(new_path)
     new_path.write_text(md_text, encoding="utf-8")
     return new_path.name
@@ -155,12 +155,12 @@ def create_development():
     md_paths = []
     md_paths.append(
         clean_markdown_file(
-            relative_path_from_queens("CONTRIBUTING.md"), relative_to_doc_source("contributing.md")
+            relative_path_from_root("CONTRIBUTING.md"), relative_to_doc_source("contributing.md")
         )
     )
     md_paths.append(
         clean_markdown_file(
-            relative_path_from_queens("tests/README.md"), relative_to_doc_source("testing.md")
+            relative_path_from_root("tests/README.md"), relative_to_doc_source("testing.md")
         )
     )
     inject({"md_paths": md_paths}, development_template, development_path)
@@ -176,8 +176,8 @@ def create_intro():
 
     inject(
         {
-            "readme_path": relative_path_from_queens("README.md"),
-            "contributing_path": relative_path_from_queens("CONTRIBUTING.md"),
+            "readme_path": relative_path_from_root("README.md"),
+            "contributing_path": relative_path_from_root("CONTRIBUTING.md"),
             "extract_from_markdown_by_marker": extract_from_markdown_by_marker,
         },
         intro_template,
@@ -190,7 +190,7 @@ def create_overview():
     overview_template = get_template_path_by_name("overview.rst.j2")
     overview_path = relative_to_doc_source("overview.rst")
 
-    queens_base_path = relative_path_from_queens("queens")
+    queens_base_path = relative_path_from_root("src/queens")
 
     def get_module_description(python_file):
         """Get module description.

@@ -19,59 +19,38 @@ from pathlib import Path, PurePath
 import pytest
 
 from queens.utils.path import (
-    PATH_TO_QUEENS,
-    PATH_TO_SOURCE,
+    PATH_TO_QUEENS_SOURCE,
+    PATH_TO_ROOT,
     check_if_path_exists,
     create_folder_if_not_existent,
     is_empty,
-    relative_path_from_queens,
-    relative_path_from_source,
+    relative_path_from_queens_source,
+    relative_path_from_root,
 )
 
-
-@pytest.fixture(name="path_to_queens")
-def fixture_path_to_queens():
-    """Path to QUEENS."""
-    return str(Path(__file__).parents[3])
+THIS_PATH = Path(__file__).parent
 
 
-@pytest.fixture(name="path_to_pqueens")
-def fixture_path_to_pqueens():
-    """Path to queens."""
-    return str(Path(__file__).parents[3] / "queens")
+@pytest.fixture(name="path_to_root")
+def fixture_path_to_root():
+    """Path to root."""
+    return THIS_PATH.parents[2]
 
 
-def extract_last_dirs(path, num_dirs):
-    """Extract the n=num_dirs last directories from the given path.
-
-    Intended to cut off the stem of the queens directory.
-
-    Args:
-        path (str, Path): path from which to extract the last directories
-        num_dirs (int): number of directories to extract
-    Returns:
-        Path: path with the extracted directories
-    """
-    path = Path(path).resolve()
-    path = path.relative_to(path.parents[num_dirs - 1])
-
-    return path
+@pytest.fixture(name="path_to_queens_source")
+def fixture_path_to_queens_source():
+    """Path to QUEENS source."""
+    return THIS_PATH.parents[2] / "src/queens"
 
 
-def test_path_to_pqueens(path_to_pqueens):
-    """Test path to queens."""
-    num_dirs = 4
-    assert extract_last_dirs(path_to_pqueens, num_dirs) == extract_last_dirs(
-        PATH_TO_SOURCE, num_dirs
-    )
+def test_path_to_queens_source(path_to_queens_source):
+    """Test path to QUEENS source."""
+    assert PATH_TO_QUEENS_SOURCE == path_to_queens_source
 
 
-def test_path_to_queens(path_to_queens):
-    """Test path to queens."""
-    num_dirs = 3
-    assert extract_last_dirs(path_to_queens, num_dirs) == extract_last_dirs(
-        PATH_TO_QUEENS, num_dirs
-    )
+def test_path_to_root(path_to_root):
+    """Test path to root."""
+    assert PATH_TO_ROOT == path_to_root
 
 
 def test_check_if_path_exists():
@@ -94,23 +73,18 @@ def test_create_folder_if_not_existent(tmp_path):
     assert check_if_path_exists(new_path)
 
 
-def test_relative_path_from_source():
-    """Test relative path from queens."""
-    current_folder = Path(__file__).parent
-    path_from_pqueens = relative_path_from_source("../tests/unit_tests/utils")
-    num_dirs = 6
-    assert extract_last_dirs(path_from_pqueens, num_dirs) == extract_last_dirs(
-        current_folder, num_dirs
+def test_relative_path_from_queens_source(path_to_queens_source):
+    """Test relative path from QUEENS source."""
+    assert (
+        relative_path_from_queens_source("../../../tests/unit_tests/utils")
+        == path_to_queens_source / "../../../tests/unit_tests/utils"
     )
 
 
-def test_relative_path_from_queens():
-    """Test relative path from queens."""
-    current_folder = Path(__file__).parent
-    path_from_queens = relative_path_from_queens("tests/unit_tests/utils")
-    num_dirs = 6
-    assert extract_last_dirs(path_from_queens, num_dirs) == extract_last_dirs(
-        current_folder, num_dirs
+def test_relative_path_from_root(path_to_root):
+    """Test relative path from root."""
+    assert (
+        relative_path_from_root("tests/unit_tests/utils") == path_to_root / "tests/unit_tests/utils"
     )
 
 

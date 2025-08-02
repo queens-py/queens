@@ -21,7 +21,6 @@ from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.example_simulator_functions.park91a import park91a_hifi_on_grid
 from queens.iterators.adaptive_sampling import AdaptiveSampling
-from queens.iterators.monte_carlo import MonteCarlo
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.main import run_iterator
 from queens.models.likelihoods.gaussian import Gaussian
@@ -108,9 +107,10 @@ def test_constrained_gp_ip_park(
     """Test for constrained GP with IP park."""
     num_steps = 4
     num_new_samples = 4
-    num_initial_samples = int(num_new_samples * 2)
     quantile = 0.90
     seed = 41
+    np.random.seed(seed)
+    initial_train_samples = parameters.draw_samples(int(num_new_samples * 2))
 
     logpdf_gp_model = LogpdfGP(
         approx_type=approx_type,
@@ -122,14 +122,6 @@ def test_constrained_gp_ip_park(
         prior_gp_mean=-1.0,
         quantile=quantile,
         jitter=1.0e-16,
-    )
-
-    initial_train_iterator = MonteCarlo(
-        model=None,
-        parameters=parameters,
-        global_settings=global_settings,
-        seed=seed,
-        num_samples=num_initial_samples,
     )
 
     solving_iterator = SequentialMonteCarloChopin(
@@ -152,7 +144,7 @@ def test_constrained_gp_ip_park(
         parameters=parameters,
         global_settings=global_settings,
         likelihood_model=likelihood_model,
-        initial_train_iterator=initial_train_iterator,
+        initial_train_samples=initial_train_samples,
         solving_iterator=solving_iterator,
         num_new_samples=num_new_samples,
         num_steps=num_steps,

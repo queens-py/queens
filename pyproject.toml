@@ -20,13 +20,17 @@ keywords = [
     "bayesian inference",
 ]
 
-[tool.setuptools.packages.find]
-include = ["queens.*", "queens"]
-
 [tool.setuptools.dynamic]
 version = { attr = "queens.__VERSION__" }
-dependencies = { file = ["requirements.txt"] }
-optional-dependencies = { develop = { file = ["dev-requirements.txt"] } }
+dependencies = { file = ["requirements.in"] }
+optional-dependencies = { safe = { file = [
+    "requirements.txt",
+] }, develop = { file = [
+    "dev-requirements.txt", # We fix the development packages, other linters might fail
+] }, safe_develop = { file = [
+    "requirements.txt",
+    "dev-requirements.txt",
+] } }
 
 # cli utils
 [project.scripts]

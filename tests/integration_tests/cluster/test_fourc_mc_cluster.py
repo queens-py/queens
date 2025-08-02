@@ -28,7 +28,6 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
-from queens.utils import config_directories
 from queens.utils.io import load_result
 from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
     CHARON_CLUSTER_TYPE,
@@ -54,22 +53,39 @@ class TestDaskCluster:
     for these tests.
     """
 
-    @pytest.fixture(autouse=True)
-    def mock_experiment_dir(self, monkeypatch, cluster_settings, patched_base_directory):
-        """Mock the experiment directory on the cluster.
+    def pytest_base_directory_on_cluster(self):
+        """Remote directory containing several pytest runs."""
+        return "$HOME/queens-tests"
 
-        The goal is to separate the testing data from production data of the user.
+    @pytest.fixture(name="queens_base_directory_on_cluster")
+    def fixture_queens_base_directory_on_cluster(self, pytest_id):
+        """Remote directory containing all experiments of a single pytest run.
+
+        This directory is conceptually equivalent to the usual base
+        directory for non-pytest runs, i.e., production experiments. The
+        goal is to separate the testing data from production data of the
+        user.
+        """
+        return self.pytest_base_directory_on_cluster() + f"/{pytest_id}"
+
+    @pytest.fixture(name="mock_experiment_dir", autouse=True)
+    def fixture_mock_experiment_dir(
+        self, monkeypatch, cluster_settings, queens_base_directory_on_cluster
+    ):
+        """Mock the experiment directory of a test on the cluster.
+
         NOTE: It is necessary to mock the whole experiment_directory method.
         Otherwise, the mock is not loaded properly remote.
         This is in contrast to the local mocking where it suffices to mock
-        config_directories.EXPERIMENTS_BASE_FOLDER_NAME.
+        config_directories.BASE_DATA_DIR.
         Note that we also rely on this local mock here!
         """
 
         def patch_experiments_directory(experiment_name):
             """Base directory for all experiments on the computing machine."""
             experiments_dir = (
-                Path(patched_base_directory.replace("$HOME", str(Path.home()))) / experiment_name
+                Path(queens_base_directory_on_cluster.replace("$HOME", str(Path.home())))
+                / experiment_name
             )
             Path.mkdir(experiments_dir, parents=True, exist_ok=True)
             return experiments_dir
@@ -78,21 +94,10 @@ class TestDaskCluster:
         _logger.debug("Mocking of dask experiment_directory  was successful.")
         _logger.debug(
             "dask experiment_directory is mocked to '%s/<experiment_name>' on %s@%s",
-            patched_base_directory,
+            queens_base_directory_on_cluster,
             cluster_settings["user"],
             cluster_settings["host"],
         )
-
-    def experiment_dir_on_cluster(self):
-        """Remote experiment path."""
-        return (
-            f"$HOME/{config_directories.BASE_DATA_DIR}/{config_directories.TESTS_BASE_FOLDER_NAME}"
-        )
-
-    @pytest.fixture(name="patched_base_directory")
-    def fixture_patched_base_directory(self, pytest_id):
-        """Path of the tests on the remote cluster."""
-        return self.experiment_dir_on_cluster() + f"/{pytest_id}"
 
     def test_fourc_mc_cluster(
         self,
@@ -129,7 +134,7 @@ class TestDaskCluster:
 
         data_processor = PvdFile(
             field_name="displacement",
-            file_name_identifier="*.pvd",
+            file_name_identifier="output-structure.pvd",
             file_options_dict={},
         )
 
@@ -188,8 +193,8 @@ class TestDaskCluster:
         # Delete data from tests older then 1 week
         command = (
             "find "
-            + str(self.experiment_dir_on_cluster())
-            + " -mtime +7 -mindepth 1 -maxdepth 1 -type d -exec rm -rv {} \\;"
+            + str(self.pytest_base_directory_on_cluster())
+            + " -mindepth 1 -maxdepth 1 -mtime +7 -type d -exec rm -rv {} \\;"
         )
         result = remote_connection.run(command, in_stream=False)
         _logger.debug("Deleting old simulation data:\n%s", result.stdout)

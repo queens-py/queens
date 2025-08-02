@@ -27,7 +27,7 @@ import pytest
 
 from queens.example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
 from queens.example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
-from queens.utils.path import relative_path_from_queens
+from queens.utils.path import relative_path_from_root
 from queens.utils.pdf_estimation import estimate_bandwidth_for_kde
 from queens.utils.process_outputs import write_results
 from queens.utils.remote_operations import RemoteConnection
@@ -73,7 +73,7 @@ THOUGHT_CONFIG = ClusterConfig(
     host="129.187.58.22",
     workload_manager="slurm",
     queue="normal",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_thought.sh"),
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_thought.sh"),
     cluster_internal_address=None,
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
@@ -84,7 +84,7 @@ BRUTEFORCE_CONFIG = ClusterConfig(
     name="bruteforce",
     host="bruteforce.lnm.ed.tum.de",
     workload_manager="slurm",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_bruteforce.sh"),
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_bruteforce.sh"),
     cluster_internal_address="10.10.0.1",
     default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
     cluster_script_path=Path("/lnm/share/donottouch.sh"),
@@ -93,7 +93,7 @@ CHARON_CONFIG = ClusterConfig(
     name="charon",
     host="charon.bauv.unibw-muenchen.de",
     workload_manager="slurm",
-    jobscript_template=relative_path_from_queens("templates/jobscripts/fourc_charon.sh"),
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_charon.sh"),
     cluster_internal_address="192.168.2.253",
     default_python_path="$HOME/miniconda3/envs/queens/bin/python",
     cluster_script_path=Path(),

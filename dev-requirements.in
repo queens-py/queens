@@ -1,7 +1,6 @@
 # This file contains all the requirements for QUEENS (production runs).
 
 # Do not fix the version of a package if not strictly necessary. We use pip-tools in order to create a requirements.txt file where the version of the different packages are fixed to the latest stable version w.r.t. QUEENS. From time to time pip-tools is used to upgrade to the newer available versions.
--c requirements.txt
 
 # Development
 pylint>=2.16

@@ -28,7 +28,7 @@ import cloudpickle
 from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
-from queens.utils.path import PATH_TO_QUEENS, is_empty
+from queens.utils.path import PATH_TO_ROOT, is_empty
 from queens.utils.rsync import assemble_rsync_command
 from queens.utils.run_subprocess import start_subprocess
 
@@ -100,7 +100,7 @@ class RemoteConnection(Connection):
         python_cmd = (
             "source /etc/profile;"
             f"{self.remote_python} "
-            f"{Path(self.remote_queens_repository) / 'queens' / 'utils' / 'start_dask_cluster.py'} "
+            f"{Path(self.remote_queens_repository) / 'src/queens/utils/start_dask_cluster.py'} "
             f"--workload-manager {workload_manager} "
             f"--dask-cluster-kwargs '{json.dumps(dask_cluster_kwargs)}' "
             f"--dask-cluster-adapt-kwargs '{json.dumps(dask_cluster_adapt_kwargs)}' "
@@ -225,7 +225,7 @@ class RemoteConnection(Connection):
         start_time = time.time()
         self.create_remote_directory(self.remote_queens_repository)
 
-        source = f"{PATH_TO_QUEENS}/"
+        source = f"{PATH_TO_ROOT}/"
         self.copy_to_remote(
             source, self.remote_queens_repository, exclude=".git", filters=":- .gitignore"
         )

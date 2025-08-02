@@ -25,7 +25,7 @@ import pytest
 from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
-from queens.utils.path import relative_path_from_queens, relative_path_from_source
+from queens.utils.path import relative_path_from_queens_source, relative_path_from_root
 
 _logger = logging.getLogger(__name__)
 
@@ -185,49 +185,24 @@ def fixture_global_mock_local_base_dir(monkeypatch, tmp_path):
     _logger.debug("local base dir is mocked to: %s", config_directories.base_directory())
 
 
-@pytest.fixture(name="mock_value_experiments_base_folder_name", scope="session")
-def fixture_mock_value_experiments_base_folder_name():
-    """Value to mock the experiments base folder name."""
-    return "pytest"
-
-
-@pytest.fixture(name="global_mock_experiments_base_folder_name", autouse=True)
-def fixture_global_mock_experiments_base_folder_name(
-    mock_value_experiments_base_folder_name, monkeypatch
-):
-    """Mock the name of the folders containing experiments in base directory.
-
-    Note that locally, this adds on top of the
-    global_mock_local_base_dir
-    """
-    monkeypatch.setattr(
-        config_directories, "EXPERIMENTS_BASE_FOLDER_NAME", mock_value_experiments_base_folder_name
-    )
-    _logger.debug("Mocking of EXPERIMENTS_BASE_FOLDER_NAME was successful.")
-    _logger.debug(
-        "EXPERIMENTS_BASE_FOLDER_NAME is mocked to: %s",
-        config_directories.EXPERIMENTS_BASE_FOLDER_NAME,
-    )
-
-
 @pytest.fixture(name="inputdir", scope="session")
 def fixture_inputdir():
     """Return the path to the json input-files of the function test."""
-    input_files_path = relative_path_from_queens("tests/input_files/queens")
+    input_files_path = relative_path_from_root("tests/input_files/queens")
     return input_files_path
 
 
 @pytest.fixture(name="third_party_inputs", scope="session")
 def fixture_third_party_inputs():
     """Return the path to the json input-files of the function test."""
-    input_files_path = relative_path_from_queens("tests/input_files/third_party")
+    input_files_path = relative_path_from_root("tests/input_files/third_party")
     return input_files_path
 
 
 @pytest.fixture(name="config_dir", scope="session")
 def fixture_config_dir():
     """Return the path to the json input-files of the function test."""
-    config_dir_path = relative_path_from_queens("config")
+    config_dir_path = relative_path_from_root("config")
     return config_dir_path
 
 
@@ -244,7 +219,7 @@ def fixture_fourc_link_paths(config_dir):
 @pytest.fixture(name="example_simulator_fun_dir", scope="session")
 def fixture_example_simulator_fun_dir():
     """Return the path to the example simulator functions."""
-    input_files_path = relative_path_from_source("example_simulator_functions")
+    input_files_path = relative_path_from_queens_source("example_simulator_functions")
     return input_files_path
 
 

@@ -48,6 +48,14 @@ source {{ cluster_script or '/lnm/share/donottouch.sh' }}
 trap 'EarlyTermination; StageOut' 2 9 15 18
 DoChecks
 StageIn
+
+MPIFLAGS="--bind-to core"
+mpirun -np $SLURM_NTASKS $MPIFLAGS true
+if [ $? -ne 0 ]; then
+    echo "'mpirun $MPIFLAGS' failed. Falling back to 'mpirun $MPIFLAGS --map-by core'"
+    MPIFLAGS="${MPIFLAGS} --map-by core"
+fi
+
 RunProgram
 wait
 RunPostprocessor
