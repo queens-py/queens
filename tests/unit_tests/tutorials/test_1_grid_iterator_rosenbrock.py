@@ -21,7 +21,7 @@ import json
 
 # tested jupyter notebooks should be mentioned below
 @testbook(
-    "tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
+    "doc/source/tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
     execute=[1, 3, 5, 7, 9, 11],
 )
 def test_result_output(tb, tmp_path):
