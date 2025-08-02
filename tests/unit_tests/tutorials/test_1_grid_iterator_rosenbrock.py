@@ -15,44 +15,59 @@
 """Unit tests for 1-grid-iterator-rosenbrock tutorial."""
 
 from testbook import testbook
+import numpy as np
+import json
 
 
 # tested jupyter notebooks should be mentioned below
 @testbook(
     "tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
-    execute=[1],
+    execute=[1, 3, 5, 7, 9, 11],
 )
-def test_result_output(tb):
+def test_result_output(tb, tmp_path):
     """Parameterized test case for Jupyter notebook output.
 
     The notebook is run and it is checked that the output of a specific cell matches given input.
     """
-
-    # execute the notebook
-    assert """[[3.609e+03]
- [9.040e+02]
- [4.010e+02]
- [9.000e+02]
- [3.601e+03]
- [2.509e+03]
- [4.040e+02]
- [1.010e+02]
- [4.000e+02]
- [2.501e+03]
- [1.609e+03]
- [1.040e+02]
- [1.000e+00]
- [1.000e+02]
- [1.601e+03]
- [9.090e+02]
- [4.000e+00]
- [1.010e+02]
- [0.000e+00]
- [9.010e+02]
- [4.090e+02]
- [1.040e+02]
- [4.010e+02]
- [1.000e+02]
- [4.010e+02]]""" in tb.cell_output_text(
-        1
+    expected_results = np.array(
+        [
+            [3.609e03],
+            [9.040e02],
+            [4.010e02],
+            [9.000e02],
+            [3.601e03],
+            [2.509e03],
+            [4.040e02],
+            [1.010e02],
+            [4.000e02],
+            [2.501e03],
+            [1.609e03],
+            [1.040e02],
+            [1.000e00],
+            [1.000e02],
+            [1.601e03],
+            [9.090e02],
+            [4.000e00],
+            [1.010e02],
+            [0.000e00],
+            [9.010e02],
+            [4.090e02],
+            [1.040e02],
+            [4.010e02],
+            [1.000e02],
+            [4.010e02],
+        ]
     )
+
+    tb.inject(f"output_dir = '{tmp_path}'")
+    tb.inject("from queens.utils import config_directories")
+    tb.inject("import json")
+
+    tb.inject(f"config_directories = '{tmp_path}'")
+    tb.inject('test_results = json.dumps(results["raw_output_data"]["result"].tolist())')
+
+    assert (tb.ref("output_dir")) == str(tmp_path)
+    assert tb.ref("config_directories") == str(tmp_path)
+    results = np.array(json.loads(tb.ref("test_results")))
+
+    np.testing.assert_allclose(results, expected_results)
