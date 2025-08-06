@@ -1,3 +1,57 @@
+document.addEventListener("DOMContentLoaded", function () {
+    const outputs = document.querySelectorAll('.nboutput.docutils.container');
+    let prev = null;
+
+    outputs.forEach(output => {
+        if (
+            prev &&
+            // no intervening non-output node
+            prev.nextElementSibling === output &&
+            // same type of prompt (empty) and no distinguishing marks
+            prev.querySelector('.output_area') &&
+            output.querySelector('.output_area')
+        ) {
+            // Move inner content of current into previous
+            const content = output.querySelector('.output_area');
+            if (content) {
+                prev.appendChild(content);
+                output.remove();  // remove the now-empty container
+            }
+        } else {
+            prev = output;
+        }
+    });
+});
+
+
+// document.addEventListener("DOMContentLoaded", function () {
+//     const outputs = document.querySelectorAll('.nboutput.docutils.container');
+//     let prev = null;
+
+//     outputs.forEach(output => {
+//         if (
+//             prev &&
+//             prev.nextElementSibling === output &&
+//             prev.querySelector('.output_area') &&
+//             output.querySelector('.output_area')
+//         ) {
+//             // Move the entire .output_area block from output to prev
+//             const content = output.querySelector('.output_area');
+//             if (content) {
+//                 const clone = content.cloneNode(true);
+//                 // Insert a vertical spacer to enforce block stacking
+//                 const spacer = document.createElement('div');
+//                 spacer.style.height = '0.5em';
+//                 prev.appendChild(spacer);
+//                 prev.appendChild(clone);
+//                 output.remove();
+//             }
+//         } else {
+//             prev = output;
+//         }
+//     });
+// });
+
 document.addEventListener("DOMContentLoaded", () => {
     // Function to create and append a toggle button to a div
     const addToggleButton = (div) => {
@@ -21,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
             borderRadius: "3px",
             fontSize: "0.9em",
             width: "100%",
-            maxWidth: "100px",
+            maxWidth: "150px",
             transition: "max-width 0.5s ease, background-color 1s ease"
         });
     };
@@ -41,6 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
         button.onclick = () => {
             if (div.style.maxHeight === '0px') {
                 Object.assign(div.style, {
+                    display: 'block',
                     opacity: '1',
                     maxHeight: '50000px',
                 });
@@ -52,7 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     maxHeight: '0px'
                 });
                 button.textContent = "Show Output »";
-                button.style.maxWidth = "100px";
+                button.style.maxWidth = "150px";
             }
         };
     };
@@ -65,7 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Select and apply toggle functionality to code and output divs
-    const codeDivs = document.querySelectorAll('.nboutput.docutils.container');
+    const codeDivs = document.querySelectorAll('.nboutput');
     codeDivs.forEach(addToggleButton);
 
     // Hide cell numbers (which don't play nice with button layout)
