@@ -6,6 +6,22 @@ be overwritten!
 
 # Changelog
 
+* [delete-input-file-workflow](https://github.com/queens-py/queens/commit/d0943420e9a6f3b3e4fe1cf35fafe19db1921833) (2025-08-04): Delete the input file workflow.
+
+* [move-to-src-layout](https://github.com/queens-py/queens/commit/846b124b74f89187fff9391733cd7da5ac9e30dc) (2025-06-29): Refactor the QUEENS code from a flat layout to a src layout to allow separate packages.
+
+* [relax-dependencies](https://github.com/queens-py/queens/commit/2b36e7fcb050658b7c7c711e3a065ccfad80b6fe) (2025-06-03): Remove fixed dependencies from the default installation and add a safe installation with fixed dependencies.
+
+* [rename-simulation-files](https://github.com/queens-py/queens/commit/6fc58ce3056d724ba29426fa24c527fbb19e9fb9) (2025-05-15): Simplify the naming of files in the experiment directory.
+
+* [simplify-experiment-directory-structure](https://github.com/queens-py/queens/commit/993974f76d186ea1a8909ee50852be2a9f95e343) (2025-05-14): Simplify the experiment directory structure.
+
+* [add-reinforcement-learning](https://github.com/queens-py/queens/commit/867fec1549002b69be087c09629f76798c1f61d1) (2025-03-13): Add a reinforcement learning iterator and model.
+
+* [introduce-naming-standard](https://github.com/queens-py/queens/commit/9a6fd0566d7417816877f329a9ddadb235ca00e0) (2025-02-26): Rename QUEENS classes and packages to conform to the new [QUEENS naming standard](https://github.com/queens-py/queens/issues/119) for files, modules, and classes.
+
+* [add-multilevel-monte-carlo](https://github.com/queens-py/queens/commit/45f6f370d5a13aa6b13c0f534beadfcc8481df00) (2025-01-22): Add a multilevel Monte Carlo iterator and a control variates iterator.
+
 * [allow-multiple-input-files](https://github.com/queens-py/queens/commit/b886962e69012246e47415e03170e2c9437390c1) (2024-10-09): Natively support multiple input files in jobscript driver
 
 * [remove_interfaces_and_push_parameters_to_drivers](https://github.com/queens-py/queens/commit/c6fc37b9d5d6bc76cf7fc5492a147e26671def57) (2024-10-01): Remove interfaces and push parameters to drivers
