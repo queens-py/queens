@@ -30,7 +30,13 @@ class Local(Dask):
 
     @log_init_args
     def __init__(
-        self, experiment_name, num_jobs=1, num_procs=1, restart_workers=False, verbose=True
+        self,
+        experiment_name,
+        num_jobs=1,
+        num_procs=1,
+        restart_workers=False,
+        max_wait_time=0.0,
+        verbose=True,
     ):
         """Initialize local scheduler.
 
@@ -40,6 +46,13 @@ class Local(Dask):
             num_procs (int, opt): number of processors per job
             restart_workers (bool): If true, restart workers after each finished job. Try setting it
                                     to true in case you are experiencing memory-leakage warnings.
+            max_wait_time (float, opt): Maximum wait time before a job is started in seconds.
+                                        Defaults to 0.0 (so all jobs are started immediately).
+                                        The wait time for each job is uniformly distributed between
+                                        0 and max_wait_time.
+                                        Starting many jobs (several hundreds) at the same time can
+                                        overwhelm the hardware of a resource, the randomized wait
+                                        time can help to spread the load.
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         experiment_dir = experiment_directory(experiment_name=experiment_name)
@@ -54,6 +67,7 @@ class Local(Dask):
         _logger.info(
             "To view the Dask dashboard open this link in your browser: %s", client.dashboard_link
         )
+        # pylint: disable=duplicate-code
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
@@ -61,13 +75,7 @@ class Local(Dask):
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,
+            max_wait_time=max_wait_time,
             verbose=verbose,
         )
-
-    def restart_worker(self, worker):
-        """Restart a worker.
-
-        Args:
-            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
-        """
-        self.client.restart_workers(workers=list(worker))
+        # pylint: enable=duplicate-code

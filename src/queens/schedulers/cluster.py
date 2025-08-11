@@ -83,6 +83,7 @@ class Cluster(Dask):
         cluster_internal_address=None,
         restart_workers=False,
         allowed_failures=5,
+        max_wait_time=0.0,
         verbose=True,
     ):
         """Init method for the cluster scheduler.
@@ -103,6 +104,13 @@ class Cluster(Dask):
             restart_workers (bool): If true, restart workers after each finished job. For larger
                                     jobs (>1min) this should be set to true in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
+            max_wait_time (float, opt): Maximum wait time before a job is started in seconds.
+                                        Defaults to 0.0 (so all jobs are started immediately).
+                                        The wait time for each job is uniformly distributed between
+                                        0 and max_wait_time.
+                                        Starting many jobs (several hundreds) at the same time can
+                                        overwhelm the hardware of a resource, the randomized wait
+                                        time can help to spread the load.
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         self.remote_connection = remote_connection
@@ -199,6 +207,7 @@ class Cluster(Dask):
             local_port_dashboard,
         )
 
+        # pylint: disable=duplicate-code
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
@@ -206,19 +215,10 @@ class Cluster(Dask):
             num_procs=num_procs,
             client=client,
             restart_workers=restart_workers,
+            max_wait_time=max_wait_time,
             verbose=verbose,
         )
-
-    def restart_worker(self, worker):
-        """Restart a worker.
-
-        This method retires a dask worker. The Client.adapt method of dask takes cares of submitting
-        new workers subsequently.
-
-        Args:
-            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
-        """
-        self.client.retire_workers(workers=list(worker))
+        # pylint: enable=duplicate-code
 
     def copy_files_to_experiment_dir(self, paths):
         """Copy file to experiment directory.
