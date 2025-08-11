@@ -16,13 +16,11 @@
 
 from testbook import testbook
 import numpy as np
-import json
 
 
 # tested jupyter notebooks should be mentioned below
 @testbook(
     "doc/source/tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
-    execute=[1, 3, 5, 7, 9, 11],
 )
 def test_result_output(tb, tmp_path):
     """Parameterized test case for Jupyter notebook output.
@@ -60,14 +58,12 @@ def test_result_output(tb, tmp_path):
     )
 
     tb.inject(f"output_dir = '{tmp_path}'")
+    tb.inject("experiment_name = 'grid_iterator_rosenbrock'")
     tb.inject("from queens.utils import config_directories")
-    tb.inject("import json")
-
     tb.inject(f"config_directories = '{tmp_path}'")
-    tb.inject('test_results = json.dumps(results["raw_output_data"]["result"].tolist())')
 
-    assert (tb.ref("output_dir")) == str(tmp_path)
-    assert tb.ref("config_directories") == str(tmp_path)
-    results = np.array(json.loads(tb.ref("test_results")))
-
-    np.testing.assert_allclose(results, expected_results)
+    tb.execute_cell([0, 2, 6, 8, 10, 12])
+    tb.inject("import numpy as np")
+    tb.inject(
+        f" np.testing.assert_allclose(np.array(results['raw_output_data']['result']), {expected_results.tolist()})"
+    )
