@@ -383,3 +383,14 @@ texinfo_documents = [
 # If true, do not generate a @detailmenu in the "Top" node's menu.
 #
 # texinfo_no_detailmenu = False
+
+# -- Options for Jupyter notebook output -------------------------------------------
+
+# Toggle to build Jupyter notebook docs (show with output)
+nbsphinx_execute = "always"  # or 'auto' or 'never'
+
+# Optional: suppress warnings about missing kernels
+nbsphinx_allow_errors = True
+
+# Include custom JS to collapse output of notebooks
+html_js_files = ["collapse_output.js"]
