@@ -1,13 +1,13 @@
 /* Use QUEENS colors. */
 html[data-theme="light"] {
-    --pst-color-primary: #5cbbfeff;
-    --pst-color-secondary: #5cbbfeff;
+    --pst-color-primary: #2C6572;
+    --pst-color-secondary: #2C6572;
 }
 
 /* Use QUEENS colors. */
 html[data-theme="dark"] {
-    --pst-color-primary: #5cbbfeff;
-    --pst-color-secondary: #5cbbfeff;
+    --pst-color-primary: #2C6572;
+    --pst-color-secondary: #2C6572;
 }
 
 a {

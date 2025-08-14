@@ -281,12 +281,16 @@ def download_images():
             f.write(url_request.content)
 
     download_file_from_url(
-        "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_night.svg",
+        "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_text_night.svg",
         relative_to_doc_source("images/queens_logo_night.svg"),
     )
     download_file_from_url(
-        "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_logo_day.svg",
+        "https://raw.githubusercontent.com/queens-py/queens-design/main/logo/queens_text.svg",
         relative_to_doc_source("images/queens_logo_day.svg"),
+    )
+    download_file_from_url(
+        "https://raw.githubusercontent.com/queens-py/queens-design/main/crown/queens_crown.svg",
+        relative_to_doc_source("images/queens_logo_no_text.svg"),
     )
 
 
