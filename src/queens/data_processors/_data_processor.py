@@ -38,6 +38,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                     The file prefix can contain BASIC regex expression
                                     and subdirectories. Examples are wildcards `*` or
                                     expressions like `[ab]`.
+        worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+        write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+        logger_on_worker (logging.Logger): Logger instance used on the dask worker
     """
 
     def __init__(
@@ -45,6 +48,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
     ):
         """Init data processor class.
 
@@ -57,7 +62,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
                                        implement valid options for this dictionary.
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
-            logger_on_dask_worker (logging.Logger): Logger instance used on the dask worker
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         if not file_name_identifier:
             raise ValueError(
@@ -93,6 +100,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
 
+        self.worker_log_level = worker_log_level
+        self.write_worker_log_files = write_worker_log_files
         self.logger_on_worker = None
 
     def get_data_from_file(self, base_dir):
@@ -115,10 +124,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"but is of type {type(base_dir)}. Abort..."
             )
 
+        worker_log_dir = base_dir if self.write_worker_log_files else None
         self.logger_on_worker = setup_logger_on_worker(
-            name=type(self).__name__,
-            log_dir=base_dir,
-            level=logging.INFO,
+            name=type(self).__name__, log_dir=worker_log_dir, level=self.worker_log_level
         )
 
         file_path = self._check_file_exist_and_is_unique(base_dir)

@@ -33,6 +33,8 @@ class NumpyFile(DataProcessor):
         file_name_identifier=None,
         file_options_dict=None,
         files_to_be_deleted_regex_lst=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
     ):
         """Instantiate data processor class for numpy binary data.
 
@@ -43,11 +45,16 @@ class NumpyFile(DataProcessor):
             file_options_dict (dict): Dictionary with read-in options for the file
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
                                                  The paths can contain regex expressions.
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
+            worker_log_level=worker_log_level,
+            write_worker_log_files=write_worker_log_files,
         )
 
     def get_raw_data_from_file(self, file_path):
