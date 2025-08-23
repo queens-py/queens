@@ -21,9 +21,6 @@ import sys
 from pathlib import Path
 from typing import Any, Callable, ParamSpec
 
-from dask.distributed import get_worker
-
-from queens.utils.config_directories import logging_directory_on_dask_worker
 from queens.utils.printing import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
@@ -284,12 +281,12 @@ def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
     return wrapper
 
 
-def setup_logger_on_dask_worker(name="worker", experiment_dir=None, level=logging.INFO):
-    """Setup a logger on a dask worker.
+def setup_logger_on_worker(name="worker", log_dir=None, level=logging.INFO):
+    """Setup a logger on a scheduler's worker.
 
     Args:
         name (str): Name of the logger.
-        experiment_dir (Path): Path to the experiment directory.
+        log_dir (Path): Path to the directory for the log file.
         level (int): Logging level.
 
     Returns:
@@ -297,30 +294,29 @@ def setup_logger_on_dask_worker(name="worker", experiment_dir=None, level=loggin
     """
     logger = logging.getLogger(name)
 
-    if logger.hasHandlers():
-        return logger  # Already configured (avoid duplicate handlers)
-
-    logger.setLevel(level)
     formatter = NewLineFormatter(
         "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
     )
 
-    if experiment_dir is not None:
-        log_dir = logging_directory_on_dask_worker(experiment_dir)
+    logger.setLevel(level)
+    # if the worker is set up for the first time
+    if not logger.hasHandlers():
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
 
-        try:
-            worker = get_worker()
-            log_file = log_dir / f"{worker.name}.log"
-        except ValueError:
-            # Not inside a Dask worker — maybe running locally
-            log_file = log_dir / f"{name}_client.log"
+    # Remove all FileHandlers, keep others (like StreamHandler)
+    # it should always have at least the StreamHandler from above but for safety
+    if logger.hasHandlers():
+        for handler in logger.handlers[:]:
+            if isinstance(handler, logging.FileHandler):
+                logger.removeHandler(handler)
+                handler.close()  # optional: closes the file descriptor
 
+    if log_dir is not None:
+        log_file = log_dir / "worker.log"
         file_handler = logging.FileHandler(log_file)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
-
-    stream_handler = logging.StreamHandler()
-    stream_handler.setFormatter(formatter)
-    logger.addHandler(stream_handler)
 
     return logger
