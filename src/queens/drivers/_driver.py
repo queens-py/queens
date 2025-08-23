@@ -30,15 +30,26 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
-        logger_on_worker (logging.Logger): Logger instance used on the dask worker
+        worker_log_level (int | str): Logging level used on the worker
+        write_worker_log_files (bool): Switch on/off writing of worker logs to files (one per job)
+        logger_on_worker (logging.Logger): Logger instance used on the worker
     """
 
-    def __init__(self, parameters, files_to_copy=None):
+    def __init__(
+        self,
+        parameters,
+        files_to_copy=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
+    ):
         """Initialize Driver object.
 
         Args:
             parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         self.parameters = parameters
         if files_to_copy is None:
@@ -50,6 +61,8 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
+        self.worker_log_level = worker_log_level
+        self.write_worker_log_files = write_worker_log_files
         self.logger_on_worker = None
 
     @final
@@ -67,8 +80,9 @@ class Driver(metaclass=abc.ABCMeta):
             Result and potentially the gradient
         """
         job_dir, output_dir, output_file, log_file = self._manage_paths(job_id, experiment_dir)
+        worker_log_dir = output_dir if self.write_worker_log_files else None
         self.logger_on_worker = setup_logger_on_worker(
-            name=type(self).__name__, log_dir=output_dir, level=logging.INFO
+            name=type(self).__name__, log_dir=worker_log_dir, level=self.worker_log_level
         )
 
         return self._run(
