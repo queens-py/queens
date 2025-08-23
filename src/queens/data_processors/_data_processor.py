@@ -18,7 +18,7 @@ import abc
 import logging
 from pathlib import Path
 
-from queens.utils.logger_settings import setup_logger_on_dask_worker
+from queens.utils.logger_settings import setup_logger_on_worker
 
 _logger = logging.getLogger(__name__)
 
@@ -93,55 +93,56 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
 
-        self.logger_on_dask_worker = None
+        self.logger_on_worker = None
 
-    def get_data_from_file(self, base_dir_file, experiment_dir=None):
+    def get_data_from_file(self, base_dir):
         """Get data of interest from file.
 
         Args:
-            base_dir_file (Path): Path of the base directory that contains the file of interest
-            experiment_dir (Path): Path of QUEENS experiment.
+            base_dir (Path): Path of the base directory that contains the file of interest
 
         Returns:
             processed_data (np.array): Final data from data processor module
         """
-        if self.logger_on_dask_worker is None:
-            self.logger_on_dask_worker = setup_logger_on_dask_worker(
-                name=type(self).__name__, experiment_dir=experiment_dir, level=logging.INFO
-            )
-
-        if not base_dir_file:
+        if not base_dir:
             raise ValueError(
                 "The data processor requires a base_directory for the "
                 "files to operate on! Your input was empty! Abort..."
             )
-        if not isinstance(base_dir_file, Path):
+        if not isinstance(base_dir, Path):
             raise TypeError(
-                "The argument 'base_dir_file' must be of type 'Path' "
-                f"but is of type {type(base_dir_file)}. Abort..."
+                "The argument 'base_dir' must be of type 'Path' "
+                f"but is of type {type(base_dir)}. Abort..."
             )
-        self.logger_on_dask_worker.info("\nProcessing the following files:")
-        self.logger_on_dask_worker.info(str(base_dir_file))
-        file_path = self._check_file_exist_and_is_unique(base_dir_file)
+
+        self.logger_on_worker = setup_logger_on_worker(
+            name=type(self).__name__,
+            log_dir=base_dir,
+            level=logging.INFO,
+        )
+
+        file_path = self._check_file_exist_and_is_unique(base_dir)
+        self.logger_on_worker.info("\nProcessing the following files:")
+        self.logger_on_worker.info(str(file_path))
         processed_data = None
         if file_path:
             raw_data = self.get_raw_data_from_file(file_path)
             filtered_data = self.filter_and_manipulate_raw_data(raw_data)
             processed_data = self._subsequent_data_manipulation(filtered_data)
 
-        self._clean_up(base_dir_file)
+        self._clean_up(base_dir)
         return processed_data
 
-    def _check_file_exist_and_is_unique(self, base_dir_file):
+    def _check_file_exist_and_is_unique(self, base_dir):
         """Check if file exists.
 
         Args:
-            base_dir_file (Path): Path to base directory that contains file of interest
+            base_dir (Path): Path to base directory that contains file of interest
 
         Returns:
             file_path (str): Actual path to the file of interest.
         """
-        file_list = list(base_dir_file.glob(self.file_name_identifier))
+        file_list = list(base_dir.glob(self.file_name_identifier))
 
         if len(file_list) > 1:
             raise RuntimeError(
@@ -153,8 +154,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if len(file_list) == 1:
             file_path = file_list[0]
         else:
-            _logger.warning(
-                "The file '%s' does not exist!", base_dir_file / self.file_name_identifier
+            self.logger_on_worker.warning(
+                "The file '%s' does not exist!", base_dir / self.file_name_identifier
             )
             file_path = None
 

@@ -112,15 +112,30 @@ class Function(Driver):
 
         return reshaped_output_function
 
-    def _run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(
+        self,
+        sample,
+        job_id,
+        num_procs,
+        experiment_dir,
+        experiment_name,
+        job_dir,
+        output_dir,
+        output_file,
+        log_file,
+    ):
         """Run the driver.
 
         Args:
             sample (dict): Dict containing sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
+            job_dir (Path): Path to job directory.
+            output_dir (Path): Path to output directory.
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
 
         Returns:
             Result and potentially the gradient

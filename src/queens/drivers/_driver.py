@@ -19,7 +19,7 @@ import logging
 from pathlib import Path
 from typing import final
 
-from queens.utils.logger_settings import setup_logger_on_dask_worker
+from queens.utils.logger_settings import setup_logger_on_worker
 
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +30,7 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
-        logger_on_dask_worker (logging.Logger): Logger instance used on the dask worker
+        logger_on_worker (logging.Logger): Logger instance used on the dask worker
     """
 
     def __init__(self, parameters, files_to_copy=None):
@@ -50,7 +50,7 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
-        self.logger_on_dask_worker = None
+        self.logger_on_worker = None
 
     @final
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
@@ -66,25 +66,72 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
-        if self.logger_on_dask_worker is None:
-            self.logger_on_dask_worker = setup_logger_on_dask_worker(
-                name=type(self).__name__, experiment_dir=experiment_dir, level=logging.INFO
-            )
-        self.logger_on_dask_worker.info("Running job %i", job_id)
+        job_dir, output_dir, output_file, log_file = self._manage_paths(job_id, experiment_dir)
+        self.logger_on_worker = setup_logger_on_worker(
+            name=type(self).__name__, log_dir=output_dir, level=logging.INFO
+        )
 
-        return self._run(sample, job_id, num_procs, experiment_dir, experiment_name)
+        return self._run(
+            sample,
+            job_id,
+            num_procs,
+            experiment_dir,
+            experiment_name,
+            job_dir,
+            output_dir,
+            output_file,
+            log_file,
+        )
 
     @abc.abstractmethod
-    def _run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(
+        self,
+        sample,
+        job_id,
+        num_procs,
+        experiment_dir,
+        experiment_name,
+        job_dir,
+        output_dir,
+        output_file,
+        log_file,
+    ):
         """Abstract method for driver run.
 
         Args:
             sample (dict): Dict containing sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
+            job_dir (Path): Path to job directory.
+            output_dir (Path): Path to output directory.
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
 
         Returns:
             Result and potentially the gradient
         """
+
+    def _manage_paths(self, job_id, experiment_dir):
+        """Manage paths for driver run.
+
+        Args:
+            job_id (int): Job ID.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            job_dir (Path): Path to job directory.
+            output_dir (Path): Path to output directory.
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
+        """
+        job_dir = experiment_dir / str(job_id)
+        output_dir = job_dir / "output"
+        output_dir.mkdir(parents=True, exist_ok=True)
+
+        output_prefix = "output"
+        output_file = output_dir / output_prefix
+        log_file = output_dir / (output_prefix + ".log")
+
+        return job_dir, output_dir, output_file, log_file
