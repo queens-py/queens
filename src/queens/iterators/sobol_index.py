@@ -22,7 +22,6 @@ import plotly.graph_objs as go
 from SALib.analyze import sobol
 from SALib.sample import saltelli
 
-from queens.distributions import lognormal, normal, uniform
 from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
 from queens.utils.process_outputs import write_results
@@ -109,9 +108,11 @@ class SobolIndex(Iterator):
             raise RuntimeError(
                 "The SaltelliIterator does not work in conjunction with random fields."
             )
-        distribution_types, distribution_parameters = extract_parameters_of_parameter_distributions(
-            self.parameters
-        )
+
+        # Let SALib sample uniformly from the unit hypercube.
+        # We handle transforming the distribution to avoid translating to SALib’s nomenclature.
+        distribution_types = ["unif"] * self.num_params
+        distribution_parameters = [[0, 1]] * self.num_params
 
         self.salib_problem = {
             "num_vars": self.parameters.num_parameters,
@@ -127,6 +128,9 @@ class SobolIndex(Iterator):
             calc_second_order=self.calc_second_order,
             skip_values=self.skip_values,
         )
+
+        # Transform samples to correct distribution.
+        self.samples = self.parameters.inverse_cdf_transform(self.samples)
         _logger.debug(self.samples)
 
     def get_all_samples(self):
@@ -319,39 +323,3 @@ class SobolIndex(Iterator):
 
             fig = go.Figure(data=data, layout=layout)
             fig.write_html(chart_path)
-
-
-def extract_parameters_of_parameter_distributions(parameters):
-    """Extract the parameters of the parameter distributions.
-
-    Args:
-        parameters (Parameters): QUEENS Parameters object containing the metadata
-    Returns:
-        distribution_types (list): list with distribution types of the parameter distributions
-        distribution_parameters (list): list with parameters of the parameter distributions
-    """
-    distribution_types = []
-    distribution_parameters = []
-    for parameter in parameters.dict.values():
-        if isinstance(parameter, uniform.Uniform):
-            upper_bound = parameter.upper_bound
-            lower_bound = parameter.lower_bound
-            distribution_name = "unif"
-        # in queens normal distributions are parameterized with mean and var
-        # in salib normal distributions are parameterized via mean and std
-        # -> we need to reparameterize normal distributions
-        elif isinstance(parameter, normal.Normal):
-            lower_bound = parameter.mean.squeeze()
-            upper_bound = np.sqrt(parameter.covariance.squeeze())
-            distribution_name = "norm"
-        elif isinstance(parameter, lognormal.LogNormal):
-            lower_bound = parameter.mu.squeeze()
-            upper_bound = parameter.sigma.squeeze()
-            distribution_name = "lognorm"
-        else:
-            raise ValueError("Valid distributions are normal, lognormal and uniform!")
-
-        distribution_types.append(distribution_name)
-        distribution_parameters.append([lower_bound, upper_bound])
-
-    return distribution_types, distribution_parameters

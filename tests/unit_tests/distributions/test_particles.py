@@ -190,7 +190,9 @@ def test_ppf(reference_data, distribution):
     quantiles = np.array(np.cumsum(reference_probabilities)[::-1])
 
     if reference_dimension == 1:
-        np.testing.assert_allclose(reference_sample_space[::-1], distribution.ppf(quantiles))
+        np.testing.assert_allclose(
+            np.array(reference_sample_space[::-1]).reshape(-1), distribution.ppf(quantiles)
+        )
     else:
         with pytest.raises(ValueError, match="Method does not support multivariate distributions!"):
             distribution.ppf(quantiles)

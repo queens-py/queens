@@ -19,6 +19,7 @@ import pytest
 
 from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
+from queens.distributions.uniform_discrete import UniformDiscrete
 from queens.parameters.parameters import Parameters
 
 
@@ -35,6 +36,14 @@ def fixture_parameters_set_2():
     """Parameters dict without random field."""
     x1 = Uniform(lower_bound=-5, upper_bound=10)
     x2 = Normal(mean=0, covariance=1)
+    return Parameters(x1=x1, x2=x2)
+
+
+@pytest.fixture(name="parameters_set_3", scope="module")
+def fixture_parameters_set_3():
+    """Parameters dict without random field."""
+    x1 = Uniform(lower_bound=-5, upper_bound=10)
+    x2 = UniformDiscrete(sample_space=[[0], [1], [2], [3], [4]])
     return Parameters(x1=x1, x2=x2)
 
 
@@ -89,21 +98,39 @@ def test_joint_logpdf(parameters_set_1):
     np.testing.assert_almost_equal(logpdf, np.array([-np.inf, -15.14250]), decimal=5)
 
 
-def test_inverse_cdf_transform(parameters_set_1, parameters_set_2):
+@pytest.mark.parametrize(
+    "parameters_set, samples, expected, expect_error",
+    [
+        # test case for parameter_set_1, expect Value Error
+        ("parameters_set_1", np.array([0.5, 0.1, 0.6]), None, True),
+        # test case for parameter_set_2, 1D sample
+        ("parameters_set_2", np.array([0.5, 0.1]), np.array([[2.5, -1.28155]]), False),
+        # test case for parameter_set_2, 2D sample
+        (
+            "parameters_set_2",
+            np.array([[0.5, 0.1], [1.0, 0.1]]),
+            np.array([[2.5, -1.28155], [10.0, -1.28155]]),
+            False,
+        ),
+        # test case for parameter_set_3
+        (
+            "parameters_set_3",
+            np.array([[0.5, 0.1], [0.5, 0.6]]),
+            np.array([[2.5, 0], [2.5, 2]]),
+            False,
+        ),
+    ],
+)
+def test_inverse_cdf_transform(parameters_set, samples, expected, expect_error, request):
     """Test *inverse_cdf_transform* method."""
-    samples = np.array([0.5, 0.1, 0.6])
-    with pytest.raises(ValueError):
-        parameters_set_1.inverse_cdf_transform(samples)
+    parameters = request.getfixturevalue(parameters_set)
 
-    samples = np.array([0.5, 0.1])
-    transformed_samples = parameters_set_2.inverse_cdf_transform(samples)
-    np.testing.assert_almost_equal(transformed_samples, np.array([[2.5, -1.28155]]), decimal=5)
-
-    samples = np.array([[0.5, 0.1], [1.0, 0.1]])
-    transformed_samples = parameters_set_2.inverse_cdf_transform(samples)
-    np.testing.assert_almost_equal(
-        transformed_samples, np.array([[2.50000, -1.28155], [10.00000, -1.28155]]), decimal=5
-    )
+    if expect_error:
+        with pytest.raises(ValueError):
+            parameters.inverse_cdf_transform(samples)
+    else:
+        transformed_samples = parameters.inverse_cdf_transform(samples)
+        np.testing.assert_almost_equal(transformed_samples, expected, decimal=5)
 
 
 def test_sample_as_dict(parameters_set_1):

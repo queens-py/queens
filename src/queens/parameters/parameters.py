@@ -18,7 +18,7 @@ import logging
 
 import numpy as np
 
-from queens.distributions._distribution import Continuous
+from queens.distributions._distribution import Continuous, Discrete
 from queens.parameters.random_fields._random_field import RandomField
 from queens.utils.logger_settings import log_init_args
 
@@ -64,14 +64,14 @@ class Parameters:
         """Initialize Parameters object.
 
         Args:
-            **parameters (Continuous, RandomField): parameters as keyword arguments
+            **parameters (Distribution, RandomField): parameters as keyword arguments
         """
         joint_parameters_keys = []
         joint_parameters_dim = 0
         random_field_flag = False
 
         for parameter_name, parameter_obj in parameters.items():
-            if isinstance(parameter_obj, Continuous):
+            if isinstance(parameter_obj, (Continuous, Discrete)):
                 joint_parameters_keys = _add_parameters_keys(
                     joint_parameters_keys, parameter_name, parameter_obj.dimension
                 )

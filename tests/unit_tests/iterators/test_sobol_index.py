@@ -42,32 +42,86 @@ def fixture_default_sobol_index_iterator(
     return my_iterator
 
 
-def test_correct_sampling(default_sobol_index_iterator):
-    """Test correct sampling."""
-    default_sobol_index_iterator.pre_run()
+@pytest.fixture(name="default_sobol_index_iterator_mixed")
+def fixture_default_sobol_index_iterator_mixed(
+    global_settings, default_simulation_model, default_parameters_mixed
+):
+    """Default sobol index iterator with different distributions."""
+    default_simulation_model.driver.parameters = default_parameters_mixed
 
-    ref_vals = np.array(
-        [
-            [-3.1323887689, -0.7761942787, -0.3282718886],
-            [-0.0828349625, -0.7761942787, -0.3282718886],
-            [-3.1323887689, 0.3589515044, -0.3282718886],
-            [-3.1323887689, -0.7761942787, 2.1629129109],
-            [-3.1323887689, 0.3589515044, 2.1629129109],
-            [-0.0828349625, -0.7761942787, 2.1629129109],
-            [-0.0828349625, 0.3589515044, -0.3282718886],
-            [-0.0828349625, 0.3589515044, 2.1629129109],
-            [0.0092038847, 2.3653983749, 2.8133207650],
-            [3.0587576910, 2.3653983749, 2.8133207650],
-            [0.0092038847, -2.7826411492, 2.8133207650],
-            [0.0092038847, 2.3653983749, -0.9786797427],
-            [0.0092038847, -2.7826411492, -0.9786797427],
-            [3.0587576910, 2.3653983749, -0.9786797427],
-            [3.0587576910, -2.7826411492, 2.8133207650],
-            [3.0587576910, -2.7826411492, -0.9786797427],
-        ]
+    my_iterator = SobolIndex(
+        model=default_simulation_model,
+        parameters=default_parameters_mixed,
+        global_settings=global_settings,
+        seed=42,
+        num_samples=2,
+        calc_second_order=True,
+        num_bootstrap_samples=1000,
+        confidence_level=0.95,
+        result_description={},
+        skip_values=1024,
     )
+    return my_iterator
 
-    np.testing.assert_allclose(default_sobol_index_iterator.samples, ref_vals, 1e-07, 1e-07)
+
+@pytest.mark.parametrize(
+    "fixture_sobol_index_iterator, ref_vals",
+    [
+        # Test case for fixture_default_sobol_index_iterator
+        (
+            "default_sobol_index_iterator",
+            np.array(
+                [
+                    [-3.1323887689, -0.7761942787, -0.3282718886],
+                    [-0.0828349625, -0.7761942787, -0.3282718886],
+                    [-3.1323887689, 0.3589515044, -0.3282718886],
+                    [-3.1323887689, -0.7761942787, 2.1629129109],
+                    [-3.1323887689, 0.3589515044, 2.1629129109],
+                    [-0.0828349625, -0.7761942787, 2.1629129109],
+                    [-0.0828349625, 0.3589515044, -0.3282718886],
+                    [-0.0828349625, 0.3589515044, 2.1629129109],
+                    [0.0092038847, 2.3653983749, 2.8133207650],
+                    [3.0587576910, 2.3653983749, 2.8133207650],
+                    [0.0092038847, -2.7826411492, 2.8133207650],
+                    [0.0092038847, 2.3653983749, -0.9786797427],
+                    [0.0092038847, -2.7826411492, -0.9786797427],
+                    [3.0587576910, 2.3653983749, -0.9786797427],
+                    [3.0587576910, -2.7826411492, 2.8133207650],
+                    [3.0587576910, -2.7826411492, -0.9786797427],
+                ]
+            ),
+        ),
+        # Test case for fixture_default_sobol_index_iterator_mixed with mixed distributions
+        (
+            "default_sobol_index_iterator_mixed",
+            np.array(
+                [
+                    [-3.1323887688626857, -0.6295573938365613, 1.183719794407078],
+                    [-0.08283496254583023, -0.6295573938365613, 1.183719794407078],
+                    [-3.1323887688626857, 0.28738780203495984, 1.183719794407078],
+                    [-3.1323887688626857, -0.6295573938365613, 3.71370699996047],
+                    [-3.1323887688626857, 0.28738780203495984, 3.71370699996047],
+                    [-0.08283496254583023, -0.6295573938365613, 3.71370699996047],
+                    [-0.08283496254583023, 0.28738780203495984, 1.183719794407078],
+                    [-0.08283496254583023, 0.28738780203495984, 3.71370699996047],
+                    [0.009203884727314371, 2.314989355551835, 6.84456525569755],
+                    [3.0587576910441703, 2.314989355551835, 6.84456525569755],
+                    [0.009203884727314371, -3.158682435228621, 6.84456525569755],
+                    [0.009203884727314371, 2.314989355551835, 0.9040023275536164],
+                    [0.009203884727314371, -3.158682435228621, 0.9040023275536164],
+                    [3.0587576910441703, 2.314989355551835, 0.9040023275536164],
+                    [3.0587576910441703, -3.158682435228621, 6.84456525569755],
+                    [3.0587576910441703, -3.158682435228621, 0.9040023275536164],
+                ]
+            ),
+        ),
+    ],
+)
+def test_correct_sampling(fixture_sobol_index_iterator, ref_vals, request):
+    """Test correct sampling."""
+    sobol_index_iterator = request.getfixturevalue(fixture_sobol_index_iterator)
+    sobol_index_iterator.pre_run()
+    np.testing.assert_allclose(sobol_index_iterator.samples, ref_vals, 1e-07, 1e-07)
 
 
 def test_correct_sensitivity_indices(default_sobol_index_iterator):
