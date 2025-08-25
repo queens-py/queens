@@ -94,5 +94,5 @@ your source directory. For further information, see our [testing README.md](test
 #### 5. Submit a pull request
 Please use the available pull request template and fill out all sections of the template.
 When you have submitted a pull request and the CI pipeline passes, it will be reviewed.
-Once your pull request is approved, there is a 24h waiting time until the branch is merged into the
+Once your pull request is approved, there is a 24h waiting time (business days only) until the branch is merged into the
 main branch by the QUEENS maintainers. This ensures that the community has a chance to have a final look over the changes.
