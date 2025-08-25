@@ -170,8 +170,11 @@ nbformat==5.10.4
     #   nbclient
     #   nbconvert
     #   nbsphinx
+    #   nbstripout
     #   testbook
 nbsphinx==0.9.5
+    # via -r dev-requirements.in
+nbstripout==0.8.1
     # via -r dev-requirements.in
 nest-asyncio==1.6.0
     # via ipykernel

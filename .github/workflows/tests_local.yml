@@ -57,6 +57,10 @@ jobs:
           ruff check
           echo "::endgroup::"
 
+          echo "::group::Run nbstripout..."
+          find . -name '*.ipynb' -exec nbstripout --verify {} +
+          echo "::endgroup::"
+
           # echo "::group::Create code quality report..."
           # pylint src/ tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json

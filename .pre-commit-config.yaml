@@ -77,3 +77,10 @@ repos:
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
+repos:
+  - repo: https://github.com/kynan/nbstripout
+    rev: 0.8.1
+    hooks:
+      - id: nbstripout
+        name: Strip outputs from Jupyter notebooks
+        files: \.ipynb$
