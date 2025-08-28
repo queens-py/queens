@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the article from preferred-citation as well as the respective method papers."
+title: "Quantification of Uncertain Effects in Engineering Systems (QUEENS)"
+authors:
+    - name: "QUEENS contributors"
+      website: "https://github.com/queens-py/queens/graphs/contributors"
+license: LGPL-3.0-or-later
+
+preferred-citation:
+  type: article
+  title: "QUEENS: An Open-Source Python Framework for Solver-Independent Analyses of Large-Scale Computational Models"
+  authors:
+    - given-names: "Jonas"
+      family-names: "Biehler"
+      orcid: "https://orcid.org/0000-0003-3032-1924"
+    - given-names: "Jonas"
+      family-names: "Nitzler"
+      orcid: "https://orcid.org/0000-0002-7258-5664"
+    - given-names: "Sebastian"
+      family-names: "Brandstaeter"
+      orcid: "https://orcid.org/0000-0001-9594-1302"
+    - given-names: "Maximilian"
+      family-names: "Dinkel"
+      orcid: "https://orcid.org/0009-0003-2908-2951"
+    - given-names: "Volker"
+      family-names: "Gravemeier"
+    - given-names: "Lea J."
+      family-names: "Haeusel"
+      orcid: "https://orcid.org/0009-0007-2462-3033"
+    - given-names: "Gil"
+      family-names: "Robalo Rei"
+      orcid: "https://orcid.org/0000-0002-6336-6718"
+    - given-names: "Harald"
+      family-names: "Willmann"
+      orcid: "https://orcid.org/0000-0001-5293-1155"
+    - given-names: "Barbara"
+      family-names: "Wirthl"
+      orcid: "https://orcid.org/0000-0002-3688-2952"
+    - given-names: "Wolfgang A."
+      family-names: "Wall"
+      orcid: "https://orcid.org/0000-0001-7419-3384"
+  notes: "Jonas Biehler, Jonas Nitzler, and Sebastian Brandstaeter contributed equally."
+  year: 2025
+  status: preprint
+  url: "https://arxiv.org/abs/2508.16316"
+  identifiers:
+    - type: other
+      description: The ArXiv preprint of the article
+      value: "arXiv:2508.16316"
