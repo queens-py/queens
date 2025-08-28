@@ -45,6 +45,8 @@ class PvdFile(DataProcessor):
         time_steps=None,
         block=0,
         point_data=True,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
     ):
         """Instantiate data processor class for pvd data extraction.
 
@@ -60,11 +62,16 @@ class PvdFile(DataProcessor):
             block (int, optional): Considered block of MultiBlock data set (first block by default)
             point_data (bool, optional): Whether to extract point data (True) or cell data (False).
                                          Defaults to point data.
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
+            worker_log_level=worker_log_level,
+            write_worker_log_files=write_worker_log_files,
         )
         self.field_name = field_name
         if time_steps is None:
