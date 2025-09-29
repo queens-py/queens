@@ -170,6 +170,7 @@ html_theme_options = {
             "type": "fontawesome",
         },
     ],
+    "header_links_before_dropdown": 6,
 }
 
 # Add any paths that contain custom themes here, relative to this directory.
