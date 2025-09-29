@@ -4,10 +4,17 @@ doc/build
 doc/source/*.rst
 doc/source/*.md
 
+doc/source/tutorials/1-monte_carlo_uq.rst
+
+# No results or logs
+*.pickle
+*.log
+
 # but keep static rst files
 !doc/source/index.rst
 !doc/source/tutorials.rst
 !doc/source/tutorials.onboarding.rst
+!doc/source/faq.md
 
 # C extensions
 *.so
