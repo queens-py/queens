@@ -1,7 +1,7 @@
 .. _tutorials:
 
 Tutorials
-==================================
+=========
 
 Work in progress!
 
@@ -10,6 +10,6 @@ If a tutorial of your iterator of interest is not yet available, we recommend ch
 .. toctree::
    :maxdepth: 1
 
-   tutorials.onboarding
-   tutorials.monte_carlo_uq
-   tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb
+   tutorials/0-onboarding
+   tutorials/1-monte_carlo_uq
+   tutorials/2-grid-iterator-rosenbrock.ipynb

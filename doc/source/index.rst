@@ -20,6 +20,7 @@ Contents
    tutorials
    development
    queens
+   faq
 
 
 Indices

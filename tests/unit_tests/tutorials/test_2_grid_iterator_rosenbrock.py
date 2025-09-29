@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Unit tests for 1-grid-iterator-rosenbrock tutorial."""
+"""Unit tests for 2-grid-iterator-rosenbrock tutorial."""
 
 import numpy as np
 from testbook import testbook
@@ -20,7 +20,7 @@ from testbook import testbook
 
 # tested jupyter notebooks should be mentioned below
 @testbook(
-    "doc/source/tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
+    "tutorials/2-grid-iterator-rosenbrock.ipynb",
 )
 def test_result_output(tb, tmp_path):
     """Parameterized test case for Jupyter notebook output.

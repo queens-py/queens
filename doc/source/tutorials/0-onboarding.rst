@@ -1,4 +1,4 @@
-0) Onboarding
+0. Onboarding
 =============
 Welcome to the QUEENS project! 👑
 

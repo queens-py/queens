@@ -22,7 +22,7 @@ from testbook import testbook
 @pytest.mark.parametrize(
     "notebook_path",
     [
-        "doc/source/tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock.ipynb",
+        "tutorials/2-grid-iterator-rosenbrock.ipynb",
     ],
 )
 def test_notebooks(notebook_path):
