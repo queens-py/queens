@@ -29,7 +29,7 @@ jobs:
           PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
-          sphinx-apidoc -o doc/source src/queens -f -M
+          sphinx-apidoc -o doc/source src/ -f -M
           cd doc
           sphinx-build -b html -d build/doctrees source build/html
       - name: Upload html
