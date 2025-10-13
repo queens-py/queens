@@ -14,17 +14,18 @@
 #
 """Collection of plotting capabilities for probability distributions."""
 
+import numpy as np
 import plotly
 import plotly.graph_objs as go
 
 
-def plot_pdf(pdf_estimate, support_points, bayes=False):
+def plot_pdf(pdf_estimate: dict, support_points: np.ndarray, bayes: bool = False) -> None:
     """Create pdf plot based on passed data.
 
     Args:
-        pdf_estimate   (dict):      Estimate of pdf at supporting points
-        support_points (np.array):  Supporting points
-        bayes (bool):               Do we want to plot confidence intervals
+        pdf_estimate: Estimate of pdf at supporting points
+        support_points: Supporting points
+        bayes: Do we want to plot confidence intervals
     """
     mean_pdf = go.Scatter(
         x=support_points, y=pdf_estimate["mean"], mode="markers+lines", name="Mean"
@@ -58,13 +59,13 @@ def plot_pdf(pdf_estimate, support_points, bayes=False):
     plotly.offline.plot(fig, filename="PDF.html", auto_open=True)
 
 
-def plot_cdf(cdf_estimate, support_points, bayes=False):
+def plot_cdf(cdf_estimate: dict, support_points: np.ndarray, bayes: bool = False) -> None:
     """Create cdf plot based on passed data.
 
     Args:
-        cdf_estimate   (dict):      Estimate of cdf at supporting points
-        support_points (np.array):  Supporting points
-        bayes (bool):               Do we want to plot confidence intervals
+        cdf_estimate: Estimate of cdf at supporting points
+        support_points: Supporting points
+        bayes: Do we want to plot confidence intervals
     """
     # Create a trace
     mean_cdf = go.Scatter(
@@ -109,12 +110,12 @@ def plot_cdf(cdf_estimate, support_points, bayes=False):
     plotly.offline.plot(fig, filename="CDF.html", auto_open=True)
 
 
-def plot_icdf(icdf_estimate, bayes=False):
+def plot_icdf(icdf_estimate: dict, bayes: bool = False) -> None:
     """Create icdf plot based on passed data.
 
     Args:
-        icdf_estimate   (dict):      Estimate of icdf at supporting points
-        bayes (bool):                Do we want to plot confidence intervals
+        icdf_estimate: Estimate of icdf at supporting points
+        bayes: Do we want to plot confidence intervals
     """
     # Create a trace
     my_percentiles = icdf_estimate["x"]

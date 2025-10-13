@@ -73,6 +73,10 @@ jobs:
           echo "::group::Create an rc file for the license header check..."
           python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
           echo "::endgroup::"
+
+          echo "::group::Check type hinting with mypy..."
+          mypy .
+          echo "::endgroup::"
       - name: Check license headers
         uses: apache/skywalking-eyes/header@v0.4.0
       - name: Check conventional commit messages

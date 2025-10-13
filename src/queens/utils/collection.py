@@ -14,6 +14,8 @@
 #
 """Utils to collect data during iterative processes."""
 
+from typing import Iterable, Union
+
 from queens.utils.printing import get_str_table
 
 
@@ -24,30 +26,30 @@ class CollectionObject:
     fields *collection_object.field1*.
     """
 
-    def __init__(self, *field_names):
+    def __init__(self, *field_names: str) -> None:
         """Initialize the collection item.
 
         Args:
-            field_names (tuple): Name of fields to be stored
+            field_names: Names of fields to be stored
         """
         for key in field_names:
             self.__dict__.update({key: []})
 
     @classmethod
-    def create_collection_object_from_dict(cls, data_dict):
+    def create_collection_object_from_dict(cls, data_dict: dict) -> "CollectionObject":
         """Create collection item from dict.
 
         Args:
-            data_dict (dict): Dictionary with values to be stored in this object
+            data_dict: Dictionary with values to be stored in this object
 
         Returns:
-            collection_object: Collection object created from dict
+            Collection object created from dict
         """
         collection_object = cls()
         collection_object.__dict__.update(data_dict)
         return collection_object
 
-    def add(self, **field_names_and_values):
+    def add(self, **field_names_and_values: dict) -> None:
         """Add data to the object.
 
         This function can be called with one or multiple fields, i.e.:
@@ -74,57 +76,57 @@ class CollectionObject:
 
             self.__dict__[key].append(value)
 
-    def _get_lens(self):
+    def _get_lens(self) -> list[int]:
         """Get number of elements per field.
 
         Returns:
-            list: List of number of elements per field
+            List of number of elements per field
         """
         return [len(value) for value in self.values()]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Print table of current collection.
 
         Returns:
-            str: Print table
+            Print table
         """
         return get_str_table(f"Collection object with {self.__len__()} iterations", self.__dict__)
 
-    def values(self):
+    def values(self) -> Iterable:
         """Values of the current object.
 
         This allows to use the object like a dict.
 
         Returns:
-            dict_values: Values of the collection object
+            Values of the collection object
         """
         return self.__dict__.values()
 
-    def items(self):
+    def items(self) -> Iterable:
         """Items of the current object.
 
         This allows to use the object like a dict.
 
         Returns:
-            dict_items: Items of the collection object
+            Items of the collection object
         """
         return self.__dict__.items()
 
-    def keys(self):
+    def keys(self) -> Iterable:
         """Keys, i.e. field names of the current object.
 
         This allows to use the object like a dict.
 
         Returns:
-            dict_keys: Keys of the collection object
+            Keys of the collection object
         """
         return self.__dict__.keys()
 
-    def __len__(self):
+    def __len__(self) -> int:
         """Len function for the object.
 
         Returns:
-            int: number of complete iterations
+            number of complete iterations
         """
         lens = self._get_lens()
 
@@ -134,14 +136,14 @@ class CollectionObject:
         # No data
         return 0
 
-    def __getitem__(self, i):
+    def __getitem__(self, i: Union[int, slice]) -> "CollectionObject":
         """Python intern method to index the collection object.
 
         Args:
-            i (int, slice): int or slice
+            i: int or slice
 
         Returns:
-            CollectionObject: collection object with values and field names for provided indexes
+            collection object with values and field names for provided indexes
         """
         if isinstance(i, int):
             if i > len(self):
@@ -152,19 +154,19 @@ class CollectionObject:
             new_dict.update({key: value[i]})
         return self.create_collection_object_from_dict(new_dict)
 
-    def to_dict(self):
+    def to_dict(self) -> dict:
         """Create a dictionary from the collection object.
 
         Returns:
-            dict: Dictionary with all data
+            Dictionary with all data
         """
         return self.__dict__
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         """Bool value of the object.
 
         Returns:
-            bool: Returns True if data is stored in the object
+            Returns True if data is stored in the object
         """
         lens = self._get_lens()
         return any(lens)

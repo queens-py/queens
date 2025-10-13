@@ -18,6 +18,7 @@ import argparse
 import logging
 import sys
 from pathlib import Path
+from typing import Any, Callable, Sequence
 
 from queens.utils import ascii_art
 from queens.utils.exceptions import CLIError
@@ -32,14 +33,14 @@ from queens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 
-def cli_logging(func):
+def cli_logging(func: Callable) -> Callable:
     """Decorator to create logger for CLI function.
 
     Args:
-        func (function): Function that is to be decorated
+        func: Function that is to be decorated
     """
 
-    def decorated_function(*args, **kwargs):
+    def decorated_function(*args: Any, **kwargs: Any) -> Callable:
         setup_cli_logging()
         results = func(*args, **kwargs)
         reset_logging()
@@ -51,7 +52,7 @@ def cli_logging(func):
 
 
 @cli_logging
-def inject_template_cli():
+def inject_template_cli() -> None:
     """Use the injector of QUEENS."""
     ascii_art.print_crown(80)
     ascii_art.print_banner("Injector", 80)
@@ -121,7 +122,7 @@ def inject_template_cli():
 
 
 @cli_logging
-def print_pickle_data_cli():
+def print_pickle_data_cli() -> None:
     """Print pickle data wrapper."""
     ascii_art.print_crown(60)
     ascii_art.print_banner("QUEENS", 60)
@@ -134,7 +135,7 @@ def print_pickle_data_cli():
 
 
 @cli_logging
-def gather_metadata_and_write_to_csv():
+def gather_metadata_and_write_to_csv() -> None:
     """Gather metadata and write them to csv."""
     ascii_art.print_crown(60)
     ascii_art.print_banner("QUEENS", 60)
@@ -152,16 +153,16 @@ def gather_metadata_and_write_to_csv():
     )
 
     args = sys.argv[1:]
-    args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
     _logger.info("Gathering metadata and exporting to csv.")
     write_metadata_to_csv(
-        experiment_dir=args.experiment_dir,
-        csv_path=args.csv_path,
+        experiment_dir=parsed_args.experiment_dir,
+        csv_path=parsed_args.csv_path,
     )
     _logger.info("Done.")
 
 
-def build_html_coverage_report():
+def build_html_coverage_report() -> None:
     """Build html coverage report."""
     _logger.info("Build html coverage report...")
 
@@ -174,7 +175,7 @@ def build_html_coverage_report():
     run_subprocess(command_string)
 
 
-def remove_html_coverage_report():
+def remove_html_coverage_report() -> None:
     """Remove html coverage report files."""
     _logger.info("Remove html coverage report...")
 
@@ -184,14 +185,14 @@ def remove_html_coverage_report():
     run_subprocess(command_string)
 
 
-def str_to_bool(value):
+def str_to_bool(value: str) -> bool:
     """Convert string to boolean for cli commands.
 
     Args:
-        value (str): String to convert to a bool
+        value: String to convert to a bool
 
     Returns:
-        bool: Bool of the string
+        Bool of the string
     """
     if isinstance(value, bool):
         return value
@@ -208,16 +209,16 @@ def str_to_bool(value):
     )
 
 
-def get_cli_options(args):
+def get_cli_options(args: Sequence[str]) -> tuple[Path, Path, bool]:
     """Get input file path, output directory and debug from args.
 
     Args:
-        args (list): cli arguments
+        args: cli arguments
 
     Returns:
-        input_file (Path): Path object to input file
-        output_dir (Path): Path object to the output directory
-        debug (bool):      *True* if debug mode is to be used
+        Path object to input file
+        Path object to the output directory
+        True if debug mode is to be used
     """
     parser = argparse.ArgumentParser(description="QUEENS")
     parser.add_argument(
@@ -231,23 +232,23 @@ def get_cli_options(args):
     )
     parser.add_argument("--debug", type=str_to_bool, default=False, help="Debug mode yes/no.")
 
-    args = parser.parse_args(args)
+    parsed_args = parser.parse_args(args)
 
-    if args.input is None:
+    if parsed_args.input is None:
         raise CLIError("No input file was provided with option --input.")
 
-    if args.output_dir is None:
+    if parsed_args.output_dir is None:
         raise CLIError("No output directory was provided with option --output_dir.")
 
-    debug = args.debug
-    output_dir = Path(args.output_dir)
-    input_file = Path(args.input)
+    debug = parsed_args.debug
+    output_dir = Path(parsed_args.output_dir)
+    input_file = Path(parsed_args.input)
 
     return input_file, output_dir, debug
 
 
 @cli_logging
-def print_greeting_message():
+def print_greeting_message() -> None:
     """Print a greeting message and how to use QUEENS."""
     ascii_art.print_banner_and_description()
     ascii_art.print_centered_multiline("Welcome to the royal family!")

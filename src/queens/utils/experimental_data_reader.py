@@ -15,9 +15,11 @@
 """Module to read experimental data."""
 
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
+from queens.data_processors._data_processor import DataProcessor
 from queens.data_processors.csv_file import CsvFile
 from queens.utils.logger_settings import log_init_args
 
@@ -26,33 +28,33 @@ class ExperimentalDataReader:
     """Reader for experimental data.
 
     Attributes:
-        output_label (str): Label that marks the output quantity in the csv file
-        coordinate_labels (lst): List of column-wise coordinate labels in csv files
-        time_label (str): Name of the time variable in csv file
+        output_label: Label that marks the output quantity in the csv file
+        coordinate_labels: List of column-wise coordinate labels in csv files
+        time_label: Name of the time variable in csv file
         file_name (str): File name of experimental data
         base_dir (Path): Path to base directory containing experimental data
-        data_processor (DataProcessor): data processor for experimental data
+        data_processor: data processor for experimental data
     """
 
     @log_init_args
     def __init__(
         self,
-        data_processor=None,
-        output_label=None,
-        coordinate_labels=None,
-        time_label=None,
-        file_name_identifier=None,
-        csv_data_base_dir=None,
-    ):
+        data_processor: DataProcessor | None = None,
+        output_label: str | None = None,
+        coordinate_labels: list[str] | None = None,
+        time_label: str | None = None,
+        file_name_identifier: str | None = None,
+        csv_data_base_dir: str | Path = "",
+    ) -> None:
         """Initialize ExperimentalDataReader.
 
         Args:
-            data_processor (DataProcessor): data processor for experimental data
-            output_label (str): Label that marks the output quantity in the csv file
-            coordinate_labels (lst): List of column-wise coordinate labels in csv files
-            time_label (str): Name of the time variable in csv file
-            file_name_identifier (str): File name of experimental data
-            csv_data_base_dir (Path): Path to base directory containing experimental data
+            data_processor: data processor for experimental data
+            output_label: Label that marks the output quantity in the csv file
+            coordinate_labels: List of column-wise coordinate labels in csv files
+            time_label: Name of the time variable in csv file
+            file_name_identifier: File name of experimental data
+            csv_data_base_dir: Path to base directory containing experimental data
         """
         self.output_label = output_label
         self.coordinate_labels = coordinate_labels
@@ -71,24 +73,31 @@ class ExperimentalDataReader:
                 },
             )
 
-    def get_experimental_data(self):
+    def get_experimental_data(self) -> tuple[
+        np.ndarray,
+        np.ndarray | None,
+        np.ndarray | None,
+        dict[str, Any],
+        str | None,
+        list[str] | None,
+        str | None,
+    ]:
         """Load experimental data.
 
         Returns:
-            y_obs_vec (np.array): Column-vector of model outputs which correspond row-wise to
-                                  observation coordinates
-            experimental_coordinates (np.array): Matrix with observation coordinates. One row
-                                                 corresponds to one coordinate point
-            time_vec (np.array): Unique vector of observation times
-            experimental_data_dict (dict): Dictionary containing the experimental data
-            time_label (str): Name of the time variable in csv file
-            coordinate_labels (lst): List of column-wise coordinate labels in csv files
+            Column-vector of model outputs which correspond row-wise to observation coordinates
+            Matrix with observation coordinates. One row corresponds to one coordinate point
+            Unique vector of observation times
+            Dictionary containing the experimental data
+            Name of the time variable in csv file
+            List of column-wise coordinate labels in csv files
+            Label that marks the output quantity in the csv file
         """
         experimental_data_dict = self.data_processor.get_data_from_file(self.base_dir)
 
         # arrange the experimental data coordinates
         experimental_coordinates = None
-        if self.coordinate_labels:
+        if self.coordinate_labels is not None:
             experimental_coordinates = (
                 np.array(
                     [experimental_data_dict[coordinate] for coordinate in self.coordinate_labels]
@@ -97,7 +106,7 @@ class ExperimentalDataReader:
 
         # get a unique vector of observation times
         time_vec = None
-        if self.time_label:
+        if self.time_label is not None:
             time_vec = np.sort(list(set(experimental_data_dict[self.time_label])))
 
         # get the experimental outputs

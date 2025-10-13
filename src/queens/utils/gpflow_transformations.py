@@ -14,23 +14,34 @@
 #
 """Utilis for gpflow."""
 
-import gpflow as gpf
+from typing import TYPE_CHECKING
+
+import numpy as np
 from sklearn.preprocessing import StandardScaler
 
+# This allows autocomplete in the IDE
+if TYPE_CHECKING:
+    import gpflow as gpf
+    import tensorflow_probability as tfp
+else:
+    from queens.utils.imports import LazyLoader
 
-def init_scaler(unscaled_data):
+    gpf = LazyLoader("gpflow")
+    tfp = LazyLoader("tensorflow_probability")
+
+
+def init_scaler(unscaled_data: np.ndarray) -> tuple["StandardScaler", np.ndarray]:
     r"""Initialize StandardScaler and scale data.
 
-    Standardize features by removing the mean and scaling to unit variance
-
-        :math:`scaled\_data = \frac{unscaled\_data - mean}{std}`
+    Standardize features by removing the mean and scaling to unit variance:
+    :math:`scaled\_data = \frac{unscaled\_data - mean}{std}`
 
     Args:
-        unscaled_data (np.ndarray): Unscaled data
+        unscaled_data: Unscaled data
 
     Returns:
-        scaler (StandardScaler): Standard scaler
-        scaled_data (np.ndarray): Scaled data
+        Standard scaler
+        Scaled data
     """
     scaler = StandardScaler()
     scaler.fit(unscaled_data)
@@ -38,15 +49,17 @@ def init_scaler(unscaled_data):
     return scaler, scaled_data
 
 
-def set_transform_function(data, transform):
+def set_transform_function(
+    data: gpf.Parameter, transform: tfp.bijectors.Bijector
+) -> "gpf.Parameter":
     """Set transform function.
 
     Args:
-        data (gpf.Parameter): Data to be transformed
-        transform (tfp.bijectors.Bijector): Transform function
+        data: Data to be transformed
+        transform: Transform function
 
     Returns:
-        gpf.Parameter with transform
+        Parameter with transform
     """
     return gpf.Parameter(
         data,

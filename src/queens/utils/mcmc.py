@@ -14,10 +14,15 @@
 #
 """Collection of utils for Markov Chain Monte Carlo algorithms."""
 
+from typing import Tuple, Union
+
 import numpy as np
+from numpy import ndarray
 
 
-def mh_select(log_acceptance_probability, current_sample, proposed_sample):
+def mh_select(
+    log_acceptance_probability: ndarray, current_sample: ndarray, proposed_sample: ndarray
+) -> Tuple[ndarray, ndarray]:
     """Perform Metropolis-Hastings selection.
 
     The Metropolis-Hastings algorithm is used in Markov Chain Monte Carlo (MCMC) methods to
@@ -29,19 +34,17 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
     it is infinite or NaN, the function will not accept the respective proposed sample.
 
     Args:
-        log_acceptance_probability (np.array): Logarithm of the acceptance probability for each
-                                               sample. This represents the log of the ratio of the
-                                               probability densities of the proposed sample to the
-                                               current sample.
-        current_sample (np.array): The current sample values from the MCMC chain.
-        proposed_sample (np.array): The proposed sample values to be considered for acceptance.
+        log_acceptance_probability: Logarithm of the acceptance probability for each sample. This
+            represents the log of the ratio of the probability densities of the proposed sample to
+            the probability densities of the proposed sample to the current sample.
+        current_sample: The current sample values from the MCMC chain.
+        proposed_sample: The proposed sample values to be considered for acceptance.
 
     Returns:
-        selected_samples (np.array): The sample values selected after the Metropolis-Hastings
-                                     step. If the proposed sample is accepted, it will be returned;
-                                     otherwise, the current sample is returned.
-        bool_idx (np.array): A boolean array indicating whether each proposed sample was accepted
-                             (`True`) or rejected (`False`).
+        The sample values selected after the Metropolis-Hastings step.
+            If the proposed sample is accepted, it will be returned; otherwise, the current sample
+            is returned.
+        A bool array indicating whether each proposed sample was accepted.
     """
     isfinite = np.isfinite(log_acceptance_probability)
     accept = (
@@ -56,7 +59,9 @@ def mh_select(log_acceptance_probability, current_sample, proposed_sample):
     return selected_samples, bool_idx
 
 
-def tune_scale_covariance(scale_covariance, accept_rate):
+def tune_scale_covariance(
+    scale_covariance: Union[ndarray, float], accept_rate: Union[ndarray, float]
+) -> ndarray:
     r"""Adjust the covariance scaling factor based on the acceptance rate.
 
     This function tunes the covariance scaling factor used in Metropolis-Hastings or similar MCMC
@@ -84,13 +89,12 @@ def tune_scale_covariance(scale_covariance, accept_rate):
     [1]: https://github.com/pymc-devs/pymc/blob/main/pymc/step_methods/metropolis.py
 
     Args:
-        scale_covariance (float or np.array): The current covariance scaling factor for the proposal
-        distribution.
-        accept_rate (float or np.array): The observed acceptance rate of the proposed samples. This
-        value should be between 0 and 1.
+        scale_covariance: The current covariance scaling factor for the proposal distribution.
+        accept_rate: The observed acceptance rate of the proposed samples. This value should be
+            between 0 and 1.
 
     Returns:
-        np.array: The updated covariance scaling factor adjusted according to the acceptance rate.
+        The updated covariance scaling factor adjusted according to the acceptance rate.
     """
     scale_covariance = np.where(accept_rate < 0.001, scale_covariance * 0.1, scale_covariance)
     scale_covariance = np.where(

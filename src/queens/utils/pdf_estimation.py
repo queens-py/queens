@@ -27,17 +27,22 @@ from sklearn.neighbors import KernelDensity
 _logger = logging.getLogger(__name__)
 
 
-def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel="gaussian"):
+def estimate_bandwidth_for_kde(
+    samples: np.ndarray,
+    min_samples: float,
+    max_samples: float,
+    kernel: str = "gaussian",
+) -> np.generic:
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
-        samples (np.ndarray):  Samples for which to estimate pdf
-        min_samples (float): Smallest value
-        max_samples (float): Largest value
-        kernel (str,optional):        Kernel type
+        samples: Samples for which to estimate pdf
+        min_samples: Smallest value
+        max_samples: Largest value
+        kernel: Kernel type
 
     Returns:
-        float: Estimate for optimal *kernel_bandwidth*
+        Estimate for optimal kernel bandwidth
     """
     kernel_bandwidth_upper_bound = np.log10((max_samples - min_samples) / 2.0)
     kernel_bandwidth_lower_bound = np.log10((max_samples - min_samples) / 30.0)
@@ -58,39 +63,44 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples, kernel="gaussi
     return kernel_bandwidth
 
 
-def estimate_pdf(samples, kernel_bandwidth, support_points=None, kernel="gaussian"):
+def estimate_pdf(
+    samples: np.ndarray,
+    kernel_bandwidth: float,
+    support_points: np.ndarray | None = None,
+    kernel: str = "gaussian",
+) -> tuple[np.ndarray, np.ndarray]:
     """Estimate pdf using kernel density estimation.
 
     Args:
-        samples (np.array):         Samples for which to estimate pdf
-        kernel_bandwidth (float):   Kernel width to use in kde
-        support_points (np.array):  Points where to evaluate pdf
-        kernel (str, optional):               Kernel type
+        samples: Samples for which to estimate pdf
+        kernel_bandwidth: Kernel width to use in kde
+        support_points: Points where to evaluate pdf
+        kernel: Kernel type
 
     Returns:
-        np.ndarray, np.ndarray: *pdf_estimate* at support points
+        PDF estimate at support points
     """
     # make sure that we have at least 2 D column vectors but do not change correct 2D format
     samples = np.atleast_2d(samples).T
 
+    support: np.ndarray
     # support points given
     if support_points is None:
-        min_samples = np.amin(samples)
-        max_samples = np.amax(samples)
-        support_points = np.linspace(min_samples, max_samples, 100)
-        support_points = np.meshgrid(*[support_points[:, None]] * samples.shape[1])
-        points = support_points[0].reshape(-1, 1)
+        meshgrid = np.meshgrid(
+            *[np.linspace(samples.min(), samples.max(), 100)[:, None]] * samples.shape[1]
+        )
+        points: np.ndarray = meshgrid[0].reshape(-1, 1)
         if len(points.shape) > 1:
             for col in range(1, samples.shape[1]):
                 points = np.hstack(
-                    (points, support_points[col].reshape(-1, 1))
+                    (points, meshgrid[col].reshape(-1, 1))
                 )  # reshape matrix to vector with all combinations
-        support_points = np.atleast_2d(points)
+        support = np.atleast_2d(points)
     else:
-        support_points = np.atleast_2d(support_points).T
+        support = np.atleast_2d(support_points).T
 
         # no support points given
     kde = KernelDensity(kernel=kernel, bandwidth=kernel_bandwidth).fit(samples)
 
-    y_density = np.exp(kde.score_samples(support_points))
-    return y_density, support_points
+    y_density = np.exp(kde.score_samples(support))
+    return y_density, support

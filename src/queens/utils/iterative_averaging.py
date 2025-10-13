@@ -15,37 +15,41 @@
 """Iterative averaging utils."""
 
 import abc
+from typing import Callable, TypeAlias
 
 import numpy as np
 
 from queens.utils.logger_settings import log_init_args
 from queens.utils.printing import get_str_table
 
+NumericalValue: TypeAlias = np.ndarray | np.floating | int | float
+NumpyValue: TypeAlias = np.ndarray | np.floating
+
 
 class IterativeAveraging(metaclass=abc.ABCMeta):
     """Base class for iterative averaging schemes.
 
     Attributes:
-        current_average (np.array): Current average value.
-        new_value (np.array): New value for the averaging process.
-        rel_l1_change (float): Relative change in L1 norm of the average value.
-        rel_l2_change (float): Relative change in L2 norm of the average value.
+        current_average: Current average value.
+        new_value: New value for the averaging process.
+        rel_l1_change: Relative change in L1 norm of the average value.
+        rel_l2_change: Relative change in L2 norm of the average value.
     """
 
     _name = "Iterative Averaging"
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize iterative averaging."""
-        self.current_average = None
-        self.new_value = None
-        self.rel_l1_change = 1
-        self.rel_l2_change = 1
+        self.current_average: NumpyValue | None = None
+        self.new_value: NumericalValue | None = None
+        self.rel_l1_change: float | np.generic = 1
+        self.rel_l2_change: float | np.generic = 1
 
-    def update_average(self, new_value):
+    def update_average(self, new_value: NumericalValue) -> NumpyValue:
         """Compute the actual average.
 
         Args:
-            new_value (np.array): New observation for the averaging
+            new_value: New observation for the averaging
 
         Returns:
             Current average value
@@ -53,7 +57,11 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         if isinstance(new_value, (float, int)):
             new_value = np.array(new_value)
         if self.current_average is not None:
-            old_average = self.current_average.copy()
+            old_average: NumericalValue
+            if isinstance(self.current_average, (np.floating, np.ndarray)):
+                old_average = self.current_average.copy()
+            else:
+                old_average = self.current_average
             self.current_average = self.average_computation(new_value)
             self.rel_l2_change = relative_change(old_average, self.current_average, l2_norm)
             self.rel_l1_change = relative_change(old_average, self.current_average, l1_norm)
@@ -63,14 +71,14 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         return self.current_average.copy()
 
     @abc.abstractmethod
-    def average_computation(self, new_value):
-        """Here the averaging approach is implemented."""
+    def average_computation(self, new_value: NumericalValue) -> NumpyValue:
+        """Here, the averaging approach is implemented."""
 
-    def _get_print_dict(self):
+    def _get_print_dict(self) -> dict:
         """Get print dict.
 
         Returns:
-            dict: dictionary with data to print
+            Dictionary with data to print
         """
         print_dict = {
             "Rel. L1 change to previous average": self.rel_l1_change,
@@ -79,11 +87,11 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         }
         return print_dict
 
-    def __str__(self):
+    def __str__(self) -> str:
         """String of iterative averager.
 
         Returns:
-            str: table of the averager
+            Table of the averager
         """
         print_dict = self._get_print_dict()
         return get_str_table(self._name, print_dict)
@@ -97,45 +105,47 @@ class MovingAveraging(IterativeAveraging):
     where :math:`k-1` is the number of values from previous iterations that are used
 
     Attributes:
-        num_iter_for_avg (int): Number of samples in the averaging window
-        data (np.ndarray): data used to compute the average
+        num_iter_for_avg: Number of samples in the averaging window
+        data: Data used to compute the average
     """
 
     _name = "Moving Averaging"
 
     @log_init_args
-    def __init__(self, num_iter_for_avg):
+    def __init__(self, num_iter_for_avg: int) -> None:
         """Initialize moving averaging object.
 
         Args:
-            num_iter_for_avg (int): Number of samples in the averaging window
+            num_iter_for_avg: Number of samples in the averaging window
         """
         super().__init__()
-        self.num_iter_for_avg = num_iter_for_avg
-        self.data = []
+        self.num_iter_for_avg: int = num_iter_for_avg
+        self.data: list = []
 
-    def average_computation(self, new_value):
+    def average_computation(self, new_value: NumericalValue) -> NumpyValue:
         """Compute the moving average.
 
         Args:
-            new_value (float or np.array): New value to update the average
+            new_value: New value to update the average
 
         Returns:
-            average (np.array): The current average
+            The current average
         """
-        self.data.append(new_value.copy())
+        if isinstance(new_value, (np.floating, np.ndarray)):
+            new_value = new_value.copy()
+        self.data.append(new_value)
         if len(self.data) > self.num_iter_for_avg:
             self.data = self.data[-self.num_iter_for_avg :]
-        average = 0
+        average = np.zeros_like(new_value)
         for data in self.data:
             average += data
         return average / len(self.data)
 
-    def _get_print_dict(self):
+    def _get_print_dict(self) -> dict:
         """Get print dict.
 
         Returns:
-            dict: dictionary with data to print
+            Dictionary with data to print
         """
         print_dict = super()._get_print_dict()
         print_dict.update({"Averaging window size": self.num_iter_for_avg})
@@ -156,32 +166,38 @@ class PolyakAveraging(IterativeAveraging):
     _name = "Polyak Averaging"
 
     @log_init_args
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize Polyak averaging object."""
         super().__init__()
-        self.iteration_counter = 1
-        self.sum_over_iter = 0
+        self.iteration_counter: int = 1
+        self.sum_over_iter: NumpyValue = np.float64(0.0)
 
-    def average_computation(self, new_value):
+    def average_computation(self, new_value: NumericalValue) -> NumpyValue:
         """Compute the Polyak average.
 
         Args:
-            new_value (float or np.array): New value to update the average
+            new_value: New value to update the average
 
         Returns:
-            current_average (np.array): Returns the current average
+            Returns the current average
         """
-        self.sum_over_iter += new_value
+        if isinstance(new_value, (np.ndarray)) and not isinstance(self.sum_over_iter, np.ndarray):
+            self.sum_over_iter = np.zeros_like(new_value)
+
+        if isinstance(new_value, (np.ndarray)):
+            self.sum_over_iter += new_value
+        else:
+            self.sum_over_iter += np.float64(np.asarray(new_value))
         self.iteration_counter += 1
         current_average = self.sum_over_iter / self.iteration_counter
 
         return current_average
 
-    def _get_print_dict(self):
+    def _get_print_dict(self) -> dict:
         """Get print dict.
 
         Returns:
-            dict: dictionary with data to print
+            Dictionary with data to print
         """
         print_dict = super()._get_print_dict()
         print_dict.update({"Number of iterations": self.iteration_counter})
@@ -199,42 +215,47 @@ class ExponentialAveraging(IterativeAveraging):
     Is also sometimes referred to as exponential smoothing.
 
     Attributes:
-        coefficient (float): Coefficient in (0,1) for the average.
+        coefficient: Coefficient in (0,1) for the average.
     """
 
     _name = "Exponential Averaging"
 
     @log_init_args
-    def __init__(self, coefficient):
+    def __init__(self, coefficient: float):
         """Initialize exponential averaging object.
 
         Args:
-            coefficient (float): Coefficient in (0,1) for the average
+            coefficient: Coefficient in (0,1) for the average
         """
         if coefficient < 0 or coefficient > 1:
             raise ValueError("Coefficient for exponential averaging needs to be in (0,1)")
         super().__init__()
-        self.coefficient = coefficient
+        self.coefficient: float = coefficient
 
-    def average_computation(self, new_value):
+    def average_computation(  # type: ignore[override]
+        self, new_value: NumericalValue
+    ) -> NumericalValue:
         """Compute the exponential average.
 
         Args:
-            new_value (float or np.array): New value to update the average.
+            new_value: New value to update the average.
 
         Returns:
-            current_average (np.array): Returns the current average
+            Returns the current average
         """
+        if self.current_average is None:
+            raise ValueError("Current average has not been initialized.")
+
         current_average = (
             self.coefficient * self.current_average + (1 - self.coefficient) * new_value
         )
         return current_average
 
-    def _get_print_dict(self):
+    def _get_print_dict(self) -> dict:
         """Get print dict.
 
         Returns:
-            dict: dictionary with data to print
+            Dictionary with data to print
         """
         print_dict = super()._get_print_dict()
         print_dict.update({"Coefficient": self.coefficient})
@@ -242,15 +263,15 @@ class ExponentialAveraging(IterativeAveraging):
         return print_dict
 
 
-def l1_norm(vector, averaged=False):
+def l1_norm(vector: NumericalValue, averaged: bool = False) -> float | np.floating:
     """Compute the L1 norm of the vector.
 
     Args:
-        vector (np.array): Vector
-        averaged (bool): If enabled, the norm is divided by the number of components
+        vector: Vector
+        averaged: If enabled, the norm is divided by the number of components
 
     Returns:
-        norm (float): L1 norm of the vector
+        L1 norm of the vector
     """
     vector = np.array(vector).flatten()
     vector = np.nan_to_num(vector)
@@ -260,16 +281,15 @@ def l1_norm(vector, averaged=False):
     return norm
 
 
-def l2_norm(vector, averaged=False):
+def l2_norm(vector: NumericalValue, averaged: bool = False) -> float | np.floating:
     """Compute the L2 norm of the vector.
 
     Args:
-        vector (np.array): Vector
-        averaged (bool): If enabled the norm is divided by the square root of the number of
-                         components
+        vector: Vector
+        averaged: If enabled the norm is divided by the square root of the number of components
 
     Returns:
-        norm (float): L2 norm of the vector
+        L2 norm of the vector
     """
     vector = np.array(vector).flatten()
     vector = np.nan_to_num(vector)
@@ -279,13 +299,15 @@ def l2_norm(vector, averaged=False):
     return norm
 
 
-def relative_change(old_value, new_value, norm):
+def relative_change(
+    old_value: NumericalValue, new_value: NumericalValue, norm: Callable
+) -> float | np.floating:
     """Compute the relative change of the old and new value for a given norm.
 
     Args:
-        old_value (np.array): Old values
-        new_value (np.array): New values
-        norm (func): Function to compute a norm
+        old_value: Old values
+        new_value: New values
+        norm: Function to compute a norm
 
     Returns:
         Relative change

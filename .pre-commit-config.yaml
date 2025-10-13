@@ -87,6 +87,25 @@ repos:
         always_run: false
         pass_filenames: true
         files: '^tests/'
+      - id: mypy
+        name: mypy (check type hinting)
+        entry: mypy
+        language: python
+        types: ["python"]
+        pass_filenames: true
+        # Delete modules once type hinting has been introduced there
+        exclude: |
+          (?x)^(
+          ^docs/|
+          ^tests/|
+          ^test_utils/|
+          ^src/example_simulator_functions/|
+          ^src/queens_interfaces/|
+          ^src/queens/(data_processors|distributions|drivers|iterators|models|parameters)/|
+          ^src/queens/(schedulers|stochastic_optimizers|variational_distributions|visualization)/|
+          ^src/queens/main.py|
+          ^src/queens/global_settings.py
+          )$
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:

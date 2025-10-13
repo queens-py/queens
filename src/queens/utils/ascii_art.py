@@ -15,6 +15,7 @@
 """ASCII art module."""
 
 import logging
+from typing import Union
 
 import pyfiglet
 
@@ -23,11 +24,11 @@ from queens.utils.printing import DEFAULT_OUTPUT_WIDTH
 _logger = logging.getLogger(__name__)
 
 
-def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
+def print_bmfia_acceleration(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print BMFIA rocket.
 
     Args:
-        output_width (int): Terminal output width
+        output_width: Terminal output width
     """
     rocket = r"""
           !
@@ -64,8 +65,8 @@ def print_bmfia_acceleration(output_width=DEFAULT_OUTPUT_WIDTH):
     print_centered_multiline_block(rocket, output_width)
 
 
-def print_classification():
-    """Print like a sir as the iterator is classyfication."""
+def print_classification() -> None:
+    """Print like a sir as the iterator is classification."""
     las = """                    ./@@@@@@@@
              *&@@@@@@@@@@@@@@@@(
         #@@@@@@@@@@@@@@@@@@@@@@@@
@@ -102,11 +103,11 @@ def print_classification():
     print_centered_multiline_block(las)
 
 
-def print_crown(output_width=DEFAULT_OUTPUT_WIDTH):
+def print_crown(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print crown.
 
     Args:
-        output_width (int): Terminal output width
+        output_width: Terminal output width
     """
     crown = r"""
         *
@@ -120,11 +121,11 @@ def print_crown(output_width=DEFAULT_OUTPUT_WIDTH):
     print_centered_multiline_block(crown, output_width)
 
 
-def print_points_iterator(output_width=DEFAULT_OUTPUT_WIDTH):
+def print_points_iterator(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print points iterator.
 
     Args:
-        output_width (int): Terminal output width
+        output_width: Terminal output width
     """
     points = r"""
     @@@@@@@@@@@
@@ -144,22 +145,24 @@ def print_points_iterator(output_width=DEFAULT_OUTPUT_WIDTH):
     print_centered_multiline_block(points, output_width)
 
 
-def print_banner(message="QUEENS", output_width=DEFAULT_OUTPUT_WIDTH):
+def print_banner(message: str = "QUEENS", output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print banner.
 
     Args:
-        message (str): Message in banner
-        output_width (int): Terminal output width
+        message: Message in banner
+        output_width: Terminal output width
     """
     print_centered_multiline_block(pyfiglet.figlet_format(message, font="banner3-D"), output_width)
 
 
-def print_centered_multiline_block(string, output_width=DEFAULT_OUTPUT_WIDTH):
+def print_centered_multiline_block(
+    string: Union[str, pyfiglet.FigletString], output_width: int = DEFAULT_OUTPUT_WIDTH
+) -> None:
     """Print a multiline text in the center as a block.
 
     Args:
-        string (str): String to be printed
-        output_width (int): Terminal output width
+        string: String to be printed
+        output_width: Terminal output width
     """
     lines = string.split("\n")
     max_line_width = max(len(line) for line in lines)
@@ -169,23 +172,23 @@ def print_centered_multiline_block(string, output_width=DEFAULT_OUTPUT_WIDTH):
         _logger.info(line.ljust(max_line_width).center(output_width))
 
 
-def print_centered_multiline(string, output_width=DEFAULT_OUTPUT_WIDTH):
+def print_centered_multiline(string: str, output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Center every line of a multiline text.
 
     Args:
-        string (str): String to be printed
-        output_width (int): Terminal output width
+        string: String to be printed
+        output_width: Terminal output width
     """
     lines = string.split("\n")
     for line in lines:
         _logger.info(line.strip().center(output_width))
 
 
-def print_banner_and_description(output_width=DEFAULT_OUTPUT_WIDTH):
+def print_banner_and_description(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print banner and the description.
 
     Args:
-        output_width (int): Terminal output width
+        output_width: Terminal output width
     """
     print_crown()
     print_banner()

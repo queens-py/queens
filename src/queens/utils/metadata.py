@@ -18,6 +18,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
+from typing import Any, Iterator
 
 import pandas as pd
 import yaml
@@ -37,45 +38,45 @@ class SimulationMetadata:
     This objects holds metadata, times code sections and exports them to yaml.
 
     Attributes:
-        job_id (int): Id of the job
-        inputs (dict): Parameters for this job
+        job_id: Id of the job
+        inputs: Parameters for this job
         file_path (pathlib.Path): Path to export the metadata
         timestamp (str): Timestamp of the object creation
         outputs (tuple): Results obtain by the simulation
         times (dict): Wall times of code sections
     """
 
-    def __init__(self, job_id, inputs, job_dir):
+    def __init__(self, job_id: int, inputs: dict, job_dir: Path) -> None:
         """Init simulation metadata object.
 
         Args:
-            job_id (int): Id of the job
-            inputs (dict): Parameters for this job
-            job_dir (pathlib.Path): Directory in which to write the metadata
+            job_id: Id of the job
+            inputs: Parameters for this job
+            job_dir: Directory in which to write the metadata
         """
         self.job_id = job_id
-        self.timestamp = None
+        self.timestamp: str | None = None
         self.inputs = inputs
         self.file_path = (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
         self.outputs = None
-        self.times = {}
+        self.times: dict = {}
         self._create_timestamp()
 
-    def _create_timestamp(self):
+    def _create_timestamp(self) -> None:
         """Create timestamp in a nice format."""
         self.timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
 
-    def to_dict(self):
+    def to_dict(self) -> dict[str, Any]:
         """Create dictionary from object.
 
         Returns:
-            dict: Dictionary of the metadata object
+            Dictionary of the metadata object
         """
         dictionary = self.__dict__.copy()
         dictionary.pop("file_path")
         return dictionary
 
-    def export(self):
+    def export(self) -> None:
         """Export the object to human readable format."""
         yaml_string = yaml.safe_dump(
             to_dict_with_standard_types(self.to_dict()), sort_keys=False, default_flow_style=False
@@ -83,13 +84,13 @@ class SimulationMetadata:
         self.file_path.write_text(yaml_string, encoding="utf-8")
 
     @contextmanager
-    def time_code(self, code_section_name):
+    def time_code(self, code_section_name: str) -> Iterator[None]:
         """Timer some code section.
 
         This method allows us to time not only the runtime of the simulation, but also subparts.
 
         Args:
-            code_section_name (string): Name for this code section
+            code_section_name: Name for this code section
         """
         # Start timer
         start = perf_counter()
@@ -119,40 +120,40 @@ class SimulationMetadata:
             # Export since the job is either finished or failed
             self.export()
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Create function string.
 
         Returns:
-            str: Table of the metdata object
+            Table of the metdata object
         """
         return get_str_table("Simulation Metadata", self.to_dict())
 
 
-def get_metadata_from_experiment_dir(experiment_dir):
+def get_metadata_from_experiment_dir(experiment_dir: Path | str) -> Iterator[Any]:
     """Get metadata from experiment_dir.
 
     To keep memory usage limited, this is implemented as a generator.
 
     Args:
-        experiment_dir (pathlib.Path, str): Path with the job dirs
+        experiment_dir: Path with the job dirs
 
     Yields:
-        metadata (dict): metadata of a job
+        Metadata of a job
     """
     for job_dir in job_dirs_in_experiment_dir(experiment_dir):
         metadata_path = (job_dir / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
         yield yaml.safe_load(metadata_path.read_text())
 
 
-def write_metadata_to_csv(experiment_dir, csv_path=None):
+def write_metadata_to_csv(experiment_dir: Path | str, csv_path: Path | None = None) -> None:
     """Gather and write job metadata to csv.
 
     Args:
-        experiment_dir (pathlib.Path, str): Path with the job dirs
-        csv_path (pathlib.Path, str): Path to export the csv file
+        experiment_dir: Path with the job dirs
+        csv_path: Path to export the csv file
     """
     experiment_dir = Path(experiment_dir)
-    if not csv_path:
+    if csv_path is None:
         csv_path = experiment_dir / "metadata_gathered.csv"
 
     data = []

@@ -17,14 +17,14 @@
 import numpy as np
 
 
-def at_least_2d(arr):
+def at_least_2d(arr: np.ndarray) -> np.ndarray:
     """View input array as array with at least two dimensions.
 
     Args:
-        arr (np.ndarray): Input array
+        arr: Input array
 
     Returns:
-        arr (np.ndarray): View of input array with at least two dimensions
+        View of input array with at least two dimensions
     """
     if arr.ndim == 0:
         return arr.reshape((1, 1))
@@ -33,14 +33,14 @@ def at_least_2d(arr):
     return arr
 
 
-def at_least_3d(arr):
+def at_least_3d(arr: np.ndarray) -> np.ndarray:
     """View input array as array with at least three dimensions.
 
     Args:
-        arr (np.ndarray): Input array
+        arr: Input array
 
     Returns:
-        arr (np.ndarray): View of input array with at least three dimensions
+        View of input array with at least three dimensions
     """
     if arr.ndim == 0:
         return arr.reshape((1, 1, 1))
@@ -51,12 +51,12 @@ def at_least_3d(arr):
     return arr
 
 
-def extract_block_diag(array, block_size):
+def extract_block_diag(array: np.ndarray, block_size: int) -> np.ndarray:
     """Extract block diagonals of square 2D Array.
 
     Args:
-        array (np.ndarray): Square 2D array
-        block_size (int): Block size
+        array: Square 2D array
+        block_size: Block size
 
     Returns:
         3D Array containing block diagonals

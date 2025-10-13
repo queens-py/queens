@@ -13,6 +13,7 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """Custom exceptions."""
+from typing import Optional
 
 
 class QueensException(Exception):
@@ -31,13 +32,15 @@ class InvalidOptionError(QueensException):
     """Custom error class for invalid options during QUEENS runs."""
 
     @classmethod
-    def construct_error_from_options(cls, valid_options, desired_option, additional_message=""):
+    def construct_error_from_options(
+        cls, valid_options: dict | list, desired_option: str, additional_message: str = ""
+    ) -> "InvalidOptionError":
         """Construct invalid option error from the valid and desired options.
 
         Args:
-            valid_options (lst): List of valid option keys
-            desired_option (str): Key of desired option
-            additional_message (str, optional): Additional message to pass (default is None)
+            valid_options: List of valid option keys
+            desired_option: Key of desired option
+            additional_message: Additional message to pass (default is None)
 
         Returns:
             InvalidOptionError
@@ -54,15 +57,19 @@ class SubprocessError(QueensException):
 
     @classmethod
     def construct_error_from_command(
-        cls, command, command_output, error_message, additional_message=""
-    ):
+        cls,
+        command: str,
+        command_output: str,
+        error_message: str,
+        additional_message: Optional[str] = "",
+    ) -> "SubprocessError":
         """Construct a Subprocess error from a command and its outputs.
 
         Args:
-            command (str): Command used that raised the error
-            command_output (str): Command output
-            error_message (str): Error message of the command
-            additional_message (str, optional): Additional message to pass
+            command: Command used that raised the error
+            command_output: Command output
+            error_message: Error message of the command
+            additional_message: Additional message to pass
 
         Returns:
             SubprocessError

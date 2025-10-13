@@ -26,24 +26,24 @@ _ALLOWED_ERRORS = ["Invalid MIT-MAGIC-COOKIE-1 key", "No protocol specified"]
 
 
 def run_subprocess(
-    command,
-    raise_error_on_subprocess_failure=True,
-    additional_error_message=None,
-    allowed_errors=None,
-):
+    command: str,
+    raise_error_on_subprocess_failure: bool = True,
+    additional_error_message: str | None = None,
+    allowed_errors: list[str] | None = None,
+) -> tuple[int, int, str, str]:
     """Run a system command outside of the Python script.
 
-    return stderr and stdout
     Args:
-        command (str): command, that will be run in subprocess
-        raise_error_on_subprocess_failure (bool, optional): Raise or warn error defaults to True
-        additional_error_message (str, optional): Additional error message to be displayed
-        allowed_errors (lst, optional): List of strings to be removed from the error message
+        command: Command that will be run in subprocess
+        raise_error_on_subprocess_failure: Raise or warn error defaults to True
+        additional_error_message: Additional error message to be displayed
+        allowed_errors: List of strings to be removed from the error message
+
     Returns:
-        process_returncode (int): code for success of subprocess
-        process_id (int): unique process id, the subprocess was assigned on computing machine
-        stdout (str): standard output content
-        stderr (str): standard error content
+        Code for success of subprocess
+        Unique process ID that was assigned to the subprocess on computing machine
+        Standard output content
+        Standard error content
     """
     process = start_subprocess(command)
 
@@ -62,14 +62,14 @@ def run_subprocess(
     return process_returncode, process_id, stdout, stderr
 
 
-def start_subprocess(command):
+def start_subprocess(command: str) -> subprocess.Popen:
     """Start subprocess.
 
     Args:
-        command (str): command, that will be run in subprocess
+        command: Command that will be run in subprocess
 
     Returns:
-         process (subprocess.Popen): subprocess object
+        Subprocess object
     """
     process = subprocess.Popen(  # pylint: disable=consider-using-with
         command,
@@ -83,22 +83,22 @@ def start_subprocess(command):
 
 
 def _raise_or_warn_error(
-    command,
-    stdout,
-    stderr,
-    raise_error_on_subprocess_failure,
-    additional_error_message,
-    allowed_errors,
-):
+    command: str,
+    stdout: str,
+    stderr: str,
+    raise_error_on_subprocess_failure: bool,
+    additional_error_message: str | None,
+    allowed_errors: list[str] | None,
+) -> None:
     """Raise or warn eventual exception if subprocess fails.
 
     Args:
-        command (str): Command string
-        stdout (str): Command output
-        stderr (str): Error of the output
-        raise_error_on_subprocess_failure (bool): Raise or warn error defaults to True
-        additional_error_message (str): Additional error message to be displayed
-        allowed_errors (lst): List of strings to be removed from the error message
+        command: Command string
+        stdout: Command output
+        stderr: Error of the output
+        raise_error_on_subprocess_failure: Raise or warn error defaults to True
+        additional_error_message: Additional error message to be displayed
+        allowed_errors: List of strings to be removed from the error message
     """
     # Check for allowed error messages and remove them
     if allowed_errors is None:
@@ -114,15 +114,15 @@ def _raise_or_warn_error(
         _logger.warning(str(subprocess_error))
 
 
-def _remove_allowed_errors(stderr, allowed_errors):
+def _remove_allowed_errors(stderr: str, allowed_errors: list[str]) -> str:
     """Remove allowed error messages from error output.
 
     Args:
-        stderr (str): Error message
-        allowed_errors (lst): Allowed error messages
+        stderr: Error message
+        allowed_errors: Allowed error messages
 
     Returns:
-        stderr (str): error message without allowed errors
+        Error message without allowed errors
     """
     # Add known exceptions
     allowed_errors.extend(_ALLOWED_ERRORS)

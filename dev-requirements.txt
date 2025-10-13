@@ -8,8 +8,6 @@ accessible-pygments==0.0.5
     # via pydata-sphinx-theme
 alabaster==1.0.0
     # via sphinx
-appnope==0.1.4
-    # via ipykernel
 argcomplete==3.5.1
     # via commitizen
 astroid==3.3.5
@@ -157,6 +155,12 @@ mdurl==0.1.2
     #   markdown-it-py
 mistune==3.0.2
     # via nbconvert
+mypy==1.18.2
+    # via -r dev-requirements.in
+mypy-extensions==1.0.0
+    # via
+    #   -c requirements.txt
+    #   mypy
 myst-parser==4.0.0
     # via -r dev-requirements.in
 nbclient==0.10.0
@@ -197,6 +201,7 @@ parso==0.8.4
 pathspec==0.12.1
     # via
     #   -c requirements.txt
+    #   mypy
     #   yamllint
 pexpect==4.9.0
     # via ipython
@@ -344,9 +349,12 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
+types-pyyaml==6.0.12.20250915
+    # via -r dev-requirements.in
 typing-extensions==4.12.2
     # via
     #   -c requirements.txt
+    #   mypy
     #   pydata-sphinx-theme
 untokenize==0.1.1
     # via docformatter

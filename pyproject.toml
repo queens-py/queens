@@ -156,3 +156,32 @@ cons = ">=0.4.5"
 namex = "==0.0.8"
 # setuptools is under MIT License
 setuptools = ">=79.0.0"
+
+[tool.mypy]
+check_untyped_defs = true
+disallow_incomplete_defs = true
+disallow_untyped_calls = false  # Change to true once all functions are typed
+disallow_untyped_decorators = true
+disallow_untyped_defs = true
+ignore_missing_imports = true
+exclude = [
+    "config/",
+    "doc/",
+    "tests/",
+    # Delete the following line by line once type hinting has been introduced in the respective module
+    "test_utils/",
+    "src/example_simulator_functions/",
+    "src/queens_interfaces/",
+    "src/queens/data_processors/",
+    "src/queens/distributions/",
+    "src/queens/drivers/",
+    "src/queens/iterators/",
+    "src/queens/models/",
+    "src/queens/parameters/",
+    "src/queens/schedulers/",
+    "src/queens/stochastic_optimizers/",
+    "src/queens/variational_distributions/",
+    "src/queens/visualization/",
+    "src/queens/main.py",
+    "src/queens/global_settings.py",
+]
