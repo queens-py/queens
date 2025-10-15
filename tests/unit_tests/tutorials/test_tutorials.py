@@ -22,7 +22,8 @@ from testbook import testbook
 @pytest.mark.parametrize(
     "notebook_path",
     [
-        "tutorials/2-grid-iterator-rosenbrock.ipynb",
+        "tutorials/1-grid-iterator-rosenbrock/1-grid-iterator-rosenbrock-solution.ipynb",
+        "tutorials/2-uncertainty-propagation-and-quantification/2-uncertainty_propagation.ipynb",
     ],
 )
 def test_notebooks(notebook_path):
