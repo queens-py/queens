@@ -22,7 +22,8 @@ from testbook import testbook
 @pytest.mark.parametrize(
     "notebook_path",
     [
-        "tutorials/2-grid-iterator-rosenbrock.ipynb",
+        "tutorials/1-grid-iterator-rosenbrock.ipynb",
+        "tutorials/2-uncertainty-propagation-and-quantification.ipynb",
     ],
 )
 def test_notebooks(tmp_path, notebook_path):
@@ -46,4 +47,7 @@ def test_notebooks(tmp_path, notebook_path):
         )
 
         # execute the notebook
+        tb.inject("from queens.utils import config_directories")
+        tb.inject(f"config_directories = '{tmp_path}'")
+        tb.inject(f"output_dir = '{tmp_path}'")
         tb.execute()
