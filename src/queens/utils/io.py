@@ -67,7 +67,7 @@ def print_pickled_data(file_path: Path) -> None:
                 string = ""
                 for subkey, subitem in item.items():
                     string += str(
-                        _create_single_item_string(subkey, subitem, type(subitem), seperator="-")
+                        _create_single_item_string(subkey, subitem, type(subitem), separator="-")
                         + "\n"
                     )
                 item = string.replace("\n", "\n    ")
@@ -75,24 +75,24 @@ def print_pickled_data(file_path: Path) -> None:
             _logger.info(" ")
 
 
-def _create_single_item_string(key: str, item: Any, item_type: type, seperator: str = "=") -> str:
+def _create_single_item_string(key: str, item: Any, item_type: type, separator: str = "=") -> str:
     """Create a table for a single item.
 
     Args:
         key: Key of the item
         item: Item value for the key
         item_type: Type of the item value
-        seperator: Create seperator line (default is "=")
+        separator: Create separator line (default is "=")
 
     Returns:
         Table for this item.
     """
     string = (
-        seperator * 60
+        separator * 60
         + f"\nKey:  {key}\n"
         + f"Type: {item_type}\n"
         + f"Value:\n{item}\n"
-        + seperator * 60
+        + separator * 60
     )
     return string
 

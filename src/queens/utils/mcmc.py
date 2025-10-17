@@ -36,7 +36,7 @@ def mh_select(
     Args:
         log_acceptance_probability: Logarithm of the acceptance probability for each sample. This
             represents the log of the ratio of the probability densities of the proposed sample to
-            the probability densities of the proposed sample to the current sample.
+            the current sample.
         current_sample: The current sample values from the MCMC chain.
         proposed_sample: The proposed sample values to be considered for acceptance.
 

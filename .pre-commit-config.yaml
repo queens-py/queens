@@ -105,7 +105,7 @@ repos:
           ^src/queens/(schedulers|stochastic_optimizers|variational_distributions|visualization)/|
           ^src/queens/main.py|
           ^src/queens/global_settings.py
-          )$
+          ).*$
   - repo: https://github.com/kynan/nbstripout
     rev: 0.8.1
     hooks:

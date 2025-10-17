@@ -18,13 +18,15 @@ Taken from
 https://gist.github.com/slinderman/24552af1bdbb6cb033bfea9b2dc4ecfd
 """
 
-from typing import Any, Callable, Sequence, TypeAlias
+from typing import TYPE_CHECKING, Any, Callable, Sequence, TypeAlias
 
 import numpy as np
 import scipy.optimize
 from jax import grad, jit
 from jax.flatten_util import ravel_pytree
-from scipy.optimize._optimize import OptimizeResult
+
+if TYPE_CHECKING:
+    from scipy.optimize import OptimizeResult
 
 Constraint: TypeAlias = (
     dict
@@ -46,7 +48,7 @@ def minimize(
     tol: float | None = None,
     callback: Callable | None = None,
     options: dict | None = None,
-) -> OptimizeResult:
+) -> "OptimizeResult":
     """A simple wrapper for scipy.optimize.minimize using JAX.
 
     Args:

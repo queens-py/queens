@@ -96,7 +96,7 @@ def compute_step_with_bounds(
 def get_positions(
     x0: np.ndarray,
     method: Literal["2-point", "3-point"],
-    rel_step: np.ndarray | None,
+    rel_step: float | np.ndarray | None,
     bounds: tuple | np.ndarray | None,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     """Compute all positions needed for the finite difference approximation.
