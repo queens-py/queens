@@ -20,6 +20,7 @@ import json
 import logging
 import sys
 from pathlib import Path
+from typing import Sequence
 
 from queens.schedulers.cluster import VALID_WORKLOAD_MANAGERS
 from queens.utils.logger_settings import setup_basic_logging
@@ -28,7 +29,7 @@ from queens.utils.valid_options import get_option
 _logger = logging.getLogger(__name__)
 
 
-def parse_arguments(unparsed_args):
+def parse_arguments(unparsed_args: Sequence[str]) -> argparse.Namespace:
     """Parse arguments passed via command line call."""
     parser = argparse.ArgumentParser(description="Arguments for the dask cluster starting routine")
 

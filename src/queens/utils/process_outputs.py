@@ -17,6 +17,8 @@
 import logging
 import pickle
 import warnings
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 from sklearn.model_selection import GridSearchCV
@@ -27,16 +29,18 @@ from queens.utils.plot_outputs import plot_cdf, plot_icdf, plot_pdf
 _logger = logging.getLogger(__name__)
 
 
-def process_outputs(output_data, output_description, input_data=None):
+def process_outputs(
+    output_data: dict, output_description: dict, input_data: np.ndarray | None = None
+) -> dict:
     """Process output from QUEENS models.
 
     Args:
-        output_data (dict):         Dictionary containing model output
-        output_description (dict):   Dictionary describing desired output quantities
-        input_data (np.array):      Array containing model input
+        output_data: Dictionary containing model output
+        output_description: Dictionary describing desired output quantities
+        input_data: Array containing model input
 
     Returns:
-        dict: Dictionary with processed results
+        Dictionary with processed results
     """
     processed_results = {}
     try:
@@ -52,15 +56,15 @@ def process_outputs(output_data, output_description, input_data=None):
     return processed_results
 
 
-def do_processing(output_data, output_description):
+def do_processing(output_data: dict, output_description: dict) -> dict:
     """Do actual processing of output.
 
     Args:
-        output_data (dict):         Dictionary containing model output
-        output_description (dict):   Dictionary describing desired output quantities
+        output_data: Dictionary containing model output
+        output_description: Dictionary describing desired output quantities
 
     Returns:
-        dict: Dictionary with processed results
+        Dictionary with processed results
     """
     # do we want confidence intervals
     bayesian = output_description.get("bayesian", False)
@@ -90,7 +94,7 @@ def do_processing(output_data, output_description):
     mean_mean = estimate_mean(output_data)
     var_mean = estimate_var(output_data)
 
-    processed_results = {}
+    processed_results: dict = {}
     processed_results["mean"] = mean_mean
     processed_results["var"] = var_mean
 
@@ -132,27 +136,27 @@ def do_processing(output_data, output_description):
     return processed_results
 
 
-def write_results(processed_results, file_path):
+def write_results(processed_results: Any, file_path: Path) -> None:
     """Write results to pickle file.
 
     Args:
-        processed_results (dict):  Dictionary with results
-        file_path (str, Path):     Path to pickle file to write results to
+        processed_results: Dictionary with results
+        file_path: Path to pickle file to write results to
     """
     with open(file_path, "wb") as handle:
         pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
 
-def estimate_result_interval(output_data):
+def estimate_result_interval(output_data: dict) -> list:
     """Estimate interval of output data.
 
     Estimate interval of output data and add small margins.
 
     Args:
-        output_data (dict):       Dictionary with output data
+        output_data: Dictionary with output data
 
     Returns:
-        list: Output interval
+        Output interval
     """
     samples = output_data["result"]
     _logger.debug(samples)
@@ -167,40 +171,40 @@ def estimate_result_interval(output_data):
     return [my_min, my_max]
 
 
-def estimate_mean(output_data):
+def estimate_mean(output_data: dict) -> np.ndarray:
     """Estimate mean based on standard unbiased estimator.
 
     Args:
-        output_data (dict):       Dictionary with output data
+        output_data: Dictionary with output data
 
     Returns:
-        float: Unbiased mean estimate
+        Unbiased mean estimate
     """
     samples = output_data["result"]
     return np.mean(samples, axis=0)
 
 
-def estimate_var(output_data):
+def estimate_var(output_data: dict) -> np.ndarray:
     """Estimate variance based on standard unbiased estimator.
 
     Args:
-        output_data (dict):       Dictionary with output data
+        output_data: Dictionary with output data
 
     Returns:
-        float: Unbiased variance estimate
+        Unbiased variance estimate
     """
     samples = output_data["result"]
     return np.var(samples, ddof=1, axis=0)
 
 
-def estimate_cov(output_data):
+def estimate_cov(output_data: dict) -> np.ndarray:
     """Estimate covariance based on standard unbiased estimator.
 
     Args:
-        output_data (dict):       Dictionary with output data
+        output_data: Dictionary with output data
 
     Returns:
-        numpy.array: Unbiased covariance estimate
+        Unbiased covariance estimate
     """
     samples = output_data["result"]
 
@@ -213,35 +217,35 @@ def estimate_cov(output_data):
     return cov
 
 
-def estimate_cdf(output_data, support_points, bayesian):
+def estimate_cdf(output_data: dict, support_points: np.ndarray, bayesian: bool) -> dict:
     """Compute estimate of CDF based on provided sampling data.
 
     Args:
-        output_data (dict):         Dictionary with output data
-        support_points (np.array):  Points where to evaluate cdf
-        bayesian (bool):            Compute confidence intervals etc.
+        output_data: Dictionary with output data
+        support_points: Points where to evaluate cdf
+        bayesian: Compute confidence intervals etc.
 
     Returns:
-        cdf: Dictionary with cdf estimates
+        Dictionary with cdf estimates
     """
-    cdf = {}
+    cdf: dict = {}
     cdf["x"] = support_points
     if not bayesian:
         raw_data = output_data["result"]
         size_data = raw_data.size
-        cdf_values = []
+        cdf_values_lst = []
         for i in support_points:
             # all the values in raw data less than the ith value in x_values
             temp = raw_data[raw_data <= i]
             # fraction of that value with respect to the size of the x_values
             value = temp.size / size_data
-            cdf_values.append(value)
-        cdf["mean"] = cdf_values
+            cdf_values_lst.append(value)
+        cdf["mean"] = np.array(cdf_values_lst)
     else:
         raw_data = output_data["post_samples"]
         size_data = len(support_points)
         num_realizations = raw_data.shape[1]
-        cdf_values = np.zeros((num_realizations, len(support_points)))
+        cdf_values: np.ndarray = np.zeros((num_realizations, len(support_points)))
         for i in range(num_realizations):
             data = raw_data[:, i]
             for j, point in enumerate(support_points):
@@ -261,15 +265,15 @@ def estimate_cdf(output_data, support_points, bayesian):
     return cdf
 
 
-def estimate_icdf(output_data, bayesian):
+def estimate_icdf(output_data: dict, bayesian: bool) -> dict:
     """Compute estimate of inverse CDF based on provided sampling data.
 
     Args:
-        output_data (dict):         Dictionary with output data
-        bayesian (bool):            Compute confidence intervals etc.
+        output_data: Dictionary with output data
+        bayesian: Compute confidence intervals etc.
 
     Returns:
-        icdf: Dictionary with icdf estimates
+        Dictionary with icdf estimates
     """
     my_percentiles = 100 * np.linspace(0 + 1 / 1000, 1 - 1 / 1000, 999)
     icdf = {}
@@ -297,16 +301,16 @@ def estimate_icdf(output_data, bayesian):
     return icdf
 
 
-def estimate_pdf(output_data, support_points, bayesian):
+def estimate_pdf(output_data: dict, support_points: np.ndarray, bayesian: bool) -> dict:
     """Compute estimate of PDF based on provided sampling data.
 
     Args:
-        output_data (dict):         Dictionary with output data
-        support_points (np.array):  Points where to evaluate pdf
-        bayesian (bool):            Compute confidence intervals etc.
+        output_data: Dictionary with output data
+        support_points: Points where to evaluate pdf
+        bayesian: Compute confidence intervals etc.
 
     Returns:
-        pdf: Dictionary with pdf estimates
+        Dictionary with pdf estimates
     """
     pdf = {}
     pdf["x"] = support_points
@@ -339,15 +343,17 @@ def estimate_pdf(output_data, support_points, bayesian):
     return pdf
 
 
-def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
+def estimate_bandwidth_for_kde(
+    samples: np.ndarray, min_samples: float, max_samples: float
+) -> float:
     """Estimate optimal bandwidth for kde of pdf.
 
     Args:
-        samples (np.array):  Samples for which to estimate pdf
-        min_samples (float): Smallest value
-        max_samples (float): Largest value
+        samples: Samples for which to estimate pdf
+        min_samples: Smallest value
+        max_samples: Largest value
     Returns:
-        float: Estimate for optimal *kernel_bandwidth*
+        Estimate for optimal kernel bandwidth
     """
     kernel_bandwidth = 0
     kernel_bandwidth_upper_bound = (max_samples - min_samples) / 2.0
@@ -368,15 +374,17 @@ def estimate_bandwidth_for_kde(samples, min_samples, max_samples):
     return kernel_bandwidth
 
 
-def perform_kde(samples, kernel_bandwidth, support_points):
+def perform_kde(
+    samples: np.ndarray, kernel_bandwidth: float, support_points: np.ndarray
+) -> np.ndarray:
     """Estimate pdf using kernel density estimation.
 
     Args:
-        samples (np.array):         Samples for which to estimate pdf
-        kernel_bandwidth (float):   Kernel width to use in kde
-        support_points (np.array):  Points where to evaluate pdf
+        samples: Samples for which to estimate pdf
+        kernel_bandwidth: Kernel width to use in kde
+        support_points: Points where to evaluate pdf
     Returns:
-        np.array: *pdf_estimate* at support points
+        PDF estimate at support points
     """
     kde = KernelDensity(kernel="gaussian", bandwidth=kernel_bandwidth).fit(samples.reshape(-1, 1))
 

@@ -115,5 +115,5 @@ def test_is_empty_with_non_empty_list():
 
 def test_is_empty_with_invalid_type():
     """Expected TypeError for invalid type."""
-    with pytest.raises(TypeError, match="paths must be a string, a Path object, or a list."):
+    with pytest.raises(TypeError, match="paths must be a string, a Path object, or a sequence."):
         is_empty(123)  # Integer input to trigger TypeError

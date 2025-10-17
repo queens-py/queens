@@ -16,15 +16,16 @@
 
 import logging
 import os
+from types import ModuleType
 
 _logger = logging.getLogger(__name__)
 
 
-def configure_tensorflow(tensorflow):
+def configure_tensorflow(tensorflow: ModuleType) -> None:
     """Configure tensorflow.
 
     Args:
-        tensorflow (module): The module to configure
+        tensorflow: The module to configure
     """
     os.environ["TF_CPP_MIN_LOG_LEVEL"] = "3"
     tensorflow.get_logger().setLevel(logging.ERROR)
@@ -36,10 +37,10 @@ def configure_tensorflow(tensorflow):
         _logger.info("SUCCESS: Found GPU: %s", tensorflow.test.gpu_device_name())
 
 
-def configure_keras(tf_keras):
+def configure_keras(tf_keras: ModuleType) -> None:
     """Configure tf keras.
 
     Args:
-        tf_keras (Model): The module configuration
+        tf_keras: The module configuration
     """
     tf_keras.backend.set_floatx("float64")

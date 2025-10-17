@@ -25,16 +25,16 @@ from jinja2 import Environment, StrictUndefined, Undefined
 from queens.utils.io import read_file
 
 
-def render_template(params, template, strict=True):
+def render_template(params: dict, template: str, strict: bool = True) -> str:
     """Function to insert parameters into a template.
 
     Args:
-        params (dict): Dict with parameters to inject
-        template (str): Template file as string
-        strict (bool): Raises exception if required parameters from the template are missing
+        params: Dict with parameters to inject
+        template: Template file as string
+        strict: Raises exception if required parameters from the template are missing
 
     Returns:
-        str: injected template
+        injected template
     """
     undefined = StrictUndefined if strict else Undefined
 
@@ -42,27 +42,34 @@ def render_template(params, template, strict=True):
     return environment.render(**params)
 
 
-def inject_in_template(params, template, output_file, strict=True):
+def inject_in_template(
+    params: dict, template: str, output_file: str | Path, strict: bool = True
+) -> None:
     """Function to insert parameters into file template and write to file.
 
     Args:
-        params (dict): Dict with parameters to inject
-        template (str): Template (str)
-        output_file (str, Path): Name of output file with injected parameters
-        strict (bool): Raises exception if mismatch between provided and required parameters
+        params: Dict with parameters to inject
+        template: Template (str)
+        output_file: Name of output file with injected parameters
+        strict: Raises exception if mismatch between provided and required parameters
     """
     injected_template = render_template(params, template, strict)
     Path(output_file).write_text(injected_template, encoding="utf-8")
 
 
-def inject(params, template_path, output_file, strict=True):
+def inject(
+    params: dict,
+    template_path: str | Path,
+    output_file: str | Path,
+    strict: bool = True,
+) -> None:
     """Function to insert parameters into file template and write to file.
 
     Args:
-        params (dict): Dict with parameters to inject
-        template_path (str, Path): Path to template
-        output_file (str, Path): Name of output file with injected parameters
-        strict (bool): Raises exception if mismatch between provided and required parameters
+        params: Dict with parameters to inject
+        template_path: Path to template
+        output_file: Name of output file with injected parameters
+        strict: Raises exception if mismatch between provided and required parameters
     """
     template = read_file(template_path)
     inject_in_template(params, template, output_file, strict)

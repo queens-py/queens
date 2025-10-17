@@ -23,6 +23,7 @@ import time
 import uuid
 from functools import partial
 from pathlib import Path
+from typing import Any, Callable, Sequence
 
 import cloudpickle
 from fabric import Connection
@@ -43,21 +44,28 @@ class RemoteConnection(Connection):
     """This is class wrapper around the Connection class of fabric.
 
     Attributes:
-        remote_python (str): Path to Python with installed (editable) QUEENS
-                            (see remote_queens_repository)
-        remote_queens_repository (str, Path): Path to the QUEENS source code on the remote host
+        remote_python: Path to Python with installed (editable) QUEENS
+            (see remote_queens_repository)
+        remote_queens_repository: Path to the QUEENS source code on the remote host
     """
 
-    def __init__(self, host, remote_python, remote_queens_repository, user=None, gateway=None):
+    def __init__(
+        self,
+        host: str,
+        remote_python: str | Path,
+        remote_queens_repository: str | Path,
+        user: str | None = None,
+        gateway: dict | Connection | None = None,
+    ):
         """Initialize RemoteConnection object.
 
         Args:
-            host (str): address of remote host
-            remote_python (str, Path): Path to Python with installed (editable) QUEENS
+            host: address of remote host
+            remote_python: Path to Python with installed (editable) QUEENS
                             (see remote_queens_repository)
-            remote_queens_repository (str, Path): Path to the QUEENS source code on the remote host
-            user (str): Username on remote machine
-            gateway (dict,Connection,None): An object to use as a proxy or gateway for this
+            remote_queens_repository: Path to the QUEENS source code on the remote host
+            user: Username on remote machine
+            gateway: An object to use as a proxy or gateway for this
                                             connection. See docs of Fabric's Connection object for
                                             details.
         """
@@ -71,30 +79,32 @@ class RemoteConnection(Connection):
         self.remote_queens_repository = remote_queens_repository
         _logger.debug("remote queens repository: %s", self.remote_queens_repository)
 
-    def open(self):
+    def open(self) -> None:
         """Initiate the SSH connection."""
         super().open()
         atexit.register(self.close)
 
     def start_cluster(
         self,
-        workload_manager,
-        dask_cluster_kwargs,
-        dask_cluster_adapt_kwargs,
-        experiment_dir,
-    ):
+        workload_manager: str,
+        dask_cluster_kwargs: dict,
+        dask_cluster_adapt_kwargs: dict,
+        experiment_dir: str,
+    ) -> tuple[Any, Any]:
         """Start a Dask Cluster remotely using an ssh connection.
 
         Args:
-            workload_manager (str): Workload manager ("pbs" or "slurm") on cluster
-            dask_cluster_kwargs (dict): collection of keyword arguments to be forwarded to
-                                        DASK Cluster
-            dask_cluster_adapt_kwargs (dict): collection of keyword arguments to be forwarded to
-                                        DASK Cluster adapt method
-            experiment_dir (str): directory holding all data of QUEENS experiment on remote
+            workload_manager: Workload manager ("pbs" or "slurm") on cluster
+            dask_cluster_kwargs: Collection of keyword arguments to be forwarded to DASK Cluster
+            dask_cluster_adapt_kwargs: Collection of keyword arguments to be forwarded to DASK
+                Cluster adapt method
+            experiment_dir: Directory holding all data of QUEENS experiment on remote
         Returns:
-            return_value (obj): Return value of function
+            Return value of function
         """
+        if self.client is None:
+            raise RuntimeError("Client has not been initialized.")
+
         _logger.info("Starting Dask cluster on %s", self.host)
 
         python_cmd = (
@@ -112,16 +122,18 @@ class RemoteConnection(Connection):
 
         return stdout, stderr
 
-    def run_function(self, func, *func_args, wait=True, **func_kwargs):
+    def run_function(
+        self, func: Callable, *func_args: Any, wait: bool = True, **func_kwargs: Any
+    ) -> Any:
         """Run a python function remotely using an ssh connection.
 
         Args:
-            func (Function): function that is executed
+            func: Function that is executed
             func_args: Additional arguments for the functools.partial function
-            wait (bool): Flag to decide whether to wait for result of function
+            wait: Flag to decide whether to wait for result of function
             func_kwargs: Additional keyword arguments for the functools.partial function
         Returns:
-            return_value (obj): Return value of function
+            Return value of function
         """
         _logger.info("Running %s on %s", func.__name__, self.host)
         func_file_name = f"temp_func_{str(uuid.uuid4())}.pickle"
@@ -143,6 +155,8 @@ class RemoteConnection(Connection):
         Path(func_file_name).unlink()  # delete local function file
 
         if not wait:
+            if self.client is None:
+                raise RuntimeError("Client has not been initialized.")
             _, stdout, stderr = self.client.exec_command(python_cmd, get_pty=True)
             return stdout, stderr
 
@@ -165,23 +179,25 @@ class RemoteConnection(Connection):
 
         return return_value
 
-    def get_free_local_port(self):
+    def get_free_local_port(self) -> int:
         """Get a free port on localhost."""
         return get_port()
 
-    def get_free_remote_port(self):
+    def get_free_remote_port(self) -> Any:
         """Get a free port on remote host."""
         return self.run_function(get_port)
 
-    def open_port_forwarding(self, local_port=None, remote_port=None):
+    def open_port_forwarding(
+        self, local_port: int | None = None, remote_port: int | None = None
+    ) -> tuple[int, Any]:
         """Open port forwarding.
 
         Args:
-            local_port (int): free local port
-            remote_port (int): free remote port
+            local_port: Free local port
+            remote_port: Free remote port
         Returns:
-            local_port (int): used local port
-            remote_port (int): used remote port
+            Used local port
+            Used remote port
         """
         if local_port is None:
             local_port = self.get_free_local_port()
@@ -205,11 +221,11 @@ class RemoteConnection(Connection):
 
         return local_port, remote_port
 
-    def create_remote_directory(self, remote_directory):
+    def create_remote_directory(self, remote_directory: str | Path) -> None:
         """Make a directory (including parents) on the remote host.
 
         Args:
-            remote_directory (Path, str): path of the directory that will be created
+            remote_directory: Path of the directory that will be created
         """
         _logger.debug("Creating folder %s on %s@%s.", remote_directory, self.user, self.host)
         result = self.run(f"mkdir -v -p {remote_directory}", in_stream=False)
@@ -219,7 +235,7 @@ class RemoteConnection(Connection):
         else:
             _logger.debug("%s already exists on %s@%s.", remote_directory, self.user, self.host)
 
-    def sync_remote_repository(self):
+    def sync_remote_repository(self) -> None:
         """Synchronize local and remote QUEENS source files."""
         _logger.info("Syncing remote QUEENS repository with local one...")
         start_time = time.time()
@@ -232,15 +248,22 @@ class RemoteConnection(Connection):
         _logger.info("Sync of remote repository was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
 
-    def copy_to_remote(self, source, destination, verbose=True, exclude=None, filters=None):
+    def copy_to_remote(
+        self,
+        source: str | Path | Sequence,
+        destination: Path | str,
+        verbose: bool = True,
+        exclude: str | Sequence | None = None,
+        filters: str | None = None,
+    ) -> None:
         """Copy files or folders to remote.
 
         Args:
-            source (str, Path, list): paths to copy
-            destination (str, Path): destination relative to host
-            verbose (bool): true for verbose
-            exclude (str, list): options to exclude
-            filters (str): filters for rsync
+            source: Paths to copy
+            destination: Destination relative to host
+            verbose: True for verbose
+            exclude: Options to exclude
+            filters: Filters for rsync
         """
         if not is_empty(source):
             host = f"{self.user}@{self.host}"
@@ -269,13 +292,13 @@ class RemoteConnection(Connection):
 
     def build_remote_environment(
         self,
-        package_manager=DEFAULT_PACKAGE_MANAGER,
-    ):
+        package_manager: str = DEFAULT_PACKAGE_MANAGER,
+    ) -> None:
         """Build remote QUEENS environment.
 
         Args:
-            package_manager(str, optional): Package manager used for the creation of the environment
-                                            ("mamba" or "conda")
+            package_manager: Package manager used for the creation of the environment ("mamba" or
+                "conda")
         """
         if package_manager not in SUPPORTED_PACKAGE_MANAGERS:
             raise ValueError(
@@ -285,11 +308,11 @@ class RemoteConnection(Connection):
         remote_connect = f"{self.user}@{self.host}"
 
         # check if requested package_manager is installed on remote machine:
-        def package_manager_exists_remote(package_manager_name):
+        def package_manager_exists_remote(package_manager_name: str) -> bool:
             """Check if requested package manager exists on remote.
 
             Args:
-                package_manager_name (string): name of package manager
+                package_manager_name: name of package manager
             """
             result_which = self.run(f"which {package_manager_name}")
             if result_which.stderr:
@@ -328,11 +351,11 @@ class RemoteConnection(Connection):
         _logger.info("It took: %s s.\n", time.time() - start_time)
 
 
-def get_port():
+def get_port() -> int:
     """Get free port.
 
     Returns:
-        int: free port
+        Free port
     """
     sock = socket.socket()
     sock.bind(("", 0))

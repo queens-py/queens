@@ -15,6 +15,7 @@
 """Utils for data scaling."""
 
 import abc
+from typing import Any
 
 import numpy as np
 
@@ -25,49 +26,49 @@ class Scaler(metaclass=abc.ABCMeta):
     The purpose of these classes is the scaling of training data.
 
     Attributes:
-        mean (np.array): Mean-values of the data-matrix (column-wise).
-        standard_deviation (np.array): Standard deviation of the data-matrix (per column).
+        mean: Mean-values of the data-matrix (column-wise).
+        standard_deviation: Standard deviation of the data-matrix (per column).
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialise scaler.
 
         Returns:
             Instance of the Scaler Class (obj)
         """
-        self.mean = None
-        self.standard_deviation = None
+        self.mean: np.ndarray | None = None
+        self.standard_deviation: np.ndarray | None = None
 
     @abc.abstractmethod
-    def fit(self, x_mat):
+    def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
 
     @abc.abstractmethod
-    def transform(self, x_mat):
+    def transform(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the scaling transformation on the input samples.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
 
     @abc.abstractmethod
-    def inverse_transform_mean(self, x_mat):
+    def inverse_transform_mean(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse transformation for the mean.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
 
     @abc.abstractmethod
-    def inverse_transform_std(self, x_mat):
+    def inverse_transform_std(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse transformation.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
 
 
@@ -79,84 +80,104 @@ class StandardScaler(Scaler):
     deviation prediction for the posterior process.
     """
 
-    def fit(self, x_mat):
+    def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
         self.mean = np.mean(x_mat)
         self.standard_deviation = np.std(x_mat)
 
-    def transform(self, x_mat):
+    def transform(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the scaling transformation on the data matrix.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
+        if self.mean is None or self.standard_deviation is None:
+            raise ValueError("Scaler has not been fitted yet.")
+
         transformed_data = (x_mat - self.mean) / self.standard_deviation
         return transformed_data
 
-    def inverse_transform_mean(self, x_mat):
+    def inverse_transform_mean(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation on the data matrix.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
+        if self.mean is None or self.standard_deviation is None:
+            raise ValueError("Scaler has not been fitted yet.")
+
         transformed_data = x_mat * self.standard_deviation + self.mean
 
         return transformed_data
 
-    def inverse_transform_std(self, x_mat):
+    def inverse_transform_std(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation.
 
         The data is transformed based on the standard deviation.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
+        if self.standard_deviation is None:
+            raise ValueError("Scaler has not been fitted yet.")
+
         transformed_data = x_mat * self.standard_deviation
 
         return transformed_data
 
-    def inverse_transform_grad_mean(self, grad_mean, standard_deviation_input):
+    def inverse_transform_grad_mean(
+        self, grad_mean: np.ndarray, standard_deviation_input: float
+    ) -> np.ndarray:
         """Conduct the inverse scaling of the mean gradient.
 
         Args:
-            grad_mean (np.array): gradient of the transformed mean
-                                  function
-            standard_deviation_input (float): standard deviation of the input data
+            grad_mean: Gradient of the transformed mean function
+            standard_deviation_input: Standard deviation of the input data
 
         Returns:
-            transformed_grad (np.array): Inversely transformed gradient of
-                                         the mean function
+            Inversely transformed gradient of the mean function
         """
+        if self.standard_deviation is None:
+            raise ValueError("Scaler has not been fitted yet.")
+
         factor = self.standard_deviation / standard_deviation_input
         transformed_grad = factor * grad_mean
         return transformed_grad
 
-    def inverse_transform_grad_var(self, grad_var, var, trans_var, input_standard_deviation):
+    def inverse_transform_grad_var(
+        self,
+        grad_var: np.ndarray,
+        var: np.ndarray,
+        trans_var: np.ndarray,
+        input_standard_deviation: float,
+    ) -> np.ndarray:
         """Conduct the inverse scaling of the variance gradient.
 
         Args:
-            grad_var (np.array): gradient of the transformed variance
-            var (np.array): variance of the untransformed data
-            trans_var (np.array): variance of the transformed data
-            input_standard_deviation (float): standard deviation of the input data
+            grad_var: Gradient of the transformed variance
+            var: Variance of the untransformed data
+            trans_var: Variance of the transformed data
+            input_standard_deviation: Standard deviation of the input data
 
         Returns:
-            transformed_grad (np.array): Inversely transformed gradient of
-                                         the variance function
+            Inversely transformed gradient of the variance function
         """
+        if self.standard_deviation is None:
+            raise ValueError("Scaler has not been fitted yet.")
+
         factor = self.standard_deviation / input_standard_deviation
         grad_std = 1 / (2 * np.sqrt(var)) * grad_var
         transformed_grad_std = factor * grad_std
@@ -167,70 +188,66 @@ class StandardScaler(Scaler):
 class IdentityScaler(Scaler):
     """The identity scaler."""
 
-    def fit(self, x_mat):
+    def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
         """
 
-    def transform(self, x_mat):
+    def transform(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the scaling transformation on the data matrix.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
         return x_mat
 
-    def inverse_transform_mean(self, x_mat):
+    def inverse_transform_mean(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation on the data matrix.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
         return x_mat
 
-    def inverse_transform_std(self, x_mat):
+    def inverse_transform_std(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling.
 
         Args:
-            x_mat (np.array): Data matrix that should be standardized
+            x_mat: Data matrix that should be standardized
 
         Returns:
-            transformed_data (np.array): Transformed data-array
+            Transformed data-array
         """
         return x_mat
 
-    def inverse_transform_grad_mean(self, grad_mean, *_args):
+    def inverse_transform_grad_mean(self, grad_mean: np.ndarray, *_args: Any) -> np.ndarray:
         """Conduct the inverse scaling of the mean gradient.
 
         Args:
-            grad_mean (np.array): gradient of the transformed mean
-                                  function
+            grad_mean: Gradient of the transformed mean function
 
         Returns:
-            transformed_grad (np.array): Inversely transformed gradient of
-                                         then mean function
+            Inversely transformed gradient of the mean function
         """
         transformed_grad = grad_mean
         return transformed_grad
 
-    def inverse_transform_grad_var(self, grad_var, *_args):
+    def inverse_transform_grad_var(self, grad_var: np.ndarray, *_args: Any) -> np.ndarray:
         """Conduct the inverse scaling of the variance gradient.
 
         Args:
-            grad_var (np.array): gradient of the transformed variance
-                                 function
+            grad_var: Gradient of the transformed variance function
 
         Returns:
-            transformed_grad (np.array): Inversely transformed gradient of
-                                         then variance function
+            Inversely transformed gradient of the variance function
         """
         transformed_grad = grad_var
         return transformed_grad

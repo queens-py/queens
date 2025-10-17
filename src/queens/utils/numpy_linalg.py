@@ -21,18 +21,18 @@ import numpy as np
 _logger = logging.getLogger(__name__)
 
 
-def safe_cholesky(matrix, jitter_start_value=1e-10):
+def safe_cholesky(matrix: np.ndarray, jitter_start_value: np.generic | float = 1e-10) -> np.ndarray:
     """Numerically stable Cholesky decomposition.
 
     Compute the Cholesky decomposition of a matrix. Numeric stability is increased by
     sequentially adding a small term to the diagonal of the matrix.
 
     Args:
-        matrix (np.ndarray): Matrix to be decomposed
-        jitter_start_value (float): Starting value to be added to the diagonal
+        matrix: Matrix to be decomposed
+        jitter_start_value: Starting value to be added to the diagonal
 
     Returns:
-        low_cholesky (np.ndarray): Lower-triangular Cholesky factor of matrix
+        Lower-triangular Cholesky factor of matrix
     """
     try:
         low_cholesky = np.linalg.cholesky(matrix)
@@ -56,17 +56,17 @@ def safe_cholesky(matrix, jitter_start_value=1e-10):
         ) from linalg_error
 
 
-def add_nugget_to_diagonal(matrix, nugget_value):
+def add_nugget_to_diagonal(matrix: np.ndarray, nugget_value: np.generic | float) -> np.ndarray:
     """Add a small value to diagonal of matrix.
 
     The nugget value is only added to diagonal entries that are smaller than the nugget value.
 
     Args:
-        matrix (np.ndarray): Matrix
-        nugget_value (float): Small nugget value to be added
+        matrix: Matrix
+        nugget_value: Small nugget value to be added
 
     Returns:
-        matrix (np.ndarray): Manipulated matrix
+        Manipulated matrix
     """
     nugget_diag = np.where(np.diag(matrix) < nugget_value, nugget_value, 0)
     matrix += np.diag(nugget_diag)

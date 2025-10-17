@@ -15,34 +15,34 @@
 """Collection of utility functions and classes for SMC algorithms."""
 
 import math
+from typing import Any, Callable, Literal
 
 import numpy as np
 from particles import smc_samplers as ssp
+from particles.distributions import StructDist
 
 
-def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
+def temper_logpdf_bayes(
+    log_prior: np.ndarray, log_like: np.ndarray, tempering_parameter: float = 1.0
+) -> np.ndarray:
     """Bayesian tempering function.
 
     It phases from the prior to the posterior = like * prior.
     Special cases are:
 
     * tempering parameter = 0.0:
-          We interpret this as "disregard contribution of the likelihood".
-          Therefore, return just *log_prior*.
+          We interpret this as "disregard contribution of the likelihood". Therefore, return just
+          *log_prior*.
 
-    * log_pior or log_like = `+inf`:
-          Prohibit this case.
-          The reasoning is that (`+inf` + `-inf`) is ambiguous.
-          We know that `-inf` is likely to occur, e.g. in uniform priors.
-          On the other hand, `+inf` is rather unlikely to be a reasonable
-          value. Therefore, we chose to exclude it here.
+    * log_prior or log_like = `+inf`:
+          Prohibit this case. The reasoning is that (`+inf` + `-inf`) is ambiguous. We know that
+          `-inf` is likely to occur, e.g. in uniform priors. On the other hand, `+inf` is rather
+          unlikely to be a reasonable value. Therefore, we chose to exclude it here.
 
     Args:
-        log_prior (np.array): Array containing the values of the log-prior distribution
-                              at sample points
-        log_like (np.array): Array containing the values of the log-likelihood at
-                             sample points
-        tempering_parameter (float): Tempering parameter for resampling
+        log_prior: Array containing the values of the log-prior distribution at sample points
+        log_like: Array containing the values of the log-likelihood at sample points
+        tempering_parameter: Tempering parameter for resampling
     """
     # if either logpdf is positive infinite throw an error
     if np.isposinf(log_prior).any() or np.isposinf(log_like).any():
@@ -55,7 +55,9 @@ def temper_logpdf_bayes(log_prior, log_like, tempering_parameter=1.0):
     return tempering_parameter * log_like + log_prior
 
 
-def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
+def temper_logpdf_generic(
+    logpdf0: np.ndarray, logpdf1: np.ndarray, tempering_parameter: float = 1.0
+) -> np.ndarray:
     """Perform generic tempering between two log-probability density functions.
 
     This function performs a linear interpolation between two log-probability density functions
@@ -66,33 +68,27 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
     The function handles the following scenarios:
 
     * tempering parameter = 0.0:
-        We interpret this as "disregard contribution of the goal pdf".
-        Therefore, return *logpdf0*.
+        We interpret this as "disregard contribution of the goal pdf". Therefore, return *logpdf0*.
 
     * tempering parameter = 1.0:
-        We interpret this as "we are fully transitioned." Therefore,
-        ignore the contribution of the initial distribution.
-        Therefore, return *logpdf1*.
+        We interpret this as "we are fully transitioned." Therefore, ignore the contribution of the
+        initial distribution. Therefore, return *logpdf1*.
 
     * logpdf0 or logpdf1 = `+inf`:
-        Prohibit this case.
-        The reasoning is that (`+inf` + `-inf`) is ambiguous.
-        We know that `-inf` is likely to occur, e.g., in uniform
-        distributions. On the other hand, `+inf` is rather unlikely to be
-        a reasonable value. Therefore, we chose to exclude it here.
+        Prohibit this case. The reasoning is that (`+inf` + `-inf`) is ambiguous. We know that
+        `-inf` is likely to occur, e.g., in uniform distributions. On the other hand, `+inf` is
+        rather unlikely to be a reasonable value. Therefore, we chose to exclude it here.
 
     Args:
-        logpdf0 (float or np.array): Logarithm of the probability density function of the initial
-                                     distribution.
-        logpdf1 (float or np.array): Logarithm of the probability density function of the goal
-                                     distribution.
-        tempering_parameter (float): Parameter between 0 and 1 that controls the interpolation
-                                     between `logpdf0` and `logpdf1`. A value of 0.0 corresponds to
-                                     `logpdf0`, while a value of 1.0 corresponds to `logpdf1`.
+        logpdf0: Logarithm of the probability density function of the initial distribution.
+        logpdf1: Logarithm of the probability density function of the goal distribution.
+        tempering_parameter: Parameter between 0 and 1 that controls the interpolation between
+            `logpdf0` and `logpdf1`. A value of 0.0 corresponds to `logpdf0`, while a value of 1.0
+            corresponds to `logpdf1`.
 
     Returns:
-        float or np.array: The tempered log-probability density function based on the
-                              `tempering_parameter`.
+        The tempered log-probability density function based on the `tempering_parameter`.
+
 
     Raises:
         ValueError: If either `logpdf0` or `logpdf1` is positive infinity (`+inf`).
@@ -112,19 +108,20 @@ def temper_logpdf_generic(logpdf0, logpdf1, tempering_parameter=1.0):
     return (1.0 - tempering_parameter) * logpdf0 + tempering_parameter * logpdf1
 
 
-def temper_factory(temper_type):
+def temper_factory(temper_type: Literal["bayes", "generic"]) -> Callable:
     """Return the appropriate tempering function based on the specified type.
 
     The tempering function can be used for transitioning between different log-probability density
     functions in various probabilistic models.
 
     Args:
-        temper_type (str): Type of the tempering function to return. Valid options are:
-            - "bayes": Returns the Bayes tempering function.
-            - "generic": Returns the generic tempering function.
+        temper_type: Type of the tempering function to return. Valid options are:
+
+            * `bayes`: Returns the Bayes tempering function.
+            * `generic`: Returns the generic tempering function.
 
     Returns:
-        function: The corresponding tempering function based on `temper_type`.
+        The corresponding tempering function based on `temper_type`.
 
     Raises:
         ValueError: If `temper_type` is not one of the valid options ("bayes", "generic").
@@ -140,7 +137,7 @@ def temper_factory(temper_type):
     )
 
 
-def calc_ess(weights):
+def calc_ess(weights: np.ndarray) -> np.generic:
     """Calculate the Effective Sample Size (ESS) from the given weights.
 
     The Effective Sample Size (ESS) is a measure used to assess the quality of a set of weights
@@ -149,11 +146,11 @@ def calc_ess(weights):
     improve numerical stability.
 
     Args:
-        weights (np.array): An array of weights, typically representing the importance weights
-                            of samples in a weighted sampling scheme.
+        weights: An array of weights, typically representing the importance weights of samples in a
+            weighted sampling scheme.
 
     Returns:
-        float: The Effective Sample Size (ESS) as calculated from the provided weights.
+        The Effective Sample Size (ESS) as calculated from the provided weights.
     """
     ess = np.exp(np.log(np.sum(weights) ** 2) - np.log(np.sum(weights**2)))
     return ess
@@ -163,37 +160,40 @@ class StaticStateSpaceModel(ssp.StaticModel):
     """Model needed for the particles library implementation of SMC.
 
     Attributes:
-        likelihood_model (object): Log-likelihood function.
+        likelihood_model: Log-likelihood function.
     """
 
-    def __init__(self, likelihood_model, data=None, prior=None):
+    def __init__(
+        self, likelihood_model: Callable, data: None = None, prior: StructDist | None = None
+    ) -> None:
         """Initialize Static State Space model.
 
         Args:
-            likelihood_model (obj): Model for the log-likelihood function.
-            data (np.array, optional): Optional data to define state space model.
-                                       Defaults to None.
-            prior (obj, optional): Model for the prior distribution. Defaults to None.
+            likelihood_model: Model for the log-likelihood function.
+            data: Optional data to define state space model.
+            prior: Model for the prior distribution.
         """
-        # Data is always set to `Ǹone` as we let QUEENS handle the actual likelihood computation
+        # Data is always set to `None` as we let QUEENS handle the actual likelihood computation
         super().__init__(data=data, prior=prior)
         self.likelihood_model = likelihood_model
 
-    def logpyt(self, theta, t):
+    def logpyt(self, theta: Any, t: Any) -> None:
         """Log-likelihood of Y_t, given parameter and previous datapoints.
 
         Args:
-            theta (dict-like): theta['par'] is a ndarray containing the N values for parameter par
-            t (int): time
+            theta: theta['par'] is a ndarray containing the N values for parameter par
+            t: Time
         """
         raise NotImplementedError("StaticModel: logpyt not implemented")
 
-    def loglik(self, theta, t=None):  # pylint: disable=unused-argument
-        """Log. Likelihood function for *particles* SMC implementation.
+    def loglik(
+        self, theta: np.ndarray, t: None = None  # pylint: disable=unused-argument
+    ) -> np.ndarray:
+        """Log-likelihood function for *particles* SMC implementation.
 
         Args:
-            theta (obj): Samples at which to evaluate the likelihood
-            t (int): time (if set to None, the full log-likelihood is returned)
+            theta: Samples at which to evaluate the likelihood
+            t: Time (if set to None, the full log-likelihood is returned)
 
         Returns:
             The log likelihood
@@ -202,30 +202,30 @@ class StaticStateSpaceModel(ssp.StaticModel):
         # Increase the model counter
         return self.likelihood_model(x).flatten()
 
-    def particles_array_to_numpy(self, theta):
+    def particles_array_to_numpy(self, theta: np.ndarray) -> np.ndarray:
         """Convert particles objects to numpy arrays.
 
         The *particles* library uses np.ndarrays with homemade variable dtypes.
         We need to convert this into numpy arrays to work with queens.
 
         Args:
-            theta (np.ndarray with homemade dtype): *Particle* variables object
+            theta: *Particle* variables object
 
         Returns:
-            np.ndarray: Numpy array of the particles
+            Numpy array of the particles
         """
-        return np.lib.recfunctions.structured_to_unstructured(theta)
+        return np.lib.recfunctions.structured_to_unstructured(theta)  # type: ignore[attr-defined]
 
-    def numpy_to_particles_array(self, samples):
+    def numpy_to_particles_array(self, samples: np.ndarray) -> np.ndarray:
         """Convert numpy arrays to particles objects.
 
         The *particles* library uses np.ndarrays with homemade variable dtypes.
         This method converts it back to the particles library type.
 
         Args:
-            samples (np.ndarray): Samples
+            samples: Samples
 
         Returns:
-            np.ndarray with homemade dtype: *Particle* variables object
+            *Particle* variables object
         """
         return samples.astype(self.prior.dtype)

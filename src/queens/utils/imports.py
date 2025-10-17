@@ -19,6 +19,7 @@ import logging
 import re
 import sys
 from pathlib import Path
+from typing import Any, Callable
 
 from queens.utils.path import check_if_path_exists
 from queens.utils.valid_options import get_option
@@ -26,15 +27,15 @@ from queens.utils.valid_options import get_option
 _logger = logging.getLogger(__name__)
 
 
-def get_module_attribute(path_to_module, function_or_class_name):
+def get_module_attribute(path_to_module: str | Path, function_or_class_name: str) -> Callable:
     """Load function from python file by path.
 
     Args:
-        path_to_module (Path | str): "Path" to file
-        function_or_class_name (str): Name of the function
+        path_to_module: Path to file
+        function_or_class_name: Name of the function
 
     Returns:
-        function or class: Function or class from the module
+        Function or class from the module
     """
     # Set the module name
     module_path_obj = Path(path_to_module)
@@ -51,6 +52,8 @@ def get_module_attribute(path_to_module, function_or_class_name):
 
     # Load the module
     spec = importlib.util.spec_from_file_location(module_name, path_to_module)
+    if spec is None or spec.loader is None:
+        raise ImportError(f"Could not load module {module_name} from path {path_to_module}.")
     module = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(module)
     sys.modules[module_name] = module
@@ -72,16 +75,18 @@ def get_module_attribute(path_to_module, function_or_class_name):
     return function
 
 
-def get_module_class(module_options, valid_types, module_type_specifier="type"):
+def get_module_class(
+    module_options: dict, valid_types: dict, module_type_specifier: str = "type"
+) -> Any:
     """Return module class defined in config file.
 
     Args:
-        module_options (dict): Module options
-        valid_types (dict): Dict of valid types with corresponding module paths and class names
-        module_type_specifier (str): Specifier for the module type
+        module_options: Module options
+        valid_types: Dict of valid types with corresponding module paths and class names
+        module_type_specifier: Specifier for the module type
 
     Returns:
-        module_class (class): Class from the module
+        Class from the module
     """
     # determine which object to create
     module_type = module_options.pop(module_type_specifier)
@@ -94,12 +99,14 @@ def get_module_class(module_options, valid_types, module_type_specifier="type"):
     return module_class
 
 
-def import_class_from_class_module_map(name, class_module_map, package=None):
+def import_class_from_class_module_map(
+    name: str, class_module_map: dict, package: str | None = None
+) -> Any:
     """Import class from class_module_map.
 
     Args:
-        name (str): Name of the class.
-        class_module_map (dict): Class to module mapping.
+        name: Name of the class.
+        class_module_map: Class to module mapping.
         package (str, opt): Package name (only necessary if import path is relative)
 
     Returns:
@@ -111,14 +118,14 @@ def import_class_from_class_module_map(name, class_module_map, package=None):
     raise AttributeError
 
 
-def extract_type_checking_imports(file_path):
+def extract_type_checking_imports(file_path: str) -> dict:
     """Extract imports inside TYPE_CHECKING blocks from file.
 
     Args:
-        file_path (str): Path to the file
+        file_path: Path to the file
 
     Returns:
-        mapping (dict): A dict mapping class names to their source modules.
+        A dict mapping class names to their source modules.
     """
     inside_type_checking = False
 
@@ -146,8 +153,38 @@ def extract_type_checking_imports(file_path):
         for import_statement in import_statements:
             module, class_names = import_statement.split("import")
             module = module.strip()
-            class_names = class_names.split(",")
-            for class_name in class_names:
+            class_names_lst = class_names.split(",")
+            for class_name in class_names_lst:
                 mapping[re.sub(r"\W+", "", class_name)] = module
 
     return mapping
+
+
+class LazyLoader:
+    """Lazy loader for modules that take long to load.
+
+    Inspired from https://stackoverflow.com/a/78312617
+    """
+
+    def __init__(self, module_name: str):
+        """Initialize the loader.
+
+        Args:
+            module_name: name of the module to be imported
+        """
+        self._module_name = module_name
+        self._module = None
+
+    def __getattr__(self, attr: str) -> Any:
+        """Get attribute.
+
+        Args:
+            attr: Attribute name
+
+        Returns:
+            attribute
+        """
+        if self._module is None:
+            self._module = importlib.import_module(self._module_name)  # type: ignore[assignment]
+
+        return getattr(self._module, attr)

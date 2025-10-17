@@ -16,6 +16,7 @@
 
 import logging
 from pathlib import Path
+from typing import Any, Sequence
 
 from queens.utils.path import is_empty
 from queens.utils.run_subprocess import run_subprocess
@@ -24,34 +25,34 @@ _logger = logging.getLogger(__name__)
 
 
 def assemble_rsync_command(
-    source,
-    destination,
-    archive=False,
-    exclude=None,
-    filters=None,
-    verbose=True,
-    rsh=None,
-    host=None,
-    rsync_options=None,
-):
+    source: str | Path | Sequence,
+    destination: Path | str,
+    archive: bool = False,
+    exclude: str | Sequence | None = None,
+    filters: str | None = None,
+    verbose: bool = True,
+    rsh: str | None = None,
+    host: str | None = None,
+    rsync_options: Sequence | None = None,
+) -> str:
     """Assemble rsync command.
 
     Args:
-        source (str, Path, list): paths to copy
-        destination (str, Path): destination relative to host
-        archive (bool): use the archive option
-        exclude (str, list): options to exclude
-        filters (str): filters for rsync
-        verbose (bool): true for verbose
-        rsh (str): remote ssh command
-        host (str): host where to copy the files to
-        rsync_options (list): additional rsync options
+        source: Paths to copy
+        destination: Destination relative to host
+        archive: Use the archive option
+        exclude: Options to exclude
+        filters: Filters for rsync
+        verbose: True for verbose
+        rsh: Remote ssh command
+        host: Host to which to copy the files
+        rsync_options: Additional rsync options
 
     Returns:
-        str command to run rsync
+        Command to run rsync
     """
 
-    def listify(obj):
+    def listify(obj: Any) -> Any:
         if isinstance(obj, (str, Path)):
             return [obj]
         return obj
@@ -70,39 +71,38 @@ def assemble_rsync_command(
         options.extend(listify(rsync_options))
     if rsh:
         options.append(f"--rsh='{rsh}'")
-    source = listify(source)
     if host:
         destination = f"{host}:{destination}"
 
-    options = " ".join([str(option) for option in options])
-    source = " ".join([str(file) for file in source])
-    command = f"rsync {options} {source} {destination}/"
+    options_string = " ".join([str(option) for option in options])
+    source_string = " ".join([str(file) for file in listify(source)])
+    command = f"rsync {options_string} {source_string} {destination}/"
     return command
 
 
 def rsync(
-    source,
-    destination,
-    archive=True,
-    exclude=None,
-    filters=None,
-    verbose=True,
-    rsh=None,
-    host=None,
-    rsync_options=None,
-):
+    source: str | Path | Sequence,
+    destination: str | Path,
+    archive: bool = True,
+    exclude: str | Sequence | None = None,
+    filters: str | None = None,
+    verbose: bool = True,
+    rsh: str | None = None,
+    host: str | None = None,
+    rsync_options: Sequence | None = None,
+) -> None:
     """Run rsync command.
 
     Args:
-        source (str, Path, list): paths to copy
-        destination (str, Path): destination relative to host
-        archive (bool): use the archive option
-        exclude (str, list): options to exclude
-        filters (str): filters for rsync
-        verbose (bool): true for verbose
-        rsh (str): remote ssh command
-        host (str): host where to copy the files to
-        rsync_options (list): additional rsync options
+        source: Paths to copy
+        destination: Destination relative to host
+        archive: Use the archive option
+        exclude: Options to exclude
+        filters: Filters for rsync
+        verbose: True for verbose
+        rsh: Remote ssh command
+        host: Host where to copy the files to
+        rsync_options: Additional rsync options
     """
     if not is_empty(source):
         command = assemble_rsync_command(

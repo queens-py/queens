@@ -16,7 +16,6 @@
 
 import argparse
 import json
-import logging
 import sys
 
 from queens.utils.remote_operations import RemoteConnection
@@ -24,9 +23,6 @@ from queens.utils.remote_operations import RemoteConnection
 DEFAULT_PACKAGE_MANAGER = "mamba"
 FALLBACK_PACKAGE_MANAGER = "conda"
 SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
-
-
-_logger = logging.getLogger(__name__)
 
 
 if __name__ == "__main__":
