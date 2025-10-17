@@ -185,3 +185,6 @@ exclude = [
     "src/queens/main.py",
     "src/queens/global_settings.py",
 ]
+[[tool.mypy.overrides]]
+module = ["yaml"]
+follow_untyped_imports = true

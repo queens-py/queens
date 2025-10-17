@@ -349,8 +349,6 @@ traitlets==5.14.3
     #   nbconvert
     #   nbformat
     #   nbsphinx
-types-pyyaml==6.0.12.20250915
-    # via -r dev-requirements.in
 typing-extensions==4.12.2
     # via
     #   -c requirements.txt

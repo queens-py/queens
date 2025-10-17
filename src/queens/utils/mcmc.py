@@ -14,15 +14,12 @@
 #
 """Collection of utils for Markov Chain Monte Carlo algorithms."""
 
-from typing import Tuple, Union
-
 import numpy as np
-from numpy import ndarray
 
 
 def mh_select(
-    log_acceptance_probability: ndarray, current_sample: ndarray, proposed_sample: ndarray
-) -> Tuple[ndarray, ndarray]:
+    log_acceptance_probability: np.ndarray, current_sample: np.ndarray, proposed_sample: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
     """Perform Metropolis-Hastings selection.
 
     The Metropolis-Hastings algorithm is used in Markov Chain Monte Carlo (MCMC) methods to
@@ -60,8 +57,8 @@ def mh_select(
 
 
 def tune_scale_covariance(
-    scale_covariance: Union[ndarray, float], accept_rate: Union[ndarray, float]
-) -> ndarray:
+    scale_covariance: np.ndarray | float, accept_rate: np.ndarray | float
+) -> np.ndarray:
     r"""Adjust the covariance scaling factor based on the acceptance rate.
 
     This function tunes the covariance scaling factor used in Metropolis-Hastings or similar MCMC

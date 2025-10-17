@@ -15,7 +15,6 @@
 """ASCII art module."""
 
 import logging
-from typing import Union
 
 import pyfiglet
 
@@ -156,7 +155,7 @@ def print_banner(message: str = "QUEENS", output_width: int = DEFAULT_OUTPUT_WID
 
 
 def print_centered_multiline_block(
-    string: Union[str, pyfiglet.FigletString], output_width: int = DEFAULT_OUTPUT_WIDTH
+    string: str | pyfiglet.FigletString, output_width: int = DEFAULT_OUTPUT_WIDTH
 ) -> None:
     """Print a multiline text in the center as a block.
 

@@ -13,7 +13,8 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """Custom exceptions."""
-from typing import Optional
+
+from __future__ import annotations
 
 
 class QueensException(Exception):
@@ -34,7 +35,7 @@ class InvalidOptionError(QueensException):
     @classmethod
     def construct_error_from_options(
         cls, valid_options: dict | list, desired_option: str, additional_message: str = ""
-    ) -> "InvalidOptionError":
+    ) -> InvalidOptionError:
         """Construct invalid option error from the valid and desired options.
 
         Args:
@@ -61,8 +62,8 @@ class SubprocessError(QueensException):
         command: str,
         command_output: str,
         error_message: str,
-        additional_message: Optional[str] = "",
-    ) -> "SubprocessError":
+        additional_message: str | None = "",
+    ) -> SubprocessError:
         """Construct a Subprocess error from a command and its outputs.
 
         Args:

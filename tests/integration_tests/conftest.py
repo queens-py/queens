@@ -19,7 +19,6 @@ import json
 import logging
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import pandas as pd
@@ -63,7 +62,7 @@ class ClusterConfig:
     cluster_internal_address: str | None
     default_python_path: str
     cluster_script_path: Path
-    queue: Optional[str | None] = None
+    queue: str | None = None
 
     dict = asdict
 

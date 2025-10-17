@@ -49,9 +49,7 @@ def init_scaler(unscaled_data: np.ndarray) -> tuple["StandardScaler", np.ndarray
     return scaler, scaled_data
 
 
-def set_transform_function(
-    data: "gpf.Parameter", transform: "tfp.bijectors.Bijector"
-) -> "gpf.Parameter":
+def set_transform_function(data: gpf.Parameter, transform: tfp.bijectors.Bijector) -> gpf.Parameter:
     """Set transform function.
 
     Args:

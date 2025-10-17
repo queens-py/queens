@@ -14,7 +14,9 @@
 #
 """Utils to collect data during iterative processes."""
 
-from typing import Iterable, Union
+from __future__ import annotations
+
+from typing import Iterable
 
 from queens.utils.printing import get_str_table
 
@@ -36,7 +38,7 @@ class CollectionObject:
             self.__dict__.update({key: []})
 
     @classmethod
-    def create_collection_object_from_dict(cls, data_dict: dict) -> "CollectionObject":
+    def create_collection_object_from_dict(cls, data_dict: dict) -> CollectionObject:
         """Create collection item from dict.
 
         Args:
@@ -136,7 +138,7 @@ class CollectionObject:
         # No data
         return 0
 
-    def __getitem__(self, i: Union[int, slice]) -> "CollectionObject":
+    def __getitem__(self, i: int | slice) -> CollectionObject:
         """Python intern method to index the collection object.
 
         Args:

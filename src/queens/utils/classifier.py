@@ -43,7 +43,7 @@ class Classifier:
 
     is_active = False
 
-    def __init__(self, n_params: int, classifier_obj: "SklearnClassifier") -> None:
+    def __init__(self, n_params: int, classifier_obj: SklearnClassifier) -> None:
         """Initialise the classifier.
 
         Args:
@@ -101,7 +101,7 @@ class ActiveLearningClassifier(Classifier):
     def __init__(
         self,
         n_params: int,
-        classifier_obj: "MLPClassifier",
+        classifier_obj: MLPClassifier,
         batch_size: int,
         active_sampler_obj: UncertaintySampling | None = None,
     ) -> None:

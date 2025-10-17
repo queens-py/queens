@@ -24,4 +24,3 @@ myst-parser
 testbook
 ipykernel
 mypy
-types-PyYAML
