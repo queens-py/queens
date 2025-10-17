@@ -40,7 +40,7 @@ def cli_logging(func: Callable) -> Callable:
         func: Function that is to be decorated
     """
 
-    def decorated_function(*args: Any, **kwargs: Any) -> Callable:
+    def decorated_function(*args: Any, **kwargs: Any) -> Any:
         setup_cli_logging()
         results = func(*args, **kwargs)
         reset_logging()

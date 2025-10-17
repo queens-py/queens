@@ -88,12 +88,12 @@ def check_if_path_exists(path: Path, error_message: str = "") -> bool:
     return path_exists
 
 
-def is_empty(paths: Sequence | str | Path) -> bool:
+def is_empty(paths: str | Path | Sequence) -> bool:
     """Check whether paths is empty.
 
     Args:
         paths: (List of) path-like objects
     """
-    if not isinstance(paths, (str, Path, list)):
-        raise TypeError("paths must be a string, a Path object, or a list.")
+    if not isinstance(paths, (str, Path, Sequence)):
+        raise TypeError("paths must be a string, a Path object, or a sequence.")
     return not bool(paths)

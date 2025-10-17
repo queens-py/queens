@@ -25,7 +25,7 @@ def sample_sobol_sequence(
     number_of_samples: int,
     parameters: Parameters,
     randomize: bool = False,
-    seed: int | None = None,
+    seed: int | np.random.Generator | None = None,
 ) -> np.ndarray:
     """Generate samples from Sobol sequence.
 

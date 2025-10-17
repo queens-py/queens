@@ -45,7 +45,7 @@ from scipy.optimize._numdiff import (
 def compute_step_with_bounds(
     x0: np.ndarray,
     method: Literal["2-point", "3-point"],
-    rel_step: np.ndarray | None,
+    rel_step: float | np.ndarray | None,
     bounds: tuple | np.ndarray | None,
 ) -> tuple[np.ndarray, np.ndarray]:
     """Compute step sizes of finite difference scheme adjusted to bounds.

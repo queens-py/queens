@@ -18,8 +18,6 @@ import pickle
 from pathlib import Path
 
 import numpy as np
-import skactiveml.classifier._wrapper
-import sklearn.neural_network._multilayer_perceptron
 from skactiveml.classifier import SklearnClassifier
 from skactiveml.pool import UncertaintySampling
 from sklearn.gaussian_process import GaussianProcessClassifier
@@ -45,9 +43,7 @@ class Classifier:
 
     is_active = False
 
-    def __init__(
-        self, n_params: int, classifier_obj: skactiveml.classifier._wrapper.SklearnClassifier
-    ) -> None:
+    def __init__(self, n_params: int, classifier_obj: "SklearnClassifier") -> None:
         """Initialise the classifier.
 
         Args:
@@ -105,7 +101,7 @@ class ActiveLearningClassifier(Classifier):
     def __init__(
         self,
         n_params: int,
-        classifier_obj: sklearn.neural_network._multilayer_perceptron.MLPClassifier,
+        classifier_obj: "MLPClassifier",
         batch_size: int,
         active_sampler_obj: UncertaintySampling | None = None,
     ) -> None:

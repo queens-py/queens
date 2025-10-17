@@ -38,7 +38,7 @@ Constraint: TypeAlias = (
 
 def minimize(
     fun: Callable,
-    x0: np.ndarray,
+    x0: Any,
     method: str | None = None,
     args: tuple = (),
     bounds: Sequence | scipy.optimize.Bounds | None = None,

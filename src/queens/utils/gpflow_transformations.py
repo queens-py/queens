@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Utilis for gpflow."""
+"""Utils for gpflow."""
 
 from typing import TYPE_CHECKING
 
@@ -50,7 +50,7 @@ def init_scaler(unscaled_data: np.ndarray) -> tuple["StandardScaler", np.ndarray
 
 
 def set_transform_function(
-    data: gpf.Parameter, transform: tfp.bijectors.Bijector
+    data: "gpf.Parameter", transform: "tfp.bijectors.Bijector"
 ) -> "gpf.Parameter":
     """Set transform function.
 
