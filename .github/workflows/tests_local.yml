@@ -77,8 +77,6 @@ jobs:
           echo "::group::Check type hinting with mypy..."
           mypy .
           echo "::endgroup::"
-      - name: Check license headers
-        uses: apache/skywalking-eyes/header@v0.4.0
       - name: Check conventional commit messages
         uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
@@ -86,6 +84,13 @@ jobs:
           $PYTHON_PACKAGE_MANAGER activate queens
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
           python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload .licenserc.yaml
+        uses: actions/upload-artifact@v4
+        with:
+          name: .licenserc.yaml
+          include-hidden-files: true
+          path: .licenserc.yaml
       - name: Upload coverage report
         uses: actions/upload-pages-artifact@v3
         with:
@@ -99,3 +104,18 @@ jobs:
           report_paths: "test_junit.xml"
           annotate_only: true
           job_summary: false
+
+  check_license_headers:
+    needs: run_tests
+    runs-on: ubuntu-latest
+    container:
+      # image equivalent to v0.7.0 of apache/skywalking-eyes:
+      image: ghcr.io/apache/skywalking-eyes/license-eye:5c5b974209f0de5d905f37deb69369068ebfc15c
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download .licenserc.yaml
+        uses: actions/download-artifact@v4
+        with:
+          name: .licenserc.yaml
+      - name: Check license headers
+        run: license-eye -v info -c .licenserc.yaml header check

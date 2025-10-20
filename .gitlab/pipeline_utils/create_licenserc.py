@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Module to create lincse header check rc file.
+"""Module to create license header check rc file.
 
 Module to create render jinja2 template for the licenserc.yaml file
 based on the license_header.tmpl file.
