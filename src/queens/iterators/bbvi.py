@@ -146,6 +146,7 @@ class BBVI(VariationalInference):
         Returns:
             bbvi_obj (obj): Instance of the BBVI
         """
+        # pylint: disable=duplicate-code
         valid_export_fields = ["ess", "weights"] + VALID_EXPORT_FIELDS
         iterative_data_names = result_description.get("iterative_field_names", [])
         check_if_valid_options(valid_export_fields, iterative_data_names)

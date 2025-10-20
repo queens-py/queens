@@ -47,6 +47,7 @@ class Mpi(Jobscript):
             gradient_data_processor (obj, opt): instance of data processor class for gradient data
             mpi_cmd (str, opt): mpi command
         """
+        # pylint: disable=duplicate-code
         extra_options = {
             "mpi_cmd": mpi_cmd,
         }

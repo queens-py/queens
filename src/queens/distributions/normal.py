@@ -126,18 +126,6 @@ class Normal(Continuous):
         grad_logpdf = np.dot(self.mean.reshape(1, -1) - x, self.precision)
         return grad_logpdf
 
-    def pdf(self, x):
-        """Probability density function.
-
-        Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
-
-        Returns:
-            pdf (np.ndarray): pdf at evaluated positions
-        """
-        pdf = np.exp(self.logpdf(x))
-        return pdf
-
     def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 

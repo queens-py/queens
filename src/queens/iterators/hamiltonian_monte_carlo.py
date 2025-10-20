@@ -103,6 +103,7 @@ class HamiltonianMonteCarlo(PyMC):
             init_strategy (str, opt): Strategy to tune mass damping matrix
             advi_iterations (int, opt): Number of iteration steps of ADVI based init strategies
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             model=model,
             parameters=parameters,

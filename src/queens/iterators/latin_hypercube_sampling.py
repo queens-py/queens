@@ -102,7 +102,7 @@ class LatinHypercubeSampling(Iterator):
         self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
-        """Analyze the results."""
+        """Analyze the LHS results."""
         if self.result_description is not None:
             results = process_outputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"]:

@@ -311,6 +311,7 @@ class MetropolisHastings(Iterator):
 
             # process output takes a dict as input with key 'result'
             results = process_outputs(
+                # pylint: disable=duplicate-code
                 {
                     "result": chain_core,
                     "accept_rate": accept_rate,

@@ -139,13 +139,17 @@ class Continuous(Distribution):
             x (np.ndarray): Positions at which the gradient of log pdf is evaluated
         """
 
-    @abstractmethod
     def pdf(self, x):
         """Probability density function.
 
         Args:
             x (np.ndarray): Positions at which the pdf is evaluated
+
+        Returns:
+            pdf (np.ndarray): pdf at evaluated positions
         """
+        pdf = np.exp(self.logpdf(x))
+        return pdf
 
     @abstractmethod
     def ppf(self, quantiles):

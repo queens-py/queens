@@ -89,6 +89,7 @@ class GaussianProcess(Surrogate):
             dimension_lengthscales (int): Dimension of lengthscales
             train_likelihood_variance (bool): if true, likelihood variance is trained
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             training_iterator=training_iterator,
             testing_iterator=testing_iterator,

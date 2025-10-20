@@ -55,6 +55,7 @@ class Fourc(Jobscript):
             post_options (str, opt): options for post-processing
             mpi_cmd (str, opt): mpi command
         """
+        # pylint: disable=duplicate-code
         extra_options = {
             "post_processor": post_processor,
             "post_options": post_options,

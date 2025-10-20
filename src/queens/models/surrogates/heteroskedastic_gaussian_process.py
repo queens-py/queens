@@ -102,6 +102,7 @@ class HeteroskedasticGaussianProcess(Surrogate):
             num_samples_stats (int): Number of samples used to calculate empirical
                                      variance/covariance
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             training_iterator=training_iterator,
             testing_iterator=testing_iterator,

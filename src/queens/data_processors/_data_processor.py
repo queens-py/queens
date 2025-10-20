@@ -159,7 +159,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
             raw_data (obj): Raw data from file.
         """
 
-    @abc.abstractmethod
     def filter_and_manipulate_raw_data(self, raw_data):
         """Filter or clean the raw data for given criteria.
 
@@ -169,6 +168,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         Returns:
             processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         """
+        return raw_data
 
     def _subsequent_data_manipulation(self, processed_data):
         """Subsequent manipulate the data_processor data.

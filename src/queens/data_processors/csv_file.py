@@ -256,6 +256,7 @@ class CsvFile(DataProcessor):
             _logger.info("Successfully read-in data from %s.", file_path)
             return raw_data
         except IOError as error:
+            # pylint: disable=duplicate-code
             _logger.warning(
                 "Could not read the file: %s. The following IOError was raised: %s. "
                 "Skipping the file and continuing.",

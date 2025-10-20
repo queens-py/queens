@@ -53,6 +53,7 @@ class SGD(StochasticOptimizer):
             max_iteration (int): Maximum number of iterations
             learning_rate_decay (LearningRateDecay): Object to schedule learning rate decay
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             learning_rate=learning_rate,
             optimization_type=optimization_type,

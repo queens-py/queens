@@ -110,6 +110,7 @@ class GaussianBayesianNeuralNetwork(Surrogate):
         Returns:
             Instance of GaussianBayesianNeuralNetwork
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             training_iterator=training_iterator,
             testing_iterator=testing_iterator,

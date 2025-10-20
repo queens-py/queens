@@ -105,6 +105,7 @@ class TxtFile(DataProcessor):
                     raw_data = file.readlines()
                 return raw_data
         except IOError as error:
+            # pylint: disable=duplicate-code
             _logger.warning(
                 "Could not read the file: %s. The following IOError was raised: %s. "
                 "Skipping the file and continuing.",
@@ -112,21 +113,6 @@ class TxtFile(DataProcessor):
                 error,
             )
             return None
-
-    def filter_and_manipulate_raw_data(self, raw_data):
-        """Filter the raw data from the txt file.
-
-        The TxtFile class provides some basic filtering functionality,
-        however it is up to the user to define the specifics of how the raw data
-        should be filtered.
-
-        Args:
-            raw_data (lst): List of strings Raw data from file.
-
-        Return:
-            To be implemented by user.
-        """
-        return raw_data
 
     def _check_file_size(self, file_path):
         """Check the file size of the input file.

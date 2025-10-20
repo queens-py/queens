@@ -91,8 +91,8 @@ class SobolSequence(Iterator):
         self.output = self.model.evaluate(self.samples)
 
     def post_run(self):
-        """Analyze the results."""
-        if self.result_description is not None:
+        """Analyze the Sobol sequence results."""
+        if self.result_description is not None:  # pylint: disable=duplicate-code
             results = process_outputs(self.output, self.result_description, input_data=self.samples)
             if self.result_description["write_results"]:
                 write_results(results, self.global_settings.result_file(".pickle"))

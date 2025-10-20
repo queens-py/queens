@@ -80,18 +80,3 @@ class NumpyFile(DataProcessor):
                 error,
             )
         return None
-
-    def filter_and_manipulate_raw_data(self, raw_data):
-        """Filter and manipulate the raw data.
-
-        In this case we want the raw data as it is. Of course this
-        method can implement more specific data processing in the
-        future.
-
-        Args:
-            raw_data (np.array): Raw data from file.
-
-        Returns:
-            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
-        """
-        return raw_data

@@ -110,6 +110,7 @@ class NUTS(PyMC):
             init_strategy (str): Strategy to tune mass damping matrix
             advi_iterations (int): Number of iteration steps of ADVI based init strategies
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             model=model,
             parameters=parameters,

@@ -145,25 +145,13 @@ class MeanFieldNormal(Continuous):
 
         return grad_logpdf_var
 
-    def pdf(self, x):
-        """Probability density function.
-
-        Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
-
-        Returns:
-            pdf (np.ndarray): pdf at evaluated positions
-        """
-        pdf = np.exp(self.logpdf(x))
-        return pdf
-
     def ppf(self, quantiles):
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
             quantiles (np.ndarray): Quantiles at which the ppf is evaluated
         """
-        self.check_1d()
+        self.check_1d()  # pylint: disable=duplicate-code
         ppf = scipy.stats.norm.ppf(
             quantiles, loc=self.mean, scale=self.covariance ** (1 / 2)
         ).reshape(-1)

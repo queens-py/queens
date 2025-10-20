@@ -128,7 +128,7 @@ class LeastSquares(Optimization):
     def core_run(self):
         """Core run of LeastSquares iterator."""
         self.solution = least_squares(
-            self.objective,
+            self.objective,  # pylint: disable=duplicate-code
             self.initial_guess,
             method=self.algorithm,
             jac=self.jacobian,

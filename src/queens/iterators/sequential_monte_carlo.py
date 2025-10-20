@@ -433,6 +433,7 @@ class SequentialMonteCarlo(Iterator):
             # Metropolis Hastings iterator add a dimension to the numpy array
             # this enables the calculation of the covariance matrix
             results = process_outputs(
+                # pylint: disable=duplicate-code
                 {
                     "result": particles_resampled[:, np.newaxis, :],
                     "particles": self.particles,

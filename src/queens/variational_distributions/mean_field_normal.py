@@ -87,7 +87,7 @@ class MeanFieldNormal(Variational):
         if len(mean) == len(covariance):
             variational_parameters = np.hstack((mean.flatten(), 0.5 * np.log(np.diag(covariance))))
         else:
-            raise ValueError(
+            raise ValueError(  # pylint: disable=duplicate-code
                 f"Dimension of the mean value {len(mean)} does not equal covariance dimension"
                 f"{covariance.shape}"
             )

@@ -112,6 +112,7 @@ class RPVI(VariationalInference):
                                         score function is considered.
             verbose_every_n_iter (int): Number of iterations between printing, plotting, and saving
         """
+        # pylint: disable=duplicate-code
         iterative_data_names = result_description.get("iterative_field_names", [])
         check_if_valid_options(VALID_EXPORT_FIELDS, iterative_data_names)
         iteration_data = CollectionObject(*iterative_data_names)
