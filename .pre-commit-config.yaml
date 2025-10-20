@@ -77,8 +77,8 @@ repos:
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
-        exclude: '^tests/'
-      - id: pylint-tests
+        exclude: '^tests/integration_tests/'
+      - id: pylint-integration-tests
         name: pylint (tests)
         entry: pylint --disable=duplicate-code
         language: python
@@ -86,7 +86,7 @@ repos:
         additional_dependencies: ["toml"]
         always_run: false
         pass_filenames: true
-        files: '^tests/'
+        files: '^tests/integration_tests/'
       - id: mypy
         name: mypy (check type hinting)
         entry: mypy

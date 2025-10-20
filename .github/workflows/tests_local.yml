@@ -50,11 +50,11 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Run pylint on src..."
-          pylint --rcfile=.pylintrc src/
+          pylint --rcfile=.pylintrc --ignore=integration_tests src/ tests/
           echo "::endgroup::"
 
-          echo "::group::Run pylint on tests..."
-          pylint --rcfile=.pylintrc --disable=duplicate-code tests/
+          echo "::group::Run pylint on integration tests..."
+          pylint --rcfile=.pylintrc --disable=duplicate-code tests/integration_tests/
           echo "::endgroup::"
 
           echo "::group::Run ruff..."
