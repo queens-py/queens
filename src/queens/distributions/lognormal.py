@@ -17,6 +17,7 @@
 import numpy as np
 import scipy.linalg
 import scipy.stats
+from numpy.typing import ArrayLike
 
 from queens.distributions._distribution import Continuous
 from queens.distributions.normal import Normal
@@ -29,16 +30,16 @@ class LogNormal(Continuous):
     Support in (0, +inf).
 
     Attributes:
-        normal_distribution (Normal): Underlying normal distribution.
+        normal_distribution: Underlying normal distribution.
     """
 
     @log_init_args
-    def __init__(self, normal_mean, normal_covariance):
+    def __init__(self, normal_mean: ArrayLike, normal_covariance: ArrayLike) -> None:
         """Initialize lognormal distribution.
 
         Args:
-            normal_mean (array_like): mean of the normal distribution
-            normal_covariance (array_like): covariance of the normal distribution
+            normal_mean: mean of the normal distribution
+            normal_covariance: covariance of the normal distribution
         """
         self.normal_distribution = Normal(normal_mean, normal_covariance)
 
@@ -55,36 +56,36 @@ class LogNormal(Continuous):
             mean=mean, covariance=covariance, dimension=self.normal_distribution.dimension
         )
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
 
         Returns:
-            cdf (np.ndarray): cdf at evaluated positions
+            CDF at positions
         """
         return self.normal_distribution.cdf(np.log(x))
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
 
         Returns:
-            samples (np.ndarray): Drawn samples from the distribution
+            Drawn samples from the distribution
         """
         return np.exp(self.normal_distribution.draw(num_draws=num_draws))
 
-    def logpdf(self, x):
+    def logpdf(self, x: ArrayLike) -> np.ndarray:
         """Log of the probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
 
         Returns:
-            logpdf (np.ndarray): pdf at evaluated positions
+            Log-PDF at positions
         """
         log_x = np.log(x).reshape(-1, self.dimension)
         dist = log_x - self.normal_distribution.mean
@@ -95,14 +96,14 @@ class LogNormal(Continuous):
         )
         return logpdf
 
-    def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to *x*.
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF with respect to *x*.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of log-PDF is evaluated
 
         Returns:
-            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
+            Gradient of the log-PDF evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
         x[x == 0] = np.nan
@@ -119,25 +120,25 @@ class LogNormal(Continuous):
         )
         return grad_logpdf
 
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
 
         Returns:
-            pdf (np.ndarray): pdf at evaluated positions
+            PDF at positions
         """
         return np.exp(self.logpdf(x))
 
-    def ppf(self, quantiles):
-        """Percent point function (inverse of cdf — quantiles).
+    def ppf(self, quantiles: ArrayLike) -> np.ndarray:
+        """Percent point function (inverse of CDF — quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
 
         Returns:
-            ppf (np.ndarray): Positions which correspond to given quantiles
+            Positions which correspond to given quantiles
         """
         self.check_1d()
         ppf = scipy.stats.lognorm.ppf(

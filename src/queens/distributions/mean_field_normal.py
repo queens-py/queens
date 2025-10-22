@@ -26,17 +26,17 @@ class MeanFieldNormal(Continuous):
     """Mean-field normal distribution.
 
     Attributes:
-        standard_deviation (np.ndarray): standard deviation vector
+        standard_deviation: Standard deviation vector
     """
 
     @log_init_args
-    def __init__(self, mean, variance, dimension):
-        """Initialize normal distribution.
+    def __init__(self, mean: np.ndarray, variance: np.ndarray, dimension: int) -> None:
+        """Initialize mean-field normal distribution.
 
         Args:
-            mean (np.ndarray): mean of the distribution
-            variance (np.ndarray): variance of the distribution
-            dimension (int): dimensionality of the distribution
+            mean: Mean of the distribution
+            variance: Variance of the distribution
+            dimension: Dimensionality of the distribution
         """
         mean = np.array(mean)
         variance = np.array(variance)
@@ -45,47 +45,47 @@ class MeanFieldNormal(Continuous):
         self.standard_deviation = np.sqrt(covariance)
         super().__init__(mean, covariance, dimension)
 
-    def update_variance(self, variance):
-        """Update the variance of the mean field distribution.
+    def update_variance(self, variance: np.ndarray) -> None:
+        """Update the variance of the mean-field normal distribution.
 
         Args:
-            variance (np.array): New variance vector
+            variance: New variance vector
         """
         covariance = MeanFieldNormal.get_check_array_dimension_and_reshape(variance, self.dimension)
         self.covariance = covariance
         self.standard_deviation = np.sqrt(covariance)
 
-    def update_mean(self, mean):
-        """Update the mean of the mean field distribution.
+    def update_mean(self, mean: np.ndarray) -> None:
+        """Update the mean of the mean-field normal distribution.
 
         Args:
-            mean (np.array): New mean vector
+            mean: New mean vector
         """
         mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, self.dimension)
         self.mean = mean
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
 
         Returns:
-            cdf (np.ndarray): cdf at evaluated positions
+            CDF at positions
         """
         z = (x - self.mean) / self.standard_deviation
         cdf = 0.5 * (1 + erf(z / np.sqrt(2)))
         cdf = np.prod(cdf, axis=1).reshape(x.shape[0], -1)
         return cdf
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
 
         Returns:
-            samples (np.ndarray): Drawn samples from the distribution
+            Drawn samples from the distribution
         """
         samples = np.random.randn(num_draws, self.dimension) * self.standard_deviation.reshape(
             1, -1
@@ -93,14 +93,14 @@ class MeanFieldNormal(Continuous):
 
         return samples
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
 
         Returns:
-            logpdf (np.ndarray): log pdf at evaluated positions
+            Log-PDF at positions
         """
         dist = x - self.mean
         logpdf = (
@@ -111,29 +111,28 @@ class MeanFieldNormal(Continuous):
 
         return logpdf
 
-    def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to x.
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF with respect to x.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of log-PDF is evaluated
 
         Returns:
-            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
+            Gradient of the log-PDF evaluated at positions
         """
         gradients_batch = -(x - self.mean) / self.covariance
         gradients_batch = gradients_batch.reshape(x.shape[0], -1)
 
         return gradients_batch
 
-    def grad_logpdf_var(self, x):
-        """Gradient of the log pdf with respect to the variance vector.
+    def grad_logpdf_var(self, x: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF with respect to the variance vector.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of the log-PDF is evaluated
 
         Returns:
-            grad_logpdf_var (np.ndarray): Gradient of the log pdf w.r.t. the variance at given
-                                        variance vector and position x
+            Gradient of the log-PDF w.r.t. the variance at given variance vector and position x
         """
         sample_batch = x.reshape(-1, self.dimension)
 
@@ -145,11 +144,11 @@ class MeanFieldNormal(Continuous):
 
         return grad_logpdf_var
 
-    def ppf(self, quantiles):
+    def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of cdf — quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
         """
         self.check_1d()  # pylint: disable=duplicate-code
         ppf = scipy.stats.norm.ppf(
@@ -158,15 +157,17 @@ class MeanFieldNormal(Continuous):
         return ppf
 
     @staticmethod
-    def get_check_array_dimension_and_reshape(input_array, dimension):
+    def get_check_array_dimension_and_reshape(
+        input_array: np.ndarray, dimension: int
+    ) -> np.ndarray:
         """Check dimensions and potentially reshape array.
 
         Args:
-            input_array (np.ndarray): Input array
-            dimension (int): Dimension of the array
+            input_array: Input array
+            dimension: Dimension of the array
 
         Returns:
-            input_array (np.ndarray): Input array with correct dimension
+            Input array with correct dimension
         """
         if not isinstance(input_array, np.ndarray):
             raise TypeError("Input must be a numpy array.")

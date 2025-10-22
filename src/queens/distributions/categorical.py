@@ -32,17 +32,17 @@ class Categorical(Distribution):
     """General categorical distribution.
 
     Attributes:
-        probabilities (np.ndarray): Probabilities associated with the categories
-        categories (np.ndarray): Categories
+        probabilities: Probabilities associated with the categories
+        categories: Categories
     """
 
     @log_init_args
-    def __init__(self, probabilities, categories):
+    def __init__(self, probabilities: np.ndarray, categories: np.ndarray) -> None:
         """Initialize categorical distribution.
 
         Args:
-            probabilities (np.ndarray): Probabilities associated with the categories
-            categories (np.ndarray): Categories
+            probabilities: Probabilities associated with the categories
+            categories: Categories
         """
         categories = np.array(categories, dtype=object)
         probabilities = np.array(probabilities)
@@ -62,17 +62,17 @@ class Categorical(Distribution):
         self.probabilities = probabilities
         self.categories = categories
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
 
         Returns:
-            np.ndarray: Samples of the categorical distribution
+            Samples of the categorical distribution
         """
         samples_per_category = np.random.multinomial(num_draws, self.probabilities)
-        samples = (
+        samples_tuple = (
             [
                 [self.categories[category]] * repetitions
                 for category, repetitions in enumerate(samples_per_category)
@@ -80,31 +80,31 @@ class Categorical(Distribution):
             ],
         )
         samples = np.array(
-            list(itertools.chain.from_iterable(*samples)),
+            list(itertools.chain.from_iterable(*samples_tuple)),
             dtype=object,
         )
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
 
         Args:
-            x (np.ndarray): Positions at which the log pmf is evaluated
+            x: Positions at which the log-PMF is evaluated
 
         Returns:
-            np.ndarray: log pmf
+            Log PMF at positions
         """
         return np.log(self.pdf(x))
 
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability *mass* function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PMF is evaluated
 
         Returns:
-            np.ndarray: pmf
+            PMF at positions
         """
         index = np.array([np.argwhere(self.categories == xi) for xi in x]).flatten()
         return self.probabilities[index]

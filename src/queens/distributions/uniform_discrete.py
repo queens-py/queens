@@ -24,11 +24,11 @@ class UniformDiscrete(Particle):
     """Discrete uniform distribution."""
 
     @log_init_args
-    def __init__(self, sample_space):
+    def __init__(self, sample_space: np.ndarray) -> None:
         """Initialize discrete uniform distribution.
 
         Args:
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
+            sample_space: Samples, i.e., possible outcomes of sampling the distribution
         """
         probabilities = np.ones(len(sample_space)) / len(sample_space)
         super().check_duplicates_in_sample_space(sample_space)

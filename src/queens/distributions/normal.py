@@ -15,8 +15,8 @@
 """Normal distribution."""
 
 import numpy as np
-import scipy.linalg
 import scipy.stats
+from numpy.typing import ArrayLike
 
 from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
@@ -28,18 +28,22 @@ class Normal(Continuous):
     """Normal distribution.
 
     Attributes:
-        low_chol (np.ndarray): Lower-triangular Cholesky factor of covariance matrix.
-        precision (np.ndarray): Precision matrix corresponding to covariance matrix.
-        logpdf_const (float): Constant for evaluation of log pdf.
+        low_chol: Lower-triangular Cholesky factor of covariance matrix.
+        precision: Precision matrix corresponding to covariance matrix.
+        logpdf_const: Constant for evaluation of log-PDF.
     """
 
     @log_init_args
-    def __init__(self, mean, covariance):
+    def __init__(
+        self,
+        mean: ArrayLike,
+        covariance: ArrayLike,
+    ) -> None:
         """Initialize normal distribution.
 
         Args:
-            mean (array_like): mean of the distribution
-            covariance (array_like): covariance of the distribution
+            mean: Mean of the distribution
+            covariance: Covariance of the distribution
         """
         mean = np.array(mean).reshape(-1)
         covariance = at_least_2d(np.array(covariance))
@@ -73,67 +77,67 @@ class Normal(Continuous):
         self.precision = precision
         self.logpdf_const = logpdf_const
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
 
         Returns:
-            cdf (np.ndarray): cdf at evaluated positions
+           CDF at positions
         """
         cdf = scipy.stats.multivariate_normal.cdf(
             x.reshape(-1, self.dimension), mean=self.mean, cov=self.covariance
         ).reshape(-1)
         return cdf
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
 
         Returns:
-            samples (np.ndarray): Drawn samples from the distribution
+            Drawn samples from the distribution
         """
         uncorrelated_vector = np.random.randn(self.dimension, num_draws)
         samples = self.mean + np.dot(self.low_chol, uncorrelated_vector).T
         return samples
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
 
         Returns:
-            logpdf (np.ndarray): log pdf at evaluated positions
+            Log-PDF at positions
         """
         dist = x.reshape(-1, self.dimension) - self.mean
         logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
-    def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to *x*.
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF with respect to *x*.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of log-PDF is evaluated
 
         Returns:
-            grad_logpdf (np.ndarray): Gradient of the log pdf evaluated at positions
+            Gradient of the log-PDF evaluated at positions
         """
         x = x.reshape(-1, self.dimension)
         grad_logpdf = np.dot(self.mean.reshape(1, -1) - x, self.precision)
         return grad_logpdf
 
-    def ppf(self, quantiles):
-        """Percent point function (inverse of cdf — quantiles).
+    def ppf(self, quantiles: ArrayLike) -> np.ndarray:
+        """Percent point function (inverse of CDF — quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
 
         Returns:
-            ppf (np.ndarray): Positions which correspond to given quantiles
+            Positions which correspond to given quantiles
         """
         self.check_1d()
         ppf = scipy.stats.norm.ppf(
@@ -141,11 +145,11 @@ class Normal(Continuous):
         ).reshape(-1)
         return ppf
 
-    def update_covariance(self, covariance):
+    def update_covariance(self, covariance: np.ndarray) -> None:
         """Update covariance and dependent distribution parameters.
 
         Args:
-            covariance (np.ndarray): Covariance matrix
+            covariance: Covariance matrix
         """
         low_chol, precision, logpdf_const = self._calculate_distribution_parameters(covariance)
         self.covariance = covariance
@@ -154,16 +158,18 @@ class Normal(Continuous):
         self.logpdf_const = logpdf_const
 
     @staticmethod
-    def _calculate_distribution_parameters(covariance):
+    def _calculate_distribution_parameters(
+        covariance: np.ndarray,
+    ) -> tuple[np.ndarray, np.ndarray, np.float64]:
         """Calculate covariance dependent distribution parameters.
 
         Args:
-            covariance (np.ndarray): Covariance matrix
+            covariance: Covariance matrix
 
         Returns:
-            low_chol (np.ndarray): lower-triangular Cholesky factor of covariance matrix
-            precision (np.ndarray): Precision matrix corresponding to covariance matrix
-            logpdf_const (float): Constant for evaluation of log pdf
+            low_chol: Lower-triangular Cholesky factor of covariance matrix
+            precision: Precision matrix corresponding to covariance matrix
+            logpdf_const: Constant for evaluation of log-PDF
         """
         dimension = covariance.shape[0]
         low_chol = safe_cholesky(covariance)
