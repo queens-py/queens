@@ -137,12 +137,13 @@ class Dask(Scheduler):
         Returns:
             result_dict (dict): Dictionary containing results
         """
-
         # the initial batch can overwhelm the hardware of a cluster
         # by starting many jobs at the same time
         # -> introduce a random wait time for jobs to spread the load
+        max_wait_time = float(self.max_wait_time)  # this float copy allows pickle serialization
+
         def run_driver(*args, **kwargs):
-            random_wait_time = random.uniform(0.0, self.max_wait_time)
+            random_wait_time = random.uniform(0.0, max_wait_time)
             time.sleep(random_wait_time)
             return driver.run(*args, **kwargs)
 
