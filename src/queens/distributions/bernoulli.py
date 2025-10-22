@@ -24,11 +24,11 @@ class Bernoulli(Particle):
     """Bernoulli distribution."""
 
     @log_init_args
-    def __init__(self, success_probability):
+    def __init__(self, success_probability: float) -> None:
         """Initialize Bernoulli distribution.
 
         Args:
-            success_probability (float): Probability of sampling 1
+            success_probability: Probability of sampling 1
         """
         if success_probability <= 0 or success_probability >= 1:
             raise ValueError(

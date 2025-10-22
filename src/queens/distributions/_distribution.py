@@ -17,8 +17,11 @@
 import abc
 import logging
 from abc import abstractmethod
+from collections.abc import Sequence, Sized
+from typing import Any
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 from queens.utils.printing import get_str_table
 
@@ -29,60 +32,60 @@ class Distribution(abc.ABC):
     """Base class for probability distributions."""
 
     @abstractmethod
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> Any:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
         """
 
     @abstractmethod
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> Any:
         """Log of the probability *mass* function.
 
-        In order to keep the interfaces unified the PMF is also accessed via the pdf.
+        In order to keep the interfaces unified the PMF is also accessed via the PDF.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
         """
 
     @abstractmethod
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> Any:
         """Probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
         """
 
-    def export_dict(self):
+    def export_dict(self) -> dict:
         """Create a dict of the distribution.
 
         Returns:
-            export_dict (dict): Dict containing distribution information
+            Dict containing distribution information
         """
         export_dict = vars(self)
         export_dict = {"type": self.__class__.__name__, **export_dict}
         return export_dict
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Get string for the given distribution.
 
         Returns:
-            str: Table with distribution information
+            Table with distribution information
         """
         return get_str_table(type(self).__name__, self.export_dict())
 
     @staticmethod
-    def check_positivity(**parameters):
+    def check_positivity(**parameters: ArrayLike) -> None:
         """Check if parameters are positive.
 
         Args:
-            parameters (dict): Checked parameters
+            parameters: Checked parameters
         """
         for name, value in parameters.items():
             if (np.array(value) <= 0).any():
                 raise ValueError(
-                    f"The parameter '{name}' has to be positive. " f"You specified {name}={value}."
+                    f"The parameter '{name}' has to be positive. You specified {name}={value}."
                 )
 
 
@@ -90,87 +93,87 @@ class Continuous(Distribution):
     """Base class for continuous probability distributions.
 
     Attributes:
-        mean (np.ndarray): Mean of the distribution.
-        covariance (np.ndarray): Covariance of the distribution.
-        dimension (int): Dimensionality of the distribution.
+        mean: Mean of the distribution.
+        covariance: Covariance of the distribution.
+        dimension: Dimensionality of the distribution.
     """
 
-    def __init__(self, mean, covariance, dimension):
+    def __init__(self, mean: np.ndarray, covariance: np.ndarray, dimension: int) -> None:
         """Initialize distribution.
 
         Args:
-            mean (np.ndarray): mean of the distribution
-            covariance (np.ndarray): covariance of the distribution
-            dimension (int): dimensionality of the distribution
+            mean: Mean of the distribution
+            covariance: Covariance of the distribution
+            dimension: Dimensionality of the distribution
         """
         self.mean = mean
         self.covariance = covariance
         self.dimension = dimension
 
     @abstractmethod
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> Any:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
         """
 
     @abstractmethod
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> Any:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
         """
 
     @abstractmethod
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> Any:
         """Log of the probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
         """
 
     @abstractmethod
-    def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to *x*.
+    def grad_logpdf(self, x: np.ndarray) -> Any:
+        """Gradient of the log-PDF with respect to *x*.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of log-PDF is evaluated
         """
 
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> Any:
         """Probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
 
         Returns:
-            pdf (np.ndarray): pdf at evaluated positions
+            PDF at positions
         """
         pdf = np.exp(self.logpdf(x))
         return pdf
 
     @abstractmethod
-    def ppf(self, quantiles):
-        """Percent point function (inverse of cdf — quantiles).
+    def ppf(self, quantiles: np.ndarray) -> Any:
+        """Percent point function (inverse of CDF — quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
         """
 
-    def check_1d(self):
+    def check_1d(self) -> None:
         """Check if distribution is one-dimensional."""
         if self.dimension != 1:
             raise ValueError("Method does not support multivariate distributions!")
 
     @staticmethod
-    def check_bounds(lower_bound, upper_bound):
+    def check_bounds(lower_bound: np.ndarray, upper_bound: np.ndarray) -> None:
         """Check sanity of bounds.
 
         Args:
-            lower_bound (np.ndarray): Lower bound(s) of distribution
-            upper_bound (np.ndarray): Upper bound(s) of distribution
+            lower_bound: Lower bound(s) of distribution
+            upper_bound: Upper bound(s) of distribution
         """
         if (upper_bound <= lower_bound).any():
             raise ValueError(
@@ -183,119 +186,124 @@ class Discrete(Distribution):
     """Discrete distribution base class.
 
     Attributes:
-        mean (np.ndarray): Mean of the distribution.
-        covariance (np.ndarray): Covariance of the distribution.
-        dimension (int): Dimensionality of the distribution.
-        probabilities (np.ndarray): Probabilities associated to all the events in the sample space
-        sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
+        mean: Mean of the distribution.
+        covariance: Covariance of the distribution.
+        dimension: Dimensionality of the distribution.
+        probabilities: Probabilities associated to all the events in the sample space
+        sample_space: Samples, i.e. possible outcomes of sampling the distribution
     """
 
-    def __init__(self, probabilities, sample_space, dimension=None):
+    def __init__(
+        self,
+        probabilities: ArrayLike,
+        sample_space: np.ndarray | Sequence[Sized],
+        dimension: int | None = None,
+    ) -> None:
         """Initialize the discrete distribution.
 
         Args:
-            probabilities (np.ndarray): Probabilities associated to all the events in the sample
-                                        space
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
-            dimension (int): Dimension of a sample event
+            probabilities: Probabilities associated to all the events in the sample space
+            sample_space: Samples, i.e. possible outcomes of sampling the distribution
+            dimension: Dimension of a sample event
         """
         if len({len(d) for d in sample_space}) != 1:
             raise ValueError("Dimensions of the sample events do not match.")
 
-        sample_space = np.array(sample_space).reshape(len(sample_space), -1)
-        probabilities = np.array(probabilities)
+        sample_space_array = np.array(sample_space).reshape(len(sample_space), -1)
+        probabilities_array = np.array(probabilities)
+
         if dimension is None:
-            self.dimension = sample_space[0].shape[0]
+            self.dimension = sample_space_array[0].shape[0]
         else:
             if not isinstance(dimension, int) or dimension <= 0:
                 raise ValueError(f"Dimension has to be a positive integer not {dimension}.")
             self.dimension = dimension
 
-        if len(sample_space) != len(probabilities):
+        if len(sample_space_array) != len(probabilities_array):
             raise ValueError(
-                f"The number of probabilities {len(probabilities)} does not match the number of"
-                f" events in the sample space {len(sample_space)}"
+                f"The number of probabilities {len(probabilities_array)} does not match the number "
+                f"of events in the sample space {len(sample_space_array)}"
             )
 
-        super().check_positivity(probabilities=probabilities)
+        super().check_positivity(probabilities=probabilities_array)
 
-        if not np.isclose(np.sum(probabilities), 1, atol=0):
+        if not np.isclose(np.sum(probabilities_array), 1, atol=0):
             _logger.info("Probabilities do not sum up to one, they are going to be normalized.")
-            probabilities = probabilities / np.sum(probabilities)
+            probabilities_array = probabilities_array / np.sum(probabilities_array)
 
         # Sort the sample events
         if self.dimension == 1:
-            indices = np.argsort(sample_space.flatten())
-            self.probabilities = probabilities[indices]
-            self.sample_space = sample_space[indices]
+            indices = np.argsort(sample_space_array.flatten())
+            self.probabilities = probabilities_array[indices]
+            self.sample_space = sample_space_array[indices]
         else:
-            self.probabilities = probabilities
-            self.sample_space = sample_space
+            self.probabilities = probabilities_array
+            self.sample_space = sample_space_array
 
         self.mean, self.covariance = self._compute_mean_and_covariance()
 
     @abstractmethod
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> Any:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
         """
 
     @abstractmethod
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> Any:
         """Log of the probability *mass* function.
 
-        In order to keep the interfaces unified the PMF is also accessed via the pdf.
+        In order to keep the interfaces unified, the PMF is also accessed via the PDF.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
         """
 
     @abstractmethod
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> Any:
         """Probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
         """
 
     @abstractmethod
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> Any:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
         """
 
     @abstractmethod
-    def ppf(self, quantiles):
-        """Percent point function (inverse of cdf - quantiles).
+    def ppf(self, quantiles: np.ndarray) -> Any:
+        """Percent point function (inverse of CDF - quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
         """
 
     @abstractmethod
-    def _compute_mean_and_covariance(self):
+    def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute the mean value and covariance of the distribution.
 
         Returns:
-            mean (np.ndarray): Mean value of the distribution
-            covariance (np.ndarray): Covariance of the distribution
+            Mean value of the distribution
+            Covariance of the distribution
         """
 
-    def check_1d(self):
+    def check_1d(self) -> None:
         """Check if distribution is one-dimensional."""
         if self.dimension != 1:
             raise ValueError("Method does not support multivariate distributions!")
 
     @staticmethod
-    def check_duplicates_in_sample_space(sample_space):
+    def check_duplicates_in_sample_space(sample_space: np.ndarray) -> None:
         """Check for duplicate events in the sample space.
 
         Args:
-            sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
+            sample_space: Samples, i.e. possible outcomes of sampling the distribution
         """
         if len(sample_space) != len(np.unique(sample_space, axis=0)):
             raise ValueError("The sample space contains duplicate events, this is not possible.")

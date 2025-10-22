@@ -107,10 +107,10 @@ def import_class_from_class_module_map(
     Args:
         name: Name of the class.
         class_module_map: Class to module mapping.
-        package (str, opt): Package name (only necessary if import path is relative)
+        package: Package name (only necessary if import path is relative).
 
     Returns:
-        class (obj): Class object.
+        Class object.
     """
     if name in class_module_map:
         module = importlib.import_module(class_module_map[name], package=package)

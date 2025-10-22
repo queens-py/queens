@@ -14,6 +14,10 @@
 #
 """Free Variable."""
 
+from typing import Any
+
+from numpy import array
+
 from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
 
@@ -26,34 +30,34 @@ class FreeVariable(Continuous):
     """
 
     @log_init_args
-    def __init__(self, dimension):
+    def __init__(self, dimension: int) -> None:
         """Initialize FreeVariable object.
 
         Args:
-            dimension (int): Dimensionality of the variable
+            dimension: Dimensionality of the variable
         """
-        super().__init__(mean=None, covariance=None, dimension=dimension)
+        super().__init__(mean=array([]), covariance=array([]), dimension=dimension)
 
-    def cdf(self, _):
+    def cdf(self, _: Any) -> None:
         """Cumulative distribution function."""
         raise ValueError("cdf method is not supported for FreeVariable.")
 
-    def draw(self, _=1):
+    def draw(self, _: int = 1) -> None:
         """Draw samples."""
         raise ValueError("draw method is not supported for FreeVariable.")
 
-    def logpdf(self, _):
+    def logpdf(self, _: Any) -> None:
         """Log of the probability density function."""
         raise ValueError("logpdf method is not supported for FreeVariable.")
 
-    def grad_logpdf(self, _):
-        """Gradient of the log pdf with respect to *x*."""
+    def grad_logpdf(self, _: Any) -> None:
+        """Gradient of the log-PDF with respect to *x*."""
         raise ValueError("grad_logpdf method is not supported for FreeVariable.")
 
-    def pdf(self, _):
+    def pdf(self, _: Any) -> None:
         """Probability density function."""
         raise ValueError("pdf method is not supported for FreeVariable.")
 
-    def ppf(self, _):
-        """Percent point function (inverse of cdf — quantiles)."""
+    def ppf(self, _: Any) -> None:
+        """Percent point function (inverse of CDF — quantiles)."""
         raise ValueError("ppf method is not supported for FreeVariable.")

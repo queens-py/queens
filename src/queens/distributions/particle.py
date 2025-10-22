@@ -37,19 +37,19 @@ class Particle(Discrete):
     distributions as the computation of expectations is done in the same fashion.
 
     Attributes:
-        mean (np.ndarray): Mean of the distribution
-        covariance (np.ndarray): Covariance of the distribution
-        dimension (int): Dimensionality of the distribution
-        probabilities (np.ndarray): Probabilities associated to all the events in the sample space
-        sample_space (np.ndarray): Samples, i.e. possible outcomes of sampling the distribution
+        mean: Mean of the distribution
+        covariance: Covariance of the distribution
+        dimension: Dimensionality of the distribution
+        probabilities: Probabilities associated to all the events in the sample space
+        sample_space: Samples, i.e. possible outcomes of sampling the distribution
     """
 
-    def _compute_mean_and_covariance(self):
+    def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute the mean value and covariance of the mixture model.
 
         Returns:
-            mean (np.ndarray): Mean value of the distribution
-            covariance (np.ndarray): Covariance of the distribution
+            mean: Mean value of the distribution
+            covariance: Covariance of the distribution
         """
         mean = np.sum(
             self.sample_space
@@ -61,27 +61,30 @@ class Particle(Discrete):
         )
         return mean, covariance
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
 
         Returns:
-            np.ndarray: CDF value of the distribution
+            CDF value of the distribution
         """
         self.check_1d()
         closest_sample_event = np.searchsorted(self.sample_space.flatten(), x.flatten())
         return np.array([np.sum(self.probabilities[: (idx + 1)]) for idx in closest_sample_event])
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
-            num_draws (int, optional): Number of draws
+            num_draws: Number of draws
+
+        Returns:
+            Drawn samples
         """
         samples_per_event = np.random.multinomial(num_draws, self.probabilities)
-        samples = (
+        samples_tuple = (
             [
                 [self.sample_space[sample_event]] * repetitions
                 for sample_event, repetitions in enumerate(samples_per_event)
@@ -89,24 +92,30 @@ class Particle(Discrete):
             ],
         )
         samples = np.array(
-            list(itertools.chain.from_iterable(*samples)),
+            list(itertools.chain.from_iterable(*samples_tuple)),
         )
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability mass function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
+
+        Returns:
+            Log-PDF at positions
         """
         return np.log(self.pdf(x))
 
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability mass function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
+
+        Returns:
+            PDF at positions
         """
         index = np.array([(self.sample_space == xi).all(axis=1).nonzero()[0] for xi in x]).flatten()
 
@@ -117,14 +126,14 @@ class Particle(Discrete):
 
         return self.probabilities[index]
 
-    def ppf(self, quantiles):
-        """Percent point function (inverse of cdf-quantiles).
+    def ppf(self, quantiles: np.ndarray) -> np.ndarray:
+        """Percent point function (inverse of CDF-quantiles).
 
         Args:
-            quantiles (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
 
         Returns:
-            np.ndarray: Event samples corresponding to the quantiles
+            Event samples corresponding to the quantiles
         """
         self.check_1d()
         indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side="left")

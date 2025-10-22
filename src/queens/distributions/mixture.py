@@ -15,8 +15,10 @@
 """Mixture distribution."""
 
 import logging
+from typing import Iterable
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.special import logsumexp
 
 from queens.distributions._distribution import Continuous
@@ -29,57 +31,60 @@ class Mixture(Continuous):
     """Mixture models."""
 
     @log_init_args
-    def __init__(self, weights, component_distributions):
+    def __init__(self, weights: ArrayLike, component_distributions: Iterable[Continuous]) -> None:
         """Initialize mixture model.
 
         Args:
-            weights (np.ndarray): weights of the mixtures
-            component_distributions (list): component distributions of the mixture
+            weights: Weights of the mixtures
+            component_distributions: Component distributions of the mixture
         """
-        if len(component_distributions) != len(weights):
+        self.weights = np.array(weights)
+        self.component_distributions = list(component_distributions)
+        self.number_of_components = len(self.weights)
+
+        if len(self.component_distributions) != len(self.weights):
             raise ValueError(
-                f"The number of weights {len(weights)} does not match the number of distributions"
-                f" {len(component_distributions)}"
+                f"The number of weights {len(self.weights)} does not match the number of "
+                f"distributions {len(self.component_distributions)}"
             )
 
-        weights = np.array(weights)
-        super().check_positivity(weights=weights)
+        super().check_positivity(weights=self.weights)
 
-        if np.sum(weights) != 1:
+        if np.sum(self.weights) != 1:
             _logger.info("Weights do not sum up to one, they are going to be normalized.")
-            weights /= np.sum(weights)
+            self.weights /= np.sum(self.weights)
 
-        self.component_distributions = list(component_distributions)
-        self.weights = weights
-        self.number_of_components = len(weights)
-
-        if len({d.dimension for d in component_distributions}) != 1:
+        if len({d.dimension for d in self.component_distributions}) != 1:
             raise ValueError("Dimensions of the component distributions do not match")
 
-        mean, covariance = self._compute_mean_and_covariance(weights, component_distributions)
-        super().__init__(mean, covariance, component_distributions[0].dimension)
+        mean, covariance = self._compute_mean_and_covariance(
+            self.weights, self.component_distributions
+        )
+        super().__init__(mean, covariance, self.component_distributions[0].dimension)
 
     @staticmethod
-    def _compute_mean_and_covariance(weights, component_distributions):
+    def _compute_mean_and_covariance(
+        weights: np.ndarray, component_distributions: list[Continuous]
+    ) -> tuple[np.ndarray, np.ndarray]:
         """Compute the mean value and covariance of the mixture model.
 
         Args:
-            weights (np.ndarray): Weights of the mixture
-            component_distributions (obj): Components of the mixture
+            weights: Weights of the mixture
+            component_distributions: Components of the mixture
 
         Returns:
-            mean (np.ndarray): mean value of the mixture
-            covariance (np.ndarray): covariance of the mixture
+            Mean value of the mixture
+            Covariance of the mixture
         """
-        mean = 0
-        covariance = 0
+        mean = np.zeros_like(component_distributions[0].mean, dtype=float)
+        covariance = np.zeros_like(component_distributions[0].covariance, dtype=float)
         for weight, component in zip(weights, component_distributions, strict=True):
             mean += weight * component.mean
             covariance += weight * (component.covariance + np.outer(component.mean, component.mean))
         covariance -= np.outer(mean, mean)
         return mean, covariance
 
-    def draw(self, num_draws=1):
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw *num_draw* samples from the variational distribution.
 
         Uses a two step process:
@@ -87,10 +92,10 @@ class Mixture(Continuous):
             2. Sample from the selected component
 
         Args:
-            num_draws (int): Number of samples to draw
+            num_draws: Number of samples to draw
 
         Returns:
-            samples (np.ndarray): Row wise samples of the variational distribution
+            Row-wise samples of the variational distribution
         """
         components = np.random.multinomial(num_draws, self.weights)
         samples = []
@@ -106,25 +111,28 @@ class Mixture(Continuous):
 
         return samples
 
-    def cdf(self, x):
+    def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
         Args:
-            x (np.ndarray): Positions at which the cdf is evaluated
+            x: Positions at which the CDF is evaluated
 
         Returns:
-            np.ndarray: CDF of the mixture model
+            CDF of the mixture model
         """
-        cdf = 0
+        cdf = np.zeros_like(self.component_distributions[0].cdf(x), dtype=float)
         for weights, component in zip(self.weights, self.component_distributions, strict=True):
             cdf += weights * component.cdf(x)
         return cdf
 
-    def logpdf(self, x):
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the log pdf is evaluated
+            x: Positions at which the log-PDF is evaluated
+
+        Returns:
+            Log-PDF at positions
         """
         log_weights = np.log(self.weights)
         weighted_logpdf = []
@@ -135,19 +143,25 @@ class Mixture(Continuous):
 
         return logpdf
 
-    def pdf(self, x):
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
         Args:
-            x (np.ndarray): Positions at which the pdf is evaluated
+            x: Positions at which the PDF is evaluated
+
+        Returns:
+            PDF at positions
         """
         return np.exp(self.logpdf(x))
 
-    def grad_logpdf(self, x):
-        """Gradient of the log pdf with respect to *x*.
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF with respect to *x*.
 
         Args:
-            x (np.ndarray): Positions at which the gradient of log pdf is evaluated
+            x: Positions at which the gradient of log-PDF is evaluated
+
+        Returns:
+            Gradient of the log-PDF evaluated at positions
         """
         responsibilities = self.responsibilities(x)
 
@@ -159,15 +173,15 @@ class Mixture(Continuous):
 
         return np.array(grad_logpdf).reshape(len(x), -1)
 
-    def ppf(self, _):
-        """Percent point function (inverse of cdf — quantiles).
+    def ppf(self, quantiles: np.ndarray) -> np.ndarray:
+        """Percent point function (inverse of CDF — quantiles).
 
         Args:
-            q (np.ndarray): Quantiles at which the ppf is evaluated
+            quantiles: Quantiles at which the PPF is evaluated
         """
         raise NotImplementedError("PPF not available for mixture models.")
 
-    def responsibilities(self, x):
+    def responsibilities(self, x: np.ndarray) -> np.ndarray:
         r"""Compute the responsibilities.
 
         The responsibilities are defined as [1]:
@@ -177,10 +191,10 @@ class Mixture(Continuous):
         [1]: Bishop, C. M. (2006). Pattern recognition and machine learning. Springer.
 
         Args:
-            x (np.ndarray): Positions at which the responsibilities are evaluated
+            x: Positions at which the responsibilities are evaluated
 
         Returns:
-            np.ndarray: responsibilities (number of samples x number of component)
+            Responsibilities (number of samples x number of component)
         """
         log_weights = np.log(self.weights)
         inv_log_responsibility = []
@@ -201,11 +215,11 @@ class Mixture(Continuous):
         )
         return np.exp(inv_log_responsibility).T
 
-    def export_dict(self):
+    def export_dict(self) -> dict:
         """Create a dict of the distribution.
 
         Returns:
-            export_dict (dict): Dict containing distribution information
+            Dictionary containing distribution information
         """
         dictionary = super().export_dict()
         dictionary.pop("component_distributions")
