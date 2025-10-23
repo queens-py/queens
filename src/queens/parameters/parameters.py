@@ -14,18 +14,39 @@
 #
 """Parameters."""
 
+from __future__ import annotations
+
 import logging
+from typing import Any, Protocol, runtime_checkable
 
 import numpy as np
 
-from queens.distributions._distribution import Continuous, Discrete
+from queens.distributions import Continuous, Discrete
 from queens.parameters.random_fields._random_field import RandomField
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
 
 
-def _add_parameters_keys(parameters_keys, parameter_name, dimension):
+@runtime_checkable
+class HasPPF(Protocol):
+    """Dummy class to check if an object has a percent point function."""
+
+    def ppf(self, quantiles: np.ndarray) -> Any:
+        """Percent point function (inverse of CDF)."""
+
+
+@runtime_checkable
+class HasGradLogPDF(Protocol):
+    """Dummy class to check if an object has a gradient log-PDF function."""
+
+    def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
+        """Gradient of the log-PDF."""
+
+
+def _add_parameters_keys(
+    parameters_keys: list[str], parameter_name: str, dimension: int
+) -> list[str]:
     """Add parameter keys to existing parameter keys.
 
     If the dimension of a parameter is larger than one, a separate unique key is added for each
@@ -52,25 +73,28 @@ class Parameters:
     """Parameters class.
 
     Attributes:
-        dict (dict): Random variables and random fields stored in a dict.
-        parameters_keys (list): List of keys for all parameter members.
-        num_parameters (int): Number of (truncated) parameters.
-        random_field_flag (bool): Specifies if random fields are used.
-        names (list): Parameter names.
+        dict: Random variables and random fields stored in a dict.
+        parameters_keys: List of keys for all parameter members.
+        num_parameters: Number of (truncated) parameters.
+        random_field_flag: Specifies if random fields are used.
+        names: Parameter names.
     """
 
     @log_init_args
-    def __init__(self, **parameters):
+    def __init__(self, **parameters: Continuous | Discrete | RandomField) -> None:
         """Initialize Parameters object.
 
         Args:
-            **parameters (Distribution, RandomField): parameters as keyword arguments
+            **parameters: Parameters as keyword arguments
         """
-        joint_parameters_keys = []
+        joint_parameters_keys: list[str] = []
         joint_parameters_dim = 0
         random_field_flag = False
 
         for parameter_name, parameter_obj in parameters.items():
+            if parameter_obj.dimension is None:
+                raise ValueError(f"Dimension of the parameter {parameter_name} is not set.")
+
             if isinstance(parameter_obj, (Continuous, Discrete)):
                 joint_parameters_keys = _add_parameters_keys(
                     joint_parameters_keys, parameter_name, parameter_obj.dimension
@@ -91,71 +115,81 @@ class Parameters:
         self.random_field_flag = random_field_flag
         self.names = list(parameters.keys())
 
-    def draw_samples(self, num_samples):
+    def draw_samples(self, num_samples: int) -> np.ndarray:
         """Draw samples from all parameters.
 
         Args:
-            num_samples (int): The number of samples to draw for each parameter.
+            num_samples: The number of samples to draw for each parameter.
 
         Returns:
-            samples (np.ndarray): Drawn samples
+            Drawn samples
         """
         samples = np.zeros((num_samples, self.num_parameters))
         current_index = 0
         for parameter in self.to_list():
+            if parameter.dimension is None:
+                raise ValueError(f"Dimension of the parameter {parameter} is not set.")
+
             samples[:, current_index : current_index + parameter.dimension] = parameter.draw(
                 num_samples
             )
             current_index += parameter.dimension
         return samples
 
-    def joint_logpdf(self, samples):
-        """Evaluate the logpdf summed over all parameters.
+    def joint_logpdf(self, samples: np.ndarray) -> np.ndarray:
+        """Evaluate the log-PDF summed over all parameters.
 
         Args:
-            samples (np.ndarray): Samples for which to evaluate the joint logpdf. Each row
-                                  represents a sample and each column corresponds to a parameter
-                                  dimension.
+            samples: Samples for which to evaluate the joint log-PDF. Each row represents a sample
+                and each column corresponds to a parameter dimension.
 
         Returns:
-            logpdf (np.ndarray): logpdf summed over all parameters
+            Log-PDF summed over all parameters
         """
         samples = samples.reshape(-1, self.num_parameters)
-        logpdf = 0
+        logpdf = np.zeros_like(samples[:, 0], dtype=float)
         i = 0
         for parameter in self.to_list():
+            if parameter.dimension is None:
+                raise ValueError(f"Dimension of the parameter {parameter} is not set.")
+
             logpdf += parameter.logpdf(samples[:, i : i + parameter.dimension])
             i += parameter.dimension
         return logpdf
 
-    def grad_joint_logpdf(self, samples):
-        """Evaluate the gradient of the joint logpdf w.r.t. the samples.
+    def grad_joint_logpdf(self, samples: np.ndarray) -> np.ndarray:
+        """Evaluate the gradient of the joint log-PDF w.r.t. the samples.
 
         Args:
-            samples (np.ndarray): Samples for which to evaluate the gradient of the joint logpdf.
-                                  Each row represents a sample and each column corresponds to a
-                                  parameter dimension.
+            samples: Samples for which to evaluate the gradient of the joint log-PDF. Each row
+                represents a sample and each column corresponds to a parameter dimension.
 
         Returns:
-            grad_logpdf (np.ndarray): Gradient of the joint logpdf w.r.t. the samples
+            Gradient of the joint log-PDF w.r.t. the samples
         """
         samples = samples.reshape(-1, self.num_parameters)
         grad_logpdf = np.zeros(samples.shape)
         j = 0
         for parameter in self.to_list():
+            if parameter.dimension is None:
+                raise ValueError(f"Dimension of the parameter {parameter} is not set.")
+            if not isinstance(parameter, HasGradLogPDF):
+                raise AttributeError(f"Parameter {parameter} does not have a grad_logpdf function.")
+
             grad_logpdf[:, j : j + parameter.dimension] = parameter.grad_logpdf(
                 samples[:, j : j + parameter.dimension]
             )
             j += parameter.dimension
         return grad_logpdf
 
-    def latent_grad(self, upstream_gradient):
+    def latent_grad(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient of the rvs and rfs w.r.t. latent variables.
 
         Args:
-            upstream_gradient (np.array): Upstream gradient
+            upstream_gradient: Upstream gradient
+
         Returns:
-            gradient (np.ndarray): Gradient of the joint rvs/rfs w.r.t. the samples
+            Gradient of the joint rvs/rfs w.r.t. the samples
         """
         if self.random_field_flag:
             upstream_gradient = np.atleast_2d(upstream_gradient)
@@ -163,6 +197,9 @@ class Parameters:
             index_latent = 0
             index_field = 0
             for parameter in self.to_list():
+                if parameter.dimension is None:
+                    raise ValueError(f"Dimension of the parameter {parameter} is not set.")
+
                 if isinstance(parameter, RandomField):
                     gradient[:, index_latent : index_latent + parameter.dimension] = (
                         parameter.latent_gradient(
@@ -179,32 +216,37 @@ class Parameters:
             return gradient
         return upstream_gradient
 
-    def inverse_cdf_transform(self, samples):
+    def inverse_cdf_transform(self, samples: np.ndarray) -> np.ndarray:
         """Transform samples to unit interval.
 
         Args:
-            samples (np.ndarray): Samples that should be transformed.
+            samples: Samples that should be transformed.
 
         Returns:
-            transformed_samples (np.ndarray): Transformed samples
+            Transformed samples
         """
         samples = samples.reshape(-1, self.num_parameters)
         transformed_samples = np.zeros(samples.shape)
         for i, parameter in enumerate(self.to_list()):
             if parameter.dimension != 1:
                 raise ValueError("Only 1D Random variables can be transformed!")
+
+            if not isinstance(parameter, HasPPF):
+                raise AttributeError(
+                    f"Parameter {parameter} does not have a percent point function."
+                )
+
             transformed_samples[:, i] = parameter.ppf(samples[:, i])
         return transformed_samples
 
-    def sample_as_dict(self, sample):
+    def sample_as_dict(self, sample: np.ndarray) -> dict:
         """Return sample as a dict.
 
         Args:
-            sample (np.ndarray): A single sample
+            sample: A single sample
 
         Returns:
-            sample_dict (dict): Dictionary containing sample members and the corresponding parameter
-            keys
+            sample_dict: Dictionary containing sample members and the corresponding parameter keys
         """
         sample_dict = {}
         sample = sample.reshape(-1)
@@ -214,19 +256,22 @@ class Parameters:
             sample_dict[key] = sample[j]
         return sample_dict
 
-    def expand_random_field_realization(self, truncated_sample):
+    def expand_random_field_realization(self, truncated_sample: np.ndarray) -> np.ndarray:
         """Expand truncated representation of random fields.
 
         Args:
-            truncated_sample (np.ndarray): Truncated representation of sample
+            truncated_sample: Truncated representation of sample
 
         Returns:
-            sample_expanded (np.ndarray): Expanded representation of sample
+            sample_expanded: Expanded representation of sample
         """
         sample_expanded = np.zeros(len(self.parameters_keys))
         index_truncated = 0
         index_expanded = 0
         for parameter in self.to_list():
+            if parameter.dimension is None:
+                raise ValueError(f"Dimension of the parameter {parameter} is not set.")
+
             if isinstance(parameter, RandomField):
                 sample_expanded[index_expanded : index_expanded + parameter.dim_coords] = (
                     parameter.expanded_representation(
@@ -243,20 +288,20 @@ class Parameters:
                 index_truncated += parameter.dimension
         return sample_expanded
 
-    def to_list(self):
+    def to_list(self) -> list[Continuous | Discrete | RandomField]:
         """Return parameters as list.
 
         Returns:
-            parameter_list (list): List of parameters
+            List of parameters
         """
         parameter_list = list(self.dict.values())
         return parameter_list
 
-    def to_distribution_list(self):
+    def to_distribution_list(self) -> list[Continuous | Discrete]:
         """Return the distributions of the parameters as list.
 
         Returns:
-            distribution_list (list): List of distributions of parameters
+            List of distributions of parameters
         """
         distribution_list = []
         for parameter in self.to_list():

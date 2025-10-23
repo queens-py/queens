@@ -15,8 +15,15 @@
 """Piece-wise random fields class."""
 
 from copy import deepcopy
+from typing import TYPE_CHECKING
 
+from queens.parameters.parameters import HasGradLogPDF
 from queens.parameters.random_fields._random_field import RandomField
+
+if TYPE_CHECKING:
+    import numpy as np
+
+    from queens.distributions._distribution import Continuous, Discrete
 
 
 class PieceWise(RandomField):
@@ -27,71 +34,87 @@ class PieceWise(RandomField):
     random variables for each point in coords.
 
     Attributes:
-            distribution (obj): Dummy distribution with correct dimension
-            latent_1d_distribution: (obj): QUEENS distribution object of latent space variables
+            distribution: Dummy distribution with correct dimension
+            latent_1d_distribution: QUEENS distribution object of latent space variables
     """
 
-    def __init__(self, coords, latent_1d_distribution):
+    def __init__(self, coords: dict, latent_1d_distribution: "Continuous | Discrete"):
         """Initialize RF object.
 
         Args:
-            coords (dict): Dictionary with coordinates of discretized random field and the
-                           corresponding keys
-            latent_1d_distribution (Distribution): Latent 1d distribution that is used for all
-                                                   variables.
+            coords: Dictionary with coordinates of discretized random field and the corresponding
+                keys
+            latent_1d_distribution: Latent 1d distribution that is used for all variables.
         """
-        super().__init__(coords)
-        self.dimension = self.dim_coords
+        super().__init__(coords, deepcopy(latent_1d_distribution), len(coords["keys"]))
+
         self.latent_1d_distribution = latent_1d_distribution
-        self.distribution = deepcopy(latent_1d_distribution)
         self.distribution.dimension = self.dimension
 
-    def draw(self, num_samples):
+    def draw(self, num_samples: int) -> "np.ndarray":
         """Draw samples from the latent representation of the random field.
 
         Args:
             num_samples: Number of draws of latent random samples
         Returns:
-            samples (np.ndarray): Drawn samples
+            Drawn samples
         """
         samples = self.latent_1d_distribution.draw(num_samples * self.dimension).reshape(
             num_samples, self.dimension
         )
         return samples
 
-    def logpdf(self, samples):
-        """Get joint logpdf of latent space."""
+    def logpdf(self, samples: "np.ndarray") -> "np.ndarray":
+        """Get joint log-PDF of latent space.
+
+        Args:
+            samples: Latent space samples
+
+        Returns:
+            Log-PDF of the samples
+        """
         return (
             self.latent_1d_distribution.logpdf(samples.reshape(-1, 1))
             .reshape(samples.shape)
             .sum(axis=1)
         )
 
-    def grad_logpdf(self, samples):
-        """Get gradient of joint logpdf of latent space."""
+    def grad_logpdf(self, samples: "np.ndarray") -> "np.ndarray":
+        """Get gradient of joint log-PDF of latent space.
+
+        Args:
+            samples: Latent space samples
+
+        Returns:
+            Gradient of the log-PDF of the samples
+        """
+        if not isinstance(self.latent_1d_distribution, HasGradLogPDF):
+            raise TypeError(
+                "The distribution does not have a method for the gradient of the log-PDF."
+            )
+
         return self.latent_1d_distribution.grad_logpdf(samples.reshape(-1, 1)).reshape(
             samples.shape
         )
 
-    def expanded_representation(self, samples):
-        """Expand latent representation of sample.
+    def expanded_representation(self, samples: "np.ndarray") -> "np.ndarray":
+        """Expand latent representation of samples.
 
         Args:
-            samples (np.ndarray): latent representation of sample
+            samples: Latent representation of samples
 
         Returns:
-            samples (np.ndarray): Expanded representation of sample
+            Expanded representation of samples
         """
         return samples
 
-    def latent_gradient(self, upstream_gradient):
+    def latent_gradient(self, upstream_gradient: "np.ndarray") -> "np.ndarray":
         """Gradient of the field with respect to the latent parameters.
 
         Args:
-            upstream_gradient (np.ndarray): Gradient with respect to all coords of the field
+            upstream_gradient: Gradient with respect to all coords of the field
 
         Returns:
-            upstream_gradient (np.ndarray): Graident of the field with respect to the latent
-            parameters
+            Gradient of the field with respect to the latent parameters
         """
         return upstream_gradient

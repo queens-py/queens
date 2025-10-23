@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map
 
 if TYPE_CHECKING:
+    from queens.parameters.random_fields._random_field import RandomField
     from queens.parameters.random_fields.fourier import Fourier
     from queens.parameters.random_fields.karhunen_loeve import KarhunenLoeve
     from queens.parameters.random_fields.piece_wise import PieceWise
@@ -29,5 +30,5 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name):
+def __getattr__(name: str) -> "RandomField":
     return import_class_from_class_module_map(name, class_module_map, __name__)

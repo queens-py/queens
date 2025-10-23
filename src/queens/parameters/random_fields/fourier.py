@@ -14,69 +14,68 @@
 #
 """Fourier Random fields class."""
 
+from typing import TypeAlias
+
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from scipy.spatial.distance import pdist
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
+from queens.parameters.parameters import HasGradLogPDF
 from queens.parameters.random_fields._random_field import RandomField
+
+DimensionMethods: TypeAlias = (
+    type["DimensionMethods1D"] | type["DimensionMethods2D"] | type["DimensionMethods3D"]
+)
 
 
 class Fourier(RandomField):
     """FOURIER expansion of random fields class.
 
     Attributes:
-        mean (np.array): Mean vector at nodes
-        std (float): Hyperparameter for standard-deviation of random field
-        corr_length (float): Hyperparameter for the correlation length
-        variability (float): Explained variance by the fourier decomposition
-        trunc_threshold (int): Truncation threshold for Fourier series
-        basis_dimension (int) : Dimension of the complete Fourier basis up to the truncation
-                                threshold (not the latent space)
-        latent_index (np.array): Index array mapping latent space variables to covariance values
-        covariance_index (np.array): Array indexing the covariance values below the
-                                     truncation threshold
-        covariance (np.array): Fourier transformed covariance kernel
-        basis (np.array): Inverse cosine transformed fourier basis
-        coordinates (np.array): Vector of all coordinates in random field
-        field_dimension (int): Physical dimension of the random field
-        number_expansion_terms (int): Number of frequencies in all directions
-        dimension (int): Dimension of latent space
-        convex_hull_size (float): Eucledian distance between furthest apart coordinates in the field
+        mean: Mean vector at nodes
+        std: Hyperparameter for standard-deviation of random field
+        corr_length: Hyperparameter for the correlation length
+        variability: Explained variance by the fourier decomposition
+        trunc_threshold: Truncation threshold for Fourier series
+        basis_dimension: Dimension of the complete Fourier basis up to the truncation threshold
+            (not the latent space)
+        latent_index: Index array mapping latent space variables to covariance values
+        covariance_index: Array indexing the covariance values below the truncation threshold
+        covariance: Fourier transformed covariance kernel
+        basis: Inverse cosine transformed fourier basis
+        coordinates: Vector of all coordinates in random field
+        field_dimension: Physical dimension of the random field
+        number_expansion_terms: Number of frequencies in all directions
+        dimension: Dimension of latent space
+        convex_hull_size: Eucledian distance between furthest apart coordinates in the field
     """
 
     def __init__(
         self,
-        coords,
-        mean=0.0,
-        std=1.0,
-        corr_length=0.3,
-        variability=0.98,
-        trunc_threshold=64,
+        coords: dict,
+        mean: float | np.ndarray = 0.0,
+        std: float = 1.0,
+        corr_length: float = 0.3,
+        variability: float = 0.98,
+        trunc_threshold: int = 64,
     ):
         """Initialize Fourier object.
 
         Args:
-            coords (dict): Dictionary with coordinates of discretized random field and the
-                           corresponding keys
-            mean (np.array): Mean vector at nodes
-            std (float): Hyperparameter for standard-deviation of random field
-            corr_length (float): Hyperparameter for the correlation length
-            variability (float): Explained variance of by the eigen
-            trunc_threshold (int): Truncation threshold for Fourier series.
+            coords: Dictionary with coordinates of discretized random field and the corresponding
+                keys
+            mean: Mean vector at nodes
+            std: Hyperparameter for standard-deviation of random field
+            corr_length: Hyperparameter for the correlation length
+            variability: Explained variance of by the eigen
+            trunc_threshold: Truncation threshold for Fourier series.
         """
-        super().__init__(coords)
-        self.mean = mean
-        self.std = std
-        self.corr_length = corr_length
-        self.variability = variability
         self.trunc_threshold = trunc_threshold
+        coords = self._convert_coords_to_2d_array(coords)
+        self.field_dimension = coords["coords"].shape[1]
 
-        self.covariance = None
-        self.basis = None
-        self.coordinates = self.coords["coords"]
-
-        self.field_dimension = self.coordinates.shape[1]
+        dimension_methods_class: DimensionMethods
         if self.field_dimension == 1:
             dimension_methods_class = DimensionMethods1D
         elif self.field_dimension == 2:
@@ -85,6 +84,23 @@ class Fourier(RandomField):
             dimension_methods_class = DimensionMethods3D
         else:
             raise ValueError("Only 1D, 2D or 3D fields are supported by Fourier expansion")
+
+        self.number_expansion_terms = int(np.sqrt(self.trunc_threshold)) + 1
+        (
+            self.covariance_index,
+            self.latent_index,
+            self.basis_dimension,
+            dimension,
+        ) = dimension_methods_class.get_dim(self.trunc_threshold, self.number_expansion_terms)
+        distribution = MeanFieldNormal(mean=0, variance=1, dimension=dimension)
+
+        super().__init__(coords, distribution, dimension)
+
+        self.coordinates = self.coords["coords"]
+        self.mean = mean
+        self.std = std
+        self.corr_length = corr_length
+        self.variability = variability
 
         # find max length in coords
         if self.field_dimension == 1:
@@ -97,14 +113,6 @@ class Fourier(RandomField):
 
         if self.corr_length / self.convex_hull_size > 0.35:
             raise ValueError("Correlation length too large, not a good approximation.")
-
-        self.number_expansion_terms = int(np.sqrt(self.trunc_threshold)) + 1
-        (
-            self.covariance_index,
-            self.latent_index,
-            self.basis_dimension,
-            self.dimension,
-        ) = dimension_methods_class.get_dim(self.trunc_threshold, self.number_expansion_terms)
         self.covariance = dimension_methods_class.calculate_covariance(
             self.number_expansion_terms, self.corr_length, self.convex_hull_size
         )
@@ -118,68 +126,72 @@ class Fourier(RandomField):
             self.latent_index,
         )
 
-        self.distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
-
-    def draw(self, num_samples):
+    def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
 
         Args:
             num_samples: Number of draws of latent random samples
+
         Returns:
-            samples (np.ndarray): Drawn samples
+            Drawn samples
         """
         return self.distribution.draw(num_samples)
 
-    def logpdf(self, samples):
-        """Get joint logpdf of latent space.
+    def logpdf(self, samples: np.ndarray) -> np.ndarray:
+        """Get joint log-PDF of latent space.
 
         Args:
-            samples (np.array): Samples for evaluating the logpdf
+            samples: Samples for evaluating the log-PDF
 
         Returns:
-            logpdf (np.array): Logpdf of the samples
+            Log-PDF of the samples
         """
         logpdf = self.distribution.logpdf(samples)
         return logpdf
 
-    def grad_logpdf(self, samples):
-        """Get gradient of joint logpdf of latent space.
+    def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
+        """Get gradient of joint log-PDF of latent space.
 
         Args:
-            samples (np.array): Samples for evaluating the gradient of the logpdf
+            samples: Samples for evaluating the gradient of the log-PDF
 
         Returns:
-            gradient (np.array): Gradient of the logpdf
+            Gradient of the log-PDF
         """
+        if not isinstance(self.distribution, HasGradLogPDF):
+            raise AttributeError(
+                f"Distribution {self.distribution} does not have a grad_logpdf function."
+            )
+
         gradient = self.distribution.grad_logpdf(samples)
         return gradient
 
-    def expanded_representation(self, samples):
-        """Expand latent representation of sample.
+    def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
+        """Expand latent representation of samples.
 
         Args:
-            samples (np.ndarray): Latent representation of sample
+            samples: Latent representation of samples
 
         Returns:
-            sample_expanded (np.ndarray): Expanded representation of samples
+            Expanded representation of samples
         """
         sample_expanded = self.mean + self.std * np.matmul(samples, self.basis.T)
         return sample_expanded
 
-    def latent_gradient(self, upstream_gradient):
+    def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient with respect to the latent parameters.
 
         Args:
-            upstream_gradient (np.ndarray): Gradient with respect to all coords of the field
+            upstream_gradient: Gradient with respect to all coords of the field
 
         Returns:
-            latent_grad (np.ndarray): Gradient of the realization of the random field with
-                                      respect to the latent space variables
+            Gradient of the realization of the random field with respect to the latent space
+                variables
         """
         latent_grad = self.std * np.matmul(upstream_gradient, self.basis)
         return latent_grad
 
-    def check_convergence(self):
+    def check_convergence(self) -> None:
         """Check if truncated terms converge to variability."""
         if np.sum(self.covariance[self.covariance_index]) < self.variability:
             raise ValueError("Variability not covered, increase number of expansion terms")
@@ -189,21 +201,20 @@ class DimensionMethods1D:
     """1D FOURIER expansion helper methods."""
 
     @staticmethod
-    def get_dim(trunc_threshold, number_expansion_terms):
+    def get_dim(
+        trunc_threshold: int, number_expansion_terms: int
+    ) -> tuple[np.ndarray, np.ndarray, int, int]:
         """Calculate dimension of latent space.
 
         Args:
-            trunc_threshold (int): Truncation threshold
-            number_expansion_terms (int): Number of frequencies in the expansion
+            trunc_threshold: Truncation threshold
+            number_expansion_terms: Number of frequencies in the expansion
 
         Returns:
-            covariance_index (np.array): Array indexing the covariance values below the truncation
-                                         limit
-            latent_index (np.array): Array indexing the basis terms corresponding to valid
-                                     covariance values
-            basis_dimension (int): Dimension of the complete Fourier basis up to the truncation
-                                   threshold
-            dimension (int): Dimension of the latent space
+            Array indexing the covariance values below the truncation limit
+            Array indexing the basis terms corresponding to valid covariance values
+            Dimension of the complete Fourier basis up to the truncation threshold
+            Dimension of the latent space
         """
         basis_dimension = int(2 * number_expansion_terms)
         wave_numbers = (
@@ -218,19 +229,21 @@ class DimensionMethods1D:
         return covariance_index, latent_index, basis_dimension, dimension
 
     @staticmethod
-    def calculate_covariance(number_expansion_terms, corr_length, convex_hull_size):
+    def calculate_covariance(
+        number_expansion_terms: int, corr_length: float, convex_hull_size: float
+    ) -> np.ndarray:
         """Calculate discrete fourier transform of the covariance kernel.
 
         Based on the kernel description of the random field, build its
         covariance matrix using the external geometry and coordinates.
 
         Args:
-            number_expansion_terms (int): Number of frequencies
-            corr_length (float): Typical length in the field
-            convex_hull_size  (float): Max distance on the grid
+            number_expansion_terms: Number of frequencies
+            corr_length: Typical length in the field
+            convex_hull_size: Max distance on the grid
 
         Returns:
-            covariance (np.array): Cosine transform of covariance matrix
+            Cosine transform of covariance matrix
         """
         c_k = np.linspace(0, number_expansion_terms - 1, number_expansion_terms)
         c_k = (
@@ -245,21 +258,25 @@ class DimensionMethods1D:
 
     @staticmethod
     def calculate_basis(
-        coordinates, basis_dimension, number_expansion_terms, convex_hull_size, covariance, index
-    ):
+        coordinates: np.ndarray,
+        basis_dimension: int,
+        number_expansion_terms: int,
+        convex_hull_size: float,
+        covariance: np.ndarray,
+        index: np.ndarray,
+    ) -> np.ndarray:
         """Calculate the fourier basis.
 
         Args:
-            coordinates (np.array): Vector with coordinates of field
-            basis_dimension (int): Dimension of the complete Fourier basis (not the latent space)
-            number_expansion_terms (int): Number of frequencies
-            convex_hull_size  (float): Maximum length on the mesh
-            covariance (np.array): Transform of covariance matrix
-            index (np.array): Array indexing valid basis terms in accordance to the truncation
-                              threshold
+            coordinates: Vector with coordinates of field
+            basis_dimension: Dimension of the complete Fourier basis (not the latent space)
+            number_expansion_terms: Number of frequencies
+            convex_hull_size: Maximum length on the mesh
+            covariance: Transform of covariance matrix
+            index: Array indexing valid basis terms in accordance to the truncation threshold
 
         Returns:
-            basis (np.array): Transformed and truncated fourier basis
+            Transformed and truncated fourier basis
         """
         basis = np.zeros(shape=(coordinates.shape[0], basis_dimension))
         k = (
@@ -280,21 +297,20 @@ class DimensionMethods2D:
     """2D FOURIER expansion helper methods."""
 
     @staticmethod
-    def get_dim(trunc_threshold, number_expansion_terms):
+    def get_dim(
+        trunc_threshold: int, number_expansion_terms: int
+    ) -> tuple[np.ndarray, np.ndarray, int, int]:
         """Calculate dimension of latent space.
 
         Args:
-            trunc_threshold (int): Truncation threshold
-            number_expansion_terms (int): Number of frequencies in the expansion
+            trunc_threshold: Truncation threshold
+            number_expansion_terms: Number of frequencies in the expansion
 
         Returns:
-            covariance_index (np.array): Array indexing the covariance values below the truncation
-                                         limit
-            latent_index (np.array): Array indexing the basis terms corresponding to valid
-                                     covariance values
-            basis_dimension (int): Dimension of the complete Fourier basis up to the truncation
-                                   threshold
-            dimension (int): Dimension of the latent space
+            Array indexing the covariance values below the truncation limit
+            Array indexing the basis terms corresponding to valid covariance values
+            Dimension of the complete Fourier basis up to the truncation threshold
+            Dimension of the latent space
         """
         basis_dimension = int(4 * (number_expansion_terms) ** 2)
         wave_numbers = (
@@ -311,19 +327,21 @@ class DimensionMethods2D:
         return covariance_index, latent_index, basis_dimension, dimension
 
     @staticmethod
-    def calculate_covariance(number_expansion_terms, corr_length, convex_hull_size):
+    def calculate_covariance(
+        number_expansion_terms: int, corr_length: float, convex_hull_size: float
+    ) -> np.ndarray:
         """Calculate discrete fourier transform of the covariance kernel.
 
         Based on the kernel description of the random field, build its
         covariance matrix using the external geometry and coordinates.
 
         Args:
-            number_expansion_terms (int): Number of frequencies
-            corr_length (float): Typical length in the field
-            convex_hull_size  (float): Max distance on the grid
+            number_expansion_terms: Number of frequencies
+            corr_length: Typical length in the field
+            convex_hull_size: Max distance on the grid
 
         Returns:
-            covariance (np.array): Cosine transform of covariance matrix
+            Cosine transform of covariance matrix
         """
         c_k = np.linspace(0, number_expansion_terms - 1, number_expansion_terms)
         c_k = (
@@ -339,21 +357,25 @@ class DimensionMethods2D:
 
     @staticmethod
     def calculate_basis(
-        coordinates, basis_dimension, number_expansion_terms, convex_hull_size, covariance, index
-    ):
+        coordinates: np.ndarray,
+        basis_dimension: int,
+        number_expansion_terms: int,
+        convex_hull_size: float,
+        covariance: np.ndarray,
+        index: np.ndarray,
+    ) -> np.ndarray:
         """Calculate the fourier basis.
 
         Args:
-            coordinates (np.array): Vector with coordinates of field
-            basis_dimension (int): Dimension of the complete Fourier basis (not the latent space)
-            number_expansion_terms (int): Number of frequencies
-            convex_hull_size  (float): Maximum length on the mesh
-            covariance (np.array): Transform of covariance matrix
-            index (np.array): Array indexing valid basis terms in accordance to the truncation
-                              threshold
+            coordinates: Vector with coordinates of field
+            basis_dimension: Dimension of the complete Fourier basis (not the latent space)
+            number_expansion_terms: Number of frequencies
+            convex_hull_size: Maximum length on the mesh
+            covariance: Transform of covariance matrix
+            index: Array indexing valid basis terms in accordance to the truncation threshold
 
         Returns:
-            basis (np.array): Transformed and truncated fourier basis
+            Transformed and truncated fourier basis
         """
         basis = np.zeros(shape=(coordinates.shape[0], basis_dimension))
         k = (
@@ -393,21 +415,20 @@ class DimensionMethods3D:
     """3D FOURIER expansion helper methods."""
 
     @staticmethod
-    def get_dim(trunc_threshold, number_expansion_terms):
+    def get_dim(
+        trunc_threshold: int, number_expansion_terms: int
+    ) -> tuple[np.ndarray, np.ndarray, int, int]:
         """Calculate dimension of latent space.
 
         Args:
-            trunc_threshold (int): Truncation threshold
-            number_expansion_terms (int): Number of frequencies in the expansion
+            trunc_threshold: Truncation threshold
+            number_expansion_terms: Number of frequencies in the expansion
 
         Returns:
-            covariance_index (np.array): Array indexing the covariance values below the truncation
-                                         limit
-            latent_index (np.array): Array indexing the basis terms corresponding to valid
-                                     covariance values
-            basis_dimension (int): Dimension of the complete Fourier basis up to the truncation
-                                   threshold
-            dimension (int): Dimension of the latent space
+            Array indexing the covariance values below the truncation limit
+            Array indexing the basis terms corresponding to valid covariance values
+            Dimension of the complete Fourier basis up to the truncation threshold
+            Dimension of the latent space
         """
         basis_dimension = int(8 * (number_expansion_terms) ** 3)
         wave_numbers = (
@@ -427,19 +448,21 @@ class DimensionMethods3D:
         return covarance_index, latent_index, basis_dimension, dimension
 
     @staticmethod
-    def calculate_covariance(number_expansion_terms, corr_length, convex_hull_size):
+    def calculate_covariance(
+        number_expansion_terms: int, corr_length: float, convex_hull_size: float
+    ) -> np.ndarray:
         """Calculate discrete fourier transform of the covariance kernel.
 
         Based on the kernel description of the random field, build its
         covariance matrix using the external geometry and coordinates.
 
         Args:
-            number_expansion_terms (int): Number of frequencies
-            corr_length (float): Typical length in the field
-            convex_hull_size  (float): Max distance on the grid
+            number_expansion_terms: Number of frequencies
+            corr_length: Typical length in the field
+            convex_hull_size: Max distance on the grid
 
         Returns:
-            covariance (np.array): Cosine transform of covariance matrix
+            Cosine transform of covariance matrix
         """
         c_k = np.linspace(0, number_expansion_terms - 1, number_expansion_terms)
         c_k = (
@@ -456,21 +479,25 @@ class DimensionMethods3D:
 
     @staticmethod
     def calculate_basis(
-        coordinates, basis_dimension, number_expansion_terms, convex_hull_size, covariance, index
-    ):
+        coordinates: np.ndarray,
+        basis_dimension: int,
+        number_expansion_terms: int,
+        convex_hull_size: float,
+        covariance: np.ndarray,
+        index: np.ndarray,
+    ) -> np.ndarray:
         """Calculate the fourier basis.
 
         Args:
-            coordinates (np.array): Vector with coordinates of field
-            basis_dimension (int): Dimension of the complete Fourier basis (not the latent space)
-            number_expansion_terms (int): Number of frequencies
-            convex_hull_size  (float): Maximum length on the mesh
-            covariance (np.array): Transform of covariance matrix
-            index (np.array): Array indexing valid basis terms in accordance to the truncation
-                              threshold
+            coordinates: Vector with coordinates of field
+            basis_dimension: Dimension of the complete Fourier basis (not the latent space)
+            number_expansion_terms: Number of frequencies
+            convex_hull_size: Maximum length on the mesh
+            covariance: Transform of covariance matrix
+            index: Array indexing valid basis terms in accordance to the truncation threshold
 
         Returns:
-            basis (np.array): Transformed and truncated fourier basis
+            Transformed and truncated fourier basis
         """
         basis = np.zeros(shape=(coordinates.shape[0], basis_dimension))
         k = (
