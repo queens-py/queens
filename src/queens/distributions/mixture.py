@@ -120,7 +120,9 @@ class Mixture(Continuous):
         Returns:
             CDF of the mixture model
         """
-        cdf = np.zeros_like(self.component_distributions[0].cdf(x), dtype=float)
+        cdf = np.zeros(
+            x.reshape(-1, self.component_distributions[0].dimension).shape[0], dtype=float
+        )
         for weights, component in zip(self.weights, self.component_distributions, strict=True):
             cdf += weights * component.cdf(x)
         return cdf
