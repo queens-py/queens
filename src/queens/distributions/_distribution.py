@@ -189,7 +189,7 @@ class Discrete(Distribution):
         mean: Mean of the distribution.
         covariance: Covariance of the distribution.
         dimension: Dimensionality of the distribution.
-        probabilities: Probabilities associated to all the events in the sample space
+        probabilities: Probabilities associated with all the events in the sample space
         sample_space: Samples, i.e. possible outcomes of sampling the distribution
     """
 
@@ -202,7 +202,7 @@ class Discrete(Distribution):
         """Initialize the discrete distribution.
 
         Args:
-            probabilities: Probabilities associated to all the events in the sample space
+            probabilities: Probabilities associated with all the events in the sample space
             sample_space: Samples, i.e. possible outcomes of sampling the distribution
             dimension: Dimension of a sample event
         """
