@@ -57,8 +57,7 @@ class Local(Dask):
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
             num_jobs=num_jobs,
-            num_procs=1,  # keep this hardcoded to 1,
-            # the number of threads for the mpi run is handled by the driver.
+            num_procs=num_procs,
             restart_workers=restart_workers,
             verbose=verbose,
         )
@@ -73,7 +72,8 @@ class Local(Dask):
         cluster = LocalCluster(
             n_workers=self.num_jobs,
             processes=True,
-            threads_per_worker=self.num_procs,
+            threads_per_worker=1,  # keep this hardcoded to 1,
+            # the number of threads for the mpi run is handled by the driver.
             silence_logs=False,
         )
         client = Client(cluster)
