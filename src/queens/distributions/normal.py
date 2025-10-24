@@ -84,7 +84,7 @@ class Normal(Continuous):
             x: Positions at which the CDF is evaluated
 
         Returns:
-           CDF at positions
+            CDF at positions
         """
         cdf = scipy.stats.multivariate_normal.cdf(
             x.reshape(-1, self.dimension), mean=self.mean, cov=self.covariance
