@@ -22,7 +22,7 @@ from scipy.linalg import cho_solve
 import queens.models.surrogates.utils.kernel_jitted as utils_jitted
 from queens.models.surrogates._surrogate import Surrogate
 from queens.utils.logger_settings import log_init_args
-from queens.utils.random_process_scaler import VALID_SCALER
+from queens.utils.scaling import VALID_SCALER
 from queens.utils.valid_options import get_option
 from queens.visualization.gnuplot_vis import gnuplot_gp_convergence
 

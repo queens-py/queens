@@ -24,7 +24,7 @@ import tf_keras as keras
 from queens.models.surrogates._surrogate import Surrogate
 from queens.utils.configure_tensorflow import configure_keras, configure_tensorflow
 from queens.utils.logger_settings import log_init_args
-from queens.utils.random_process_scaler import VALID_SCALER
+from queens.utils.scaling import VALID_SCALER
 from queens.utils.valid_options import get_option
 from queens.visualization.gaussian_neural_network_vis import plot_loss
 
