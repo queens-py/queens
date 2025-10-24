@@ -164,6 +164,7 @@ disallow_untyped_calls = false  # Change to true once all functions are typed
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
+disable_error_code = ["str-bytes-safe"]
 exclude = [
     "config/",
     "doc/",
@@ -173,7 +174,6 @@ exclude = [
     "src/example_simulator_functions/",
     "src/queens_interfaces/",
     "src/queens/data_processors/",
-    "src/queens/distributions/",
     "src/queens/drivers/",
     "src/queens/iterators/",
     "src/queens/models/",

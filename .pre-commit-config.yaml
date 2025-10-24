@@ -101,7 +101,7 @@ repos:
           ^test_utils/|
           ^src/example_simulator_functions/|
           ^src/queens_interfaces/|
-          ^src/queens/(data_processors|distributions|drivers|iterators|models|parameters)/|
+          ^src/queens/(data_processors|drivers|iterators|models|parameters)/|
           ^src/queens/(schedulers|stochastic_optimizers|variational_distributions|visualization)/|
           ^src/queens/main.py|
           ^src/queens/global_settings.py
