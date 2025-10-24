@@ -93,7 +93,7 @@ class Categorical(Distribution):
             x: Positions at which the log-PMF is evaluated
 
         Returns:
-            Log PMF at positions
+            Log-PMF at positions
         """
         return np.log(self.pdf(x))
 
