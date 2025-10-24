@@ -23,21 +23,11 @@ import numpy as np
 class Scaler(metaclass=abc.ABCMeta):
     """Base class for general scaling classes.
 
-    The purpose of these classes is the scaling of training data.
-
-    Attributes:
-        mean: Mean-values of the data-matrix (column-wise).
-        standard_deviation: Standard deviation of the data-matrix (per column).
+    The purpose of these classes is the scaling of data.
     """
 
     def __init__(self) -> None:
-        """Initialise scaler.
-
-        Returns:
-            Instance of the Scaler Class (obj)
-        """
-        self.mean: np.ndarray | None = None
-        self.standard_deviation: np.ndarray | None = None
+        """Initialize scaler."""
 
     @abc.abstractmethod
     def fit(self, x_mat: np.ndarray) -> None:
@@ -78,7 +68,17 @@ class StandardScaler(Scaler):
     In case a stochastic process is trained on the scaled data, inverse
     rescaling is implemented to recover the correct mean and standard
     deviation prediction for the posterior process.
+
+    Attributes:
+        mean: Mean-values of the data-matrix (column-wise).
+        standard_deviation: Standard deviation of the data-matrix (per column).
     """
+
+    def __init__(self) -> None:
+        """Initialize standard scaler."""
+        super().__init__()
+        self.mean: np.ndarray | None = None
+        self.standard_deviation: np.ndarray | None = None
 
     def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
