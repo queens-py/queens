@@ -19,7 +19,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Callable
+from typing import Any, Callable, ParamSpec
 
 from queens.utils.printing import get_str_table
 
@@ -242,7 +242,10 @@ def reset_logging() -> None:
                 logger.removeHandler(handler)
 
 
-def log_init_args(method: Callable) -> Callable:
+P = ParamSpec("P")
+
+
+def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
     """Log arguments of __init__ method.
 
     Args:
@@ -252,7 +255,7 @@ def log_init_args(method: Callable) -> Callable:
     """
 
     @functools.wraps(method)
-    def wrapper(*args: Any, **kwargs: Any) -> None:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> None:
         signature = inspect.signature(method)
         default_kwargs = {
             k: v.default
