@@ -164,27 +164,14 @@ disallow_untyped_calls = false  # Change to true once all functions are typed
 disallow_untyped_decorators = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
-exclude = [
-    "config/",
-    "doc/",
-    "tests/",
-    # Delete the following line by line once type hinting has been introduced in the respective module
-    "test_utils/",
-    "src/example_simulator_functions/",
-    "src/queens_interfaces/",
-    "src/queens/data_processors/",
-    "src/queens/distributions/",
-    "src/queens/drivers/",
-    "src/queens/iterators/",
-    "src/queens/models/",
-    "src/queens/parameters/",
-    "src/queens/schedulers/",
-    "src/queens/stochastic_optimizers/",
-    "src/queens/variational_distributions/",
-    "src/queens/visualization/",
-    "src/queens/main.py",
-    "src/queens/global_settings.py",
-]
+# Delete modules once type hinting has been introduced there
+exclude = '''(?x)(
+    ^(.gitlab|.github|config|doc|tests|test_utils)/|
+    ^src/(example_simulator_functions|queens_interfaces)/|
+    ^src/queens/(data_processors|distributions|drivers|iterators|models|parameters)/|
+    ^src/queens/(schedulers|stochastic_optimizers|variational_distributions|visualization)/|
+    ^src/queens/(main.py|global_settings.py)
+).*$'''
 [[tool.mypy.overrides]]
 module = ["yaml"]
 follow_untyped_imports = true
