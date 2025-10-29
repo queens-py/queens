@@ -6,6 +6,7 @@ repos:
       # Run the linter.
       # Needs to placed before black, isort, and other formatters
       - id: ruff
+        types_or: [ python, pyi ]
         args: [--fix]
   - repo: local
     hooks:
