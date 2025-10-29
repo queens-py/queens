@@ -14,8 +14,6 @@
 #
 """Beta Distribution."""
 
-from typing import Any
-
 import numpy as np
 import scipy.stats
 
@@ -103,7 +101,7 @@ class Beta(Continuous):
         logpdf = self.scipy_beta.logpdf(x).reshape(-1)
         return logpdf
 
-    def grad_logpdf(self, x: np.ndarray) -> Any:
+    def grad_logpdf(self, x: np.ndarray) -> None:
         """Gradient of the log-PDF with respect to *x*.
 
         Args:

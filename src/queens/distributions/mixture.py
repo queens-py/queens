@@ -15,7 +15,7 @@
 """Mixture distribution."""
 
 import logging
-from typing import Iterable
+from typing import Sequence
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -31,7 +31,7 @@ class Mixture(Continuous):
     """Mixture models."""
 
     @log_init_args
-    def __init__(self, weights: ArrayLike, component_distributions: Iterable[Continuous]) -> None:
+    def __init__(self, weights: ArrayLike, component_distributions: Sequence[Continuous]) -> None:
         """Initialize mixture model.
 
         Args:
@@ -98,11 +98,16 @@ class Mixture(Continuous):
             Row-wise samples of the variational distribution
         """
         components = np.random.multinomial(num_draws, self.weights)
-        samples = []
+        samples_lst = []
         for component, num_draw_component in enumerate(components):
             sample = self.component_distributions[component].draw(num_draw_component)
-            samples.append(sample)
-        samples = np.concatenate(samples, axis=0)
+            if sample is None:
+                raise ValueError(
+                    f"Draw method of distribution {self.component_distributions[component]} "
+                    f"returned None."
+                )
+            samples_lst.append(sample)
+        samples: np.ndarray = np.concatenate(samples_lst, axis=0)
 
         # Strictly speaking this is not necessary, however, without it, if you only select x
         # samples, so `samples[:x]`, most samples would originate from the first components and this

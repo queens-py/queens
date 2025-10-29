@@ -16,7 +16,7 @@
 
 from typing import Any
 
-from numpy import array
+import numpy as np
 
 from queens.distributions._distribution import Continuous
 from queens.utils.logger_settings import log_init_args
@@ -36,7 +36,7 @@ class FreeVariable(Continuous):
         Args:
             dimension: Dimensionality of the variable
         """
-        super().__init__(mean=array([]), covariance=array([]), dimension=dimension)
+        super().__init__(mean=np.array([]), covariance=np.array([]), dimension=dimension)
 
     def cdf(self, _: Any) -> None:
         """Cumulative distribution function."""

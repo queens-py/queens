@@ -18,7 +18,6 @@ import abc
 import logging
 from abc import abstractmethod
 from collections.abc import Sequence, Sized
-from typing import Any
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -32,7 +31,7 @@ class Distribution(abc.ABC):
     """Base class for probability distributions."""
 
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> Any:
+    def draw(self, num_draws: int = 1) -> np.ndarray | None:
         """Draw samples.
 
         Args:
@@ -40,7 +39,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> Any:
+    def logpdf(self, x: np.ndarray) -> np.ndarray | None:
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified the PMF is also accessed via the PDF.
@@ -50,7 +49,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def pdf(self, x: np.ndarray) -> Any:
+    def pdf(self, x: np.ndarray) -> np.ndarray | None:
         """Probability density function.
 
         Args:
@@ -111,7 +110,7 @@ class Continuous(Distribution):
         self.dimension = dimension
 
     @abstractmethod
-    def cdf(self, x: np.ndarray) -> Any:
+    def cdf(self, x: np.ndarray) -> np.ndarray | None:
         """Cumulative distribution function.
 
         Args:
@@ -119,7 +118,7 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> Any:
+    def draw(self, num_draws: int = 1) -> np.ndarray | None:
         """Draw samples.
 
         Args:
@@ -127,7 +126,7 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> Any:
+    def logpdf(self, x: np.ndarray) -> np.ndarray | None:
         """Log of the probability density function.
 
         Args:
@@ -135,14 +134,14 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def grad_logpdf(self, x: np.ndarray) -> Any:
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray | None:
         """Gradient of the log-PDF with respect to *x*.
 
         Args:
             x: Positions at which the gradient of log-PDF is evaluated
         """
 
-    def pdf(self, x: np.ndarray) -> Any:
+    def pdf(self, x: np.ndarray) -> np.ndarray | None:
         """Probability density function.
 
         Args:
@@ -151,11 +150,12 @@ class Continuous(Distribution):
         Returns:
             PDF at positions
         """
-        pdf = np.exp(self.logpdf(x))
+        logpdf = self.logpdf(x)
+        pdf = np.exp(logpdf) if logpdf is not None else None
         return pdf
 
     @abstractmethod
-    def ppf(self, quantiles: np.ndarray) -> Any:
+    def ppf(self, quantiles: np.ndarray) -> np.ndarray | None:
         """Percent point function (inverse of CDF — quantiles).
 
         Args:
@@ -243,7 +243,7 @@ class Discrete(Distribution):
         self.mean, self.covariance = self._compute_mean_and_covariance()
 
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> Any:
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
@@ -251,7 +251,7 @@ class Discrete(Distribution):
         """
 
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> Any:
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified, the PMF is also accessed via the PDF.
@@ -261,7 +261,7 @@ class Discrete(Distribution):
         """
 
     @abstractmethod
-    def pdf(self, x: np.ndarray) -> Any:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
         Args:
@@ -269,7 +269,7 @@ class Discrete(Distribution):
         """
 
     @abstractmethod
-    def cdf(self, x: np.ndarray) -> Any:
+    def cdf(self, x: np.ndarray) -> np.ndarray | None:
         """Cumulative distribution function.
 
         Args:
@@ -277,7 +277,7 @@ class Discrete(Distribution):
         """
 
     @abstractmethod
-    def ppf(self, quantiles: np.ndarray) -> Any:
+    def ppf(self, quantiles: np.ndarray) -> np.ndarray | None:
         """Percent point function (inverse of CDF - quantiles).
 
         Args:
