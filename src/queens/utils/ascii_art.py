@@ -205,8 +205,8 @@ def print_banner_and_description(output_width: int = DEFAULT_OUTPUT_WIDTH) -> No
     print_crown()
     print_banner()
     description = """
-    A general purpose framework for Uncertainty Quantification,
-    Physics-Informed Machine Learning, Bayesian Optimization,
-    Inverse Problems and Simulation Analytics
+    QUEENS (Quantification of Uncertain Effects in ENgineering Systems):
+    a Python framework for solver-independent multi-query
+    analyses of large-scale computational models.
     """
     print_centered_multiline(description, output_width)
