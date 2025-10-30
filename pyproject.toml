@@ -67,6 +67,7 @@ include_trailing_comma = true
 [tool.ruff.lint]
 select = ["D"]    # pydocstyle rules
 ignore = ["D104"] # Missing docstring in public package
+exclude = ["*.ipynb"]
 
 [tool.ruff.lint.pydocstyle]
 convention = "google"
