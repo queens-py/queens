@@ -109,14 +109,27 @@ def print_crown(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
         output_width: Terminal output width
     """
     crown = r"""
-        *
-      * | *
-     * \|/ *
-* * * \|O|/ * * *
- \o\o\o|O|o/o/o/
- (<><><>O<><><>)
-  '==========='
-    """
+
+                  .**.
+                  I  I
+                  *  *
+                 :.  .:
+                 I    I
+  :::           .*    *.           :*:
+  I  *          *.    .*          *  I
+ .:   *:*::::   I      I   ::::*:*   :.
+ ::   :I:    ::.*      *.::    :I:   ::
+ :.   * *:    .V.      .V.    :* *   .:
+ :.  I   ::    I*.     *I    ::   I  .*
+ *. ::    .*  :: ::  :* ::  *:    :* .*
+ *. I       * I   :**:   I *       I .*
+ *.:.        I*    **    *I        .:.*
+ *:I        :*.* ::  *: *.*:        I.*
+ *I:       :*  .**    *I.  *:       :**
+ *V       *. .*.  *II*  .*. .*       V*
+ ** ..:*I***I*::::    ::::*I***I*:.. **
+  ......                        ......
+          """
     print_centered_multiline_block(crown, output_width)
 
 
@@ -151,7 +164,7 @@ def print_banner(message: str = "QUEENS", output_width: int = DEFAULT_OUTPUT_WID
         message: Message in banner
         output_width: Terminal output width
     """
-    print_centered_multiline_block(pyfiglet.figlet_format(message, font="banner3-D"), output_width)
+    print_centered_multiline_block(pyfiglet.figlet_format(message, font="univers"), output_width)
 
 
 def print_centered_multiline_block(
@@ -192,8 +205,8 @@ def print_banner_and_description(output_width: int = DEFAULT_OUTPUT_WIDTH) -> No
     print_crown()
     print_banner()
     description = """
-    A general purpose framework for Uncertainty Quantification,
-    Physics-Informed Machine Learning, Bayesian Optimization,
-    Inverse Problems and Simulation Analytics
+    QUEENS (Quantification of Uncertain Effects in ENgineering Systems):
+    a Python framework for solver-independent multi-query
+    analyses of large-scale computational models.
     """
     print_centered_multiline(description, output_width)
