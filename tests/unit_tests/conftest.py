@@ -30,6 +30,12 @@ def fixture_dummy_simulation_model():
     return model
 
 
+@pytest.fixture(name="experiment_name")
+def fixture_experiment_name():
+    """Fixture for the experiment_name."""
+    return "test_experiment"
+
+
 @pytest.fixture(name="files_to_copy")
 def fixture_files_to_copy():
     """Files to copy."""

@@ -31,6 +31,7 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
+from queens.schedulers.cluster import Cluster
 from queens.utils.io import load_result
 from queens.utils.path import relative_path_from_root
 from queens.utils.remote_operations import RemoteConnection
@@ -100,7 +101,6 @@ class TestDaskCluster:
                     "It must be called with 'experiment_base_directory=None'."
                 )
             experiments_dir = experiment_base_directory / experiment_name
-            Path.mkdir(experiments_dir, parents=True, exist_ok=True)
             return experiments_dir
 
         monkeypatch.setattr(cluster_scheduler, "experiment_directory", patch_experiments_directory)
@@ -111,6 +111,65 @@ class TestDaskCluster:
             cluster_settings["user"],
             cluster_settings["host"],
         )
+
+        return patch_experiments_directory
+
+    @pytest.fixture(name="experiment_dir")
+    def fixture_experiment_dir(self, global_settings, remote_connection, mock_experiment_dir):
+        """Fixture providing the remote experiment directory."""
+        experiment_dir = remote_connection.run_function(
+            mock_experiment_dir, global_settings.experiment_name, None
+        )
+        return experiment_dir
+
+    def test_experiment_dir(
+        self, cluster_settings, remote_connection, test_name, experiment_dir, mocker
+    ):
+        """Test cluster scheduler initialization."""
+        cluster_kwargs = {
+            "workload_manager": cluster_settings["workload_manager"],
+            "walltime": "00:01:00",
+            "num_jobs": 1,
+            "min_jobs": 1,
+            "num_procs": 1,
+            "num_nodes": 1,
+            "remote_connection": remote_connection,
+            "cluster_internal_address": cluster_settings["cluster_internal_address"],
+            "experiment_name": test_name,
+            "queue": cluster_settings.get("queue"),
+        }
+
+        experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
+        assert not experiment_dir_exists
+
+        # Test scheduler initialization when experiment dir does not exist
+        Cluster(**cluster_kwargs)
+
+        experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
+        assert experiment_dir_exists
+
+        # Test scheduler initialization when overwriting experiment directory via flag
+        Cluster(**cluster_kwargs, overwrite_existing_experiment=True)
+
+        # Test scheduler initialization when not overwriting experiment directory via flag and no
+        # user input is given
+        mocker.patch("select.select", return_value=(None, None, None))
+        with pytest.raises(SystemExit) as exit_info:
+            Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+        assert exit_info.value.code == 2
+
+        # Test scheduler initialization when not overwriting experiment directory via flag and an
+        # empty user input is given
+        mocker.patch("select.select", return_value=(True, None, None))
+        mocker.patch("sys.stdin.readline", return_value="")
+        with pytest.raises(SystemExit) as exit_info:
+            Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+        assert exit_info.value.code == 2
+
+        # Test scheduler initialization when not overwriting experiment directory via flag and user
+        # input 'y' is given
+        mocker.patch("sys.stdin.readline", return_value="y")
+        Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
 
     def test_fourc_mc_cluster(
         self,
@@ -151,7 +210,7 @@ class TestDaskCluster:
             file_options_dict={},
         )
 
-        scheduler = cluster_scheduler.Cluster(
+        scheduler = Cluster(
             workload_manager=cluster_settings["workload_manager"],
             walltime="00:10:00",
             num_jobs=1,

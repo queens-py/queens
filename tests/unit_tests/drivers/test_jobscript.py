@@ -125,12 +125,6 @@ def fixture_job_id():
     return 42
 
 
-@pytest.fixture(name="experiment_name")
-def fixture_experiment_name():
-    """Fixture for the experiment_name."""
-    return "test_experiment"
-
-
 @pytest.fixture(name="injected_input_files")
 def fixture_injected_input_files(tmp_path, job_id):
     """Fixture for the create input files."""
