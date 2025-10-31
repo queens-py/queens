@@ -25,6 +25,7 @@ from queens.utils.injector import inject, inject_in_template
 from queens.utils.io import read_file
 from queens.utils.logger_settings import log_init_args
 from queens.utils.metadata import SimulationMetadata
+from queens.utils.path import create_folder_if_not_existent
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
@@ -260,7 +261,7 @@ class Jobscript(Driver):
         """
         job_dir = experiment_dir / str(job_id)
         output_dir = job_dir / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
+        output_dir = create_folder_if_not_existent(output_dir)
 
         output_prefix = "output"
         output_file = output_dir / output_prefix

@@ -19,7 +19,6 @@ import logging
 from dask.distributed import Client, LocalCluster
 
 from queens.schedulers._dask import Dask
-from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
 
 _logger = logging.getLogger(__name__)
@@ -37,6 +36,7 @@ class Local(Dask):
         restart_workers=False,
         verbose=True,
         experiment_base_dir=None,
+        overwrite_existing_experiment=False,
     ):
         """Initialize local scheduler.
 
@@ -48,12 +48,13 @@ class Local(Dask):
                                     to true in case you are experiencing memory-leakage warnings.
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
             experiment_base_dir (str, Path): Base directory for the simulation outputs
+            overwrite_existing_experiment (bool): If true, overwrite experiment directory if it
+                exists already. If false, prompt user for confirmation before overwriting.
         """
-        experiment_dir = experiment_directory(
-            experiment_name=experiment_name, experiment_base_directory=experiment_base_dir
-        )
-
         # pylint: disable=duplicate-code
+        experiment_dir = self.local_experiment_dir(
+            experiment_name, experiment_base_dir, overwrite_existing_experiment
+        )
         super().__init__(
             experiment_name=experiment_name,
             experiment_dir=experiment_dir,
