@@ -23,6 +23,7 @@ from dask_jobqueue import PBSCluster, SLURMCluster
 
 from queens.schedulers._dask import Dask
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
+from queens.utils.config_directories import create_directory
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import get_option
 
@@ -85,6 +86,7 @@ class Cluster(Dask):
         allowed_failures=5,
         verbose=True,
         experiment_base_dir=None,
+        overwrite_existing_experiment=False,
     ):
         """Init method for the cluster scheduler.
 
@@ -106,6 +108,8 @@ class Cluster(Dask):
             allowed_failures (int): Number of allowed failures for a task before an error is raised
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
             experiment_base_dir (str, Path): Base directory for the simulation outputs
+            overwrite_existing_experiment (bool): If true, overwrite experiment directory if it
+                exists already. If false, prompt user for confirmation before overwriting.
         """
         self.remote_connection = remote_connection
         self.remote_connection.open()
@@ -122,8 +126,8 @@ class Cluster(Dask):
         self.allowed_failures = allowed_failures
 
         # get the path of the experiment directory on remote host
-        experiment_dir = self.remote_connection.run_function(
-            experiment_directory, experiment_name, experiment_base_dir
+        experiment_dir = self.remote_experiment_dir(
+            experiment_name, experiment_base_dir, overwrite_existing_experiment
         )
 
         _logger.debug(
@@ -141,6 +145,31 @@ class Cluster(Dask):
             restart_workers=restart_workers,
             verbose=verbose,
         )
+
+    def remote_experiment_dir(
+        self, experiment_name, experiment_base_dir, overwrite_existing_experiment
+    ):
+        """Get experiment directory on remote host.
+
+        Args:
+            experiment_name (str): name of the current experiment
+            experiment_base_dir (str, Path): Remote base directory for the simulation outputs
+            overwrite_existing_experiment (bool): If true, continue and overwrite experiment
+                directory. If false, prompt user for confirmation before continuing and overwriting.
+
+        Returns:
+            experiment_dir (Path): Path to experiment directory on remote host.
+        """
+        experiment_dir = self.remote_connection.run_function(
+            experiment_directory, experiment_name, experiment_base_dir
+        )
+        if not overwrite_existing_experiment:
+            experiment_dir_exists = self.remote_connection.run_function(experiment_dir.exists)
+            if experiment_dir_exists:
+                self.get_user_confirmation_to_overwrite(experiment_dir)
+        self.remote_connection.run_function(create_directory, experiment_dir)
+
+        return experiment_dir
 
     def _start_cluster_and_connect_client(self):
         """Start a Dask cluster and a client that connects to it.

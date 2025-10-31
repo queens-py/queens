@@ -69,7 +69,6 @@ def experiment_directory(
         experiment_base_directory = Path(experiment_base_directory)
 
     experiment_dir = experiment_base_directory / experiment_name
-    create_directory(experiment_dir)
     return experiment_dir
 
 
