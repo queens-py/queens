@@ -66,30 +66,42 @@ class Parameters:
         Args:
             **parameters (Distribution, RandomField): parameters as keyword arguments
         """
-        joint_parameters_keys = []
-        joint_parameters_dim = 0
-        random_field_flag = False
+        self.dict = {}
+        self.parameters_keys = []
+        self.num_parameters = 0
+        self.random_field_flag = False
+        self.names = []
 
-        for parameter_name, parameter_obj in parameters.items():
-            if isinstance(parameter_obj, (Continuous, Discrete)):
-                joint_parameters_keys = _add_parameters_keys(
-                    joint_parameters_keys, parameter_name, parameter_obj.dimension
+        # Initialize with any parameters passed in
+        if parameters:
+            self.add_parameters(**parameters)
+
+    def add_parameters(self, **parameters):
+        """Add parameters to the Parameters object.
+
+        Args:
+            **parameters (Distribution, RandomField): parameters as keyword arguments
+        """
+        for name, obj in parameters.items():
+            if name in self.dict:
+                raise ValueError(f"Parameter '{name}' already exists.")
+
+            if isinstance(obj, (Continuous, Discrete)):
+                self.parameters_keys = _add_parameters_keys(
+                    self.parameters_keys, name, obj.dimension
                 )
-                joint_parameters_dim += parameter_obj.dimension
-            elif isinstance(parameter_obj, RandomField):
-                joint_parameters_keys += parameter_obj.coords["keys"]
-                joint_parameters_dim += parameter_obj.dimension
-                random_field_flag = True
+                self.num_parameters += obj.dimension
+            elif isinstance(obj, RandomField):
+                self.parameters_keys += obj.coords["keys"]
+                self.num_parameters += obj.dimension
+                self.random_field_flag = True
             else:
                 raise NotImplementedError(
-                    f"Parameter class '{parameter_obj.__class__.__name__}' " "not supported."
+                    f"Parameter class '{obj.__class__.__name__}' not supported."
                 )
 
-        self.dict = parameters
-        self.parameters_keys = joint_parameters_keys
-        self.num_parameters = joint_parameters_dim
-        self.random_field_flag = random_field_flag
-        self.names = list(parameters.keys())
+            self.dict[name] = obj
+            self.names.append(name)
 
     def draw_samples(self, num_samples):
         """Draw samples from all parameters.
