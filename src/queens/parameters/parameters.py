@@ -15,6 +15,7 @@
 """Parameters."""
 
 import logging
+from typing import Iterable
 
 import numpy as np
 
@@ -213,6 +214,46 @@ class Parameters:
         for j, key in enumerate(self.parameters_keys):
             sample_dict[key] = sample[j]
         return sample_dict
+
+    def dict_as_sample(self, sample_dict):
+        """Opposite of `sample_as_dict`: Convert sample_dict to sample array.
+
+        Not implemented for random fields.
+
+        Args:
+            sample_dict (dict): dict containing the sample, either will all parameter keys or
+                                all parameter names.
+
+        Returns:
+            np.array: flat sample (in correct order)
+        """
+        if self.random_field_flag:
+            raise NotImplementedError("dict_as_sample not implemented for random fields.")
+
+        # Check if all parameter keys exist
+        if all(key in sample_dict for key in self.parameters_keys):
+            # expanded form, each key corresponds to a single scalar
+            return np.array([sample_dict[key] for key in self.parameters_keys])
+
+        # Check if all parameter names exist
+        if all(name in sample_dict for name in self.names):
+            flat_sample = np.array([])
+            for name in self.names:
+                if isinstance(sample_dict[name], Iterable):
+                    flat_sample = np.concatenate((flat_sample, sample_dict[name]))
+                else:
+                    flat_sample = np.concatenate((flat_sample, [sample_dict[name]]))
+            return flat_sample
+
+        # If neither, raise key error
+        missing_parameter_keys = [key for key in self.parameters_keys if key not in sample_dict]
+        missing_parameter_names = [name for name in self.names if name not in sample_dict]
+        raise KeyError(
+            f"Sample dict is missing required keys. Keys must contain all parameter keys"
+            f"or all parameters names.\n"
+            f"Missing parameter keys: {missing_parameter_keys}\n"
+            f"Missing parameter names: {missing_parameter_names}"
+        )
 
     def expand_random_field_realization(self, truncated_sample):
         """Expand truncated representation of random fields.
