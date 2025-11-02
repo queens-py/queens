@@ -254,6 +254,18 @@ class Parameters:
             sample_dict[key] = sample[j]
         return sample_dict
 
+    def dict_as_sample(self, sample_dict: dict) -> np.ndarray:
+        """Opposite of `sample_as_dict`: Convert sample_dict to sample array.
+
+        Args:
+            sample_dict: dict containing the sample.
+                The keys must correspond to parameter keys. The order of the keys does not matter.
+
+        Returns:
+            sample: sample array in correct order
+        """
+        return np.array([sample_dict[key] for key in self.parameters_keys])
+
     def expand_random_field_realization(self, truncated_sample: np.ndarray) -> np.ndarray:
         """Expand truncated representation of random fields.
 
