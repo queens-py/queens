@@ -136,7 +136,7 @@ def fixture_injected_input_files(tmp_path, job_id):
 
 
 @pytest.fixture(name="job_options")
-def fixture_job_options(tmp_path, job_id, experiment_name, injected_input_files):
+def fixture_job_options(tmp_path, job_id, test_name, injected_input_files):
     """Job options to be injected."""
     num_procs = 4
     experiment_dir = tmp_path
@@ -148,7 +148,7 @@ def fixture_job_options(tmp_path, job_id, experiment_name, injected_input_files)
         job_id=job_id,
         num_procs=num_procs,
         experiment_dir=experiment_dir,
-        experiment_name=experiment_name,
+        experiment_name=test_name,
         input_files=injected_input_files,
     )
 

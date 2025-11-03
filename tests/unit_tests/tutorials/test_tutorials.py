@@ -25,12 +25,25 @@ from testbook import testbook
         "tutorials/2-grid-iterator-rosenbrock.ipynb",
     ],
 )
-def test_notebooks(notebook_path):
+def test_notebooks(tmp_path, notebook_path):
     """Parameterized test case for multiple Jupyter notebooks.
 
     The notebook is run and it is checked that it runs through without
     any errors/assertions.
     """
     with testbook(notebook_path) as tb:
+        # Patch base_directory to avoid writing test data to user's home dir.
+        # Note that tb.patch converts the mocked Path to a string, so we have to use tb.inject.
+        tb.inject(
+            f"""
+            from unittest.mock import MagicMock
+            from pathlib import Path
+            import queens.utils.config_directories
+            mock_base_dir = Path('{tmp_path}')
+            queens.utils.config_directories.base_directory = MagicMock(return_value=mock_base_dir)
+            """,
+            before=0,
+        )
+
         # execute the notebook
         tb.execute()

@@ -17,6 +17,7 @@
 import getpass
 import json
 import logging
+import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
 
@@ -101,7 +102,7 @@ class TestDaskCluster:
                     "It must be called with 'experiment_base_directory=None'."
                 )
             experiments_dir = experiment_base_directory / experiment_name
-            return experiments_dir
+            return experiments_dir, experiments_dir.exists()
 
         monkeypatch.setattr(cluster_scheduler, "experiment_directory", patch_experiments_directory)
         _logger.debug("Mocking of dask experiment_directory  was successful.")
@@ -117,18 +118,28 @@ class TestDaskCluster:
     @pytest.fixture(name="experiment_dir")
     def fixture_experiment_dir(self, global_settings, remote_connection, mock_experiment_dir):
         """Fixture providing the remote experiment directory."""
-        experiment_dir = remote_connection.run_function(
+        experiment_dir, _ = remote_connection.run_function(
             mock_experiment_dir, global_settings.experiment_name, None
         )
         return experiment_dir
 
-    def test_experiment_dir(
-        self, cluster_settings, remote_connection, test_name, experiment_dir, mocker
-    ):
-        """Test cluster scheduler initialization."""
-        cluster_kwargs = {
+    @pytest.fixture(name="_create_experiment_dir")
+    def fixture_create_experiment_dir(self, remote_connection, experiment_dir):
+        """Fixture providing the remote experiment directory."""
+
+        def create_experiment_dir_and_assert_it_exists():
+            """Create experiment directory on remote and assert it exists."""
+            os.mkdir(experiment_dir)
+            return experiment_dir.exists()
+
+        assert remote_connection.run_function(create_experiment_dir_and_assert_it_exists)
+
+    @pytest.fixture(name="cluster_kwargs")
+    def fixture_cluster_kwargs(self, cluster_settings, remote_connection, test_name):
+        """Keyword arguments to initialize the cluster scheduler."""
+        return {
             "workload_manager": cluster_settings["workload_manager"],
-            "walltime": "00:01:00",
+            "walltime": "00:10:00",
             "num_jobs": 1,
             "min_jobs": 1,
             "num_procs": 1,
@@ -139,42 +150,68 @@ class TestDaskCluster:
             "queue": cluster_settings.get("queue"),
         }
 
+    def test_new_experiment_dir(self, cluster_kwargs, remote_connection, experiment_dir):
+        """Test cluster init when experiment dir does not exist."""
         experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
         assert not experiment_dir_exists
 
-        # Test scheduler initialization when experiment dir does not exist
         Cluster(**cluster_kwargs)
 
         experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
         assert experiment_dir_exists
 
-        # Test scheduler initialization when overwriting experiment directory via flag
+    def test_overwriting_existing_experiment_dir(self, cluster_kwargs, _create_experiment_dir):
+        """Test cluster init when overwriting experiment dir via flag."""
         Cluster(**cluster_kwargs, overwrite_existing_experiment=True)
 
-        # Test scheduler initialization when not overwriting experiment directory via flag and no
-        # user input is given
+    def test_no_prompt_input_for_existing_experiment_dir(
+        self, cluster_kwargs, mocker, _create_experiment_dir
+    ):
+        """Test cluster init when not overwriting experiment dir via flag.
+
+        Since the experiment directory already exists, the scheduler
+        prompts the user for input. In this test case, the user does not
+        provide any prompt input, leading to an abort.
+        """
         mocker.patch("select.select", return_value=(None, None, None))
         with pytest.raises(SystemExit) as exit_info:
             Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
-        assert exit_info.value.code == 2
+        assert exit_info.value.code == 1
 
-        # Test scheduler initialization when not overwriting experiment directory via flag and an
-        # empty user input is given
+    def test_empty_prompt_input_for_existing_experiment_dir(
+        self, cluster_kwargs, mocker, _create_experiment_dir
+    ):
+        """Test cluster init when not overwriting experiment dir via flag.
+
+        Since the experiment directory already exists, the scheduler
+        prompts the user for input. In this test case, the user provides
+        empty input, leading to an abort.
+        """
         mocker.patch("select.select", return_value=(True, None, None))
         mocker.patch("sys.stdin.readline", return_value="")
         with pytest.raises(SystemExit) as exit_info:
             Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
-        assert exit_info.value.code == 2
+        assert exit_info.value.code == 1
 
-        # Test scheduler initialization when not overwriting experiment directory via flag and user
-        # input 'y' is given
-        mocker.patch("sys.stdin.readline", return_value="y")
+    @pytest.mark.parametrize("user_input", ["y", "yes"])
+    def test_y_prompt_input_for_existing_experiment_dir(
+        self, cluster_kwargs, mocker, user_input, _create_experiment_dir
+    ):
+        """Test cluster init when not overwriting experiment dir via flag.
+
+        Since the experiment directory already exists, the scheduler
+        prompts the user for input. In this test case, the user provides
+        the input 'y' or 'yes', allowing the initialization to proceed.
+        """
+        mocker.patch("select.select", return_value=(True, None, None))
+        mocker.patch("sys.stdin.readline", return_value=user_input)
         Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
 
     def test_fourc_mc_cluster(
         self,
         third_party_inputs,
         cluster_settings,
+        cluster_kwargs,
         remote_connection,
         fourc_cluster_path,
         fourc_example_expected_output,
@@ -192,6 +229,7 @@ class TestDaskCluster:
         Args:
             third_party_inputs (Path): Path to the 4C input files
             cluster_settings (dict): Cluster settings
+            cluster_kwargs (dict): Keyword arguments to initialize the cluster scheduler
             remote_connection (RemoteConnection): Remote connection object
             fourc_cluster_path (Path): paths to 4C executable on the cluster
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
@@ -210,18 +248,7 @@ class TestDaskCluster:
             file_options_dict={},
         )
 
-        scheduler = Cluster(
-            workload_manager=cluster_settings["workload_manager"],
-            walltime="00:10:00",
-            num_jobs=1,
-            min_jobs=1,
-            num_procs=1,
-            num_nodes=1,
-            remote_connection=remote_connection,
-            cluster_internal_address=cluster_settings["cluster_internal_address"],
-            experiment_name=global_settings.experiment_name,
-            queue=cluster_settings.get("queue"),
-        )
+        scheduler = Cluster(**cluster_kwargs)
 
         driver = Jobscript(
             parameters=parameters,

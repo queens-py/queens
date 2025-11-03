@@ -93,23 +93,23 @@ class Cluster(Dask):
         The total number of cores per job is given by num_procs*num_nodes.
 
         Args:
-            experiment_name (str): name of the current experiment
+            experiment_name (str): Name of the current experiment
             workload_manager (str): Workload manager ("pbs" or "slurm")
             walltime (str): Walltime for each worker job. Format (hh:mm:ss)
-            remote_connection (RemoteConnection): ssh connection to the remote host
+            remote_connection (RemoteConnection): SSH connection to the remote host
             num_jobs (int, opt): Maximum number of parallel jobs
             min_jobs (int, opt): Minimum number of active workers for the cluster
             num_procs (int, opt): Number of processors per job per node
             num_nodes (int, opt): Number of cluster nodes per job
             queue (str, opt): Destination queue for each worker job
             cluster_internal_address (str, opt): Internal address of cluster
-            restart_workers (bool): If true, restart workers after each finished job. For larger
-                                    jobs (>1min) this should be set to true in most cases.
+            restart_workers (bool): If True, restart workers after each finished job. For larger
+                jobs (>1min) this should be set to True in most cases.
             allowed_failures (int): Number of allowed failures for a task before an error is raised
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
             experiment_base_dir (str, Path): Base directory for the simulation outputs
-            overwrite_existing_experiment (bool): If true, overwrite experiment directory if it
-                exists already. If false, prompt user for confirmation before overwriting.
+            overwrite_existing_experiment (bool): If True, overwrite experiment directory if it
+                exists already. If False, prompt user for confirmation before overwriting.
         """
         self.remote_connection = remote_connection
         self.remote_connection.open()
@@ -160,23 +160,39 @@ class Cluster(Dask):
         Returns:
             experiment_dir (Path): Path to experiment directory on remote host.
         """
-        experiment_dir = self.remote_connection.run_function(
+        experiment_dir, experiment_dir_exists = self.remote_connection.run_function(
             experiment_directory, experiment_name, experiment_base_dir
         )
-        if not overwrite_existing_experiment:
-            experiment_dir_exists = self.remote_connection.run_function(experiment_dir.exists)
-            if experiment_dir_exists:
-                self.get_user_confirmation_to_overwrite(experiment_dir)
+        if not overwrite_existing_experiment and experiment_dir_exists:
+            self.get_user_confirmation_to_overwrite(experiment_dir)
         self.remote_connection.run_function(create_directory, experiment_dir)
 
         return experiment_dir
+
+    def local_experiment_dir(
+        self, experiment_name, experiment_base_dir, overwrite_existing_experiment
+    ):
+        """Get the local experiment directory.
+
+        Args:
+            experiment_name (str): name of the current experiment
+            experiment_base_dir (str, Path): Base directory for the simulation outputs
+            overwrite_existing_experiment (bool): If true, continue and overwrite experiment
+                directory. If false, prompt user for confirmation before continuing and overwriting.
+
+        Returns:
+            experiment_dir (Path): Path to local experiment directory.
+        """
+        raise NotImplementedError(
+            "The Cluster scheduler should not use the local but the remote experiment directory."
+        )
 
     def _start_cluster_and_connect_client(self):
         """Start a Dask cluster and a client that connects to it.
 
         Returns:
-               client (Client): Dask client that is connected to and submits computations to a
-                                Dask cluster.
+            client (Client): Dask client that is connected to and submits computations to a Dask
+                cluster.
         """
         # collect all settings for the dask cluster
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, self.workload_manager)
@@ -275,8 +291,8 @@ class Cluster(Dask):
         """Copy file to experiment directory.
 
         Args:
-            paths (Path, list): paths to files or directories that should be copied to experiment
-                                directory
+            paths (Path, list): Paths to files or directories that should be copied to experiment
+                directory
         """
         destination = f"{self.experiment_dir}/"
         self.remote_connection.copy_to_remote(paths, destination)

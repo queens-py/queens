@@ -46,13 +46,14 @@ class Pool(Scheduler):
         """Initialize Pool.
 
         Args:
-            experiment_name (str): name of the current experiment
+            experiment_name (str): Name of the current experiment
             num_jobs (int, opt): Maximum number of parallel jobs
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
             experiment_base_dir (str, Path): Base directory for the simulation outputs
-            overwrite_existing_experiment (bool): If true, overwrite experiment directory if it
-                exists already. If false, prompt user for confirmation before overwriting.
+            overwrite_existing_experiment (bool): If True, overwrite experiment directory if it
+                exists already. If False, prompt user for confirmation before overwriting.
         """
+        # pylint: disable=duplicate-code
         experiment_dir = self.local_experiment_dir(
             experiment_name, experiment_base_dir, overwrite_existing_experiment
         )

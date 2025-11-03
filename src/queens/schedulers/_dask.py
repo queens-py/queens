@@ -34,9 +34,9 @@ class Dask(Scheduler):
     """Abstract base class for schedulers in QUEENS.
 
     Attributes:
-        num_procs (int): number of processors per job
+        num_procs (int): Number of processors per job
         client (Client): Dask client that connects to and submits computation to a Dask cluster
-        restart_workers (bool): If true, restart workers after each finished job
+        restart_workers (bool): If True, restart workers after each finished job
     """
 
     def __init__(
@@ -51,11 +51,11 @@ class Dask(Scheduler):
         """Initialize scheduler.
 
         Args:
-            experiment_name (str): name of QUEENS experiment.
+            experiment_name (str): Name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
             num_jobs (int): Maximum number of parallel jobs
-            num_procs (int): number of processors per job
-            restart_workers (bool): If true, restart workers after each finished job
+            num_procs (int): Number of processors per job
+            restart_workers (bool): If True, restart workers after each finished job
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
         """
         super().__init__(
@@ -75,8 +75,8 @@ class Dask(Scheduler):
         """Start a Dask cluster and a client that connects to it.
 
         Returns:
-               client (Client): Dask client that is connected to and submits computations to a
-                                Dask cluster.
+            client (Client): Dask client that is connected to and submits computations to a Dask
+                cluster.
         """
 
     def start_cluster_and_connect_client(self):
@@ -92,8 +92,8 @@ class Dask(Scheduler):
         The Dask client and cluster will be shut down when leaving the GlobalSettings context.
 
         Args:
-            client (Client): Dask client that is connected to and submits computations to a
-                             Dask cluster.
+            client (Client): Dask client that is connected to and submits computations to a Dask
+                cluster.
         """
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)

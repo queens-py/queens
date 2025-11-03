@@ -31,7 +31,7 @@ class Scheduler(metaclass=abc.ABCMeta):
     """Abstract base class for schedulers in QUEENS.
 
     Attributes:
-        experiment_name (str): name of the current experiment
+        experiment_name (str): Name of the current experiment
         experiment_dir (Path): Path to QUEENS experiment directory.
         num_jobs (int): Maximum number of parallel jobs
         next_job_id (int): Next job ID.
@@ -42,7 +42,7 @@ class Scheduler(metaclass=abc.ABCMeta):
         """Initialize scheduler.
 
         Args:
-            experiment_name (str): name of QUEENS experiment.
+            experiment_name (str): Name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
             num_jobs (int): Maximum number of parallel jobs
             verbose (bool, opt): Verbosity of evaluations. Defaults to True.
@@ -80,8 +80,10 @@ class Scheduler(metaclass=abc.ABCMeta):
         Returns:
             experiment_dir (Path): Path to local experiment directory.
         """
-        experiment_dir = experiment_directory(experiment_name, experiment_base_dir)
-        if not overwrite_existing_experiment and experiment_dir.exists():
+        experiment_dir, experiment_dir_exists = experiment_directory(
+            experiment_name, experiment_base_dir
+        )
+        if not overwrite_existing_experiment and experiment_dir_exists:
             self.get_user_confirmation_to_overwrite(experiment_dir)
         create_directory(experiment_dir)
 
@@ -92,35 +94,45 @@ class Scheduler(metaclass=abc.ABCMeta):
 
         Args:
             experiment_dir (Path): Directory where experiments are stored.
-
-        Raises:
-            FileExistsError: If an experiment with the same name already exists.
         """
+        input_timeout = 15  # seconds
         _logger.warning(
-            "An experiment already exists in the experiment directory '%s'.\nIf you still want "
-            "to continue and overwrite the existing experiment, please enter 'y' within 10 "
-            "seconds. Otherwise, press enter or wait to abort the QUEENS run.",
+            "The experiment directory '%s' already exists.\n"
+            "This indicates that an experiment with the same name has been run previously, and its "
+            "data might still be present.\n"
+            "You have two options:\n"
+            "1) Start a new QUEENS run with a different experiment name: Press enter or wait to "
+            "abort the current run.\n"
+            "2) Continue and overwrite the existing directory and all its data: Enter 'y' or 'yes' "
+            "within %d seconds.\n",
             experiment_dir,
+            input_timeout,
         )
-        # Wait for user input for 10 seconds
-        input_entered, _, _ = select.select([sys.stdin], [], [], 10)
+        # Wait for user input
+        input_entered, _, _ = select.select([sys.stdin], [], [], input_timeout)
         if input_entered:
             user_input = sys.stdin.readline().strip()
-            if user_input != "y":
-                _logger.info("Aborting QUEENS run.")
-                sys.exit(2)
+            if user_input not in ["y", "yes"]:
+                print(
+                    "Aborting QUEENS run to avoid overwriting data of a previous experiment with "
+                    "the same name."
+                )
+                sys.exit(1)
             else:
                 _logger.info("Overwriting existing experiment and continuing QUEENS run.")
         else:
-            _logger.info("No input received. Aborting QUEENS run.")
-            sys.exit(2)
+            print(
+                "No input received. Aborting QUEENS run to avoid overwriting data of a previous "
+                "experiment with the same name."
+            )
+            sys.exit(1)
 
     def copy_files_to_experiment_dir(self, paths):
         """Copy file to experiment directory.
 
         Args:
-            paths (str, Path, list): paths to files or directories that should be copied to
-                                     experiment directory
+            paths (str, Path, list): Paths to files or directories that should be copied to
+                experiment directory
         """
         destination = f"{self.experiment_dir}/"
         rsync(paths, destination)

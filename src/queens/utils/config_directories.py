@@ -51,7 +51,7 @@ def base_directory() -> Path:
 
 def experiment_directory(
     experiment_name: str, experiment_base_directory: str | Path | None = None
-) -> Path:
+) -> tuple[Path, bool]:
     """Directory for data of a specific experiment on the computing machine.
 
     If no experiment_base_directory is provided, base_directory() is used as default.
@@ -62,6 +62,7 @@ def experiment_directory(
 
     Returns:
         Experiment directory
+        Whether experiment directory already exists
     """
     if experiment_base_directory is None:
         experiment_base_directory = base_directory()
@@ -69,7 +70,7 @@ def experiment_directory(
         experiment_base_directory = Path(experiment_base_directory)
 
     experiment_dir = experiment_base_directory / experiment_name
-    return experiment_dir
+    return experiment_dir, experiment_dir.exists()
 
 
 def create_directory(dir_path: str | Path) -> None:

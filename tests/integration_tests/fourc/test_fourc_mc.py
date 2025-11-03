@@ -87,7 +87,7 @@ def test_fourc_mc(
             results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
     except Exception as error:
-        experiment_dir = experiment_directory(global_settings.experiment_name)
+        experiment_dir, _ = experiment_directory(global_settings.experiment_name)
         job_dir = experiment_dir / "0"
         _logger.info(list(job_dir.iterdir()))
         output_dir = job_dir / "output"

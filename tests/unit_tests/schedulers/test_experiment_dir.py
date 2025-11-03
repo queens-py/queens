@@ -22,11 +22,11 @@ from queens.schedulers import Local, Pool
 
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
-def test_new_experiment_dir(tmp_path, experiment_name, experiment_dir, scheduler_class):
+def test_new_experiment_dir(tmp_path, test_name, experiment_dir, scheduler_class):
     """Test scheduler initialization when experiment dir does not exist."""
     assert not experiment_dir.exists()
     scheduler_class(
-        experiment_name=experiment_name,
+        experiment_name=test_name,
         experiment_base_dir=tmp_path,
     )
     assert experiment_dir.exists()
@@ -34,11 +34,11 @@ def test_new_experiment_dir(tmp_path, experiment_name, experiment_dir, scheduler
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
 def test_overwriting_existing_experiment_dir(
-    tmp_path, experiment_name, _create_experiment_dir, scheduler_class
+    tmp_path, test_name, _create_experiment_dir, scheduler_class
 ):
     """Test scheduler init when overwriting experiment directory via flag."""
     scheduler_class(
-        experiment_name=experiment_name,
+        experiment_name=test_name,
         experiment_base_dir=tmp_path,
         overwrite_existing_experiment=True,
     )
@@ -46,7 +46,7 @@ def test_overwriting_existing_experiment_dir(
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
 def test_no_prompt_input_for_existing_experiment_dir(
-    tmp_path, experiment_name, _create_experiment_dir, scheduler_class, mocker
+    tmp_path, test_name, _create_experiment_dir, scheduler_class, mocker
 ):
     """Test scheduler init when not overwriting experiment directory via flag.
 
@@ -57,61 +57,61 @@ def test_no_prompt_input_for_existing_experiment_dir(
     mocker.patch("select.select", return_value=(None, None, None))
     with pytest.raises(SystemExit) as exit_info:
         scheduler_class(
-            experiment_name=experiment_name,
+            experiment_name=test_name,
             experiment_base_dir=tmp_path,
             overwrite_existing_experiment=False,
         )
-    assert exit_info.value.code == 2
+    assert exit_info.value.code == 1
 
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
 def test_empty_prompt_input_for_existing_experiment_dir(
-    tmp_path, experiment_name, _create_experiment_dir, scheduler_class, mocker
+    tmp_path, test_name, _create_experiment_dir, scheduler_class, mocker
 ):
     """Test scheduler init when not overwriting experiment directory via flag.
 
     Since the experiment directory already exists, the scheduler prompts
-    the user for input. In this test case, the user provides 'n' as
-    prompt input, leading to an abort.
+    the user for input. In this test case, the user provides empty
+    input, leading to an abort.
     """
     mocker.patch("select.select", return_value=(True, None, None))
     mocker.patch("sys.stdin.readline", return_value="")
     with pytest.raises(SystemExit) as exit_info:
         scheduler_class(
-            experiment_name=experiment_name,
+            experiment_name=test_name,
             experiment_base_dir=tmp_path,
             overwrite_existing_experiment=False,
         )
-    assert exit_info.value.code == 2
+    assert exit_info.value.code == 1
 
 
-@pytest.mark.parametrize("scheduler_class", [Local, Pool])
+@pytest.mark.parametrize("scheduler_class,user_input", [(Local, "y"), (Pool, "yes")])
 def test_y_prompt_input_for_existing_experiment_dir(
-    tmp_path, experiment_name, _create_experiment_dir, scheduler_class, mocker
+    tmp_path, test_name, _create_experiment_dir, scheduler_class, mocker, user_input
 ):
     """Test scheduler init when not overwriting experiment directory via flag.
 
     Since the experiment directory already exists, the scheduler prompts
-    the user for input. In this test case, the user provides 'y' as
-    prompt input, allowing the initialization to proceed.
+    the user for input. In this test case, the user provides the input
+    'y' or 'yes', allowing the initialization to proceed.
     """
     mocker.patch("select.select", return_value=(True, None, None))
-    mocker.patch("sys.stdin.readline", return_value="y")
+    mocker.patch("sys.stdin.readline", return_value=user_input)
     scheduler_class(
-        experiment_name=experiment_name,
+        experiment_name=test_name,
         experiment_base_dir=tmp_path,
         overwrite_existing_experiment=False,
     )
 
 
 @pytest.fixture(name="experiment_dir")
-def fixture_experiment_dir(tmp_path, experiment_name):
+def fixture_experiment_dir(tmp_path, test_name):
     """Fixture for the experiment directory."""
-    return tmp_path / experiment_name
+    return tmp_path / test_name
 
 
 @pytest.fixture(name="_create_experiment_dir")
 def fixture_create_experiment_dir(experiment_dir):
     """Create the experiment directory."""
-    os.makedirs(experiment_dir)
+    os.mkdir(experiment_dir)
     assert experiment_dir.exists()
