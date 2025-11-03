@@ -14,7 +14,7 @@
 #
 """Print utils."""
 
-DEFAULT_OUTPUT_WIDTH = 81
+DEFAULT_OUTPUT_WIDTH = 101
 
 
 def get_str_table(name: str, print_dict: dict, use_repr: bool = False) -> str:

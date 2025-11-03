@@ -162,16 +162,16 @@ def print_banner(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
         output_width: Terminal output width
     """
     banner = """
-     .:*IIVVII**:          *II           :II:    .IIIIIIIIIIIIII    .IIIIIIIIIIIIII     II:           :II       :*IIVVII*:
-  .*VI*:      .:IVI:       *VV           :VV:    :VV*               .VV*               .VVVI:         *VV.    :VV*.    .:I*
- *VI:             IVI.     *VV           :VV:    :VV:               .VV:               .VVI*VI.       *VV.    IVV
-*VV.               IVV     *VV           :VV:    :VV:               .VV*               .VV*  IVI.     *VV.    .IVI*:.
-VVV                :VV:    *VV           :VV:    :VVIIIIIIIIIII.    .VVVIIIIIIIIII.    .VV*   .IV*    *VV.       :*IIVVI*.
-*VV.          ::   IVV     *VV.          :VV:    :VV:               .VV:               .VV*     .IV*  *VV.             :IVV:
- *VV:         :IV*IVI.     .VV*          IVI     :VV:               .VV:               .VV*       .IV*IVV.               VVI
-  .*VI*:      .:VVVV*       .IVI:.    .*IV*      :VV:               .VV*               .VV*         :IVVV.   *VI:      .*VV:
-     .:*IIIVII**:  :*:         :**IIII**.        .IIIIIIIIIIIIII.   .IIIIIIIIIIIIII.    II:           :II      :*IIIVII**.
-                   """
+    :*IV$$$V*:        VV:        *VV    VVVVVVVVVVVF   *VVVVVVVVVVV.  .VF.        :VI     :FV$$$V*:
+  *$$*:.  .:*V$*      $$:        *$V    $$*.........   *$I.........   .$$$*       *$V    V$F.  .:FV.
+ V$*          *$$.    $$:        *$V    $$:            *$F            .$$F$V.     *$V   .$$.
+V$F            *$V    $$:        *$V    $$:            *$I            .$$ .V$*    *$V    F$$*:.
+$$:            :$$    $$:        *$V    $$$VVVVVVVV    *$$VVVVVVVV:   .$$   *$V.  *$V     .*FV$$V*.
+I$F        **  *$V    $$:        *$V    $$:            *$F            .$$    .I$* *$V          .*$$*
+ V$*       :V$F$$.    I$F        V$*    $$:            *$F            .$$      :$$I$V            *$$
+  *$$*:.  .:*$$$F      F$V*....*V$*     $$*.........   *$I.........   .$$        F$$V   V$*:   .:V$*
+    :*IV$$VI*: :I:      .*FVVVVF:       VVVVVVVVVVVV   *VVVVVVVVVVV.  .VV         :VI    :*VV$$VI*.
+    """
     print_centered_multiline_block(banner, output_width)
 
 
@@ -208,8 +208,8 @@ def print_banner_and_description(output_width: int = DEFAULT_OUTPUT_WIDTH) -> No
     Args:
         output_width: Terminal output width
     """
-    print_crown()
-    print_banner()
+    print_crown(output_width)
+    print_banner(output_width)
     description = """
     QUEENS (Quantification of Uncertain Effects in ENgineering Systems):
     a Python framework for solver-independent multi-query
