@@ -191,6 +191,22 @@ class Jobscript(Driver):
 
         return jobscript_template
 
+    def select_jobscript_template(self, sample_dict):
+        """Return the jobscript template.
+
+        This method can be overridden by a subclass if the jobscript template
+        should depend on the provided sample. In the base implementation,
+        the sample argument is unused.
+
+        Args:
+            sample_dict: Placeholder for the sample. Unused in the base implementation.
+
+        Returns:
+            str: self.jobscript_template
+        """
+        _ = sample_dict  # explicitly mark sample as unused
+        return self.jobscript_template
+
     def run(
         self,
         sample: np.ndarray,
@@ -240,8 +256,8 @@ class Jobscript(Driver):
 
             # Create jobscript
             inject_in_template(
-                job_options.add_data_and_to_dict(self.jobscript_options),
-                self.jobscript_template,
+                job_options.add_data_and_to_dict(self.jobscript_options | sample_dict),
+                self.select_jobscript_template(sample_dict),
                 str(jobscript_file),
             )
 
