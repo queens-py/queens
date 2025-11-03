@@ -55,7 +55,7 @@ def cli_logging(func: Callable) -> Callable:
 def inject_template_cli() -> None:
     """Use the injector of QUEENS."""
     ascii_art.print_crown(80)
-    ascii_art.print_banner("Injector", 80)
+    ascii_art.print_banner(80)
     parser = argparse.ArgumentParser(
         description="QUEENS injection CLI for Jinja2 templates. The parameters to be injected can "
         "be supplied by adding additional '--<name> <value>' arguments. All occurrences of <name> "
@@ -125,7 +125,7 @@ def inject_template_cli() -> None:
 def print_pickle_data_cli() -> None:
     """Print pickle data wrapper."""
     ascii_art.print_crown(60)
-    ascii_art.print_banner("QUEENS", 60)
+    ascii_art.print_banner(60)
     args = sys.argv[1:]
     if len(args) == 0:
         _logger.info("No pickle file was provided!")
@@ -138,7 +138,7 @@ def print_pickle_data_cli() -> None:
 def gather_metadata_and_write_to_csv() -> None:
     """Gather metadata and write them to csv."""
     ascii_art.print_crown(60)
-    ascii_art.print_banner("QUEENS", 60)
+    ascii_art.print_banner(60)
 
     parser = argparse.ArgumentParser(
         description="QUEENS cli util to create csv file for experiment simulation metadata."

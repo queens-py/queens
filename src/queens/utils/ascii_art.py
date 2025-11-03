@@ -16,8 +16,6 @@
 
 import logging
 
-import pyfiglet
-
 from queens.utils.printing import DEFAULT_OUTPUT_WIDTH
 
 _logger = logging.getLogger(__name__)
@@ -157,19 +155,27 @@ def print_points_iterator(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     print_centered_multiline_block(points, output_width)
 
 
-def print_banner(message: str = "QUEENS", output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
+def print_banner(output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print banner.
 
     Args:
-        message: Message in banner
         output_width: Terminal output width
     """
-    print_centered_multiline_block(pyfiglet.figlet_format(message, font="univers"), output_width)
+    banner = """
+     .:*IIVVII**:          *II           :II:    .IIIIIIIIIIIIII    .IIIIIIIIIIIIII     II:           :II       :*IIVVII*:
+  .*VI*:      .:IVI:       *VV           :VV:    :VV*               .VV*               .VVVI:         *VV.    :VV*.    .:I*
+ *VI:             IVI.     *VV           :VV:    :VV:               .VV:               .VVI*VI.       *VV.    IVV
+*VV.               IVV     *VV           :VV:    :VV:               .VV*               .VV*  IVI.     *VV.    .IVI*:.
+VVV                :VV:    *VV           :VV:    :VVIIIIIIIIIII.    .VVVIIIIIIIIII.    .VV*   .IV*    *VV.       :*IIVVI*.
+*VV.          ::   IVV     *VV.          :VV:    :VV:               .VV:               .VV*     .IV*  *VV.             :IVV:
+ *VV:         :IV*IVI.     .VV*          IVI     :VV:               .VV:               .VV*       .IV*IVV.               VVI
+  .*VI*:      .:VVVV*       .IVI:.    .*IV*      :VV:               .VV*               .VV*         :IVVV.   *VI:      .*VV:
+     .:*IIIVII**:  :*:         :**IIII**.        .IIIIIIIIIIIIII.   .IIIIIIIIIIIIII.    II:           :II      :*IIIVII**.
+                   """
+    print_centered_multiline_block(banner, output_width)
 
 
-def print_centered_multiline_block(
-    string: str | pyfiglet.FigletString, output_width: int = DEFAULT_OUTPUT_WIDTH
-) -> None:
+def print_centered_multiline_block(string: str, output_width: int = DEFAULT_OUTPUT_WIDTH) -> None:
     """Print a multiline text in the center as a block.
 
     Args:

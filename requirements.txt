@@ -381,8 +381,6 @@ pycparser==2.22
     # via cffi
 pydoe==0.3.8
     # via -r requirements.in
-pyfiglet==1.0.2
-    # via -r requirements.in
 pygments==2.18.0
     # via rich
 pymc==5.17.0
