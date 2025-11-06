@@ -17,12 +17,13 @@
 import abc
 import logging
 import time
+from collections.abc import Iterable
 
 import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
-from queens.schedulers._scheduler import Scheduler
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
 from queens.utils.printing import get_str_table
 
 _logger = logging.getLogger(__name__)
@@ -98,12 +99,14 @@ class Dask(Scheduler):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def evaluate(self, samples, driver, job_ids=None):
+    def evaluate(
+        self, samples: Iterable, function: SchedulerCallableSignature, job_ids: Iterable = None
+    ) -> dict:
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
-            driver (Driver): Driver object that runs simulation
+            function (Callable): Callable to evaluate in the scheduler
             job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
@@ -114,17 +117,17 @@ class Dask(Scheduler):
         if self.restart_workers:
             # This is necessary, because the subprocess in the driver does not get killed
             # sometimes when the worker is restarted.
-            def run_driver(*args, **kwargs):
+            def run_function(*args, **kwargs):
                 time.sleep(5)
-                return driver.run(*args, **kwargs)
+                return function(*args, **kwargs)
 
         else:
-            run_driver = driver.run
+            run_function = function
 
         if job_ids is None:
             job_ids = self.get_job_ids(len(samples))
         futures = self.client.map(
-            run_driver,
+            run_function,
             samples,
             job_ids,
             pure=False,

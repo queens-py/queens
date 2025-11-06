@@ -191,7 +191,7 @@ class Jobscript(Driver):
         """Run the driver.
 
         Args:
-            sample (dict): Dict containing sample.
+            sample (np.array): Input sample.
             job_id (int): Job ID.
             num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.

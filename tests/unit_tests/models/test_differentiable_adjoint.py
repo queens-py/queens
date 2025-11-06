@@ -77,7 +77,7 @@ def test_grad(default_adjoint_model):
     adjoint.write_to_csv = Mock()
     default_adjoint_model.scheduler.next_job_id = 7
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
-    default_adjoint_model.scheduler.evaluate = lambda x, driver, job_ids: {"result": x**2}
+    default_adjoint_model.scheduler.evaluate = lambda x, function, job_ids: {"result": x**2}
 
     np.random.seed(42)
     samples = np.random.random((2, 3))

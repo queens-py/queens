@@ -51,7 +51,7 @@ class Driver(metaclass=abc.ABCMeta):
         """Abstract method for driver run.
 
         Args:
-            sample (dict): Dict containing sample
+            sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
@@ -60,3 +60,18 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
+
+    def __call__(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+        """Abstract method for driver run.
+
+        Args:
+            sample (np.ndarray): Input sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            Result and potentially the gradient
+        """
+        return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)

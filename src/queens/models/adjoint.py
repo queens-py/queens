@@ -83,6 +83,6 @@ class Adjoint(Simulation):
 
         # evaluate the adjoint model
         gradient = self.scheduler.evaluate(
-            samples, driver=self.gradient_driver, job_ids=last_job_ids
+            samples, function=self.gradient_driver, job_ids=last_job_ids
         )["result"]
         return gradient

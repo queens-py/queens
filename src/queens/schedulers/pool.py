@@ -15,12 +15,13 @@
 """Pool scheduler for QUEENS runs."""
 
 import logging
+from collections.abc import Iterable
 from functools import partial
 
 import numpy as np
 from tqdm import tqdm
 
-from queens.schedulers._scheduler import Scheduler
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
 from queens.utils.config_directories import experiment_directory
 from queens.utils.logger_settings import log_init_args
 from queens.utils.pool import create_pool
@@ -52,19 +53,21 @@ class Pool(Scheduler):
         )
         self.pool = create_pool(num_jobs)
 
-    def evaluate(self, samples, driver, job_ids=None):
+    def evaluate(
+        self, samples: Iterable, function: SchedulerCallableSignature, job_ids: Iterable = None
+    ) -> dict:
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
-            driver (Driver): Driver object that runs simulation
+            function (Callable): Callable to evaluate in the scheduler
             job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
             result_dict (dict): Dictionary containing results
         """
-        function = partial(
-            driver.run,
+        run_function = partial(
+            function,
             num_procs=1,
             experiment_dir=self.experiment_dir,
             experiment_name=self.experiment_name,
@@ -73,11 +76,11 @@ class Pool(Scheduler):
             job_ids = self.get_job_ids(len(samples))
         # Pool or no pool
         if self.pool:
-            results = self.pool.map(function, samples, job_ids)
+            results = self.pool.map(run_function, samples, job_ids)
         elif self.verbose:
-            results = list(map(function, tqdm(samples), job_ids))
+            results = list(map(run_function, tqdm(samples), job_ids))
         else:
-            results = list(map(function, samples, job_ids))
+            results = list(map(run_function, samples, job_ids))
 
         output = {}
         # check if gradient is returned --> tuple

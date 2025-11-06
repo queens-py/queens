@@ -50,7 +50,7 @@ class Simulation(Model):
         Returns:
             response (dict): Response of the underlying model at input samples
         """
-        self.response = self.scheduler.evaluate(samples, driver=self.driver)
+        self.response = self.scheduler.evaluate(samples, self.driver)
         return self.response
 
     def grad(self, samples, upstream_gradient):

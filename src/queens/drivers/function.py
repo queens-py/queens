@@ -15,7 +15,6 @@
 """Function Driver."""
 
 import inspect
-import logging
 
 import numpy as np
 
@@ -23,8 +22,6 @@ from example_simulator_functions import example_simulator_function_by_name
 from queens.drivers._driver import Driver
 from queens.utils.imports import get_module_attribute
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class Function(Driver):
@@ -116,7 +113,7 @@ class Function(Driver):
         """Run the driver.
 
         Args:
-            sample (dict): Dict containing sample
+            sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.

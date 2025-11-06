@@ -89,7 +89,7 @@ class FiniteDifference(Simulation):
             response (dict): Response of the underlying model at input samples
         """
         if not self.evaluate_and_gradient_bool:
-            self.response = self.scheduler.evaluate(samples, driver=self.driver)
+            self.response = self.scheduler.evaluate(samples, self.driver)
         else:
             self.response = self.evaluate_finite_differences(samples)
         return self.response
@@ -144,7 +144,7 @@ class FiniteDifference(Simulation):
 
         # stack samples and stencil points and evaluate entire batch
         combined_samples = np.vstack((samples, stencil_samples))
-        all_responses = self.scheduler.evaluate(combined_samples, driver=self.driver)[
+        all_responses = self.scheduler.evaluate(combined_samples, function=self.driver)[
             "result"
         ].reshape(combined_samples.shape[0], -1)
 

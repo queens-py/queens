@@ -68,7 +68,7 @@ def test_init():
 
 def test_evaluate(default_fd_model):
     """Test the evaluation method."""
-    default_fd_model.scheduler.evaluate = lambda x, driver: {
+    default_fd_model.scheduler.evaluate = lambda x, function: {
         "result": np.sum(x**2, axis=1, keepdims=True)
     }
     samples = np.random.random((3, 2))
@@ -94,7 +94,7 @@ def test_evaluate(default_fd_model):
     np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=5)
 
-    default_fd_model.scheduler.evaluate = lambda x, driver: {
+    default_fd_model.scheduler.evaluate = lambda x, function: {
         "result": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
     }
     samples = np.random.random((3, 4))
