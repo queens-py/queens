@@ -204,10 +204,6 @@ class Jobscript(Driver):
         num_procs,
         experiment_dir,
         experiment_name,
-        job_dir,
-        output_dir,
-        output_file,
-        log_file,
     ):
         """Run the driver.
 
@@ -217,15 +213,14 @@ class Jobscript(Driver):
             num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.
             experiment_name (str): name of QUEENS experiment.
-            job_dir (Path): Path to job directory.
-            output_dir (Path): Path to output directory.
-            output_file (Path): Path to output file(s).
-            log_file (Path): Path to log file.
 
         Returns:
             Result and potentially the gradient.
         """
+        # call manage paths again to ensure creation of the directories even if no logging to file
+        job_dir, output_dir = self._manage_paths(job_id, experiment_dir)
         input_files = self._manage_input_files(job_dir)
+        output_file, jobscript_log_file = self._manage_output_files(output_dir)
 
         sample_dict = self.parameters.sample_as_dict(sample)
 
@@ -258,7 +253,7 @@ class Jobscript(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
+            execute_cmd = f"bash {jobscript_file} >{jobscript_log_file} 2>&1"
             self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
@@ -282,6 +277,22 @@ class Jobscript(Driver):
             input_files[input_template_name] = job_dir / input_file_str
 
         return input_files
+
+    def _manage_output_files(self, output_dir):
+        """Manage output file paths for driver run.
+
+        Args:
+            output_dir (Path): Path to output directory.
+
+        Returns:
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
+        """
+        output_prefix = "output"
+        output_file = output_dir / output_prefix
+        log_file = output_dir / (output_prefix + ".log")
+
+        return output_file, log_file
 
     def _run_executable(self, job_id, execute_cmd):
         """Run executable.

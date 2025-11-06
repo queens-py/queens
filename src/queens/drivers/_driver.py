@@ -80,8 +80,11 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
-        job_dir, output_dir, output_file, log_file = self._manage_paths(job_id, experiment_dir)
-        worker_log_dir = output_dir if self.write_worker_log_files else None
+        _, worker_log_dir = (
+            self._manage_paths(job_id, experiment_dir)
+            if self.write_worker_log_files
+            else (None, None)
+        )
         self.logger_on_worker = setup_logger_on_worker(
             name=type(self).__name__, log_dir=worker_log_dir, level=self.worker_log_level
         )
@@ -92,10 +95,6 @@ class Driver(metaclass=abc.ABCMeta):
             num_procs,
             experiment_dir,
             experiment_name,
-            job_dir,
-            output_dir,
-            output_file,
-            log_file,
         )
 
     @abc.abstractmethod
@@ -106,10 +105,6 @@ class Driver(metaclass=abc.ABCMeta):
         num_procs,
         experiment_dir,
         experiment_name,
-        job_dir,
-        output_dir,
-        output_file,
-        log_file,
     ):
         """Abstract method for driver run.
 
@@ -119,15 +114,12 @@ class Driver(metaclass=abc.ABCMeta):
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
             experiment_name (str): name of QUEENS experiment.
-            job_dir (Path): Path to job directory.
-            output_dir (Path): Path to output directory.
-            output_file (Path): Path to output file(s).
-            log_file (Path): Path to log file.
 
         Returns:
             Result and potentially the gradient
         """
 
+    @final
     def _manage_paths(self, job_id, experiment_dir):
         """Manage paths for driver run.
 
@@ -145,8 +137,4 @@ class Driver(metaclass=abc.ABCMeta):
         output_dir = job_dir / "output"
         create_directory(output_dir)
 
-        output_prefix = "output"
-        output_file = output_dir / output_prefix
-        log_file = output_dir / (output_prefix + ".log")
-
-        return job_dir, output_dir, output_file, log_file
+        return job_dir, output_dir
