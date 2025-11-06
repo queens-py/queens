@@ -281,16 +281,18 @@ def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
     return wrapper
 
 
-def setup_logger_on_worker(name="worker", log_dir=None, level=logging.INFO):
+def setup_logger_on_worker(
+    name: str = "worker", log_dir: None | Path = None, level: int = logging.INFO
+) -> logging.Logger:
     """Setup a logger on a scheduler's worker.
 
     Args:
-        name (str): Name of the logger.
-        log_dir (Path): Path to the directory for the log file.
-        level (int): Logging level.
+        name: Name of the logger.
+        log_dir: Path to the directory for the log file.
+        level: Logging level.
 
     Returns:
-        logger (logging.Logger): Logger instance.
+        logger: Logger instance.
     """
     logger = logging.getLogger(name)
 
