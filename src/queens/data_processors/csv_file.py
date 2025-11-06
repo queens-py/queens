@@ -108,6 +108,7 @@ class CsvFile(DataProcessor):
         Returns:
             Instance of CsvFile class
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,

@@ -66,6 +66,7 @@ class PvdFile(DataProcessor):
             write_worker_log_files (bool): Control writing of worker logs to files (one per job)
                                            (default: True)
         """
+        # pylint: disable=duplicate-code
         super().__init__(
             file_name_identifier=file_name_identifier,
             file_options_dict=file_options_dict,
