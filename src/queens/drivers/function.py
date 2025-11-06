@@ -42,7 +42,7 @@ class Function(Driver):
         function,
         external_python_module_function=None,
         worker_log_level=logging.INFO,
-        write_worker_log_files=True,
+        write_worker_log_files=False,
     ):
         """Initialize Function object.
 
