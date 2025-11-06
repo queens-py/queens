@@ -18,7 +18,7 @@ from queens.utils.run_subprocess import run_subprocess
 from test_utils.get_queens_example_from_readme import get_queens_example_from_readme
 
 
-def test_queens_readme_example(tmp_path):
+def test_readme_example(tmp_path):
     """Test if the example in the readme runs."""
     # Disable plotting in the script
     example_source = "import matplotlib"

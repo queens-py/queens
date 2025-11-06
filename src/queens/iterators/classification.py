@@ -44,7 +44,7 @@ def default_classification_function(features):
     return ~np.isnan(features.astype(float))
 
 
-class ClassificationIterator(Iterator):
+class Classification(Iterator):
     """Iterator for machine leaning based classification.
 
     Attributes:

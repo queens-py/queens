@@ -33,29 +33,6 @@ def assert_monte_carlo_iterator_results(results, expected_mean, expected_var):
     )
 
 
-def assert_sobol_index_iterator_results(results, expected_results):
-    """Assert the equality of the results with the expected values.
-
-    Args:
-        results (dict): Results dictionary from pickle file
-        expected_results (dict): Dictionary with expected results
-    """
-    np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_results["S1"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["S1_conf"], expected_results["S1_conf"]
-    )
-
-    np.testing.assert_allclose(results["sensitivity_indices"]["ST"], expected_results["ST"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["ST_conf"], expected_results["ST_conf"]
-    )
-
-    np.testing.assert_allclose(results["sensitivity_indices"]["S2"], expected_results["S2"])
-    np.testing.assert_allclose(
-        results["sensitivity_indices"]["S2_conf"], expected_results["S2_conf"]
-    )
-
-
 def assert_surrogate_model_output(
     output, mean_ref, var_ref, grad_mean_ref=None, grad_var_ref=None, decimals=(2, 2, 2, 2)
 ):

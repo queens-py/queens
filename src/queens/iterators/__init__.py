@@ -25,7 +25,7 @@ if TYPE_CHECKING:
     from queens.iterators.bbvi import BBVI
     from queens.iterators.bmfia import BMFIA
     from queens.iterators.bmfmc import BMFMC
-    from queens.iterators.classification import ClassificationIterator
+    from queens.iterators.classification import Classification
     from queens.iterators.data import Data
     from queens.iterators.elementary_effects import ElementaryEffects
     from queens.iterators.grid import Grid
