@@ -19,6 +19,7 @@ import logging
 from pathlib import Path
 from typing import final
 
+from queens.utils.config_directories import create_directory, job_directory
 from queens.utils.logger_settings import setup_logger_on_worker
 
 _logger = logging.getLogger(__name__)
@@ -140,9 +141,9 @@ class Driver(metaclass=abc.ABCMeta):
             output_file (Path): Path to output file(s).
             log_file (Path): Path to log file.
         """
-        job_dir = experiment_dir / str(job_id)
+        job_dir = job_directory(experiment_dir, job_id)
         output_dir = job_dir / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
+        create_directory(output_dir)
 
         output_prefix = "output"
         output_file = output_dir / output_prefix

@@ -17,7 +17,7 @@
 import logging
 
 from queens.models.simulation import Simulation
-from queens.utils.config_directories import current_job_directory
+from queens.utils.config_directories import job_directory
 from queens.utils.io import write_to_csv
 from queens.utils.logger_settings import log_init_args
 
@@ -77,7 +77,7 @@ class Adjoint(Simulation):
 
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_objective in zip(last_job_ids, upstream_gradient):
-            job_dir = current_job_directory(experiment_dir, job_id)
+            job_dir = job_directory(experiment_dir, job_id)
             adjoint_file_path = job_dir.joinpath(self.adjoint_file)
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
