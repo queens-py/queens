@@ -117,6 +117,7 @@ def pytest_collection_modifyitems(items):
             if not check_item_for_marker(item, "max_time_for_test"):
                 item.add_marker(pytest.mark.max_time_for_test(10))
         elif "integration_tests/cluster/" in item.nodeid:
+            # Pytest markers are set individually in each cluster integration test
             continue
         elif "integration_tests/" in item.nodeid:
             item.add_marker(pytest.mark.integration_tests)
