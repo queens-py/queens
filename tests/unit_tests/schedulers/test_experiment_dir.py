@@ -115,3 +115,46 @@ def fixture_create_experiment_dir(experiment_dir):
     """Create the experiment directory."""
     os.mkdir(experiment_dir)
     assert experiment_dir.exists()
+
+
+@pytest.mark.parametrize("scheduler_class", [Local, Pool])
+def test_deletion_of_empty_experiment_dir(
+    global_settings, tmp_path, test_name, experiment_dir, scheduler_class
+):
+    """Test the deletion of an empty experiment directory.
+
+    The experiment directory should be deleted when exiting the global
+    settings context.
+    """
+    with global_settings:
+        scheduler_class(
+            experiment_name=test_name,
+            experiment_base_dir=tmp_path,
+        )
+        assert experiment_dir.exists()
+        assert not any(experiment_dir.iterdir())
+
+    assert not experiment_dir.exists()
+
+
+@pytest.mark.parametrize("scheduler_class", [Local, Pool])
+def test_deletion_of_experiment_dir_with_files(
+    global_settings, tmp_path, test_name, experiment_dir, scheduler_class
+):
+    """Test the deletion of an experiment directory containing files.
+
+    The experiment directory should NOT be deleted when exiting the
+    global settings context.
+    """
+    with global_settings:
+        scheduler_class(
+            experiment_name=test_name,
+            experiment_base_dir=tmp_path,
+        )
+        assert experiment_dir.exists()
+        test_file = experiment_dir / "test_file.txt"
+        test_file.write_text("test content")
+        assert test_file.exists()
+
+    assert experiment_dir.exists()
+    assert test_file.exists()
