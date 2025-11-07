@@ -17,6 +17,10 @@
 import abc
 import logging
 from pathlib import Path
+from typing import final
+
+from queens.utils.config_directories import create_directory, job_directory
+from queens.utils.logger_settings import setup_logger_on_worker
 
 _logger = logging.getLogger(__name__)
 
@@ -27,14 +31,26 @@ class Driver(metaclass=abc.ABCMeta):
     Attributes:
         parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
+        worker_log_level (int | str): Logging level used on the worker
+        write_worker_log_files (bool): Switch on/off writing of worker logs to files (one per job)
+        logger_on_worker (logging.Logger): Logger instance used on the worker
     """
 
-    def __init__(self, parameters, files_to_copy=None):
+    def __init__(
+        self,
+        parameters,
+        files_to_copy=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
+    ):
         """Initialize Driver object.
 
         Args:
             parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
         self.parameters = parameters
         if files_to_copy is None:
@@ -46,9 +62,13 @@ class Driver(metaclass=abc.ABCMeta):
                 raise TypeError("files_to_copy must be a list of strings or Path objects")
         self.files_to_copy = files_to_copy
 
-    @abc.abstractmethod
+        self.worker_log_level = worker_log_level
+        self.write_worker_log_files = write_worker_log_files
+        self.logger_on_worker = None
+
+    @final
     def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
-        """Abstract method for driver run.
+        """Run driver.
 
         Args:
             sample (dict): Dict containing sample
@@ -60,3 +80,61 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
+        _, worker_log_dir = (
+            self._manage_paths(job_id, experiment_dir)
+            if self.write_worker_log_files
+            else (None, None)
+        )
+        self.logger_on_worker = setup_logger_on_worker(
+            name=type(self).__name__, log_dir=worker_log_dir, level=self.worker_log_level
+        )
+
+        return self._run(
+            sample,
+            job_id,
+            num_procs,
+            experiment_dir,
+            experiment_name,
+        )
+
+    @abc.abstractmethod
+    def _run(
+        self,
+        sample,
+        job_id,
+        num_procs,
+        experiment_dir,
+        experiment_name,
+    ):
+        """Abstract method for driver run.
+
+        Args:
+            sample (dict): Dict containing sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
+
+        Returns:
+            Result and potentially the gradient
+        """
+
+    @final
+    def _manage_paths(self, job_id, experiment_dir):
+        """Manage paths for driver run.
+
+        Args:
+            job_id (int): Job ID.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            job_dir (Path): Path to job directory.
+            output_dir (Path): Path to output directory.
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
+        """
+        job_dir = job_directory(experiment_dir, job_id)
+        output_dir = job_dir / "output"
+        create_directory(output_dir)
+
+        return job_dir, output_dir

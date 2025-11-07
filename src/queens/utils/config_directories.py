@@ -83,8 +83,8 @@ def create_directory(dir_path: str | Path) -> None:
     create_folder_if_not_existent(dir_path)
 
 
-def current_job_directory(experiment_dir: Path, job_id: int) -> Path:
-    """Directory of the latest submitted job.
+def job_directory(experiment_dir: Path, job_id: int) -> Path:
+    """Directory of a specific job.
 
     Args:
         experiment_dir: Experiment directory
@@ -108,9 +108,9 @@ def job_dirs_in_experiment_dir(experiment_dir: Path | str) -> list[Path]:
     """
     experiment_dir = Path(experiment_dir)
     job_directories = []
-    for job_directory in experiment_dir.iterdir():
-        if job_directory.is_dir() and job_directory.name.isdigit():
-            job_directories.append(job_directory)
+    for job_dir in experiment_dir.iterdir():
+        if job_dir.is_dir() and job_dir.name.isdigit():
+            job_directories.append(job_dir)
 
     # Sort the jobs directories
     return sorted(job_directories, key=lambda x: int(x.name))

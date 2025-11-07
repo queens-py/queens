@@ -279,3 +279,46 @@ def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
         method(*args, **kwargs)
 
     return wrapper
+
+
+def setup_logger_on_worker(
+    name: str = "worker", log_dir: None | Path = None, level: int = logging.INFO
+) -> logging.Logger:
+    """Setup a logger on a scheduler's worker.
+
+    Args:
+        name: Name of the logger.
+        log_dir: Path to the directory for the log file.
+        level: Logging level.
+
+    Returns:
+        logger: Logger instance.
+    """
+    logger = logging.getLogger(name)
+
+    formatter = NewLineFormatter(
+        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
+    )
+
+    logger.setLevel(level)
+    # if the worker is set up for the first time
+    if not logger.hasHandlers():
+        stream_handler = logging.StreamHandler()
+        stream_handler.setFormatter(formatter)
+        logger.addHandler(stream_handler)
+
+    # Remove all FileHandlers, keep others (like StreamHandler)
+    # it should always have at least the StreamHandler from above but for safety
+    if logger.hasHandlers():
+        for handler in logger.handlers[:]:
+            if isinstance(handler, logging.FileHandler):
+                logger.removeHandler(handler)
+                handler.close()  # optional: closes the file descriptor
+
+    if log_dir is not None:
+        log_file = log_dir / "worker.log"
+        file_handler = logging.FileHandler(log_file)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger

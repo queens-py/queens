@@ -97,6 +97,8 @@ class Jobscript(Driver):
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=True,
     ):
         """Initialize Jobscript object.
 
@@ -113,8 +115,16 @@ class Jobscript(Driver):
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                                                           jobscript exit code.
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
-        super().__init__(parameters=parameters, files_to_copy=files_to_copy)
+        super().__init__(
+            parameters=parameters,
+            files_to_copy=files_to_copy,
+            worker_log_level=worker_log_level,
+            write_worker_log_files=write_worker_log_files,
+        )
         self.input_templates = self.create_input_templates_dict(input_templates)
         self.jobscript_template = self.get_read_in_jobscript_template(jobscript_template)
         self.files_to_copy.extend(self.input_templates.values())
@@ -187,7 +197,14 @@ class Jobscript(Driver):
 
         return jobscript_template
 
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(
+        self,
+        sample,
+        job_id,
+        num_procs,
+        experiment_dir,
+        experiment_name,
+    ):
         """Run the driver.
 
         Args:
@@ -195,14 +212,15 @@ class Jobscript(Driver):
             job_id (int): Job ID.
             num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): Name of QUEENS experiment.
+            experiment_name (str): name of QUEENS experiment.
 
         Returns:
             Result and potentially the gradient.
         """
-        job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
-            job_id, experiment_dir
-        )
+        # call manage paths again to ensure creation of the directories even if no logging to file
+        job_dir, output_dir = self._manage_paths(job_id, experiment_dir)
+        input_files = self._manage_input_files(job_dir)
+        output_file, jobscript_log_file = self._manage_output_files(output_dir)
 
         sample_dict = self.parameters.sample_as_dict(sample)
 
@@ -235,7 +253,7 @@ class Jobscript(Driver):
             )
 
         with metadata.time_code("run_jobscript"):
-            execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
+            execute_cmd = f"bash {jobscript_file} >{jobscript_log_file} 2>&1"
             self._run_executable(job_id, execute_cmd)
 
         with metadata.time_code("data_processing"):
@@ -244,34 +262,37 @@ class Jobscript(Driver):
 
         return results
 
-    def _manage_paths(self, job_id, experiment_dir):
+    def _manage_input_files(self, job_dir):
         """Manage paths for driver run.
 
         Args:
-            job_id (int): Job ID.
-            experiment_dir (Path): Path to QUEENS experiment directory.
+            job_dir (Path): Path to job directory.
 
         Returns:
-            job_dir (Path): Path to job directory.
-            output_dir (Path): Path to output directory.
-            output_file (Path): Path to output file(s).
             input_files (dict): Dict with name and path of the input file(s).
-            log_file (Path): Path to log file.
         """
-        job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / "output"
-        output_dir.mkdir(parents=True, exist_ok=True)
-
-        output_prefix = "output"
-        output_file = output_dir / output_prefix
-        log_file = output_dir / (output_prefix + ".log")
-
         input_files = {}
         for input_template_name, input_template_path in self.input_templates.items():
             input_file_str = input_template_name + "".join(input_template_path.suffixes)
             input_files[input_template_name] = job_dir / input_file_str
 
-        return job_dir, output_dir, output_file, input_files, log_file
+        return input_files
+
+    def _manage_output_files(self, output_dir):
+        """Manage output file paths for driver run.
+
+        Args:
+            output_dir (Path): Path to output directory.
+
+        Returns:
+            output_file (Path): Path to output file(s).
+            log_file (Path): Path to log file.
+        """
+        output_prefix = "output"
+        output_file = output_dir / output_prefix
+        log_file = output_dir / (output_prefix + ".log")
+
+        return output_file, log_file
 
     def _run_executable(self, job_id, execute_cmd):
         """Run executable.
@@ -306,12 +327,12 @@ class Jobscript(Driver):
         result = None
         if self.data_processor:
             result = self.data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got result: %s", result)
+            self.logger_on_worker.info("Got result: %s", result)
 
         gradient = None
         if self.gradient_data_processor:
             gradient = self.gradient_data_processor.get_data_from_file(output_dir)
-            _logger.debug("Got gradient: %s", gradient)
+            self.logger_on_worker.info("Got gradient: %s", gradient)
         return result, gradient
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):

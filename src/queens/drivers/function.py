@@ -41,6 +41,8 @@ class Function(Driver):
         parameters,
         function,
         external_python_module_function=None,
+        worker_log_level=logging.INFO,
+        write_worker_log_files=False,
     ):
         """Initialize Function object.
 
@@ -48,8 +50,15 @@ class Function(Driver):
             parameters (Parameters): Parameters object
             function (callable, str): Function or name of example function provided by QUEENS
             external_python_module_function (Path | str): Path to external module with function
+            worker_log_level (int | str): Logging level used on the worker (default: "INFO")
+            write_worker_log_files (bool): Control writing of worker logs to files (one per job)
+                                           (default: True)
         """
-        super().__init__(parameters=parameters)
+        super().__init__(
+            parameters=parameters,
+            worker_log_level=worker_log_level,
+            write_worker_log_files=write_worker_log_files,
+        )
         if external_python_module_function is None:
             if isinstance(function, str):
                 # Try to load existing simulator functions
@@ -112,15 +121,22 @@ class Function(Driver):
 
         return reshaped_output_function
 
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def _run(
+        self,
+        sample,
+        job_id,
+        num_procs,
+        experiment_dir,
+        experiment_name,
+    ):
         """Run the driver.
 
         Args:
             sample (dict): Dict containing sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
 
         Returns:
             Result and potentially the gradient
