@@ -31,14 +31,25 @@ def test_init():
     assert model_obj.driver == driver
 
 
-def test_evaluate():
+@pytest.fixture(name="scheduler_response")
+def fixture_scheduler_response():
+    """Scheduler response fixture."""
+
+    def scheduler_response(samples, driver, job_ids=None):  # pylint: disable=unused-argument
+        """Scheduler response."""
+        return [{"result": x**2, "gradient": 2 * x} for x in samples]
+
+    return scheduler_response
+
+
+def test_evaluate(scheduler_response):
     """Test the evaluation method."""
     model_obj = Simulation(scheduler=Mock(), driver=Mock())
-    model_obj.scheduler.evaluate = lambda x, driver: {"mean": x**2, "gradient": 2 * x}
+    model_obj.scheduler.evaluate = scheduler_response
 
     samples = np.array([[2.0]])
     response = model_obj.evaluate(samples)
-    expected_response = {"mean": samples**2, "gradient": 2 * samples}
+    expected_response = {"result": samples**2, "gradient": 2 * samples}
     assert response == expected_response
     assert model_obj.response == expected_response
 

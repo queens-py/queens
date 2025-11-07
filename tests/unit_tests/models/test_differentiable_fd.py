@@ -18,7 +18,6 @@ import numpy as np
 import pytest
 from mock import Mock
 
-from queens.models._model import Model
 from queens.models.finite_difference import FiniteDifference
 from queens.utils.valid_options import InvalidOptionError
 
@@ -66,45 +65,65 @@ def test_init():
         )
 
 
-def test_evaluate(default_fd_model):
+@pytest.fixture(name="scheduler_response")
+def fixture_scheduler_response():
+    """Scheduler response fixture."""
+
+    def scheduler_response(samples, driver, job_ids=None):  # pylint: disable=unused-argument
+        """Scheduler response."""
+        return [{"result": np.sum(x**2)} for x in samples]
+
+    return scheduler_response
+
+
+def test_evaluate(default_fd_model, scheduler_response):
     """Test the evaluation method."""
-    default_fd_model.scheduler.evaluate = lambda x, function: {
-        "result": np.sum(x**2, axis=1, keepdims=True)
-    }
+    default_fd_model.scheduler.evaluate = scheduler_response
     samples = np.random.random((3, 2))
 
     expected_mean = np.sum(samples**2, axis=1, keepdims=True)
     expected_grad = 2 * samples[:, np.newaxis, :]
 
     response = default_fd_model.evaluate(samples)
-    assert len(response) == 1
     np.testing.assert_array_equal(response["result"], expected_mean)
-    assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response["result"], expected_mean)
+    assert len(response) == 1
 
-    Model.evaluate_and_gradient_bool = False
+    default_fd_model.evaluate_and_gradient_bool = False
     response = default_fd_model.evaluate(samples)
-    assert len(response) == 1
     np.testing.assert_array_equal(response["result"], expected_mean)
-    assert len(default_fd_model.response) == 1
     np.testing.assert_array_equal(default_fd_model.response["result"], expected_mean)
+    assert len(response) == 1
 
-    Model.evaluate_and_gradient_bool = True
+    default_fd_model.evaluate_and_gradient_bool = True
     response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=5)
 
-    default_fd_model.scheduler.evaluate = lambda x, function: {
-        "result": np.array([np.sum(x**2, axis=1), np.sum(2 * x**2, axis=1)]).T
-    }
+
+@pytest.fixture(name="scheduler_response_2d")
+def fixture_scheduler_response_2d():
+    """Scheduler response with gradient fixture."""
+
+    def scheduler_response(samples, driver, job_ids=None):  # pylint: disable=unused-argument
+        """Scheduler response."""
+        return [{"result": np.array([np.sum(x**2), np.sum(2 * x**2)])} for x in samples]
+
+    return scheduler_response
+
+
+def test_evaluate_with_grad_2d(default_fd_model, scheduler_response_2d):
+    """Test the evaluation method with gradient."""
+    default_fd_model.scheduler.evaluate = scheduler_response_2d
+    default_fd_model.evaluate_and_gradient_bool = True
+
     samples = np.random.random((3, 4))
 
-    expected_grad = np.swapaxes(np.array([2 * samples, 4 * samples]), 0, 1)
     expected_mean = np.array([np.sum(samples**2, axis=1), np.sum(2 * samples**2, axis=1)]).T
+    expected_grad = np.swapaxes(np.array([2 * samples, 4 * samples]), 0, 1)
     response = default_fd_model.evaluate(samples)
     np.testing.assert_array_almost_equal(expected_mean, response["result"], decimal=5)
     np.testing.assert_array_almost_equal(expected_grad, response["gradient"], decimal=4)
-    Model.evaluate_and_gradient_bool = False
 
 
 def test_grad(default_fd_model):

@@ -58,12 +58,20 @@ def test_init():
     assert model_obj.adjoint_file == adjoint_file
 
 
-def test_evaluate(default_adjoint_model):
+@pytest.fixture(name="scheduler_response")
+def fixture_scheduler_response():
+    """Scheduler fixture."""
+
+    def scheduler_response(samples, driver, job_ids=None):  # pylint: disable=unused-argument
+        """Scheduler response."""
+        return [{"result": x**2, "gradient": 2 * x} for x in samples]
+
+    return scheduler_response
+
+
+def test_evaluate(default_adjoint_model, scheduler_response):
     """Test the evaluation method."""
-    default_adjoint_model.scheduler.evaluate = lambda x, driver: {
-        "result": x**2,
-        "gradient": 2 * x,
-    }
+    default_adjoint_model.scheduler.evaluate = scheduler_response
     samples = np.array([[2.0]])
     response = default_adjoint_model.evaluate(samples)
     expected_response = {"result": samples**2, "gradient": 2 * samples}
@@ -71,13 +79,13 @@ def test_evaluate(default_adjoint_model):
     assert default_adjoint_model.response == expected_response
 
 
-def test_grad(default_adjoint_model):
+def test_grad(default_adjoint_model, scheduler_response):
     """Test grad method."""
     experiment_dir = Path("path_to_experiment_dir")
     adjoint.write_to_csv = Mock()
     default_adjoint_model.scheduler.next_job_id = 7
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
-    default_adjoint_model.scheduler.evaluate = lambda x, function, job_ids: {"result": x**2}
+    default_adjoint_model.scheduler.evaluate = scheduler_response
 
     np.random.seed(42)
     samples = np.random.random((2, 3))

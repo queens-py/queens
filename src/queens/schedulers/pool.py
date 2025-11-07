@@ -18,7 +18,6 @@ import logging
 from collections.abc import Iterable
 from functools import partial
 
-import numpy as np
 from tqdm import tqdm
 
 from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
@@ -82,15 +81,4 @@ class Pool(Scheduler):
         else:
             results = list(map(run_function, samples, job_ids))
 
-        output = {}
-        # check if gradient is returned --> tuple
-        if isinstance(results[0], tuple):
-            results_iterator, gradient_iterator = zip(*results)
-            results_array = np.array(list(results_iterator))
-            gradients_array = np.array(list(gradient_iterator))
-            output["gradient"] = gradients_array
-        else:
-            results_array = np.array(results)
-
-        output["result"] = results_array
-        return output
+        return results

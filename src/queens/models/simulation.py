@@ -14,6 +14,8 @@
 #
 """Simulation model class."""
 
+from collections.abc import Iterable
+
 import numpy as np
 
 from queens.models._model import Model
@@ -41,7 +43,7 @@ class Simulation(Model):
         self.driver = driver
         self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
 
-    def _evaluate(self, samples):
+    def _evaluate(self, samples: Iterable) -> dict:
         """Evaluate model with current set of input samples.
 
         Args:
@@ -50,8 +52,39 @@ class Simulation(Model):
         Returns:
             response (dict): Response of the underlying model at input samples
         """
-        self.response = self.scheduler.evaluate(samples, self.driver)
+        self.response = self.create_result_dict_from_scheduler_output(
+            self.scheduler.evaluate(samples, self.driver)
+        )
         return self.response
+
+    @staticmethod
+    def create_result_dict_from_scheduler_output(scheduler_response: list) -> dict[str, np.ndarray]:
+        """Create a dictionary from scheduler response.
+
+        Args:
+            scheduler_response (list): Results from scheduler.
+
+        Returns:
+            dict: results and eventually graident values.
+        """
+        results = {}
+
+        for response in scheduler_response:
+
+            for result_name, result_value in response.items():
+                if result_name not in results:
+                    results[result_name] = []
+
+                if result_name == "result":
+                    # We should remove this squeeze!
+                    # It is only introduced for consistency with old test.
+                    results[result_name].append(np.atleast_1d(np.array(result_value).squeeze()))
+                else:
+                    results[result_name].append(result_value)
+
+        return {
+            result_name: np.array(result_value) for result_name, result_value in results.items()
+        }
 
     def grad(self, samples, upstream_gradient):
         r"""Evaluate gradient of model w.r.t. current set of input samples.

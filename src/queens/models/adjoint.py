@@ -82,7 +82,7 @@ class Adjoint(Simulation):
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
-        gradient = self.scheduler.evaluate(
-            samples, function=self.gradient_driver, job_ids=last_job_ids
+        gradient = self.create_result_dict_from_scheduler_output(
+            self.scheduler.evaluate(samples, self.gradient_driver, job_ids=last_job_ids)
         )["result"]
         return gradient
