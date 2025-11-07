@@ -174,7 +174,7 @@ class Parameters:
             if parameter.dimension is None:
                 raise ValueError(f"Dimension of the parameter {parameter} is not set.")
             if not isinstance(parameter, HasGradLogPDF):
-                raise AttributeError(f"Parameter {parameter} does not have a grad_logpdf function.")
+                raise ValueError(f"Parameter {parameter} does not have a grad_logpdf function.")
 
             grad_logpdf[:, j : j + parameter.dimension] = parameter.grad_logpdf(
                 samples[:, j : j + parameter.dimension]
@@ -232,9 +232,7 @@ class Parameters:
                 raise ValueError("Only 1D Random variables can be transformed!")
 
             if not isinstance(parameter, HasPPF):
-                raise AttributeError(
-                    f"Parameter {parameter} does not have a percent point function."
-                )
+                raise ValueError(f"Parameter {parameter} does not have a percent point function.")
 
             transformed_samples[:, i] = parameter.ppf(samples[:, i])
         return transformed_samples

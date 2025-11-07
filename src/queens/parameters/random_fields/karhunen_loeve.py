@@ -131,7 +131,7 @@ class KarhunenLoeve(RandomField):
         """
         if not isinstance(self.distribution, HasGradLogPDF):
             raise TypeError(
-                "The distribution does not have a method for the gradient of the log-PDF."
+                f"The distribution {self.distribution} does not have a grad_logpdf function."
             )
 
         return self.distribution.grad_logpdf(samples)

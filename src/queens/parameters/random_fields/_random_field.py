@@ -57,7 +57,7 @@ class RandomField(metaclass=abc.ABCMeta):
             num_samples (int): Batch size of samples to draw
 
         Returns:
-            Gradient of the log-PDF
+            Drawn samples
         """
 
     @abc.abstractmethod

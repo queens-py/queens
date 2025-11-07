@@ -90,7 +90,8 @@ class PieceWise(RandomField):
         """
         if not isinstance(self.latent_1d_distribution, HasGradLogPDF):
             raise TypeError(
-                "The distribution does not have a method for the gradient of the log-PDF."
+                f"The latent 1D distribution {self.latent_1d_distribution} does not have a "
+                "grad_logpdf function."
             )
 
         return self.latent_1d_distribution.grad_logpdf(samples.reshape(-1, 1)).reshape(

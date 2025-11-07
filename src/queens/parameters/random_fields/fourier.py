@@ -49,7 +49,7 @@ class Fourier(RandomField):
         field_dimension: Physical dimension of the random field
         number_expansion_terms: Number of frequencies in all directions
         dimension: Dimension of latent space
-        convex_hull_size: Eucledian distance between furthest apart coordinates in the field
+        convex_hull_size: Euclidean distance between furthest apart coordinates in the field
     """
 
     def __init__(
@@ -160,12 +160,11 @@ class Fourier(RandomField):
             Gradient of the log-PDF
         """
         if not isinstance(self.distribution, HasGradLogPDF):
-            raise AttributeError(
-                f"Distribution {self.distribution} does not have a grad_logpdf function."
+            raise TypeError(
+                f"The distribution {self.distribution} does not have a grad_logpdf function."
             )
 
-        gradient = self.distribution.grad_logpdf(samples)
-        return gradient
+        return self.distribution.grad_logpdf(samples)
 
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand latent representation of samples.
