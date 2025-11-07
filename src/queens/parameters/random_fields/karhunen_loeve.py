@@ -17,6 +17,7 @@
 import logging
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.spatial.distance import pdist, squareform
 
 from queens.distributions.mean_field_normal import MeanFieldNormal
@@ -47,7 +48,7 @@ class KarhunenLoeve(RandomField):
     def __init__(
         self,
         coords: dict,
-        mean: float | np.ndarray = 0.0,
+        mean: ArrayLike = 0.0,
         std: float = 1.0,
         corr_length: float = 0.3,
         explained_variance: float | None = None,

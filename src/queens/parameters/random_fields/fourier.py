@@ -17,6 +17,7 @@
 from typing import TypeAlias
 
 import numpy as np
+from numpy.typing import ArrayLike
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from scipy.spatial.distance import pdist
 
@@ -54,7 +55,7 @@ class Fourier(RandomField):
     def __init__(
         self,
         coords: dict,
-        mean: float | np.ndarray = 0.0,
+        mean: ArrayLike = 0.0,
         std: float = 1.0,
         corr_length: float = 0.3,
         variability: float = 0.98,

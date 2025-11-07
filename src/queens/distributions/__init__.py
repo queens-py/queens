@@ -16,6 +16,8 @@
 
 Modules for probability distributions.
 """
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map
@@ -39,5 +41,5 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name: str) -> "Distribution":
+def __getattr__(name: str) -> Distribution:
     return import_class_from_class_module_map(name, class_module_map, __name__)
