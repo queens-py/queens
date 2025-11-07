@@ -14,7 +14,10 @@
 #
 """Test remote 4C simulations with ensight data-processor."""
 
+import getpass
+import json
 import logging
+from dataclasses import asdict, dataclass
 from pathlib import Path
 
 import numpy as np
@@ -29,12 +32,16 @@ from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.utils.io import load_result
-from tests.integration_tests.conftest import (  # BRUTEFORCE_CLUSTER_TYPE,
-    CHARON_CLUSTER_TYPE,
-    THOUGHT_CLUSTER_TYPE,
-)
+from queens.utils.path import relative_path_from_root
+from queens.utils.remote_operations import RemoteConnection
+from test_utils.integration_tests import fourc_build_paths_from_home
 
 _logger = logging.getLogger(__name__)
+
+
+THOUGHT_CLUSTER_TYPE = "thought"
+BRUTEFORCE_CLUSTER_TYPE = "bruteforce"
+CHARON_CLUSTER_TYPE = "charon"
 
 
 @pytest.mark.parametrize(
@@ -204,3 +211,159 @@ class TestDaskCluster:
         )
         result = remote_connection.run(command, in_stream=False)
         _logger.debug("Deleting old simulation data:\n%s", result.stdout)
+
+
+@dataclass(frozen=True)
+class ClusterConfig:
+    """Configuration data of cluster.
+
+    Attributes:
+        name (str):                         name of cluster
+        host (str):                         hostname or ip address to reach cluster from network
+        workload_manager (str):             type of work load scheduling software (PBS or SLURM)
+        jobscript_template (Path):          absolute path to jobscript template file
+        cluster_internal_address (str)      ip address of login node in cluster internal network
+        default_python_path (str):          path indicating the default remote python location
+        cluster_script_path (Path):          path to the cluster_script which defines functions
+                                            needed for the jobscript
+        queue (str, opt):                   Destination queue for each worker job
+    """
+
+    name: str
+    host: str
+    workload_manager: str
+    jobscript_template: Path
+    cluster_internal_address: str | None
+    default_python_path: str
+    cluster_script_path: Path
+    queue: str | None = None
+
+    dict = asdict
+
+
+THOUGHT_CONFIG = ClusterConfig(
+    name="thought",
+    host="129.187.58.22",
+    workload_manager="slurm",
+    queue="normal",
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_thought.sh"),
+    cluster_internal_address=None,
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+)
+
+
+BRUTEFORCE_CONFIG = ClusterConfig(
+    name="bruteforce",
+    host="bruteforce.lnm.ed.tum.de",
+    workload_manager="slurm",
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_bruteforce.sh"),
+    cluster_internal_address="10.10.0.1",
+    default_python_path="$HOME/anaconda/miniconda/envs/queens/bin/python",
+    cluster_script_path=Path("/lnm/share/donottouch.sh"),
+)
+CHARON_CONFIG = ClusterConfig(
+    name="charon",
+    host="charon.bauv.unibw-muenchen.de",
+    workload_manager="slurm",
+    jobscript_template=relative_path_from_root("templates/jobscripts/fourc_charon.sh"),
+    cluster_internal_address="192.168.2.253",
+    default_python_path="$HOME/miniconda3/envs/queens/bin/python",
+    cluster_script_path=Path(),
+)
+
+CLUSTER_CONFIGS = {
+    THOUGHT_CLUSTER_TYPE: THOUGHT_CONFIG,
+    BRUTEFORCE_CLUSTER_TYPE: BRUTEFORCE_CONFIG,
+    CHARON_CLUSTER_TYPE: CHARON_CONFIG,
+}
+
+
+# CLUSTER TESTS ------------------------------------------------------------------------------------
+@pytest.fixture(name="user", scope="session")
+def fixture_user():
+    """Name of user calling the test suite."""
+    return getpass.getuser()
+
+
+@pytest.fixture(name="remote_user", scope="session")
+def fixture_remote_user(pytestconfig):
+    """Name of cluster account user used in tests."""
+    return pytestconfig.getoption("remote_user")
+
+
+@pytest.fixture(name="gateway", scope="session")
+def fixture_gateway(pytestconfig):
+    """Gateway connection (proxyjump)."""
+    gateway = pytestconfig.getoption("gateway")
+    if isinstance(gateway, str):
+        gateway = json.loads(gateway)
+    return gateway
+
+
+@pytest.fixture(name="cluster", scope="session")
+def fixture_cluster(request):
+    """Name of the cluster to run a test on.
+
+    The actual parameterization is done on a per test basis which also
+    defines the parameterized markers of the tests.
+    """
+    return request.param
+
+
+@pytest.fixture(name="cluster_settings", scope="session")
+def fixture_cluster_settings(
+    cluster, remote_user, gateway, remote_python, remote_queens_repository
+):
+    """All cluster settings."""
+    settings = CLUSTER_CONFIGS.get(cluster).dict()
+    _logger.debug("raw cluster config: %s", settings)
+    settings["cluster"] = cluster
+    settings["user"] = remote_user
+    settings["remote_python"] = remote_python
+    settings["remote_queens_repository"] = remote_queens_repository
+    settings["gateway"] = gateway
+    return settings
+
+
+@pytest.fixture(name="remote_python", scope="session")
+def fixture_remote_python(pytestconfig):
+    """Path to the Python environment on remote host."""
+    return pytestconfig.getoption("remote_python")
+
+
+@pytest.fixture(name="remote_connection", scope="session")
+def fixture_remote_connection(cluster_settings):
+    """A fabric connection to a remote host."""
+    return RemoteConnection(
+        host=cluster_settings["host"],
+        user=cluster_settings["user"],
+        remote_python=cluster_settings["remote_python"],
+        remote_queens_repository=cluster_settings["remote_queens_repository"],
+        gateway=cluster_settings["gateway"],
+    )
+
+
+@pytest.fixture(name="remote_queens_repository", scope="session")
+def fixture_remote_queens_repository(pytestconfig):
+    """Path to the queens repository on remote host."""
+    remote_queens = pytestconfig.getoption("remote_queens_repository", skip=True)
+    return remote_queens
+
+
+@pytest.fixture(name="fourc_cluster_path", scope="session")
+def fixture_fourc_cluster_path(remote_connection):
+    """Paths to 4C executable on the clusters.
+
+    Checks also for existence of the executable.
+    """
+    result = remote_connection.run("echo ~", in_stream=False)
+    remote_home = Path(result.stdout.rstrip())
+
+    fourc, _, _ = fourc_build_paths_from_home(remote_home)
+
+    # Check for existence of 4C on remote machine.
+    find_result = remote_connection.run(f"find {fourc}", in_stream=False)
+    Path(find_result.stdout.rstrip())
+
+    return fourc

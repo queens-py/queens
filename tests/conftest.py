@@ -110,14 +110,16 @@ def pytest_collection_modifyitems(items):
     for item in items:
         if "benchmarks/" in item.nodeid:
             item.add_marker(pytest.mark.benchmark)
-        elif "integration_tests/python/" in item.nodeid:
-            item.add_marker(pytest.mark.integration_tests)
+        elif "integration_tests/fourc/" in item.nodeid:
+            item.add_marker(pytest.mark.integration_tests_fourc)
 
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):
                 item.add_marker(pytest.mark.max_time_for_test(10))
-        elif "integration_tests/fourc/" in item.nodeid:
-            item.add_marker(pytest.mark.integration_tests_fourc)
+        elif "integration_tests/cluster/" in item.nodeid:
+            continue
+        elif "integration_tests/" in item.nodeid:
+            item.add_marker(pytest.mark.integration_tests)
 
             # Add default max_time_for_test if none was set
             if not check_item_for_marker(item, "max_time_for_test"):

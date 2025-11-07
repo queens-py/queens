@@ -15,9 +15,11 @@
 """Integration tests for the Metropolis Hastings iterator."""
 
 import numpy as np
+import pandas as pd
 import pytest
 from mock import patch
 
+from example_simulator_functions.gaussian_logpdf import GAUSSIAN_2D, gaussian_2d_logpdf
 from queens.distributions.normal import Normal
 from queens.drivers.function import Function
 from queens.iterators.metropolis_hastings import MetropolisHastings
@@ -250,3 +252,19 @@ def test_metropolis_hastings_multivariate_gaussian_multiple_chains(
             ]
         ),
     )
+
+
+@pytest.fixture(name="_create_experimental_data_gaussian_2d")
+def fixture_create_experimental_data_gaussian_2d(tmp_path):
+    """Create a csv file with experimental data from a 2D Gaussian."""
+    # generate 10 samples from the same gaussian
+    samples = GAUSSIAN_2D.draw(10)
+    pdf = gaussian_2d_logpdf(samples)
+
+    pdf = np.array(pdf)
+
+    # write the data to a csv file in tmp_path
+    data_dict = {"y_obs": pdf}
+    experimental_data_path = tmp_path / "experimental_data.csv"
+    df = pd.DataFrame.from_dict(data_dict)
+    df.to_csv(experimental_data_path, index=False)

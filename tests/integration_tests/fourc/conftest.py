@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Pytest configuration for 4C integration tests."""
+"""Fixtures for the 4C integration tests."""
 
 import pytest
 

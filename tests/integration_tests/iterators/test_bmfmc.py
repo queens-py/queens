@@ -17,10 +17,13 @@
 The test is based on the high-fidelity Currin function.
 """
 
-# pylint: disable=invalid-name
 import numpy as np
+
+# pylint: disable=invalid-name
+import pytest
 from scipy.stats import entropy
 
+from example_simulator_functions.currin88 import currin88_hifi, currin88_lofi
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.bmfmc import BMFMC
@@ -31,7 +34,8 @@ from queens.models.surrogates.gaussian_process import GaussianProcess
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
-from queens.utils.pdf_estimation import estimate_pdf
+from queens.utils.pdf_estimation import estimate_bandwidth_for_kde, estimate_pdf
+from queens.utils.process_outputs import write_results
 
 
 # ---- actual integration tests -------------------------------------------------
@@ -118,3 +122,80 @@ def test_bmfmc_currin88_random_vars_diverse_design(
 
     kl_divergence = entropy(p_yhf_mc, results["raw_output_data"]["p_yhf_mean"])
     assert kl_divergence < 0.3
+
+
+@pytest.fixture(name="monte_carlo_samples_x")
+def fixture_monte_carlo_samples_x():
+    """1000 uniform Monte Carlo samples for x1 and x2 between 0 and 1."""
+    np.random.seed(1)
+    n_samples = 1000
+    monte_carlo_samples_x = np.random.uniform(low=0.0, high=1.0, size=(n_samples, 2))
+    return monte_carlo_samples_x
+
+
+@pytest.fixture(name="lf_mc_data")
+def fixture_lf_mc_data(monte_carlo_samples_x):
+    """Samples of low-fidelity model output using currin88_lofi."""
+    y = []
+    for x_vec in monte_carlo_samples_x:
+        params = {"x1": x_vec[0], "x2": x_vec[1]}
+        y.append(currin88_lofi(**params))
+
+    y_lf_mc = np.array(y).reshape((monte_carlo_samples_x.shape[0], -1))
+
+    return y_lf_mc
+
+
+@pytest.fixture(name="hf_mc_data")
+def fixture_hf_mc_data(monte_carlo_samples_x):
+    """Samples of high-fidelity model output using currin88_hifi."""
+    y = []
+    for x_vec in monte_carlo_samples_x:
+        params = {"x1": x_vec[0], "x2": x_vec[1]}
+        y.append(currin88_hifi(**params))
+
+    y_lf_mc = np.array(y).reshape((monte_carlo_samples_x.shape[0], -1))
+
+    return y_lf_mc
+
+
+@pytest.fixture(name="bandwidth_lf_mc")
+def fixture_bandwidth_lf_mc(lf_mc_data):
+    """Estimated bandwidth for KDE for low-fidelity data."""
+    bandwidth_lf_mc = estimate_bandwidth_for_kde(
+        lf_mc_data[:, 0], np.amin(lf_mc_data[:, 0]), np.amax(lf_mc_data[:, 0])
+    )
+    return bandwidth_lf_mc
+
+
+@pytest.fixture(name="_write_lf_mc_data_to_pickle")
+def fixture_write_lf_mc_data_to_pickle(tmp_path, monte_carlo_samples_x, lf_mc_data):
+    """Write low-fidelity model data to a pickle file."""
+    file_name = "LF_MC_data.pickle"
+    input_description = {
+        "x1": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+        },
+        "x2": {
+            "type": "uniform",
+            "lower_bound": 0.0,
+            "upper_bound": 1.0,
+        },
+    }
+    data = {
+        "input_data": monte_carlo_samples_x,
+        "input_description": input_description,
+        "output": lf_mc_data,
+        "eigenfunc": None,
+        "eigenvalue": None,
+    }
+    write_results(data, tmp_path / file_name)
+
+
+@pytest.fixture(name="design_method", params=["random", "diverse_subset"])
+def fixture_design_method(request):
+    """Different design methods for parameterized tests."""
+    design = request.param
+    return design

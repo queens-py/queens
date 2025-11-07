@@ -36,14 +36,6 @@ from queens.utils.io import load_result
 from queens.variational_distributions import MeanFieldNormal
 
 
-@pytest.fixture(name="expected_variational_mean")
-def fixture_expected_variational_mean():
-    """Expected variational mean values."""
-    exp_var_mean = np.array([0.51, 0.5]).reshape(-1, 1)
-
-    return exp_var_mean
-
-
 @pytest.mark.max_time_for_test(30)
 def test_bmfia_sequential_monte_carlo_park91a(
     tmp_path,
@@ -358,3 +350,74 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
     # some tests / asserts here
     np.testing.assert_array_almost_equal(variational_mean, expected_variational_mean_nn, decimal=1)
     np.testing.assert_array_almost_equal(variational_cov, expected_variational_cov_nn, decimal=1)
+
+
+@pytest.fixture(name="expected_variational_mean")
+def fixture_expected_variational_mean():
+    """Expected variational mean values."""
+    exp_var_mean = np.array([0.51, 0.5]).reshape(-1, 1)
+
+    return exp_var_mean
+
+
+@pytest.fixture(name="expected_samples")
+def fixture_expected_samples():
+    """Expected SMC samples."""
+    samples = np.array(
+        [
+            [0.51711296, 0.55200585],
+            [0.4996905, 0.6673229],
+            [0.48662203, 0.68802404],
+            [0.49806929, 0.66276797],
+            [0.49706481, 0.68586978],
+            [0.50424704, 0.65139028],
+            [0.51437955, 0.57678317],
+            [0.51275639, 0.58981357],
+            [0.50163956, 0.65389397],
+            [0.52127371, 0.61237995],
+        ]
+    )
+
+    return samples
+
+
+@pytest.fixture(name="expected_weights")
+def fixture_expected_weights():
+    """Expected SMC weights."""
+    weights = np.array(
+        [
+            0.00183521,
+            0.11284748,
+            0.16210619,
+            0.07066473,
+            0.10163831,
+            0.09845534,
+            0.10742886,
+            0.15461861,
+            0.09222745,
+            0.0981778,
+        ]
+    )
+    return weights
+
+
+@pytest.fixture(name="expected_variational_cov")
+def fixture_expected_variational_cov():
+    """Expected variational covariance."""
+    exp_var_cov = np.array([[0.00142648, 0.0], [0.0, 0.00347234]])
+    return exp_var_cov
+
+
+@pytest.fixture(name="expected_variational_mean_nn")
+def fixture_expected_variational_mean_nn():
+    """Expected variational mean."""
+    exp_var_mean = np.array([0.19221321, 0.33134219]).reshape(-1, 1)
+
+    return exp_var_mean
+
+
+@pytest.fixture(name="expected_variational_cov_nn")
+def fixture_expected_variational_cov_nn():
+    """Expected variational covariance."""
+    exp_var_cov = np.array([[0.01245263, 0.0], [0.0, 0.01393423]])
+    return exp_var_cov
