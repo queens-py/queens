@@ -43,8 +43,6 @@ class Mpi(Jobscript):
             input_templates (str, Path, dict): path to simulation input template
             executable (str, Path): path to main executable of respective software
             files_to_copy (list, opt): files or directories to copy to experiment_dir
-            data_processor (obj, opt): instance of data processor class
-            gradient_data_processor (obj, opt): instance of data processor class for gradient data
             mpi_cmd (str, opt): mpi command
         """
         # pylint: disable=duplicate-code
@@ -57,7 +55,5 @@ class Mpi(Jobscript):
             jobscript_template=_JOBSCRIPT_TEMPLATE,
             executable=executable,
             files_to_copy=files_to_copy,
-            data_processor=data_processor,
-            gradient_data_processor=gradient_data_processor,
             extra_options=extra_options,
         )

@@ -94,8 +94,6 @@ class Jobscript(Driver):
         jobscript_template,
         executable,
         files_to_copy=None,
-        data_processor=None,
-        gradient_data_processor=None,
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
@@ -120,8 +118,6 @@ class Jobscript(Driver):
         self.input_templates = self.create_input_templates_dict(input_templates)
         self.jobscript_template = self.get_read_in_jobscript_template(jobscript_template)
         self.files_to_copy.extend(self.input_templates.values())
-        self.data_processor = data_processor
-        self.gradient_data_processor = gradient_data_processor
 
         if extra_options is None:
             extra_options = {}
@@ -191,12 +187,13 @@ class Jobscript(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
+        job_dir: Path,
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,
-    ) -> dict:
+    ) -> None:
         """Run the driver.
 
         Args:
@@ -205,17 +202,12 @@ class Jobscript(Driver):
             num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.
             experiment_name (str): Name of QUEENS experiment.
-
-        Returns:
-            Result and potentially the gradient.
         """
-        job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
-            job_id, experiment_dir
+        output_dir, output_file, input_files, log_file = self._manage_paths(job_dir)
+
+        metadata = SimulationMetadata(
+            job_id=job_id, inputs=inputs, job_dir=job_dir, file_name="driver_metadata"
         )
-
-        sample_dict = self.parameters.sample_as_dict(sample)
-
-        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
 
         with metadata.time_code("prepare_input_files"):
             job_options = JobOptions(
@@ -231,7 +223,7 @@ class Jobscript(Driver):
 
             # Create the input files
             self.prepare_input_files(
-                job_options.add_data_and_to_dict(sample_dict), experiment_dir, input_files
+                job_options.add_data_and_to_dict(inputs), experiment_dir, input_files
             )
 
             jobscript_file = job_dir / self.jobscript_file_name
@@ -247,13 +239,7 @@ class Jobscript(Driver):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd)
 
-        with metadata.time_code("data_processing"):
-            results = self._get_results(output_dir)
-            metadata.outputs = results
-
-        return results
-
-    def _manage_paths(self, job_id, experiment_dir):
+    def _manage_paths(self, job_dir):
         """Manage paths for driver run.
 
         Args:
@@ -267,7 +253,6 @@ class Jobscript(Driver):
             input_files (dict): Dict with name and path of the input file(s).
             log_file (Path): Path to log file.
         """
-        job_dir = experiment_dir / str(job_id)
         output_dir = job_dir / "output"
         output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -280,7 +265,7 @@ class Jobscript(Driver):
             input_file_str = input_template_name + "".join(input_template_path.suffixes)
             input_files[input_template_name] = job_dir / input_file_str
 
-        return job_dir, output_dir, output_file, input_files, log_file
+        return output_dir, output_file, input_files, log_file
 
     def _run_executable(self, job_id, execute_cmd):
         """Run executable.
@@ -301,28 +286,6 @@ class Jobscript(Driver):
                 additional_message=f"The jobscript with job ID {job_id} has failed with exit code "
                 f"{process_returncode}.",
             )
-
-    def _get_results(self, output_dir):
-        """Get results from driver run.
-
-        Args:
-            output_dir (Path): Path to output directory.
-
-        Returns:
-            result (np.array): Result from the driver run.
-            gradient (np.array, None): Gradient from the driver run (potentially None).
-        """
-        results = {}
-        if self.data_processor:
-            result = self.data_processor.get_data_from_file(output_dir)
-            results["result"] = result
-            _logger.debug("Got result: %s", result)
-
-        if self.gradient_data_processor:
-            gradient = self.gradient_data_processor.get_data_from_file(output_dir)
-            results["gradient"] = gradient
-            _logger.debug("Got gradient: %s", gradient)
-        return results
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):
         """Prepare and parse data to input files.

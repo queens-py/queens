@@ -15,6 +15,7 @@
 """QUEENS scheduler parent class."""
 
 import abc
+import shutil
 from collections.abc import Iterable
 from pathlib import Path
 from typing import Protocol
@@ -29,12 +30,13 @@ class SchedulerCallableSignature(Protocol):
 
     def __call__(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
+        job_dir: Path,
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> dict:
         """Signature for callables which can be used with QUEENS schedulers.
 
         Args:
@@ -60,7 +62,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         verbose (bool): Verbosity of evaluations
     """
 
-    def __init__(self, experiment_name, experiment_dir, num_jobs, verbose=True):
+    def __init__(
+        self,
+        experiment_name,
+        experiment_dir,
+        num_jobs,
+        verbose=True,
+        paths_to_be_deleted_regex_lst=None,
+    ):
         """Initialize scheduler.
 
         Args:
@@ -74,11 +83,12 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_jobs = num_jobs
         self.next_job_id = 0
         self.verbose = verbose
+        if paths_to_be_deleted_regex_lst is None:
+            paths_to_be_deleted_regex_lst = []
+        self.paths_to_be_deleted_regex_lst = self.paths_to_be_deleted_regex_lst
 
     @abc.abstractmethod
-    def evaluate(
-        self, samples: Iterable, function: SchedulerCallableSignature, job_ids: Iterable = None
-    ) -> dict:
+    def evaluate(self, inputs: Iterable, function: SchedulerCallableSignature) -> dict:
         """Submit jobs to driver.
 
         Args:
@@ -112,3 +122,17 @@ class Scheduler(metaclass=abc.ABCMeta):
         job_ids = self.next_job_id + np.arange(num_samples)
         self.next_job_id += num_samples
         return job_ids
+
+    @staticmethod
+    def clean_up(job_dir, paths_to_be_deleted_regex_lst):
+        """Clean-up files in the output directory.
+
+        Args:
+            base_dir_file (Path): Path of the base directory that
+                                    contains the file of interest.
+        """
+        for regex in paths_to_be_deleted_regex_lst:
+            for path in sorted(job_dir.glob(regex)):
+                if path.is_dit():
+                    shutil.rmtree(path)
+                path.unlink(missing_ok=True)

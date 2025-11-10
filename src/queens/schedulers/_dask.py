@@ -18,12 +18,14 @@ import abc
 import logging
 import time
 from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
 from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
+from queens.utils.config_directories import current_job_directory
 from queens.utils.printing import get_str_table
 
 _logger = logging.getLogger(__name__)
@@ -48,6 +50,7 @@ class Dask(Scheduler):
         num_procs,
         restart_workers,
         verbose=True,
+        paths_to_be_deleted_regex_lst=None,
     ):
         """Initialize scheduler.
 
@@ -64,6 +67,7 @@ class Dask(Scheduler):
             experiment_dir=experiment_dir,
             num_jobs=num_jobs,
             verbose=verbose,
+            paths_to_be_deleted_regex_lst=paths_to_be_deleted_regex_lst,
         )
         self.num_procs = num_procs
         self.restart_workers = restart_workers
@@ -99,9 +103,7 @@ class Dask(Scheduler):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def evaluate(
-        self, samples: Iterable, function: SchedulerCallableSignature, job_ids: Iterable = None
-    ) -> dict:
+    def evaluate(self, samples: Iterable[Any], function: SchedulerCallableSignature) -> dict:
         """Submit jobs to driver.
 
         Args:
@@ -114,6 +116,16 @@ class Dask(Scheduler):
         """
         self.start_cluster_and_connect_client()
 
+        run_function = function
+
+        # Add clean up
+        if self.paths_to_be_deleted_regex_lst:
+
+            def run_function(*args, **kwargs):
+                returns = function(*args, **kwargs)
+                self.clean_up(kwargs["job_dir"], self.paths_to_be_deleted_regex_lst)
+                return returns
+
         if self.restart_workers:
             # This is necessary, because the subprocess in the driver does not get killed
             # sometimes when the worker is restarted.
@@ -121,15 +133,14 @@ class Dask(Scheduler):
                 time.sleep(5)
                 return function(*args, **kwargs)
 
-        else:
-            run_function = function
+        job_ids = self.get_job_ids(len(samples))
 
-        if job_ids is None:
-            job_ids = self.get_job_ids(len(samples))
+        job_dirs = [current_job_directory(job_id) for job_id in job_ids]
         futures = self.client.map(
             run_function,
             samples,
             job_ids,
+            job_dirs,
             pure=False,
             num_procs=self.num_procs,
             experiment_dir=self.experiment_dir,

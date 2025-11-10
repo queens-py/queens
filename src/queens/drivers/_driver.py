@@ -28,14 +28,12 @@ class Driver(metaclass=abc.ABCMeta):
         files_to_copy (list): files or directories to copy to experiment_dir
     """
 
-    def __init__(self, parameters, files_to_copy=None):
+    def __init__(self, files_to_copy=None):
         """Initialize Driver object.
 
         Args:
-            parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
         """
-        self.parameters = parameters
         if files_to_copy is None:
             files_to_copy = []
         if not isinstance(files_to_copy, list):
@@ -50,6 +48,7 @@ class Driver(metaclass=abc.ABCMeta):
         self,
         sample: np.ndarray,
         job_id: int,
+        job_dir: Path,
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,

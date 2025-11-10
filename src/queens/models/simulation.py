@@ -14,24 +14,25 @@
 #
 """Simulation model class."""
 
-from collections.abc import Iterable
+from collections.abc import Callable, Iterable
+from pathlib import Path
+from typing import Any
 
 import numpy as np
 
+from queens.drivers._driver import Driver
 from queens.models._model import Model
+from queens.parameters import Parameters
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
 from queens.utils.logger_settings import log_init_args
+from queens.utils.metadata import SimulationMetadata
 
 
 class Simulation(Model):
-    """Simulation model class.
-
-    Attributes:
-        scheduler (Scheduler): Scheduler for the simulations
-        driver (Driver): Driver for the simulations
-    """
+    """Simulation model class for parallel evaluations."""
 
     @log_init_args
-    def __init__(self, scheduler, driver):
+    def __init__(self, scheduler: Scheduler, function: SchedulerCallableSignature):
         """Initialize simulation model.
 
         Args:
@@ -40,8 +41,61 @@ class Simulation(Model):
         """
         super().__init__()
         self.scheduler = scheduler
-        self.driver = driver
-        self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
+        self.function = function
+
+    @classmethod
+    def from_simulation_code(
+        cls,
+        scheduler: Scheduler,
+        parameters: Parameters,
+        driver: Driver,
+        data_processor: Callable[[Path], dict] | None,
+    ):
+
+        function = cls.scheduler_function_from_simulation_code(parameters, driver, data_processor)
+
+        # Copy common files
+        scheduler.copy_files_to_experiment_dir(driver.files_to_copy)
+
+        return cls(scheduler, function)
+
+    @staticmethod
+    def scheduler_function_from_simulation_code(
+        parameters: Parameters,
+        driver: Driver,
+        data_processor: Callable[[Path], dict] | None,
+    ):
+        def function(
+            sample: np.ndarray,
+            job_id: int,
+            job_dir: Path,
+            num_procs: int,
+            experiment_dir: Path,
+            experiment_name: str,
+        ):
+            metadata = SimulationMetadata(job_id, sample, job_dir, file_name="job_metadata")
+
+            # Transform the array into a dictionary (including random fields)
+            with metadata.time_code("create_sample_dict"):
+                sample_dict = parameters.sample_as_dict(sample)
+
+            # Make job dir
+            job_dir.mkdir(exist_ok=True, parents=True)
+
+            # Run the simulations
+            with metadata.time_code("run_driver"):
+                driver.run(sample_dict, job_id, job_dir, num_procs, experiment_dir, experiment_name)
+
+            # Extract the data if needed
+            data = {}
+            if data_processor is not None:
+                with metadata.time_code("data_processing"):
+                    data = data_processor(job_dir)
+                    metadata.outputs = data
+
+            return data
+
+    return function
 
     def _evaluate(self, samples: Iterable) -> dict:
         """Evaluate model with current set of input samples.

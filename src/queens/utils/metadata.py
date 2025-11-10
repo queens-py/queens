@@ -28,7 +28,6 @@ from queens.utils.config_directories import job_dirs_in_experiment_dir
 from queens.utils.io import to_dict_with_standard_types
 from queens.utils.printing import get_str_table
 
-METADATA_FILENAME = "metadata"
 METADATA_FILETYPE = ".yaml"
 
 
@@ -46,7 +45,7 @@ class SimulationMetadata:
         times (dict): Wall times of code sections
     """
 
-    def __init__(self, job_id: int, inputs: dict, job_dir: Path) -> None:
+    def __init__(self, job_id: int, inputs: dict, job_dir: Path, file_name: str) -> None:
         """Init simulation metadata object.
 
         Args:
@@ -57,7 +56,7 @@ class SimulationMetadata:
         self.job_id = job_id
         self.timestamp: str | None = None
         self.inputs = inputs
-        self.file_path = (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+        self.file_path = (Path(job_dir) / file_name).with_suffix(METADATA_FILETYPE)
         self.outputs = None
         self.times: dict = {}
         self._create_timestamp()

@@ -133,7 +133,7 @@ class TestDaskCluster:
         """
         fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.4C.yaml"
 
-        # Parameters
+        # Parameter
         parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
         parameter_2 = Uniform(lower_bound=0.0, upper_bound=1.0)
         parameters = Parameters(parameter_1=parameter_1, parameter_2=parameter_2)
@@ -158,14 +158,12 @@ class TestDaskCluster:
         )
 
         driver = Jobscript(
-            parameters=parameters,
             input_templates=fourc_input_file_template,
             jobscript_template=cluster_settings["jobscript_template"],
             executable=fourc_cluster_path,
-            data_processor=data_processor,
             extra_options={"cluster_script": cluster_settings["cluster_script_path"]},
         )
-        model = Simulation(scheduler=scheduler, driver=driver)
+        model = Simulation.from_simulation_code(scheduler, parameters, driver, data_processor)
         iterator = MonteCarlo(
             seed=42,
             num_samples=2,
