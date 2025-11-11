@@ -17,12 +17,15 @@
 import abc
 import logging
 import time
+from collections.abc import Iterable
+from typing import Any
 
 import numpy as np
 import tqdm
 from dask.distributed import as_completed
 
-from queens.schedulers._scheduler import Scheduler
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
+from queens.utils.config_directories import current_job_directory
 from queens.utils.printing import get_str_table
 
 _logger = logging.getLogger(__name__)
@@ -47,6 +50,7 @@ class Dask(Scheduler):
         num_procs,
         restart_workers,
         verbose=True,
+        paths_to_be_deleted_regex_lst=None,
     ):
         """Initialize scheduler.
 
@@ -63,6 +67,7 @@ class Dask(Scheduler):
             experiment_dir=experiment_dir,
             num_jobs=num_jobs,
             verbose=verbose,
+            paths_to_be_deleted_regex_lst=paths_to_be_deleted_regex_lst,
         )
         self.num_procs = num_procs
         self.restart_workers = restart_workers
@@ -98,12 +103,12 @@ class Dask(Scheduler):
         global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
         SHUTDOWN_CLIENTS.append(client.shutdown)
 
-    def evaluate(self, samples, driver, job_ids=None):
+    def evaluate(self, samples: Iterable[Any], function: SchedulerCallableSignature) -> dict:
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
-            driver (Driver): Driver object that runs simulation
+            function (Callable): Callable to evaluate in the scheduler
             job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
@@ -111,22 +116,31 @@ class Dask(Scheduler):
         """
         self.start_cluster_and_connect_client()
 
+        run_function = function
+
+        # Add clean up
+        if self.paths_to_be_deleted_regex_lst:
+
+            def run_function(*args, **kwargs):
+                returns = function(*args, **kwargs)
+                self.clean_up(kwargs["job_dir"], self.paths_to_be_deleted_regex_lst)
+                return returns
+
         if self.restart_workers:
             # This is necessary, because the subprocess in the driver does not get killed
             # sometimes when the worker is restarted.
-            def run_driver(*args, **kwargs):
+            def run_function(*args, **kwargs):
                 time.sleep(5)
-                return driver.run(*args, **kwargs)
+                return function(*args, **kwargs)
 
-        else:
-            run_driver = driver.run
+        job_ids = self.get_job_ids(len(samples))
 
-        if job_ids is None:
-            job_ids = self.get_job_ids(len(samples))
+        job_dirs = [current_job_directory(job_id) for job_id in job_ids]
         futures = self.client.map(
-            run_driver,
+            run_function,
             samples,
             job_ids,
+            job_dirs,
             pure=False,
             num_procs=self.num_procs,
             experiment_dir=self.experiment_dir,
@@ -162,14 +176,7 @@ class Dask(Scheduler):
                     )
                 )
 
-        result_dict = {"result": [], "gradient": []}
-        for result in results.values():
-            # We should remove this squeeze! It is only introduced for consistency with old test.
-            result_dict["result"].append(np.atleast_1d(np.array(result[0]).squeeze()))
-            result_dict["gradient"].append(result[1])
-        result_dict["result"] = np.array(result_dict["result"])
-        result_dict["gradient"] = np.array(result_dict["gradient"])
-        return result_dict
+        return list(results.values())
 
     @abc.abstractmethod
     def restart_worker(self, worker):

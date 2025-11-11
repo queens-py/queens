@@ -90,6 +90,9 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
 
+    def __call__(self, base_dir_file):
+        return self.get_data_from_file(base_dir_file)
+
     def get_data_from_file(self, base_dir_file):
         """Get data of interest from file.
 
@@ -185,14 +188,3 @@ class DataProcessor(metaclass=abc.ABCMeta):
             processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
         """
         return processed_data
-
-    def _clean_up(self, base_dir_file):
-        """Clean-up files in the output directory.
-
-        Args:
-            base_dir_file (Path): Path of the base directory that
-                                    contains the file of interest.
-        """
-        for regex in self.files_to_be_deleted_regex_lst:
-            for file in sorted(base_dir_file.glob(regex)):
-                file.unlink(missing_ok=True)

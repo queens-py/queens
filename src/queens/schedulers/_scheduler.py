@@ -15,13 +15,40 @@
 """QUEENS scheduler parent class."""
 
 import abc
-import logging
+import shutil
+from collections.abc import Iterable
+from pathlib import Path
+from typing import Protocol
 
 import numpy as np
 
 from queens.utils.rsync import rsync
 
-_logger = logging.getLogger(__name__)
+
+class SchedulerCallableSignature(Protocol):
+    """Signature for callables which can be used with QUEENS schedulers."""
+
+    def __call__(
+        self,
+        inputs: dict,
+        job_id: int,
+        job_dir: Path,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Signature for callables which can be used with QUEENS schedulers.
+
+        Args:
+            sample (np.array): Input ample.
+            job_id (int): Job ID.
+            num_procs (int): Number of processors.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): Name of QUEENS experiment.
+
+        Returns:
+            Result and potentially the gradient.
+        """
 
 
 class Scheduler(metaclass=abc.ABCMeta):
@@ -35,7 +62,14 @@ class Scheduler(metaclass=abc.ABCMeta):
         verbose (bool): Verbosity of evaluations
     """
 
-    def __init__(self, experiment_name, experiment_dir, num_jobs, verbose=True):
+    def __init__(
+        self,
+        experiment_name,
+        experiment_dir,
+        num_jobs,
+        verbose=True,
+        paths_to_be_deleted_regex_lst=None,
+    ):
         """Initialize scheduler.
 
         Args:
@@ -49,14 +83,17 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_jobs = num_jobs
         self.next_job_id = 0
         self.verbose = verbose
+        if paths_to_be_deleted_regex_lst is None:
+            paths_to_be_deleted_regex_lst = []
+        self.paths_to_be_deleted_regex_lst = self.paths_to_be_deleted_regex_lst
 
     @abc.abstractmethod
-    def evaluate(self, samples, driver, job_ids=None):
+    def evaluate(self, inputs: Iterable, function: SchedulerCallableSignature) -> dict:
         """Submit jobs to driver.
 
         Args:
             samples (np.array): Array of samples
-            driver (Driver): Driver object that runs simulation
+            function (Callable): Callable to evaluate in the scheduler
             job_ids (lst, opt): List of job IDs corresponding to samples
 
         Returns:
@@ -85,3 +122,17 @@ class Scheduler(metaclass=abc.ABCMeta):
         job_ids = self.next_job_id + np.arange(num_samples)
         self.next_job_id += num_samples
         return job_ids
+
+    @staticmethod
+    def clean_up(job_dir, paths_to_be_deleted_regex_lst):
+        """Clean-up files in the output directory.
+
+        Args:
+            base_dir_file (Path): Path of the base directory that
+                                    contains the file of interest.
+        """
+        for regex in paths_to_be_deleted_regex_lst:
+            for path in sorted(job_dir.glob(regex)):
+                if path.is_dit():
+                    shutil.rmtree(path)
+                path.unlink(missing_ok=True)

@@ -15,10 +15,9 @@
 """QUEENS driver module base class."""
 
 import abc
-import logging
 from pathlib import Path
 
-_logger = logging.getLogger(__name__)
+import numpy as np
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -29,14 +28,12 @@ class Driver(metaclass=abc.ABCMeta):
         files_to_copy (list): files or directories to copy to experiment_dir
     """
 
-    def __init__(self, parameters, files_to_copy=None):
+    def __init__(self, files_to_copy=None):
         """Initialize Driver object.
 
         Args:
-            parameters (Parameters): Parameters object
             files_to_copy (list): files or directories to copy to experiment_dir
         """
-        self.parameters = parameters
         if files_to_copy is None:
             files_to_copy = []
         if not isinstance(files_to_copy, list):
@@ -47,11 +44,33 @@ class Driver(metaclass=abc.ABCMeta):
         self.files_to_copy = files_to_copy
 
     @abc.abstractmethod
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def run(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        job_dir: Path,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
         """Abstract method for driver run.
 
         Args:
-            sample (dict): Dict containing sample
+            sample (np.ndarray): Input sample
+            job_id (int): Job ID
+            num_procs (int): number of processors
+            experiment_name (str): name of QUEENS experiment.
+            experiment_dir (Path): Path to QUEENS experiment directory.
+
+        Returns:
+            Results
+        """
+
+    def __call__(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+        """Abstract method for driver run.
+
+        Args:
+            sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
@@ -60,3 +79,4 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Result and potentially the gradient
         """
+        return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
