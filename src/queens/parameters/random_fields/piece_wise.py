@@ -15,15 +15,12 @@
 """Piece-wise random fields class."""
 
 from copy import deepcopy
-from typing import TYPE_CHECKING
 
+import numpy as np
+
+from queens.distributions._distribution import Continuous, Discrete
 from queens.parameters.parameters import HasGradLogPDF
 from queens.parameters.random_fields._random_field import RandomField
-
-if TYPE_CHECKING:
-    import numpy as np
-
-    from queens.distributions._distribution import Continuous, Discrete
 
 
 class PieceWise(RandomField):
@@ -38,7 +35,7 @@ class PieceWise(RandomField):
             latent_1d_distribution: QUEENS distribution object of latent space variables
     """
 
-    def __init__(self, coords: dict, latent_1d_distribution: "Continuous | Discrete"):
+    def __init__(self, coords: dict, latent_1d_distribution: Continuous | Discrete):
         """Initialize RF object.
 
         Args:
@@ -51,7 +48,7 @@ class PieceWise(RandomField):
         self.latent_1d_distribution = latent_1d_distribution
         self.distribution.dimension = self.dimension
 
-    def draw(self, num_samples: int) -> "np.ndarray":
+    def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
 
         Args:
@@ -64,7 +61,7 @@ class PieceWise(RandomField):
         )
         return samples
 
-    def logpdf(self, samples: "np.ndarray") -> "np.ndarray":
+    def logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get joint log-PDF of latent space.
 
         Args:
@@ -79,7 +76,7 @@ class PieceWise(RandomField):
             .sum(axis=1)
         )
 
-    def grad_logpdf(self, samples: "np.ndarray") -> "np.ndarray":
+    def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get gradient of joint log-PDF of latent space.
 
         Args:
@@ -98,7 +95,7 @@ class PieceWise(RandomField):
             samples.shape
         )
 
-    def expanded_representation(self, samples: "np.ndarray") -> "np.ndarray":
+    def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand latent representation of samples.
 
         Args:
@@ -109,7 +106,7 @@ class PieceWise(RandomField):
         """
         return samples
 
-    def latent_gradient(self, upstream_gradient: "np.ndarray") -> "np.ndarray":
+    def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient of the field with respect to the latent parameters.
 
         Args:
