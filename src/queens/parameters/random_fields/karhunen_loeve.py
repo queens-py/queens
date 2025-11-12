@@ -68,6 +68,11 @@ class KarhunenLoeve(RandomField):
                 explained_variance
             cut_off: Lower value limit of covariance matrix entries
         """
+        if (latent_dimension is None and explained_variance is None) or (
+            latent_dimension is not None and explained_variance is not None
+        ):
+            raise KeyError("Specify either dimension or explained variance")
+
         self.nugget_variance = 1e-9
         self.explained_variance = explained_variance
         self.std = std
@@ -81,22 +86,12 @@ class KarhunenLoeve(RandomField):
         self.coords = self._convert_coords_to_2d_array(coords)
         self.dim_coords = len(coords["keys"])
 
-        if (latent_dimension is None and explained_variance is None) or (
-            latent_dimension is not None and explained_variance is not None
-        ):
-            raise KeyError("Specify either dimension or explained variance")
-
-        if latent_dimension is not None:
-            self.dimension = latent_dimension
-        else:
-            self.dimension = 0
-
         self.calculate_covariance_matrix()
-        self.eigendecomp_cov_matrix()
+        dimension = self.eigendecomp_cov_matrix(latent_dimension)
 
-        distribution = MeanFieldNormal(mean=0, variance=1, dimension=self.dimension)
+        distribution = MeanFieldNormal(mean=0, variance=1, dimension=dimension)
 
-        super().__init__(coords, distribution, dimension=self.dimension)
+        super().__init__(coords, distribution, dimension=dimension)
 
     def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
@@ -178,11 +173,17 @@ class KarhunenLoeve(RandomField):
         covariance[covariance < self.cut_off] = 0
         self.cov_matrix = covariance + self.nugget_variance * np.eye(self.dim_coords)
 
-    def eigendecomp_cov_matrix(self) -> None:
+    def eigendecomp_cov_matrix(self, latent_dimension: int | None = None) -> int:
         """Decompose and then truncate the random field.
 
-        According to desired variance fraction that should be
-        covered/explained by the truncation.
+        According to desired variance fraction that should be covered/explained by the truncation.
+        Also computes the dimension of the latent space if it is not provided.
+
+        Args:
+            latent_dimension: Dimension of the latent space
+
+        Returns:
+            Dimension of the latent space
         """
         if self.cov_matrix is None:
             raise ValueError("Covariance matrix has not been computed yet.")
@@ -192,17 +193,17 @@ class KarhunenLoeve(RandomField):
         eigenvalues = np.flip(eig_val)
         eigenvectors = np.flip(eig_vec, axis=1)
 
-        if self.dimension == 0:
+        if latent_dimension is not None:
+            dimension = latent_dimension
+        else:
             eigenvalues_normed = eigenvalues / np.sum(eigenvalues)
             dimension = (np.cumsum(eigenvalues_normed) < self.explained_variance).argmin() + 1
             if dimension == 1 and eigenvalues_normed[0] <= self.explained_variance:
                 raise ValueError("Expansion failed.")
 
-            self.dimension = dimension
-
         # truncated eigenfunction base
-        self.eigenvalues = eigenvalues[: self.dimension]
-        self.eigenvectors = eigenvectors[:, : self.dimension]
+        self.eigenvalues = eigenvalues[:dimension]
+        self.eigenvectors = eigenvectors[:, :dimension]
 
         if self.explained_variance is None:
             self.explained_variance = np.sum(self.eigenvalues) / np.sum(eigenvalues)
@@ -210,3 +211,5 @@ class KarhunenLoeve(RandomField):
 
         # weight the eigenbasis with the eigenvalues
         self.eigenbasis = self.eigenvectors * np.sqrt(self.eigenvalues)
+
+        return dimension

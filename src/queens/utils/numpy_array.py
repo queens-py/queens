@@ -15,17 +15,19 @@
 """Numpy array utils."""
 
 import numpy as np
+from numpy.typing import ArrayLike
 
 
-def at_least_2d(arr: np.ndarray) -> np.ndarray:
+def at_least_2d(array: ArrayLike) -> np.ndarray:
     """View input array as array with at least two dimensions.
 
     Args:
-        arr: Input array
+        array: Input array
 
     Returns:
-        View of input array with at least two dimensions
+        Input array with at least two dimensions
     """
+    arr = np.array(array)
     if arr.ndim == 0:
         return arr.reshape((1, 1))
     if arr.ndim == 1:

@@ -114,11 +114,5 @@ class RandomField(metaclass=abc.ABCMeta):
         Returns:
             Dictionary with 2D numpy array coordinates.
         """
-        # ensure that coordinates are an ndarray
-        coords["coords"] = np.array(coords["coords"], copy=False)
-
-        # ensure correct shape:
-        # convert coords to a 2D column vector if necessary
         coords["coords"] = at_least_2d(coords["coords"])
-
         return coords
