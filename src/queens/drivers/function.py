@@ -15,6 +15,7 @@
 """Function Driver."""
 
 import inspect
+from pathlib import Path
 
 import numpy as np
 
@@ -97,7 +98,8 @@ class Function(Driver):
                 if not result.shape:
                     result = np.expand_dims(result, axis=0)
                     gradient = np.expand_dims(gradient, axis=0)
-                return result, gradient
+                return {"result": result, "gradient": gradient}
+
             # here no gradient return
             # take scalars and convert them to numpy floats
             if not isinstance(result_array, np.floating):
@@ -105,11 +107,18 @@ class Function(Driver):
 
             if not result_array.shape:
                 result_array = np.expand_dims(result_array, axis=0)
-            return result_array, None
+            return {"result": result_array}
 
         return reshaped_output_function
 
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def run(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
         """Run the driver.
 
         Args:

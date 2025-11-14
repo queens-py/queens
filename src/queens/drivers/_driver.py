@@ -15,10 +15,9 @@
 """QUEENS driver module base class."""
 
 import abc
-import logging
 from pathlib import Path
 
-_logger = logging.getLogger(__name__)
+import numpy as np
 
 
 class Driver(metaclass=abc.ABCMeta):
@@ -47,7 +46,14 @@ class Driver(metaclass=abc.ABCMeta):
         self.files_to_copy = files_to_copy
 
     @abc.abstractmethod
-    def run(self, sample, job_id, num_procs, experiment_dir, experiment_name):
+    def run(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
         """Abstract method for driver run.
 
         Args:
@@ -58,7 +64,7 @@ class Driver(metaclass=abc.ABCMeta):
             experiment_dir (Path): Path to QUEENS experiment directory.
 
         Returns:
-            Result and potentially the gradient
+            Results
         """
 
     def __call__(self, sample, job_id, num_procs, experiment_dir, experiment_name):

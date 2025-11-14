@@ -40,7 +40,7 @@ class SchedulerCallableSignature(Protocol):
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,
-    ) -> tuple[np.ndarray, np.ndarray]:
+    ) -> dict:
         """Signature for callables which can be used with QUEENS schedulers.
 
         Args:
