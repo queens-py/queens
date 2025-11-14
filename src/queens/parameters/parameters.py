@@ -19,6 +19,7 @@ import logging
 import numpy as np
 
 from queens.distributions._distribution import Continuous, Discrete
+from queens.distributions.free_variable import FreeVariable
 from queens.parameters.random_fields._random_field import RandomField
 from queens.utils.logger_settings import log_init_args
 
@@ -60,15 +61,25 @@ class Parameters:
     """
 
     @log_init_args
-    def __init__(self, **parameters):
+    def __init__(self, *parameters_without_distribution, **parameters):
         """Initialize Parameters object.
 
         Args:
-            **parameters (Distribution, RandomField): parameters as keyword arguments
+            *parameters_without_distribution (str): Names of one-dimensional parameters without
+                                                    assumption about underlying distribution.
+            **parameters (Distribution, RandomField): parameters as keyword arguments. The keyword
+                                                      corresponds to the parameter name and the
+                                                      value corresponds to the underlying
+                                                      distribution.
         """
         joint_parameters_keys = []
         joint_parameters_dim = 0
         random_field_flag = False
+
+        for parameter_name in parameters_without_distribution:
+            if parameter_name in parameters:
+                raise ValueError(f"Parameter name {parameter_name} can only be used once.")
+            parameters[parameter_name] = FreeVariable(1)
 
         for parameter_name, parameter_obj in parameters.items():
             if isinstance(parameter_obj, (Continuous, Discrete)):

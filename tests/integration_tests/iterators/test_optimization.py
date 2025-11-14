@@ -34,9 +34,7 @@ from queens.utils.io import load_result
 def test_optimization_rosenbrock(algorithm, global_settings):
     """Test different solution algorithms in optimization iterator."""
     # Parameters
-    x1 = FreeVariable(dimension=1)
-    x2 = FreeVariable(dimension=1)
-    parameters = Parameters(x1=x1, x2=x2)
+    parameters = Parameters("x1", "x2")
 
     # Setup iterator
     driver = Function(parameters=parameters, function="rosenbrock60")
