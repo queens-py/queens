@@ -31,7 +31,7 @@ class Distribution(abc.ABC):
     """Base class for probability distributions."""
 
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> np.ndarray | None:
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
@@ -39,7 +39,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> np.ndarray | None:
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
 
         In order to keep the interfaces unified the PMF is also accessed via the PDF.
@@ -49,7 +49,7 @@ class Distribution(abc.ABC):
         """
 
     @abstractmethod
-    def pdf(self, x: np.ndarray) -> np.ndarray | None:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
         Args:
@@ -118,7 +118,7 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> np.ndarray | None:
+    def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
         Args:
@@ -126,7 +126,7 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> np.ndarray | None:
+    def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
         Args:
@@ -134,14 +134,14 @@ class Continuous(Distribution):
         """
 
     @abstractmethod
-    def grad_logpdf(self, x: np.ndarray) -> np.ndarray | None:
+    def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to *x*.
 
         Args:
             x: Positions at which the gradient of log-PDF is evaluated
         """
 
-    def pdf(self, x: np.ndarray) -> np.ndarray | None:
+    def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
         Args:
@@ -216,7 +216,7 @@ class Discrete(Distribution):
             self.dimension = sample_space_array[0].shape[0]
         else:
             if not isinstance(dimension, int) or dimension <= 0:
-                raise ValueError(f"Dimension has to be a positive integer not {dimension}.")
+                raise ValueError(f"Dimension has to be a positive integer, not {dimension}.")
             self.dimension = dimension
 
         if len(sample_space_array) != len(probabilities_array):

@@ -16,6 +16,7 @@
 
 import numpy as np
 import scipy.stats
+from numpy.typing import ArrayLike
 from scipy.special import erf  # pylint:disable=no-name-in-module
 
 from queens.distributions._distribution import Continuous
@@ -30,7 +31,7 @@ class MeanFieldNormal(Continuous):
     """
 
     @log_init_args
-    def __init__(self, mean: np.ndarray, variance: np.ndarray, dimension: int) -> None:
+    def __init__(self, mean: ArrayLike, variance: ArrayLike, dimension: int) -> None:
         """Initialize mean-field normal distribution.
 
         Args:
@@ -38,12 +39,14 @@ class MeanFieldNormal(Continuous):
             variance: Variance of the distribution
             dimension: Dimensionality of the distribution
         """
-        mean = np.array(mean)
-        variance = np.array(variance)
-        mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, dimension)
-        covariance = MeanFieldNormal.get_check_array_dimension_and_reshape(variance, dimension)
+        mean_array = np.array(mean)
+        variance_array = np.array(variance)
+        mean_array = MeanFieldNormal.get_check_array_dimension_and_reshape(mean_array, dimension)
+        covariance = MeanFieldNormal.get_check_array_dimension_and_reshape(
+            variance_array, dimension
+        )
         self.standard_deviation = np.sqrt(covariance)
-        super().__init__(mean, covariance, dimension)
+        super().__init__(mean_array, covariance, dimension)
 
     def update_variance(self, variance: np.ndarray) -> None:
         """Update the variance of the mean-field normal distribution.

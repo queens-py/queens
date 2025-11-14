@@ -46,7 +46,7 @@ class Normal(Continuous):
             covariance: Covariance of the distribution
         """
         mean = np.array(mean).reshape(-1)
-        covariance = at_least_2d(np.array(covariance))
+        covariance = at_least_2d(covariance)
 
         # sanity checks
         dimension = covariance.shape[0]
