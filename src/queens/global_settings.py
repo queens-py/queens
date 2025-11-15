@@ -21,7 +21,7 @@ for logging and working with remote resources.
 import logging
 from pathlib import Path
 
-from queens.schedulers._dask import SHUTDOWN_CLIENTS
+from queens.schedulers._scheduler import CLEANUP_SCHEDULERS
 from queens.utils.ascii_art import print_banner_and_description
 from queens.utils.logger_settings import reset_logging, setup_basic_logging
 from queens.utils.path import PATH_TO_ROOT, create_folder_if_not_existent
@@ -168,8 +168,8 @@ class GlobalSettings:
             exception_value: indicates exception instance
             traceback: traceback object
         """
-        for shutdown_client in SHUTDOWN_CLIENTS.copy():
-            SHUTDOWN_CLIENTS.remove(shutdown_client)
-            shutdown_client()
+        for cleanup_scheduler in CLEANUP_SCHEDULERS.copy():
+            CLEANUP_SCHEDULERS.remove(cleanup_scheduler)
+            cleanup_scheduler()
 
         reset_logging()
