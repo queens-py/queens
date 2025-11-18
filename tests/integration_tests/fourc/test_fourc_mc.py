@@ -34,14 +34,13 @@ _logger = logging.getLogger(__name__)
 
 def test_fourc_mc(
     third_party_inputs,
-    fourc_link_paths,
+    fourc_link,
     fourc_example_expected_output,
     global_settings,
 ):
     """Test simple 4C run."""
     # generate json input file from template
     fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.4C.yaml"
-    fourc_executable, _, _ = fourc_link_paths
 
     # Parameters
     parameter_1 = Uniform(lower_bound=0.0, upper_bound=1.0)
@@ -62,7 +61,7 @@ def test_fourc_mc(
     driver = Fourc(
         parameters=parameters,
         input_templates=fourc_input_file_template,
-        executable=fourc_executable,
+        executable=fourc_link,
         data_processor=data_processor,
     )
     model = Simulation(scheduler=scheduler, driver=driver)

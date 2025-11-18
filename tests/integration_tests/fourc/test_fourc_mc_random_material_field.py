@@ -48,7 +48,7 @@ class DummyKLField(KarhunenLoeve):
 def test_write_random_elementwise_material(
     tmp_path,
     third_party_inputs,
-    fourc_link_paths,
+    fourc_link,
     expected_mean,
     global_settings,
 ):
@@ -56,8 +56,6 @@ def test_write_random_elementwise_material(
     fourc_input_template = third_party_inputs / "fourc" / "coarse_plate_dirichlet_template.4C.yaml"
 
     material_file_template = tmp_path / "material.json"
-
-    fourc_executable, post_ensight, _ = fourc_link_paths
 
     mue_rf_parameters = create_random_elemenentwise_material_field(
         fourc_input_template,
@@ -90,8 +88,7 @@ def test_write_random_elementwise_material(
             "input_file": fourc_input_template,
             "material_file": material_file_template,
         },
-        executable=fourc_executable,
-        post_processor=post_ensight,
+        executable=fourc_link,
         data_processor=data_processor,
     )
     model = Simulation(scheduler=scheduler, driver=driver)

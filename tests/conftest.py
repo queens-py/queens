@@ -209,14 +209,12 @@ def fixture_config_dir():
     return config_dir_path
 
 
-@pytest.fixture(name="fourc_link_paths", scope="session")
-def fixture_fourc_link_paths(config_dir):
+@pytest.fixture(name="fourc_link", scope="session")
+def fixture_fourc_link(config_dir):
     """Set symbolic links for 4C on testing machine."""
     fourc_build_dir = config_dir / "4C_build"
     fourc = fourc_build_dir / "4C"
-    post_ensight = fourc_build_dir / "post_ensight"
-    post_processor = fourc_build_dir / "post_processor"
-    return fourc, post_ensight, post_processor
+    return fourc
 
 
 @pytest.fixture(name="example_simulator_fun_dir", scope="session")

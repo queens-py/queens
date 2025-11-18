@@ -36,7 +36,7 @@ from queens.schedulers.cluster import Cluster
 from queens.utils.io import load_result
 from queens.utils.path import relative_path_from_root
 from queens.utils.remote_operations import RemoteConnection
-from test_utils.integration_tests import fourc_build_paths_from_home
+from test_utils.integration_tests import fourc_build_path_from_home
 
 _logger = logging.getLogger(__name__)
 
@@ -446,7 +446,7 @@ def fixture_fourc_cluster_path(remote_connection):
     result = remote_connection.run("echo ~", in_stream=False)
     remote_home = Path(result.stdout.rstrip())
 
-    fourc, _, _ = fourc_build_paths_from_home(remote_home)
+    fourc = fourc_build_path_from_home(remote_home)
 
     # Check for existence of 4C on remote machine.
     find_result = remote_connection.run(f"find {fourc}", in_stream=False)

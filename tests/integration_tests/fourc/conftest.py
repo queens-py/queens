@@ -18,37 +18,19 @@ import pytest
 
 
 @pytest.fixture(name="setup_symbolic_links_fourc", autouse=True)
-def fixture_setup_symbolic_links_fourc(fourc_link_paths):
+def fixture_setup_symbolic_links_fourc(fourc_link):
     """Set-up of 4C symbolic links.
 
     Args:
-        fourc_link_paths (Path): Symbolic links to 4C executables.
+        fourc_link (Path): Symbolic link to 4C executable.
     """
-    (
-        fourc,
-        post_ensight,
-        post_processor,
-    ) = fourc_link_paths
-
     # check if symbolic links are existent
     try:
         # check if existing link to fourc works and points to a valid file
-        if not fourc.resolve().exists():
+        if not fourc_link.resolve().exists():
             raise FileNotFoundError(
-                f"The following link seems to be dead: {fourc}\n"
-                f"It points to (non-existing): {fourc.resolve()}\n"
-            )
-        # check if existing link to post_ensight works and points to a valid file
-        if not post_ensight.resolve().exists():
-            raise FileNotFoundError(
-                f"The following link seems to be dead: {post_ensight}\n"
-                f"It points to: {post_ensight.resolve()}\n"
-            )
-        # check if existing link to post_processor works and points to a valid file
-        if not post_processor.resolve().exists():
-            raise FileNotFoundError(
-                f"The following link seems to be dead: {post_processor}\n"
-                f"It points to: {post_processor.resolve()}\n"
+                f"The following link seems to be dead: {fourc_link}\n"
+                f"It points to (non-existing): {fourc_link.resolve()}\n"
             )
     except FileNotFoundError as error:
         raise FileNotFoundError(

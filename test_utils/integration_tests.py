@@ -79,10 +79,8 @@ def get_input_park91a(n_inputs):
     return x_1_and_2, x_3, x_4
 
 
-def fourc_build_paths_from_home(home):
+def fourc_build_path_from_home(home):
     """Paths of 4C executables from home on testing machine."""
     fourc_build_path = home / "workspace/fourc_build"
     fourc = fourc_build_path / "4C"
-    post_ensight = fourc_build_path / "post_ensight"
-    post_processor = fourc_build_path / "post_processor"
-    return fourc, post_ensight, post_processor
+    return fourc
