@@ -12,4 +12,5 @@ If a tutorial of your iterator of interest is not yet available, we recommend ch
 
    tutorials/0-onboarding
    tutorials/1-monte_carlo_uq
-   tutorials/2-grid-iterator-rosenbrock.ipynb
+   tutorials/1-grid-iterator-rosenbrock.ipynb
+   tutorials/2-uncertainty-propagation-and-quantification.ipynb

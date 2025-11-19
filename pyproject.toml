@@ -32,6 +32,9 @@ optional-dependencies = { safe = { file = [
     "dev-requirements.txt",
 ] }, fourc = { file = [
     "src/queens_interfaces/fourc/fourc_requirements.txt",
+] }, tutorial = { file = [
+    "requirements.txt",
+    "tuto-requirements.txt",
 ] } }
 
 # cli utils
