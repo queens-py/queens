@@ -17,6 +17,8 @@
 import pytest
 from testbook import testbook
 
+from test_utils.unit_tests.notebooks import inject_mock_path
+
 
 # tested jupyter notebooks should be added to the list below
 @pytest.mark.parametrize(
@@ -35,16 +37,7 @@ def test_notebooks(tmp_path, notebook_path):
     with testbook(notebook_path) as tb:
         # Patch base_directory to avoid writing test data to user's home dir.
         # Note that tb.patch converts the mocked Path to a string, so we have to use tb.inject.
-        tb.inject(
-            f"""
-            from unittest.mock import MagicMock
-            from pathlib import Path
-            import queens.utils.config_directories
-            mock_base_dir = Path('{tmp_path}')
-            queens.utils.config_directories.base_directory = MagicMock(return_value=mock_base_dir)
-            """,
-            before=0,
-        )
+        inject_mock_path(tb, tmp_path)
 
         # execute the notebook
         tb.inject("from queens.utils import config_directories")

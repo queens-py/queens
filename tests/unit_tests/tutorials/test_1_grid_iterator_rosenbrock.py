@@ -17,12 +17,14 @@
 import numpy as np
 from testbook import testbook
 
+from test_utils.unit_tests.notebooks import inject_mock_path
+
 
 # tested jupyter notebooks should be mentioned below
 @testbook(
     "tutorials/1-grid-iterator-rosenbrock.ipynb",
 )
-def test_result_output(tb):
+def test_result_output(tb, tmp_path):
     """Parameterized test case for Jupyter notebook output.
 
     The notebook is run with injected lines of code, as intended by the
@@ -31,13 +33,15 @@ def test_result_output(tb):
     optimal_fun = 2.986025e-11
     optimal_x = np.array([0.99999463, 0.99998915]).tolist()
 
-    tb.execute_cell([2, 4, 6, 8, 13, 15, 17, 19, 21, 23, 25, 27])
+    inject_mock_path(tb, tmp_path)
+    # tb.execute_cell([2, 4, 6, 8, 13, 15, 17, 19, 21, 23, 25, 27])
+    tb.execute_cell([3, 5, 7, 9, 14, 16, 18, 20, 22, 24, 26, 28])
     tb.inject(
         """np.testing.assert_allclose(X1, X1_QUEENS)
 np.testing.assert_allclose(X2, X2_QUEENS)
 np.testing.assert_allclose(Z, Z_QUEENS)"""
     )
 
-    tb.execute_cell([31])
+    tb.execute_cell([32])
     tb.inject(f"np.testing.assert_allclose(optimal_fun, {optimal_fun},rtol=1e-4)")
     tb.inject(f"np.testing.assert_allclose(optimal_x, np.array({optimal_x}))")
