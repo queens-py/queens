@@ -21,7 +21,7 @@ from queens.distributions.normal import Normal
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.bmfia import BMFIA
-from queens.iterators.reparameteriztion_based_variational import RPVI
+from queens.iterators.rpvi import RPVI
 from queens.iterators.sequential_monte_carlo import SequentialMonteCarlo
 from queens.main import run_iterator
 from queens.models.likelihoods.bmf_gaussian import BMFGaussian, BmfiaInterface
