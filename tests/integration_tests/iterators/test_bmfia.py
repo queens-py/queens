@@ -352,14 +352,6 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
     np.testing.assert_array_almost_equal(variational_cov, expected_variational_cov_nn, decimal=1)
 
 
-@pytest.fixture(name="expected_variational_mean")
-def fixture_expected_variational_mean():
-    """Expected variational mean values."""
-    exp_var_mean = np.array([0.51, 0.5]).reshape(-1, 1)
-
-    return exp_var_mean
-
-
 @pytest.fixture(name="expected_samples")
 def fixture_expected_samples():
     """Expected SMC samples."""
@@ -401,10 +393,18 @@ def fixture_expected_weights():
     return weights
 
 
+@pytest.fixture(name="expected_variational_mean")
+def fixture_expected_variational_mean():
+    """Expected variational mean values."""
+    exp_var_mean = np.array([0.4782019, 0.47454463]).reshape(-1, 1)
+
+    return exp_var_mean
+
+
 @pytest.fixture(name="expected_variational_cov")
 def fixture_expected_variational_cov():
     """Expected variational covariance."""
-    exp_var_cov = np.array([[0.00142648, 0.0], [0.0, 0.00347234]])
+    exp_var_cov = np.array([[0.07482492, 0.0], [0.0, 0.0748092]])
     return exp_var_cov
 
 

@@ -280,31 +280,30 @@ class VariationalInference(Iterator):
         """
         # Get the first and second moments of the prior distributions
         mean_list_prior = []
-        std_list_prior = []
+        cov_list_prior = []
         if self.parameters.num_parameters > 0:
             for params in self.parameters.to_distribution_list():
                 mean_list_prior.append(params.mean)
-                std_list_prior.append(params.covariance.squeeze())
-
-        # Set the mean and std-deviation params of the variational distr such that the
+                cov_list_prior.append(params.covariance.squeeze())
+        # Set the mean and variance params of the variational distr such that the
         # transformed distribution would match the moments of the prior
         if self.variational_transformation == "exp":
             mean_list_variational = [
-                np.log(E**2 / np.sqrt(E**2 + S**2)) for E, S in zip(mean_list_prior, std_list_prior)
+                np.log(E**2 / np.sqrt(E**2 + C)) for E, C in zip(mean_list_prior, cov_list_prior)
             ]
-            std_list_variational = [
-                np.sqrt(np.log(1 + S**2 / E**2)) for E, S in zip(mean_list_prior, std_list_prior)
+            cov_list_variational = [
+                np.sqrt(np.log(1 + C / E**2)) for E, C in zip(mean_list_prior, cov_list_prior)
             ]
         elif self.variational_transformation is None:
             mean_list_variational = mean_list_prior
-            std_list_variational = std_list_prior
+            cov_list_variational = cov_list_prior
         else:
             raise ValueError(
                 f"The transformation type {self.variational_transformation} for the "
                 f"variational density is unknown! Abort..."
             )
 
-        return np.array(mean_list_variational), np.diag(std_list_variational) ** 2
+        return np.array(mean_list_variational), np.diag(cov_list_variational)
 
     def _transform_samples(self, x_mat):
         """Transform samples.
