@@ -296,3 +296,7 @@ class Cluster(Dask):
         """
         destination = f"{self.experiment_dir}/"
         self.remote_connection.copy_to_remote(paths, destination)
+
+    @staticmethod
+    def delete_experiment_dir_if_empty(_):
+        """The remote experiment directory will never be empty, so pass."""
