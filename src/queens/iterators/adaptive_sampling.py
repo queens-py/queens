@@ -91,8 +91,10 @@ class AdaptiveSampling(Iterator):
 
         self.x_train_new = initial_train_samples
         self.x_train = np.empty((0, self.parameters.num_parameters))
+        self.x_train_failed = np.empty((0, self.parameters.num_parameters))
         self.y_train = np.empty((0, 1))
         self.model_outputs = np.empty((0, self.likelihood_model.y_obs.size))
+        self.model_outputs_failed = np.empty((0, self.likelihood_model.y_obs.size))
 
     def pre_run(self):
         """Pre run."""
@@ -111,7 +113,8 @@ class AdaptiveSampling(Iterator):
             _logger.info("Step: %i / %i", i + 1, self.num_steps)
             self.x_train = np.concatenate([self.x_train, self.x_train_new], axis=0)
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
-            _logger.info("Number of solver evaluations: %i", self.x_train.shape[0])
+            self._filter_failed_evaluations()
+            _logger.info("Total number of successful solver evaluations: %i", self.x_train.shape[0])
             self.model.initialize(self.x_train, self.y_train, self.likelihood_model.y_obs.size)
 
             random_state = np.random.get_state()
@@ -142,6 +145,12 @@ class AdaptiveSampling(Iterator):
             cs_div = self.write_results(particles, weights, log_posterior, i)
 
             if cs_div < self.cs_div_criterion:
+                _logger.info(
+                    "Cauchy-Schwarz divergence criterion reached (%f < %f). Stopping adaptive "
+                    "sampling.",
+                    cs_div,
+                    self.cs_div_criterion,
+                )
                 break
 
     def eval_log_likelihood(self):
@@ -157,6 +166,35 @@ class AdaptiveSampling(Iterator):
         log_likelihood = self.likelihood_model.normal_distribution.logpdf(self.model_outputs)
         log_likelihood -= self.likelihood_model.normal_distribution.logpdf_const
         return log_likelihood
+
+    def _filter_failed_evaluations(self):
+        """Filter failed evaluations (where model_outputs contains NaN)."""
+        # Boolean masks
+        mask_nan = np.isnan(self.model_outputs).any(axis=1)
+        mask_no_nan = ~mask_nan
+
+        # If any failures occurred
+        if mask_nan.any():
+            _logger.warning(
+                "%i out of %i evaluations failed.", mask_nan.sum(), len(self.x_train_new)
+            )
+            # store the failed evaluations
+            x_train_failed_new = self.x_train[mask_nan]
+            model_outputs_failed_new = self.model_outputs[mask_nan]
+            self.x_train_failed = np.concatenate([self.x_train_failed, x_train_failed_new], axis=0)
+            self.model_outputs_failed = np.concatenate(
+                [self.model_outputs_failed, model_outputs_failed_new], axis=0
+            )
+            # Filter out the failed evaluations from training data
+            self.x_train = self.x_train[mask_no_nan]
+            self.y_train = self.y_train[mask_no_nan]
+            self.model_outputs = self.model_outputs[mask_no_nan]
+        if mask_nan.all():
+            # all evaluations failed.
+            _logger.error(
+                "All evaluations failed. This will likely result"
+                "in the termination criterion being reached early."
+            )
 
     def choose_new_samples(self, particles, weights):
         """Choose new training samples.
@@ -219,7 +257,9 @@ class AdaptiveSampling(Iterator):
         if iteration == 0 and not self.restart_file:
             results = {
                 "x_train": [],
+                "x_train_failed": [],
                 "model_outputs": [],
+                "model_outputs_failed": [],
                 "y_train": [],
                 "x_train_new": [],
                 "particles": [],
@@ -240,7 +280,9 @@ class AdaptiveSampling(Iterator):
             _logger.info("Cauchy Schwarz divergence: %.2e", cs_div)
 
         results["x_train"].append(self.x_train)
+        results["x_train_failed"].append(self.x_train_failed)
         results["model_outputs"].append(self.model_outputs)
+        results["model_outputs_failed"].append(self.model_outputs_failed)
         results["y_train"].append(self.y_train)
         results["x_train_new"].append(self.x_train_new)
         results["particles"].append(particles)
