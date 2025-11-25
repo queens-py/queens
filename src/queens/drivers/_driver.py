@@ -48,7 +48,7 @@ class Driver(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -57,7 +57,7 @@ class Driver(metaclass=abc.ABCMeta):
         """Abstract method for driver run.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
@@ -67,17 +67,20 @@ class Driver(metaclass=abc.ABCMeta):
             Results
         """
 
-    def __call__(self, sample, job_id, num_procs, experiment_dir, experiment_name):
-        """Abstract method for driver run.
-
-        Args:
-            sample (np.ndarray): Input sample
-            job_id (int): Job ID
-            num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-
-        Returns:
-            Result and potentially the gradient
-        """
-        return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
+    def run_from_parameters(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Create inputs from parameters and run."""
+        sample_dict = self.parameters.sample_as_dict(sample)
+        return self.run(
+            sample_dict,
+            job_id,
+            num_procs,
+            experiment_dir,
+            experiment_name,
+        )

@@ -21,13 +21,10 @@ from queens.iterators.sobol_sequence import SobolSequence
 
 
 @pytest.fixture(name="default_qmc_iterator")
-def fixture_default_qmc_iterator(
-    global_settings, default_simulation_model, default_parameters_mixed
-):
+def fixture_default_qmc_iterator(global_settings, ishigami_90_mixed, default_parameters_mixed):
     """Sobol sequence iterator."""
-    default_simulation_model.driver.parameters = default_parameters_mixed
     my_iterator = SobolSequence(
-        model=default_simulation_model,
+        model=ishigami_90_mixed,
         parameters=default_parameters_mixed,
         global_settings=global_settings,
         seed=42,
