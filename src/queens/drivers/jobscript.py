@@ -271,12 +271,16 @@ class Jobscript(Driver):
 
         return results
 
-    def _manage_paths(self, job_id, experiment_dir):
+    def _manage_paths(
+        self, job_id, experiment_dir, output_folder_name="output", output_prefix="output"
+    ):
         """Manage paths for driver run.
 
         Args:
             job_id (int): Job ID.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            output_folder_name (str): Name of output folder.
+            output_prefix (str): Prefix of output file(s).
 
         Returns:
             job_dir (Path): Path to job directory.
@@ -286,10 +290,9 @@ class Jobscript(Driver):
             log_file (Path): Path to log file.
         """
         job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / "output"
+        output_dir = job_dir / output_folder_name
         output_dir = create_folder_if_not_existent(output_dir)
 
-        output_prefix = "output"
         output_file = output_dir / output_prefix
         log_file = output_dir / (output_prefix + ".log")
 
