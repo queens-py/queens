@@ -16,11 +16,14 @@
 
 Modules containing probability distributions for variational inference.
 """
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map
 
 if TYPE_CHECKING:
+    from queens.variational_distributions._variational_distribution import Variational
     from queens.variational_distributions.full_rank_normal import FullRankNormal
     from queens.variational_distributions.joint import Joint
     from queens.variational_distributions.mean_field_normal import MeanFieldNormal
@@ -30,5 +33,5 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name):
+def __getattr__(name: str) -> Variational:
     return import_class_from_class_module_map(name, class_module_map, __name__)
