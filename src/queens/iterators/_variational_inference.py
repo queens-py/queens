@@ -292,7 +292,7 @@ class VariationalInference(Iterator):
                 np.log(E**2 / np.sqrt(E**2 + C)) for E, C in zip(mean_list_prior, cov_list_prior)
             ]
             cov_list_variational = [
-                np.sqrt(np.log(1 + C / E**2)) for E, C in zip(mean_list_prior, cov_list_prior)
+                np.log(1 + C / E**2) for E, C in zip(mean_list_prior, cov_list_prior)
             ]
         elif self.variational_transformation is None:
             mean_list_variational = mean_list_prior
