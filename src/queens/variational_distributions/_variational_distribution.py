@@ -15,11 +15,31 @@
 """Variational Distribution."""
 
 import abc
-from typing import Any
+from typing import Any, Literal, TypeAlias, TypeVar
 
 import numpy as np
 
-from queens.utils.type_hinting import ArrayN, ArrayNxM
+# pylint: disable=invalid-name
+
+NDims = TypeVar("NDims", bound=int)
+NSamples = TypeVar("NSamples", bound=int)
+NParams = TypeVar("NParams", bound=int)
+NParamsComponent = TypeVar("NParamsComponent", bound=int)
+
+# Vectors
+ArrayNDims: TypeAlias = np.ndarray[tuple[NDims], np.dtype[np.floating]]
+ArrayNParams: TypeAlias = np.ndarray[tuple[NParams], np.dtype[np.floating]]
+ArrayNParamsComponent: TypeAlias = np.ndarray[tuple[NParamsComponent], np.dtype[np.floating]]
+ArrayNSamples: TypeAlias = np.ndarray[tuple[NSamples], np.dtype[np.floating]]
+
+# Matrices
+Array1XNParams: TypeAlias = np.ndarray[tuple[Literal[1], NParams], np.dtype[np.floating]]
+ArrayNDimsX1: TypeAlias = np.ndarray[tuple[NDims, Literal[1]], np.dtype[np.floating]]
+ArrayNDimsXNDims: TypeAlias = np.ndarray[tuple[NDims, NDims], np.dtype[np.floating]]
+ArrayNParamsXNParams: TypeAlias = np.ndarray[tuple[NParams, NParams], np.dtype[np.floating]]
+ArrayNParamsXNSamples: TypeAlias = np.ndarray[tuple[NParams, NSamples], np.dtype[np.floating]]
+ArrayNSamplesXNDims: TypeAlias = np.ndarray[tuple[NSamples, NDims], np.dtype[np.floating]]
+ArrayNSamplesXNParams: TypeAlias = np.ndarray[tuple[NSamples, NParams], np.dtype[np.floating]]
 
 
 class Variational:
@@ -30,7 +50,7 @@ class Variational:
         n_parameters: Number of variational parameters
     """
 
-    def __init__(self, dimension: int, n_parameters: int) -> None:
+    def __init__(self, dimension: NDims, n_parameters: NParams) -> None:
         """Initialize variational distribution.
 
         Args:
@@ -41,7 +61,7 @@ class Variational:
         self.n_parameters = n_parameters
 
     @abc.abstractmethod
-    def construct_variational_parameters(self, *args: Any) -> np.ndarray:
+    def construct_variational_parameters(self, *args: Any) -> ArrayNParams:
         """Construct variational parameters from distribution parameters.
 
         Args:
@@ -52,7 +72,7 @@ class Variational:
         """
 
     @abc.abstractmethod
-    def reconstruct_distribution_parameters(self, variational_parameters: ArrayN) -> Any:
+    def reconstruct_distribution_parameters(self, variational_parameters: ArrayNParams) -> Any:
         """Reconstruct distribution parameters from variational parameters.
 
         Args:
@@ -63,98 +83,96 @@ class Variational:
         """
 
     @abc.abstractmethod
-    def draw(
-        self,
-        variational_parameters: ArrayN,
-        n_draws: int = 1,
-    ) -> ArrayNxM:
+    def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draws* samples from distribution.
 
         Args:
-            variational_parameters: Variational parameters of shape (n_params,)
+            variational_parameters: Variational parameters
             n_draws: Number of samples
 
         Returns:
-            Drawn samples of shape (n_draws, n_dim)
+            Drawn samples
         """
 
     @abc.abstractmethod
     def logpdf(
         self,
-        variational_parameters: ArrayN,
-        x: ArrayNxM,
-    ) -> np.ndarray:
+        variational_parameters: ArrayNParams,
+        x: ArrayNSamplesXNDims,
+    ) -> ArrayNSamples:
         """Evaluate the natural logarithm of the PDF.
 
         Args:
-            variational_parameters: Variational parameters of shape (n_params,)
-            x: Locations to evaluate of shape (n_samples, n_dim)
+            variational_parameters: Variational parameters
+            x: Locations to evaluate
 
         Returns:
-            Row vector of the Log-PDF values
+            Log-PDF values
         """
 
     @abc.abstractmethod
     def pdf(
         self,
-        variational_parameters: ArrayN,
-        x: ArrayNxM,
-    ) -> np.ndarray:
+        variational_parameters: ArrayNParams,
+        x: ArrayNSamplesXNDims,
+    ) -> ArrayNSamples:
         """Evaluate the probability density function (PDF).
 
         Args:
-            variational_parameters: Variational parameters of shape (n_params,)
-            x: Locations to evaluate of shape (n_samples, n_dim)
+            variational_parameters: Variational parameters
+            x: Locations to evaluate
 
         Returns:
-            Row vector of the PDF values
+            PDF values
         """
 
     @abc.abstractmethod
     def grad_params_logpdf(
         self,
-        variational_parameters: ArrayN,
-        x: ArrayNxM,
-    ) -> np.ndarray:
+        variational_parameters: ArrayNParams,
+        x: ArrayNSamplesXNDims,
+    ) -> ArrayNParamsXNSamples:
         """Log-PDF gradient w.r.t. the variational parameters.
 
         Evaluated at samples  *x*. Also known as the score function.
 
         Args:
-            variational_parameters: Variational parameters of shape (n_params,)
-            x: Locations to evaluate of shape (n_samples, n_dim)
+            variational_parameters: Variational parameters
+            x: Locations to evaluate
 
         Returns:
             Gradient of the log-PDF w.r.t. the variational parameters
         """
 
     @abc.abstractmethod
-    def fisher_information_matrix(self, variational_parameters: ArrayN) -> ArrayNxM:
-        """Compute the fisher information matrix.
+    def fisher_information_matrix(
+        self, variational_parameters: ArrayNParams
+    ) -> ArrayNParamsXNParams:
+        """Compute the Fisher information matrix.
 
         Depends on the variational distribution for the given
         parameterization.
 
         Args:
-            variational_parameters: Variational parameters of shape (n_params,)
+            variational_parameters: Variational parameters
 
         Returns:
-            Fisher information matrix of shape (n_params, n_params)
+            Fisher information matrix
         """
 
     @abc.abstractmethod
-    def initialize_variational_parameters(self, random: bool = False) -> ArrayN:
+    def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         """Initialize variational parameters.
 
         Args:
             random: If True, a random initialization is used. Otherwise the default is selected.
 
         Returns:
-            Variational parameters of shape (n_params,)
+            Variational parameters
         """
 
     @abc.abstractmethod
-    def export_dict(self, variational_parameters: np.ndarray) -> dict:
+    def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 
         Args:
