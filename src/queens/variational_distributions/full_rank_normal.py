@@ -19,8 +19,21 @@ import scipy
 from numba import njit
 
 from queens.utils.logger_settings import log_init_args
-from queens.utils.type_hinting import ArrayN, ArrayNx1, ArrayNxM
-from queens.variational_distributions._variational_distribution import Variational
+from queens.variational_distributions._variational_distribution import (
+    Array1XNParams,
+    ArrayNDims,
+    ArrayNDimsX1,
+    ArrayNDimsXNDims,
+    ArrayNParams,
+    ArrayNParamsXNParams,
+    ArrayNParamsXNSamples,
+    ArrayNSamples,
+    ArrayNSamplesXNDims,
+    ArrayNSamplesXNParams,
+    NDims,
+    NSamples,
+    Variational,
+)
 
 
 class FullRankNormal(Variational):
@@ -42,7 +55,7 @@ class FullRankNormal(Variational):
     """
 
     @log_init_args
-    def __init__(self, dimension: int) -> None:
+    def __init__(self, dimension: NDims) -> None:
         """Initialize variational distribution.
 
         Args:
@@ -51,7 +64,7 @@ class FullRankNormal(Variational):
         n_parameters = (dimension * (dimension + 1)) // 2 + dimension
         super().__init__(dimension, n_parameters)
 
-    def initialize_variational_parameters(self, random: bool = False) -> ArrayN:
+    def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
         Default initialization:
@@ -64,7 +77,7 @@ class FullRankNormal(Variational):
             random: If True, a random initialization is used. Otherwise the default is selected.
 
         Returns:
-            Variational parameters of shape (n_params,)
+            Variational parameters
         """
         if random:
             cholesky_covariance = np.eye(self.dimension) + 0.1 * (
@@ -85,13 +98,13 @@ class FullRankNormal(Variational):
         return variational_parameters
 
     def construct_variational_parameters(  # pylint: disable=arguments-differ
-        self, mean: ArrayNx1 | ArrayN, covariance: ArrayNxM
-    ) -> ArrayN:
+        self, mean: ArrayNDimsX1 | ArrayNDims, covariance: ArrayNDimsXNDims
+    ) -> ArrayNParams:
         """Construct the variational parameters from mean and covariance.
 
         Args:
-            mean: Mean values of the distribution of shape (n_dim, 1) or (n_dim,)
-            covariance: Covariance matrix of the distribution of shape (n_dim, n_dim)
+            mean: Mean values of the distribution
+            covariance: Covariance matrix of the distribution
 
         Returns:
             Variational parameters
@@ -111,15 +124,15 @@ class FullRankNormal(Variational):
         return variational_parameters
 
     def reconstruct_distribution_parameters(
-        self, variational_parameters: ArrayN
-    ) -> tuple[ArrayNx1, ArrayNxM]:
-        """Reconstruct mean value, covariance and its Cholesky decomposition.
+        self, variational_parameters: ArrayNParams
+    ) -> tuple[ArrayNDimsX1, ArrayNDimsXNDims]:
+        """Reconstruct mean value and covariance.
 
         Args:
             variational_parameters: Variational parameters
         Returns:
-            Mean value of the distribution of shape (n_dim, 1)
-            Covariance of the distribution of shape (n_dim, n_dim)
+            Mean value of the distribution
+            Covariance of the distribution
         """
         mean, cov, _ = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
@@ -127,16 +140,16 @@ class FullRankNormal(Variational):
         return mean, cov
 
     def reconstruct_distribution_parameters_with_cholesky(
-        self, variational_parameters: ArrayN
-    ) -> tuple[ArrayNx1, ArrayNxM, ArrayNxM]:
+        self, variational_parameters: ArrayNParams
+    ) -> tuple[ArrayNDimsX1, ArrayNDimsXNDims, ArrayNDimsXNDims]:
         """Reconstruct mean value, covariance and its Cholesky decomposition.
 
         Args:
             variational_parameters: Variational parameters
         Returns:
-            Mean value of the distribution of shape (n_dim, 1)
-            Covariance of the distribution of shape (n_dim, n_dim)
-            Cholesky decomposition of the covariance matrix of shape (n_dim, n_dim)
+            Mean value of the distribution
+            Covariance of the distribution
+            Cholesky decomposition of the covariance matrix
         """
         mean = variational_parameters[: self.dimension].reshape(-1, 1)
         cholesky_covariance_array = variational_parameters[self.dimension :]
@@ -147,7 +160,7 @@ class FullRankNormal(Variational):
 
         return mean, cov, cholesky_covariance
 
-    def _grad_reconstruct_distribution_parameters(self) -> np.ndarray:
+    def _grad_reconstruct_distribution_parameters(self) -> Array1XNParams:
         """Gradient of the parameter reconstruction.
 
         Returns:
@@ -156,7 +169,7 @@ class FullRankNormal(Variational):
         grad_reconstruct_params = np.ones((1, self.n_parameters))
         return grad_reconstruct_params
 
-    def draw(self, variational_parameters: ArrayN, n_draws: int = 1) -> ArrayNxM:
+    def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.
 
         Args:
@@ -164,7 +177,7 @@ class FullRankNormal(Variational):
             n_draws: Number of samples to draw
 
         Returns:
-            Samples of shape (n_draws, n_dim)
+            Samples
         """
         mean, _, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
@@ -172,7 +185,7 @@ class FullRankNormal(Variational):
         sample = np.dot(cholesky, np.random.randn(self.dimension, n_draws)).T + mean.reshape(1, -1)
         return sample
 
-    def logpdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Log-PDF evaluated at the samples *x*.
 
         Args:
@@ -180,7 +193,7 @@ class FullRankNormal(Variational):
             x: Row-wise samples
 
         Returns:
-            Row vector of the Log-PDF values
+            Log-PDF values
         """
         mean, cov, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
@@ -198,7 +211,7 @@ class FullRankNormal(Variational):
         )
         return logpdf.flatten()
 
-    def pdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """PDF of evaluated at given samples *x*.
 
         First computes the log-PDF, which is numerically more stable for exponential distributions.
@@ -213,7 +226,9 @@ class FullRankNormal(Variational):
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
-    def grad_params_logpdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def grad_params_logpdf(
+        self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
+    ) -> ArrayNParamsXNSamples:
         """Log-PDF gradient w.r.t. to the variational parameters.
 
         Evaluated at samples *x*. Also known as the score function.
@@ -251,8 +266,10 @@ class FullRankNormal(Variational):
         return score
 
     def total_grad_params_logpdf(
-        self, variational_parameters: ArrayN, standard_normal_sample_batch: np.ndarray
-    ) -> np.ndarray:
+        self,
+        variational_parameters: ArrayNParams,
+        standard_normal_sample_batch: ArrayNSamplesXNDims,
+    ) -> ArrayNSamplesXNParams:
         """Total log-PDF reparameterization gradient.
 
         Total log-PDF reparameterization gradient w.r.t. the variational parameters.
@@ -271,8 +288,8 @@ class FullRankNormal(Variational):
         return total_grad
 
     def grad_sample_logpdf(
-        self, variational_parameters: ArrayN, sample_batch: np.ndarray
-    ) -> np.ndarray:
+        self, variational_parameters: ArrayNParams, sample_batch: ArrayNSamplesXNDims
+    ) -> ArrayNSamplesXNDims:
         """Computes the gradient of the log-PDF w.r.t. to the sample *x*.
 
         Args:
@@ -295,14 +312,16 @@ class FullRankNormal(Variational):
         gradients_batch = np.array(gradient_lst)
         return gradients_batch.reshape(sample_batch.shape)
 
-    def fisher_information_matrix(self, variational_parameters: ArrayN) -> np.ndarray:
+    def fisher_information_matrix(
+        self, variational_parameters: ArrayNParams
+    ) -> ArrayNParamsXNParams:
         """Compute the Fisher information matrix analytically.
 
         Args:
             variational_parameters: Variational parameters
 
         Returns:
-            Fisher information matrix (num parameters x num parameters)
+            Fisher information matrix
         """
         _, cov, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
@@ -339,7 +358,7 @@ class FullRankNormal(Variational):
 
         return scipy.linalg.block_diag(mu_block, sigma_block)
 
-    def export_dict(self, variational_parameters: ArrayN) -> dict:
+    def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 
         Args:
@@ -357,8 +376,8 @@ class FullRankNormal(Variational):
         return export_dict
 
     def conduct_reparameterization(
-        self, variational_parameters: np.ndarray, n_samples: int
-    ) -> tuple[np.ndarray, np.ndarray]:
+        self, variational_parameters: ArrayNParams, n_samples: NSamples
+    ) -> tuple[ArrayNSamplesXNDims, ArrayNSamplesXNDims]:
         """Conduct a reparameterization.
 
         Args:
@@ -379,10 +398,10 @@ class FullRankNormal(Variational):
 
     def grad_params_reparameterization(
         self,
-        variational_parameters: ArrayN,
-        standard_normal_sample_batch: np.ndarray,
-        upstream_gradient: np.ndarray,
-    ) -> np.ndarray:
+        variational_parameters: ArrayNParams,
+        standard_normal_sample_batch: ArrayNSamplesXNDims,
+        upstream_gradient: ArrayNSamplesXNDims,
+    ) -> ArrayNSamplesXNParams:
         r"""Calculate the gradient of the reparameterization.
 
         Args:

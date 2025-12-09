@@ -19,8 +19,15 @@ from typing import Sequence, Sized
 import numpy as np
 
 from queens.distributions.particle import Particle as ParticleDistribution
-from queens.utils.type_hinting import ArrayN, ArrayNxM
-from queens.variational_distributions._variational_distribution import Variational
+from queens.variational_distributions._variational_distribution import (
+    ArrayNParams,
+    ArrayNParamsXNParams,
+    ArrayNParamsXNSamples,
+    ArrayNSamples,
+    ArrayNSamplesXNDims,
+    NSamples,
+    Variational,
+)
 
 
 class Particle(Variational):
@@ -44,8 +51,8 @@ class Particle(Variational):
         super().__init__(self.particles_obj.dimension, n_parameters=len(sample_space))
 
     def construct_variational_parameters(  # pylint: disable=arguments-differ
-        self, probabilities: ArrayN, sample_space: np.ndarray
-    ) -> ArrayN:
+        self, probabilities: ArrayNParams, sample_space: np.ndarray | Sequence[Sized]
+    ) -> ArrayNParams:
         """Construct the variational parameters from the probabilities.
 
         Args:
@@ -59,7 +66,7 @@ class Particle(Variational):
         variational_parameters = np.log(probabilities).flatten()
         return variational_parameters
 
-    def initialize_variational_parameters(self, random: bool = False) -> ArrayN:
+    def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
         Default initialization:
@@ -73,7 +80,7 @@ class Particle(Variational):
             random: If True, a random initialization is used. Otherwise the default is selected
 
         Returns:
-            Variational parameters of shape (n_params,)
+            Variational parameters
         """
         if random:
             variational_parameters = (
@@ -86,8 +93,8 @@ class Particle(Variational):
         return variational_parameters
 
     def reconstruct_distribution_parameters(
-        self, variational_parameters: ArrayN
-    ) -> tuple[ArrayN, np.ndarray]:
+        self, variational_parameters: ArrayNParams
+    ) -> tuple[ArrayNParams, np.ndarray]:
         """Reconstruct probabilities from the variational parameters.
 
         Args:
@@ -102,7 +109,7 @@ class Particle(Variational):
         self.particles_obj = ParticleDistribution(probabilities, self.particles_obj.sample_space)
         return probabilities, self.particles_obj.sample_space
 
-    def draw(self, variational_parameters: ArrayN, n_draws: int = 1) -> ArrayNxM:
+    def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draws* samples from distribution.
 
         Args:
@@ -110,17 +117,17 @@ class Particle(Variational):
             n_draws: Number of samples
 
         Returns:
-            Samples of shape (n_draws, n_dim)
+            Samples
         """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.draw(n_draws)
 
-    def logpdf(self, variational_parameters: ArrayN, x: ArrayNxM) -> np.ndarray:
+    def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Evaluate the natural logarithm of the PDF.
 
         Args:
             variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution of shape (n_samples, n_dim)
+            x: Locations at which to evaluate the distribution
 
         Returns:
             Log-PDF values at the locations x
@@ -128,12 +135,12 @@ class Particle(Variational):
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.logpdf(x)
 
-    def pdf(self, variational_parameters: ArrayN, x: ArrayNxM) -> np.ndarray:
+    def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Evaluate the probability density function (PDF).
 
         Args:
             variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution of shape (n_samples, n_dim)
+            x: Locations at which to evaluate the distribution
 
         Returns:
             Row vector of the PDF values
@@ -141,7 +148,9 @@ class Particle(Variational):
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.pdf(x)
 
-    def grad_params_logpdf(self, variational_parameters: ArrayN, x: ArrayNxM) -> np.ndarray:
+    def grad_params_logpdf(
+        self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
+    ) -> ArrayNParamsXNSamples:
         r"""Log-PDF gradient w.r.t. the variational parameters.
 
         Evaluated at samples  *x*. Also known as the score function.
@@ -151,7 +160,7 @@ class Particle(Variational):
 
         Args:
             variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution of shape (n_samples, n_dim)
+            x: Locations at which to evaluate the distribution
 
         Returns:
             Score functions at the locations x
@@ -172,7 +181,9 @@ class Particle(Variational):
         # Get the samples
         return sample_scores[index].T
 
-    def fisher_information_matrix(self, variational_parameters: ArrayN) -> ArrayNxM:
+    def fisher_information_matrix(
+        self, variational_parameters: ArrayNParams
+    ) -> ArrayNParamsXNParams:
         r"""Compute the Fisher information matrix.
 
         For the given parameterization, the Fisher information yields:
@@ -182,13 +193,13 @@ class Particle(Variational):
             variational_parameters: Variational parameters of the distribution
 
         Returns:
-            Fisher information matrix of shape (n_parameters, n_parameters)
+            Fisher information matrix
         """
         probabilities, _ = self.reconstruct_distribution_parameters(variational_parameters)
         fim = np.diag(probabilities) - np.outer(probabilities, probabilities)
         return fim
 
-    def export_dict(self, variational_parameters: ArrayN) -> dict:
+    def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 
         Args:

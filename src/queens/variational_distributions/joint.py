@@ -14,14 +14,32 @@
 #
 """Joint Variational Distribution."""
 
+from typing import Generic, Iterator, TypeAlias, TypeVar
+
 import numpy as np
 import scipy
+from numpy.typing import ArrayLike
 
-from queens.utils.type_hinting import ArrayN, ArrayNxM
-from queens.variational_distributions._variational_distribution import Variational
+from queens.variational_distributions._variational_distribution import (
+    ArrayNParams,
+    ArrayNParamsComponent,
+    ArrayNParamsXNParams,
+    ArrayNParamsXNSamples,
+    ArrayNSamples,
+    ArrayNSamplesXNDims,
+    NDims,
+    NSamples,
+    Variational,
+)
+
+NDimsComponent = TypeVar("NDimsComponent", bound=int)
+V = TypeVar("V", bound=Variational)
+ArrayNSamplesXNDimsComponent: TypeAlias = np.ndarray[  # pylint: disable=invalid-name
+    tuple[NSamples, NDimsComponent], np.dtype[np.floating]
+]
 
 
-class Joint(Variational):
+class Joint(Variational, Generic[V]):
     r"""Joint variational distribution class.
 
     This distribution allows to join distributions in an independent fashion:
@@ -37,7 +55,7 @@ class Joint(Variational):
         distributions_dimension: Number of dimension per distribution
     """
 
-    def __init__(self, distributions: list, dimension: int) -> None:
+    def __init__(self, distributions: list[V], dimension: NDims) -> None:
         """Initialize joint distribution.
 
         Args:
@@ -62,7 +80,7 @@ class Joint(Variational):
                 f"dimensions of the subdistributions {np.sum(self.distributions_dimension)}"
             )
 
-    def initialize_variational_parameters(self, random: bool = False) -> ArrayN:
+    def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
         The distribution initialization is handle by the component itself.
@@ -71,7 +89,7 @@ class Joint(Variational):
             random: If True, a random initialization is used. Otherwise the default is selected
 
         Returns:
-            Variational parameters of shape (n_params,)
+            Variational parameters
         """
         variational_parameters = np.concatenate(
             [
@@ -84,7 +102,7 @@ class Joint(Variational):
 
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, distributions_parameters: list
-    ) -> ArrayN:
+    ) -> ArrayNParams:
         """Construct the variational parameters from the distribution list.
 
         Args:
@@ -103,8 +121,8 @@ class Joint(Variational):
         return np.concatenate(variational_parameters)
 
     def _construct_distributions_variational_parameters(
-        self, variational_parameters: ArrayN
-    ) -> list:
+        self, variational_parameters: ArrayNParams
+    ) -> list[ArrayNParamsComponent]:
         """Reconstruct the parameters of the distributions.
 
         Creates a list containing the variational parameters of the different components.
@@ -122,7 +140,9 @@ class Joint(Variational):
         )
         return variational_parameters_list
 
-    def reconstruct_distribution_parameters(self, variational_parameters: ArrayN) -> list[list]:
+    def reconstruct_distribution_parameters(
+        self, variational_parameters: ArrayNParams
+    ) -> list[list[tuple[list | np.ndarray]]]:
         """Reconstruct the parameters of distributions.
 
         The list is nested, each entry correspond to the parameters of a distribution.
@@ -143,7 +163,9 @@ class Joint(Variational):
             )
         return [distribution_parameters_list]
 
-    def _zip_variational_parameters_distributions(self, variational_parameters: ArrayN) -> zip:
+    def _zip_variational_parameters_distributions(
+        self, variational_parameters: ArrayNParams
+    ) -> Iterator[tuple[ArrayNParamsComponent, V]]:
         """Zip parameters and distributions.
 
         This helper function creates a generator for variational parameters and subdistribution.
@@ -161,8 +183,8 @@ class Joint(Variational):
         )
 
     def _zip_variational_parameters_distributions_samples(
-        self, variational_parameters: ArrayN, samples: np.ndarray
-    ) -> zip:
+        self, variational_parameters: ArrayNParams, samples: ArrayNSamplesXNDims
+    ) -> Iterator[tuple[ArrayNParamsComponent, ArrayNSamplesXNDimsComponent, V]]:
         """Zip parameters, samples and distributions.
 
         This helper function creates a generator for variational parameters, samples and
@@ -182,7 +204,7 @@ class Joint(Variational):
             strict=True,
         )
 
-    def draw(self, variational_parameters: ArrayN, n_draws: int = 1) -> ArrayNxM:
+    def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.
 
         Args:
@@ -190,7 +212,7 @@ class Joint(Variational):
             n_draws: Number of samples to draw
 
         Returns:
-            Samples of shape (n_draws, n_dim)
+            Samples
         """
         sample_array = []
         for parameters, distribution in self._zip_variational_parameters_distributions(
@@ -199,7 +221,7 @@ class Joint(Variational):
             sample_array.append(distribution.draw(parameters, n_draws))
         return np.column_stack(sample_array)
 
-    def logpdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Log-PDF evaluated using the variational parameters at samples *x*.
 
         Args:
@@ -209,7 +231,7 @@ class Joint(Variational):
         Returns:
             Row vector of the Log-PDF values
         """
-        logpdf = np.zeros_like(x[:, 0], dtype=float)
+        logpdf = np.zeros(x.shape[0], dtype=float)
         for (
             parameters,
             samples,
@@ -218,7 +240,7 @@ class Joint(Variational):
             logpdf += distribution.logpdf(parameters, samples)
         return logpdf
 
-    def pdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Pdf evaluated using the variational parameters at given samples `x`.
 
         Args:
@@ -231,7 +253,9 @@ class Joint(Variational):
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
-    def grad_params_logpdf(self, variational_parameters: ArrayN, x: np.ndarray) -> np.ndarray:
+    def grad_params_logpdf(
+        self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
+    ) -> ArrayNParamsXNSamples:
         """Log-PDF gradient w.r.t. the variational parameters.
 
         Evaluated at samples *x*. Also known as the score function.
@@ -255,14 +279,16 @@ class Joint(Variational):
 
         return np.row_stack(score)
 
-    def fisher_information_matrix(self, variational_parameters: ArrayN) -> np.ndarray:
+    def fisher_information_matrix(
+        self, variational_parameters: ArrayNParams
+    ) -> ArrayNParamsXNParams:
         """Approximate the Fisher information matrix using Monte Carlo.
 
         Args:
             variational_parameters: Variational parameters
 
         Returns:
-            Fisher information matrix (num parameters x num parameters)
+            Fisher information matrix
         """
         fim = []
         for parameters, distribution in self._zip_variational_parameters_distributions(
@@ -272,7 +298,7 @@ class Joint(Variational):
 
         return scipy.linalg.block_diag(*fim)
 
-    def export_dict(self, variational_parameters: ArrayN) -> dict:
+    def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 
         Args:
@@ -295,7 +321,7 @@ class Joint(Variational):
         return export_dict
 
 
-def split_array_by_chunk_sizes(array: np.ndarray, chunk_sizes: np.ndarray) -> list:
+def split_array_by_chunk_sizes(array: np.ndarray, chunk_sizes: ArrayLike) -> list:
     """Split up array by a list of chunk sizes.
 
     Args:
