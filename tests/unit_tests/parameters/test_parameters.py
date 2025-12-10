@@ -140,6 +140,13 @@ def test_sample_as_dict(parameters_set_1):
     assert sample_dict == {"x1": 0.5, "x2_0": 0.1, "x2_1": 0.6}
 
 
+def test_dict_as_sample(parameters_set_1):
+    """Test *dict_as_sample* method."""
+    sample_dict = {"x2_0": 0.1, "x2_1": 0.6, "x1": 0.5}  # ordering does not matter
+    sample_array = parameters_set_1.dict_as_sample(sample_dict)
+    np.testing.assert_array_equal(sample_array, np.array([0.5, 0.1, 0.6]))
+
+
 def test_to_list(parameters_set_1):
     """Test *to_list* method."""
     parameters_list = parameters_set_1.to_list()
