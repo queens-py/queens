@@ -174,13 +174,15 @@ class ElementaryEffects(Iterator):
 
         Args:
             results (dict): Dictionary with the results of the sensitivity analysis, including:
-                - 'parameter_names': List of parameter names.
-                - 'sensitivity_indices': Contains indices like:
-                    - 'names': Parameter names.
-                    - 'mu_star': Mean absolute effect.
-                    - 'mu': Mean effect.
-                    - 'mu_star_conf': Confidence interval for 'mu_star'.
-                    - 'sigma': Standard deviation of the effect.
+
+                - `parameter_names`: List of parameter names.
+                - `sensitivity_indices`: Contains indices like:
+
+                    - `names`: Parameter names.
+                    - `mu_star`: Mean absolute effect.
+                    - `mu`: Mean effect.
+                    - `mu_star_conf`: Confidence interval for `mu_star`.
+                    - `sigma`: Standard deviation of the effect.
         """
         _logger.info(
             "%-20s %10s %10s %15s %10s", "Parameter", "Mu_Star", "Mu", "Mu_Star_Conf", "Sigma"

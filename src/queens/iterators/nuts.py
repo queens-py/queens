@@ -14,7 +14,7 @@
 #
 """No-U-Turn algorithm.
 
-"The No-U-Turn sampler is a gradient based MCMC algortihm. It builds on
+The No-U-Turn sampler is a gradient based MCMC algortihm. It builds on
 the Hamiltonian Monte Carlo sampler to sample from (high dimensional)
 arbitrary probability distributions.
 """
@@ -44,7 +44,7 @@ class NUTS(PyMC):
     Attributes:
         max_treedepth (int): Maximum depth for the tree-search
         early_max_treedepth (int): Max tree depth of first 200 tuning samples
-        step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
+        step_size (float): Step size, scaled by 1/(parameter dimension ^ 0.25)
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
@@ -103,7 +103,7 @@ class NUTS(PyMC):
             progressbar (boolean, opt): Setting for printing progress bar while sampling
             max_treedepth (int): Maximum depth for the tree-search
             early_max_treedepth (int): Max tree depth of first 200 tuning samples
-            step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
+            step_size (float): Step size, scaled by 1/(parameter dimension ^ 0.25)
             target_accept (float): Target accpetance rate which should be conistent after burn-in
             scaling (np.array): The inverse mass, or precision matrix
             is_cov (boolean): Setting if the scaling is a mass or covariance matrix

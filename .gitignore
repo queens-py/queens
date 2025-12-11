@@ -4,7 +4,6 @@ doc/build
 doc/source/*.rst
 doc/source/*.md
 
-doc/source/tutorials/1-monte_carlo_uq.rst
 doc/source/tutorials/*.ipynb
 
 # No results or logs

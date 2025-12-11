@@ -675,42 +675,36 @@ class BmfiaInterface:
 
         Args:
             z_lf (np.array): Low-fidelity feature vector that contains the corresponding Monte-Carlo
-                             points on which the probabilistic mapping should be evaluated.
-                             Dimensions: Rows: different multi-fidelity vector/points
-                             (each row is one multi-fidelity point).
-                             Columns: different model outputs/informative features.
-                             Note: z_lf might be a 3d tensor here
-                             Dims z_lf: gamma_dim x num_samples x coord_dim
-                             Dims z_lf.T: coord_dim x num_samples x gamma_dim --> iterate over
-                             coord_dim
+                points on which the probabilistic mapping should be evaluated.
+                Dimensions: Rows: different multi-fidelity vector/points
+                (each row is one multi-fidelity point).
+                Columns: different model outputs/informative features.
+                Note: z_lf might be a 3d tensor here:
+                Dims z_lf: gamma_dim x num_samples x coord_dim or
+                Dims z_lf.T: coord_dim x num_samples x gamma_dim --> iterate over coord_dim.
             support (str): Support/variable for which we predict the mean and (co)variance. For
-                            `support=f` the Gaussian process predicts w.r.t. the latent function
-                            `f`. For the choice of `support=y` we predict w.r.t. to the
-                            simulation/experimental output `y`,
+                `support=f`, the Gaussian process predicts w.r.t. the latent function
+                `f`. For the choice of `support=y` we predict w.r.t. to the
+                simulation/experimental output `y`.
             probabilistic_mapping_obj_lst (list): List of probabilistic mapping objects
             _time_vec (np.array): Vector of time points
             _coords_mat (np.array): Matrix of spatial coordinates
 
         Returns:
             mean (np.array): Vector of mean predictions
-                             :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*, \mathcal{D}_{f})]`
-                             for the HF model given the low-fidelity feature input. Different HF
-                             predictions per row. Each row corresponds to one multi-fidelity
-                             input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
-
+                :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*, \mathcal{D}_{f})]`
+                for the HF model given the low-fidelity feature input. Different HF
+                predictions per row. Each row corresponds to one multi-fidelity
+                input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
             variance (np.array): Vector of variance predictions
-                                 :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]`
-                                 for the HF model given the low-fidelity feature input.
-                                 Different HF predictions per row. Each row corresponds to one
-                                 multi-fidelity input vector in
-                                 :math:`\Omega_{y_{lf}\times\gamma_i}`.
-
-           grad_mean (np.array): Gradient matrix for the mean prediction.
-                                 Different HF predictions per row, and gradient
-                                 vector entries per column
-           grad_variance (np.array): Gradient matrix for the mean prediction.
-                                     Different HF predictions per row, and gradient
-                                     vector entries per column
+                :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]`
+                for the HF model given the low-fidelity feature input.
+                Different HF predictions per row. Each row corresponds to one
+                multi-fidelity input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
+            grad_mean (np.array): Gradient matrix for the mean prediction.
+                Different HF predictions per row, and gradient vector entries per column.
+            grad_variance (np.array): Gradient matrix for the mean prediction.
+                Different HF predictions per row, and gradient vector entries per column.
         """
         mean_Y_HF_given_Z_LF = []
         var_Y_HF_given_Z_LF = []
@@ -781,24 +775,20 @@ class BmfiaInterface:
 
         Returns:
             mean (np.array): Vector of mean predictions
-                             :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*, \mathcal{D}_{f})]`
-                             for the HF model given the low-fidelity feature input. Different HF
-                             predictions per row. Each row corresponds to one multi-fidelity
-                             input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
-
+                :math:`\mathbb{E}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*, \mathcal{D}_{f})]`
+                for the HF model given the low-fidelity feature input. Different HF
+                predictions per row. Each row corresponds to one multi-fidelity
+                input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
             variance (np.array): Vector of variance predictions
-                                 :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]`
-                                 for the HF model given the low-fidelity feature input.
-                                 Different HF predictions per row. Each row corresponds to one
-                                 multi-fidelity input vector in
-                                 :math:`\Omega_{y_{lf}\times\gamma_i}`.
-
-           grad_mean (np.array): Gradient matrix for the mean prediction.
-                                 Different HF predictions per row, and gradient
-                                 vector entries per column
-           grad_variance (np.array): Gradient matrix for the mean prediction.
-                                     Different HF predictions per row, and gradient
-                                     vector entries per column
+                :math:`\mathbb{V}_{f^*}[p(y_{HF}^*|f^*,z_{LF}^*,\mathcal{D}_{f})]`
+                for the HF model given the low-fidelity feature input.
+                Different HF predictions per row. Each row corresponds to one
+                multi-fidelity input vector in
+                :math:`\Omega_{y_{lf}\times\gamma_i}`.
+            grad_mean (np.array): Gradient matrix for the mean prediction.
+                Different HF predictions per row, and gradient vector entries per column
+            grad_variance (np.array): Gradient matrix for the mean prediction.
+                Different HF predictions per row, and gradient vector entries per column
         """
         # determine the number of time steps and check coordinate compliance
         num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(

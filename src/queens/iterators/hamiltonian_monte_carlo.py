@@ -14,7 +14,7 @@
 #
 """HMC algorithm.
 
-"The Hamiltonian Monte Carlo sampler is a gradient based MCMC algortihm.
+The Hamiltonian Monte Carlo sampler is a gradient based MCMC algortihm.
 It is used to sample from arbitrary probability distributions.
 """
 
@@ -37,14 +37,11 @@ class HamiltonianMonteCarlo(PyMC):
         max_steps (int): Maximum of leapfrog steps to take in one iteration
         target_accept (float): Target accpetance rate which should be conistent after burn-in
         path_length (float): Maximum length of particle trajectory
-        step_size (float): Step size, scaled by 1/(parameter dimension **0.25)
+        step_size (float): Step size, scaled by 1/(parameter dimension^0.25)
         scaling (np.array): The inverse mass, or precision matrix
         is_cov (boolean): Setting if the scaling is a mass or covariance matrix
         init_strategy (str): Strategy to tune mass damping matrix
         advi_iterations (int): Number of iteration steps of ADVI based init strategies
-
-    Returns:
-        hmc_iterator (obj): Instance of HMC Iterator
     """
 
     @log_init_args
@@ -97,7 +94,7 @@ class HamiltonianMonteCarlo(PyMC):
             target_accept (float, opt): Target accpetance rate which should be conistent after
                                         burn-in
             path_length (float, opt): Maximum length of particle trajectory
-            step_size (float, opt): Step size, scaled by 1/(parameter dimension **0.25)
+            step_size (float, opt): Step size, scaled by 1/(parameter dimension^0.25)
             scaling (np.array, opt): The inverse mass, or precision matrix
             is_cov (boolean, opt): Setting if the scaling is a mass or covariance matrix
             init_strategy (str, opt): Strategy to tune mass damping matrix

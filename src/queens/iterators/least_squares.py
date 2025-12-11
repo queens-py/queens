@@ -36,15 +36,16 @@ class LeastSquares(Optimization):
     Attributes:
         algorithm (str): Algorithm to perform minimization:
 
-                         - trf : Trust Region Reflective algorithm, particularly suitable for large
-                                 sparse problems with bounds. Generally robust method.
-
-                         - dogbox : dogleg algorithm with rectangular trust regions, typical use
-                                    case is small problems with bounds. Not recommended for problems
-                                    with rank-deficient Jacobian.
-                         - lm : Levenberg-Marquardt algorithm as implemented in MINPACK. Doesn’t
-                                handle bounds and sparse Jacobians. Usually the most  efficient
-                                method for small unconstrained problems.
+            - trf:
+                Trust Region Reflective algorithm, particularly suitable for large sparse problems
+                with bounds. Generally robust method.
+            - dogbox:
+                dogleg algorithm with rectangular trust regions, typical use case is small problems
+                with bounds. Not recommended for problems with rank-deficient Jacobian.
+            - lm:
+                Levenberg-Marquardt algorithm as implemented in MINPACK. Doesn’t handle bounds and
+                sparse Jacobians. Usually the most efficient method for small unconstrained
+                problems.
     """
 
     @log_init_args
@@ -75,31 +76,31 @@ class LeastSquares(Optimization):
             verbose_output (int): Integer encoding which kind of verbose information should be
                                   printed by the optimizers.
             bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
-                                       Powell, and trust-constr methods.
-                                       There are two ways to specify the bounds:
+                Powell, and trust-constr methods. There are two ways to specify the bounds:
 
-                                       1. Instance of `Bounds` class.
-                                       2. A sequence with 2 elements. The first element corresponds
-                                       to a sequence of lower bounds and the second element to
-                                       sequence of upper bounds. The length of each of the two
-                                       subsequences must be equal to the number of variables.
+                1. Instance of `Bounds` class.
+                2. A sequence with 2 elements. The first element corresponds to a sequence of lower
+                   bounds and the second element to a sequence of upper bounds. The length of each
+                   of the two subsequences must be equal to the number of variables.
+
             max_feval (int): Maximum number of function evaluations.
             algorithm (str): Algorithm to perform minimization:
 
-                             - trf : Trust Region Reflective algorithm, particularly suitable for
-                                       large sparse problems with bounds. Generally robust method.
+                - 'trf': Trust Region Reflective algorithm, particularly suitable for large sparse
+                  problems with bounds. Generally robust method.
+                - 'dogbox': dogleg algorithm with rectangular trust regions, typical use case is
+                  small problems with bounds. Not recommended for problems with rank-deficient
+                  Jacobian.
+                - 'lm': Levenberg-Marquardt algorithm as implemented in MINPACK. Doesn’t handle
+                  bounds and sparse Jacobians. Usually the most efficient method for small
+                  unconstrained problems.
 
-                             - dogbox : dogleg algorithm with rectangular trust regions, typical use
-                                        case is small problems with bounds. Not recommended for
-                                        problems with rank-deficient Jacobian.
-                             - lm : Levenberg-Marquardt algorithm as implemented in MINPACK.
-                                    Doesn’t handle bounds and sparse Jacobians. Usually the most
-                                    efficient method for small unconstrained problems.
             jac_method (str): Method to calculate a finite difference based approximation of the
                               Jacobian matrix:
 
                               - '2-point': a one-sided scheme by definition
                               - '3-point': more exact but needs twice as many function evaluations
+
             jac_rel_step (array_like): Relative step size to use for finite difference approximation
                                        of Jacobian matrix. If None (default) then it is selected
                                        automatically. (see SciPy documentation for details)

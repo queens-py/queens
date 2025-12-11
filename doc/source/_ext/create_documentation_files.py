@@ -157,10 +157,10 @@ def create_development():
     inject({"md_paths": md_paths}, development_template, development_path)
 
 
-def create_intro():
+def create_introduction():
     """Generate landing page."""
-    intro_template = get_template_path_by_name("intro.md.j2")
-    into_path = relative_to_doc_source("intro.md")
+    intro_template = get_template_path_by_name("introduction.md.j2")
+    into_path = relative_to_doc_source("introduction.md")
 
     def extract_from_markdown_by_marker(marker_name, md_path):
         return clean_markdown(extract_from_markdown_file_by_marker(marker_name, md_path))
@@ -176,10 +176,10 @@ def create_intro():
     )
 
 
-def create_overview():
+def create_packages():
     """Create overview of the QUEENS package."""
-    overview_template = get_template_path_by_name("overview.rst.j2")
-    overview_path = relative_to_doc_source("overview.rst")
+    overview_template = get_template_path_by_name("packages.rst.j2")
+    overview_path = relative_to_doc_source("packages.rst")
 
     def get_module_description(python_file):
         """Get module description.
@@ -298,7 +298,7 @@ def copy_tutorials():
 
 def main():
     """Create all the rst files."""
-    create_intro()
+    create_introduction()
     copy_tutorials()
     create_development()
-    create_overview()
+    create_packages()

@@ -6,7 +6,13 @@ We believe that documentation is essential and therefore welcome any improvement
 
 ## :woman_teacher: Build the documentation
 
-To build the documentation, you first need a development QUEENS installation as mentioned in the [CONTRIBUTING.md](../CONTRIBUTING.md). This adds additional packages needed for the html build. Once this is done, follow the next steps in the activated Python environment with the development installation.
+To build the documentation, you first need to set up a QUEENS environment as described in the [README.md](README.md).
+In this Python environment, you also need to install packages for QUEENS development and tutorials and register the environment as a Jupyter kernel:
+
+```bash
+pip install -e .[safe_develop,tutorial]
+python -m ipykernel install --user --name queens --display-name
+```
 
 When building the documentation on your machine for the first time or after adding new modules or classes to QUEENS, one needs to first rebuild the `autodoc index` by running:
 
