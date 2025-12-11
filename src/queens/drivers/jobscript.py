@@ -240,7 +240,7 @@ class Jobscript(Driver):
 
             # Create jobscript
             inject_in_template(
-                job_options.add_data_and_to_dict(self.jobscript_options),
+                job_options.add_data_and_to_dict(self.jobscript_options | sample_dict),
                 self.jobscript_template,
                 str(jobscript_file),
             )
