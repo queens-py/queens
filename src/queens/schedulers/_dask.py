@@ -28,8 +28,6 @@ from queens.utils.printing import get_str_table
 
 _logger = logging.getLogger(__name__)
 
-SHUTDOWN_CLIENTS = []
-
 
 class Dask(Scheduler):
     """Abstract base class for schedulers in QUEENS.
@@ -83,21 +81,7 @@ class Dask(Scheduler):
     def start_cluster_and_connect_client(self):
         """Start a Dask cluster and a client that connects to it."""
         if self.client is None or self.client.status == "closed":
-            client = self._start_cluster_and_connect_client()
-            self.register_shutdown(client)
-            self.client = client
-
-    def register_shutdown(self, client):
-        """Register shutdown callback.
-
-        The Dask client and cluster will be shut down when leaving the GlobalSettings context.
-
-        Args:
-            client (Client): Dask client that is connected to and submits computations to a Dask
-                cluster.
-        """
-        global SHUTDOWN_CLIENTS  # pylint: disable=global-variable-not-assigned
-        SHUTDOWN_CLIENTS.append(client.shutdown)
+            self.client = self._start_cluster_and_connect_client()
 
     def evaluate(
         self, samples: Iterable, function: SchedulerCallableSignature, job_ids: Iterable = None
@@ -171,6 +155,15 @@ class Dask(Scheduler):
     def restart_worker(self, worker):
         """Restart a worker."""
 
-    async def shutdown_client(self):
+    def shutdown_client(self):
         """Shutdown the DASK client."""
-        await self.client.shutdown()
+        if self.client is not None:
+            try:
+                self.client.shutdown()
+            except AttributeError as e:
+                _logger.warning("AttributeError while shutting down Dask client: %s", e)
+
+    def cleanup(self):
+        """Cleanup after QUEENS run."""
+        self.shutdown_client()
+        self.delete_experiment_dir_if_empty(self.experiment_dir)

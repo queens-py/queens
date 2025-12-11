@@ -29,6 +29,8 @@ from queens.utils.rsync import rsync
 
 _logger = logging.getLogger(__name__)
 
+CLEANUP_SCHEDULERS = []
+
 
 class SchedulerCallableSignature(Protocol):
     """Signature for callables which can be used with QUEENS schedulers."""
@@ -80,6 +82,8 @@ class Scheduler(metaclass=abc.ABCMeta):
         self.num_jobs = num_jobs
         self.next_job_id = 0
         self.verbose = verbose
+
+        CLEANUP_SCHEDULERS.append(self.cleanup)
 
     @abc.abstractmethod
     def evaluate(
@@ -179,3 +183,19 @@ class Scheduler(metaclass=abc.ABCMeta):
         job_ids = self.next_job_id + np.arange(num_samples)
         self.next_job_id += num_samples
         return job_ids
+
+    def cleanup(self):
+        """Cleanup after QUEENS run."""
+        self.delete_experiment_dir_if_empty(self.experiment_dir)
+
+    @staticmethod
+    def delete_experiment_dir_if_empty(experiment_dir):
+        """Delete the experiment directory if it is empty.
+
+        Args:
+            experiment_dir (Path): Path to the experiment directory.
+        """
+        if experiment_dir.exists() and experiment_dir.is_dir():
+            if not any(experiment_dir.iterdir()):
+                experiment_dir.rmdir()
+                _logger.debug("Deleted empty experiment directory '%s'.", experiment_dir)

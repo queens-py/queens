@@ -116,11 +116,9 @@ class TestDaskCluster:
         return patch_experiments_directory
 
     @pytest.fixture(name="experiment_dir")
-    def fixture_experiment_dir(self, global_settings, remote_connection, mock_experiment_dir):
+    def fixture_experiment_dir(self, test_name, remote_connection, mock_experiment_dir):
         """Fixture providing the remote experiment directory."""
-        experiment_dir, _ = remote_connection.run_function(
-            mock_experiment_dir, global_settings.experiment_name, None
-        )
+        experiment_dir, _ = remote_connection.run_function(mock_experiment_dir, test_name, None)
         return experiment_dir
 
     @pytest.fixture(name="_create_experiment_dir")
@@ -206,6 +204,44 @@ class TestDaskCluster:
         mocker.patch("select.select", return_value=(True, None, None))
         mocker.patch("sys.stdin.readline", return_value=user_input)
         Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+
+    def test_deletion_of_experiment_dir_with_files(
+        self, global_settings, cluster_kwargs, remote_connection, experiment_dir
+    ):
+        """Test the deletion of an experiment directory containing files.
+
+        The experiment directory should NOT be deleted when exiting the
+        global settings context.
+        """
+
+        def experiment_dir_exists_and_contents(experiment_dir):
+            """Assert that experiment directory and test file exist."""
+            experiment_dir_exists = experiment_dir.exists()
+            if not experiment_dir_exists:
+                return experiment_dir_exists, []
+
+            experiment_dir_contents = list(experiment_dir.iterdir())
+            return experiment_dir_exists, experiment_dir_contents
+
+        with global_settings:
+            Cluster(**cluster_kwargs)
+
+            # Check that remote experiment directory is not empty
+            experiment_dir_exists, experiment_dir_contents_before = remote_connection.run_function(
+                experiment_dir_exists_and_contents, experiment_dir
+            )
+            assert experiment_dir_exists
+            assert any(experiment_dir_contents_before)
+
+        # Check that remote experiment directory has not been changed
+        experiment_dir_exists, experiment_dir_contents_after = remote_connection.run_function(
+            experiment_dir_exists_and_contents, experiment_dir
+        )
+        assert experiment_dir_exists
+        for file_before, file_after in zip(
+            experiment_dir_contents_before, experiment_dir_contents_after, strict=True
+        ):
+            assert file_before == file_after
 
     def test_fourc_mc_cluster(
         self,
