@@ -703,7 +703,7 @@ class BmfiaInterface:
                 multi-fidelity input vector in :math:`\Omega_{y_{lf}\times\gamma_i}`.
             grad_mean (np.array): Gradient matrix for the mean prediction.
                 Different HF predictions per row, and gradient vector entries per column.
-            grad_variance (np.array): Gradient matrix for the mean prediction.
+            grad_variance (np.array): Gradient matrix for the variance prediction.
                 Different HF predictions per row, and gradient vector entries per column.
         """
         mean_Y_HF_given_Z_LF = []
@@ -786,9 +786,9 @@ class BmfiaInterface:
                 multi-fidelity input vector in
                 :math:`\Omega_{y_{lf}\times\gamma_i}`.
             grad_mean (np.array): Gradient matrix for the mean prediction.
-                Different HF predictions per row, and gradient vector entries per column
-            grad_variance (np.array): Gradient matrix for the mean prediction.
-                Different HF predictions per row, and gradient vector entries per column
+                Different HF predictions per row, and gradient vector entries per column.
+            grad_variance (np.array): Gradient matrix for the variance prediction.
+                Different HF predictions per row, and gradient vector entries per column.
         """
         # determine the number of time steps and check coordinate compliance
         num_coords, t_size = BmfiaInterface.check_coordinates_return_dimensions(

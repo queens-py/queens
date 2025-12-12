@@ -15,7 +15,7 @@
 """Metropolis Hastings algorithm.
 
 The Metropolis Hastings algorithm is a not-gradient based MCMC
-algortihm. It implements a random walk.
+algorithm. It implements a random walk.
 """
 
 import logging
