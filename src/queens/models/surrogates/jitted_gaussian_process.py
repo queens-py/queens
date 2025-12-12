@@ -336,11 +336,15 @@ class JittedGaussianProcess(Surrogate):
         Args:
             x_test (np.array): Testing matrix for GP with row-wise (vector-valued) testing points
             support (str): Type of support for which the GP posterior is computed; If:
-                            - 'f': Posterior w.r.t. the latent function f
-                            - 'y': Latent function is marginalized such that posterior is defined
-                                   w.r.t. the output y (introduces extra variance)
+
+                - 'f':
+                    Posterior w.r.t. the latent function f
+                - 'y':
+                    Latent function is marginalized such that posterior is defined w.r.t. the
+                    output y (introduces extra variance)
+
             gradient_bool (bool, optional): Boolean to configure whether gradients should be
-                                            returned as well
+                returned as well
 
         Returns:
             output (dict): Output dictionary containing the posterior of the GP

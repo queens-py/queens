@@ -14,7 +14,7 @@
 #
 """Metropolis-Hastings algorithm.
 
-"The Metropolis-Hastings algorithm is a Markov Chain Monte Carlo (MCMC)
+The Metropolis-Hastings algorithm is a Markov Chain Monte Carlo (MCMC)
 method for obtaining a sequence of random samples from a probability
 distribution from which direct sampling is difficult." [1]
 

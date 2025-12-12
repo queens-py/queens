@@ -12,7 +12,7 @@ Steps to get started with QUEENS
 
    .. code-block:: bash
 
-        git clone git@github.com:queens-py/queens.git
+      git clone git@github.com:queens-py/queens.git
 
 #. Read through our `introduction <https://queens-py.github.io/queens/intro.html>`_ and
    follow the instructions in the "Installation" section to set up your local environment.
@@ -34,11 +34,10 @@ Steps to get started with QUEENS
 
    .. code-block:: json
 
-            "python.pythonPath": "<path_to_your_QUEENS_environment>/bin/python",
-            "python.defaultInterpreterPath": "<path_to_your_QUEENS_environment>/bin/python",
-            "editor.formatOnSave": True,
-            "python.formatting.provider": "black",
-            "python.formatting.blackPath": "<path_to_your_QUEENS_environment>/bin/black",
+      "python.defaultInterpreterPath": "<path_to_your_QUEENS_environment>/bin/python",
+      "editor.formatOnSave": true,
+      "editor.defaultFormatter": "ms-python.black-formatter",
+      "black-formatter.args": ["--line-length", "100"],
 
 #. Browse through our `documentation <https://queens-py.github.io/queens/overview.html>`_ and our
    other tutorials to get a first impression.

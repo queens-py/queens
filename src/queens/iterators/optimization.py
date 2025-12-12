@@ -40,44 +40,47 @@ class Optimization(Iterator):
     Attributes:
         algorithm (str): String that defines the optimization algorithm to be used:
 
-                         - CG: Conjugate gradient optimization (unconstrained), using Jacobian
-                         - BFGS: Broyden–Fletcher–Goldfarb–Shanno algorithm (quasi-Newton) for
-                                optimization (iterative method for unconstrained
-                                nonlinear optimization), using Jacobian
-                         - L-BFGS-B: Limited memory Broyden–Fletcher–Goldfarb–Shanno algorithm
-                                     with box constraints (for large number of variables)
-                         - TNC: Truncated Newton method (Hessian free) for nonlinear
-                                optimization with bounds involving a large number of variables.
-                                Jacobian necessary
-                         - SLSQP: Sequential Least Squares Programming minimization with bounds
-                                  and constraints using Jacobian
-                         - COBYLA: Constrained Optimization BY Linear Approximation
-                                   (no Jacobian)
-                         - NELDER-MEAD: Downhill-simplex search method
-                                        (unconstrained, unbounded)
-                                        without the need for a Jacobian
-                         - POWELL: Powell's conjugate direction method (unconstrained) without
-                                   the need for a Jacobian. Minimizes the function by a
-                                   bidirectional search along each search vector
-        bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
-                                   Powell, and trust-constr methods.
-                                   There are two ways to specify the bounds:
+            - CG:
+                Conjugate gradient optimization (unconstrained), using Jacobian
+            - BFGS:
+                Broyden–Fletcher–Goldfarb–Shanno algorithm (quasi-Newton) for optimization
+                (iterative method for unconstrained nonlinear optimization), using Jacobian
+            - L-BFGS-B:
+                Limited memory Broyden–Fletcher–Goldfarb–Shanno algorithm with box constraints (for
+                large number of variables)
+            - TNC:
+                Truncated Newton method (Hessian free) for nonlinear optimization with bounds
+                involving a large number of variables. Jacobian necessary
+            - SLSQP:
+                Sequential Least Squares Programming minimization with bounds and constraints using
+                Jacobian
+            - COBYLA:
+                Constrained Optimization BY Linear Approximation (no Jacobian)
+            - NELDER-MEAD:
+                Downhill-simplex search method (unconstrained, unbounded) without the need for a
+                Jacobian
+            - POWELL:
+                Powell's conjugate direction method (unconstrained) without the need for a
+                Jacobian. Minimizes the function by a bidirectional search along each search vector
 
-                                   1. Instance of `Bounds` class.
-                                   2. A sequence with 2 elements. The first element corresponds
-                                   to a sequence of lower bounds and the second element to
-                                   sequence of upper bounds. The length of each of the two
-                                   subsequences must be equal to the number of variables.
+        bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
+            Powell, and trust-constr methods. There are two ways to specify the bounds:
+
+            1. Instance of `Bounds` class.
+            2. A sequence with 2 elements. The first element corresponds to a sequence of lower
+               bounds and the second element to a sequence of upper bounds. The length of each of
+               the two subsequences must be equal to the number of variables.
+
         cons (np.array): Nonlinear constraints for the optimization.
                          Only for COBYLA, SLSQP and trust-constr
                          (see SciPy documentation for details)
-        initial_guess (np.array): Initial guess, i.e. start point of
-                                  optimization.
+        initial_guess (np.array): Initial guess, i.e. start point of optimization.
         jac_method (str): Method to calculate a finite difference based approximation of the
                           Jacobian matrix:
 
                           - '2-point': a one-sided scheme by definition
                           - '3-point': more exact but needs twice as many function evaluations
+
         jac_rel_step (array_like): Relative step size to use for finite difference approximation
                                    of Jacobian matrix. If None (default) then it is selected
                                    automatically. (see SciPy documentation for details)
@@ -124,45 +127,42 @@ class Optimization(Iterator):
             verbose_output (int): Integer encoding which kind of verbose information should be
                                   printed by the optimizers.
             bounds (sequence, Bounds): Bounds on variables for Nelder-Mead, L-BFGS-B, TNC, SLSQP,
-                                       Powell, and trust-constr methods.
-                                       There are two ways to specify the bounds:
+                Powell, and trust-constr methods. There are two ways to specify the bounds:
 
-                                       1. Instance of `Bounds` class.
-                                       2. A sequence with 2 elements. The first element corresponds
-                                       to a sequence of lower bounds and the second element to
-                                       sequence of upper bounds. The length of each of the two
-                                       subsequences must be equal to the number of variables.
+                1. Instance of `Bounds` class.
+                2. A sequence with 2 elements. The first element corresponds to a sequence of lower
+                   bounds and the second element to a sequence of upper bounds. The length of each
+                   of the two subsequences must be equal to the number of variables.
+
             constraints (np.array): Nonlinear constraints for the optimization.
                                     Only for COBYLA, SLSQP and trust-constr
                                     (see SciPy documentation for details)
             max_feval (int): Maximum number of function evaluations.
             algorithm (str): String that defines the optimization algorithm to be used:
 
-                             - CG: Conjugate gradient optimization (unconstrained), using Jacobian
-                             - BFGS: Broyden–Fletcher–Goldfarb–Shanno algorithm (quasi-Newton) for
-                                    optimization (iterative method for unconstrained
-                                    nonlinear optimization), using Jacobian
-                             - L-BFGS-B: Limited memory Broyden–Fletcher–Goldfarb–Shanno algorithm
-                                         with box constraints (for large number of variables)
-                             - TNC: Truncated Newton method (Hessian free) for nonlinear
-                                    optimization with bounds involving a large number of variables.
-                                    Jacobian necessary
-                             - SLSQP: Sequential Least Squares Programming minimization with bounds
-                                      and constraints using Jacobian
-                             - LSQ: Nonlinear least squares with bounds using Jacobian
-                             - COBYLA: Constrained Optimization BY Linear Approximation
-                                       (no Jacobian)
-                             - NELDER-MEAD: Downhill-simplex search method
-                                            (unconstrained, unbounded)
-                                            without the need for a Jacobian
-                             - POWELL: Powell's conjugate direction method (unconstrained) without
-                                       the need for a Jacobian. Minimizes the function by a
-                                       bidirectional search along each search vector
+                - 'CG': Conjugate gradient optimization (unconstrained), using Jacobian
+                - 'BFGS': Broyden–Fletcher–Goldfarb–Shanno algorithm (quasi-Newton) for optimization
+                  (iterative method for unconstrained nonlinear optimization), using Jacobian
+                - 'L-BFGS-B': Limited memory Broyden–Fletcher–Goldfarb–Shanno algorithm with box
+                  constraints (for large number of variables)
+                - 'TNC': Truncated Newton method (Hessian free) for nonlinear optimization with
+                  bounds
+                  involving a large number of variables. Jacobian necessary
+                - 'SLSQP': Sequential Least Squares Programming minimization with bounds and
+                  constraints using Jacobian
+                - 'COBYLA': Constrained Optimization BY Linear Approximation (no Jacobian)
+                - 'NELDER-MEAD': Downhill-simplex search method (unconstrained, unbounded) without
+                  the need for a Jacobian
+                - 'POWELL': Powell's conjugate direction method (unconstrained) without the need
+                  for a Jacobian. Minimizes the function by a bidirectional search along each
+                  search vector
+
             jac_method (str): Method to calculate a finite difference based approximation of the
                               Jacobian matrix:
 
                               - '2-point': a one-sided scheme by definition
                               - '3-point': more exact but needs twice as many function evaluations
+
             jac_rel_step (array_like): Relative step size to use for finite difference approximation
                                        of Jacobian matrix. If None (default) then it is selected
                                        automatically. (see SciPy documentation for details)

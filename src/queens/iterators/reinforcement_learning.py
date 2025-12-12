@@ -95,9 +95,11 @@ class ReinforcementLearning(Iterator):
         Args:
             model (RLModel): Model to be evaluated by the iterator.
             parameters (Parameters): Parameters object.
+
                 .. note::
-                        This parameter is required by the base class, but is
-                        currently not used in the ``ReinforcementLearning`` iterator.
+                    This parameter is required by the base class, but is
+                    currently not used in the ``ReinforcementLearning`` iterator.
+
             global_settings (GlobalSettings): Settings of the QUEENS experiment including its name
                 and the output directory.
             result_description (dict): Description of desired results.

@@ -71,33 +71,44 @@ class CsvFile(DataProcessor):
         """Instantiate data processor class for csv data.
 
         Args:
-            file_name_identifier (str): Identifier of file name
-                                             The file prefix can contain regex expression
-                                             and subdirectories.
+            file_name_identifier (str): Identifier of file name. The file prefix can contain regex
+                expression and subdirectories.
             file_options_dict (dict): Dictionary with read-in options for the file:
-                - header_row (int): Integer that determines which csv-row contains labels/headers of
-                                    the columns. Default is 'None', meaning no header used.
-                - use_cols_lst (lst): (optional) list with column numbers that should be read-in.
-                - skip_rows (int): Number of rows that should be skipped to be read-in in csv file.
-                - index_column (int, str): Column to use as the row labels of the DataFrame, either
-                                           given as string name or column index.
-                                           Note: index_column=False can be used to force pandas to
-                                           not use the first column as the index. Index_column is
-                                           used for filtering the remaining columns.
-                - returned_filter_format (str): Returned data format after filtering
-                - filter (dict): Dictionary with filter options:
-                    -- type (str): Filter type to use
-                    -- rows (lst): In case this options is used, the list contains the indices of
-                                  rows in the csv file that should be used as data
-                    -- range (lst): After data is selected by `use_cols_lst` and a filter column
-                                   is specified by `index_column`, this option selects which data
-                                   range shall be filtered by providing a minimum and maximum
-                                   value pair in list format
-                    -- target_values (list): target values to filter
-                    -- tolerance (float): Tolerance for the filter range
+
+                - header_row (int):
+                    Integer that determines which csv-row contains labels/headers of
+                    the columns. Default is 'None', meaning no header used.
+                - use_cols_lst (lst):
+                    (optional) list with column numbers that should be read-in.
+                - skip_rows (int):
+                    Number of rows that should be skipped to be read-in in csv file.
+                - index_column (int, str):
+                    Column to use as the row labels of the DataFrame, either
+                    given as string name or column index.
+                    Note: ``index_column=False`` can be used to force pandas to not use the first
+                    column as the index. ``index_column`` is used for filtering the remaining
+                    columns.
+                - returned_filter_format (str):
+                    Returned data format after filtering
+                - filter (dict):
+                    Dictionary with filter options:
+
+                    -- type (str):
+                        Filter type to use
+                    -- rows (lst):
+                        In case this options is used, the list contains the indices of
+                        rows in the csv file that should be used as data
+                    -- range (lst):
+                        After data is selected by `use_cols_lst` and a filter column is specified
+                        by `index_column`, this option selects which data range shall be filtered
+                        by providing a minimum and maximum value pair in list format
+                    -- target_values (list):
+                        target values to filter
+                    -- tolerance (float):
+                        Tolerance for the filter range
 
             files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                                 The paths can contain regex expressions.
+                The paths can contain regex expressions.
 
         Returns:
             Instance of CsvFile class

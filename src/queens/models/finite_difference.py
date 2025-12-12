@@ -32,18 +32,17 @@ class FiniteDifference(Simulation):
     """Finite difference model.
 
     Attributes:
-        finite_difference_method (str): Method to calculate a finite difference
-                                        based approximation of the Jacobian matrix:
-                                         - '2-point': a one-sided scheme by definition
-                                         - '3-point': more exact but needs twice as many function
-                                                      evaluations
-        step_size (float): Step size for the finite difference
-                           approximation
+        finite_difference_method (str): Method to calculate a finite-difference-based approximation
+            of the Jacobian matrix:
+
+            - '2-point': a one-sided scheme by definition
+            - '3-point': more exact but needs twice as many function evaluations
+
+        step_size (float): Step size for the finite difference approximation
         bounds (np.array): Lower and upper bounds on independent variables.
-                           Defaults to no bounds meaning: [-inf, inf]
-                           Each bound must match the size of *x0* or be a scalar, in the latter case
-                           the bound will be the same for all variables. Use it to limit the range
-                           of function evaluation.
+            Defaults to no bounds meaning: [-inf, inf]. Each bound must match the size of *x0* or
+            be a scalar, in the latter case the bound will be the same for all variables. Use it to
+            limit the range of function evaluation.
     """
 
     @log_init_args
@@ -53,18 +52,17 @@ class FiniteDifference(Simulation):
         Args:
             scheduler (Scheduler): Scheduler for the simulations
             driver (Driver): Driver for the simulations
-            finite_difference_method (str): Method to calculate a finite difference
-                                            based approximation of the Jacobian matrix:
-                                             - '2-point': a one-sided scheme by definition
-                                             - '3-point': more exact but needs twice as many
-                                                          function evaluations
+            finite_difference_method (str): Method to calculate a finite-difference-based
+                approximation of the Jacobian matrix:
+
+                - '2-point': a one-sided scheme by definition
+                - '3-point': more exact but needs twice as many function evaluations
+
             step_size (float, opt): Step size for the finite difference approximation
             bounds (tuple of array_like, opt): Lower and upper bounds on independent variables.
-                                               Defaults to no bounds meaning: [-inf, inf]
-                                               Each bound must match the size of *x0* or be a
-                                               scalar, in the latter case the bound will be the
-                                               same for all variables. Use it to limit the
-                                               range of function evaluation.
+                Defaults to no bounds meaning: [-inf, inf]. Each bound must match the size of *x0*
+                or be a scalar, in the latter case the bound will be the same for all variables.
+                Use it to limit the range of function evaluation.
         """
         super().__init__(scheduler=scheduler, driver=driver)
 

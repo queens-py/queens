@@ -52,6 +52,17 @@ extensions = [
     "myst_parser",
 ]
 
+# Control how typehints are displayed in the documentation.
+# 'description' shows typehints as content of the function (next to the parameters), not in the
+# function signature.
+# This mirrors the behavior of types provided in the docstrings.
+autodoc_typehints = "description"
+
+# Control how class signatures will be displayed.
+# 'separated' will display the signature as a method, meaning the __init__ method is explicitly
+# shown in the documentation.
+autodoc_class_signature = "separated"
+
 # Custom command to make the returns in the docstring behave like the parameter/argument section.
 # This will basically make the documentation a bit prettier as different returns are directly
 # rendered as bullet points.
