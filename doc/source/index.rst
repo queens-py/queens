@@ -15,11 +15,10 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   intro
-   overview
+   introduction
+   packages
    tutorials
    development
-   queens
    faq
 
 
