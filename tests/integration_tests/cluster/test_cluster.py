@@ -25,7 +25,6 @@ import numpy as np
 import pytest
 from testbook import testbook
 
-import queens.schedulers.cluster as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processors.pvd_file import PvdFile
 from queens.distributions.uniform import Uniform
 from queens.drivers import Jobscript
@@ -34,11 +33,11 @@ from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.cluster import Cluster
+from queens.utils.config_directories import experiment_directory
 from queens.utils.io import load_result
 from queens.utils.path import relative_path_from_root
 from queens.utils.remote_operations import RemoteConnection
 from test_utils.integration_tests import fourc_build_path_from_home
-from test_utils.tutorial_tests import inject_mock_base_dir
 
 _logger = logging.getLogger(__name__)
 
@@ -57,7 +56,7 @@ CHARON_CLUSTER_TYPE = "charon"
     ],
     indirect=True,
 )
-class TestDaskCluster:
+class TestCluster:
     """Test class collecting all test with Dask jobqueue clusters and 4C.
 
     NOTE: we use a class here since our fixture are set to autouse, but we only want to call them
@@ -66,10 +65,10 @@ class TestDaskCluster:
 
     def pytest_base_directory_on_cluster(self):
         """Remote directory containing several pytest runs."""
-        return "$HOME/queens-tests"
+        return "~/queens-tests"
 
-    @pytest.fixture(name="queens_base_directory_on_cluster")
-    def fixture_queens_base_directory_on_cluster(self, pytest_id):
+    @pytest.fixture(name="test_base_directory_on_cluster")
+    def fixture_test_base_directory_on_cluster(self, pytest_id):
         """Remote directory containing all experiments of a single pytest run.
 
         This directory is conceptually equivalent to the usual base
@@ -79,49 +78,15 @@ class TestDaskCluster:
         """
         return self.pytest_base_directory_on_cluster() + f"/{pytest_id}"
 
-    @pytest.fixture(name="mock_experiment_dir", autouse=True)
-    def fixture_mock_experiment_dir(
-        self, monkeypatch, cluster_settings, queens_base_directory_on_cluster
-    ):
-        """Mock the experiment directory of a test on the cluster.
-
-        NOTE: It is necessary to mock the whole experiment_directory method.
-        Otherwise, the mock is not loaded properly remote.
-        This is in contrast to the local mocking where it suffices to mock
-        config_directories.BASE_DATA_DIR.
-        Note that we also rely on this local mock here!
-        """
-
-        def patch_experiments_directory(experiment_name, experiment_base_directory=None):
-            """Base directory for all experiments on the computing machine."""
-            if experiment_base_directory is None:
-                experiment_base_directory = Path(
-                    queens_base_directory_on_cluster.replace("$HOME", str(Path.home()))
-                )
-            else:
-                raise ValueError(
-                    "This mock function does not support specifying 'experiment_base_directory'. "
-                    "It must be called with 'experiment_base_directory=None'."
-                )
-            experiments_dir = experiment_base_directory / experiment_name
-            return experiments_dir, experiments_dir.exists()
-
-        monkeypatch.setattr(cluster_scheduler, "experiment_directory", patch_experiments_directory)
-        _logger.debug("Mocking of dask experiment_directory  was successful.")
-        _logger.debug(
-            "dask experiment_directory is mocked to '%s/<experiment_name>' on %s@%s",
-            queens_base_directory_on_cluster,
-            cluster_settings["user"],
-            cluster_settings["host"],
-        )
-
-        return patch_experiments_directory
-
     @pytest.fixture(name="experiment_dir")
-    def fixture_experiment_dir(self, global_settings, remote_connection, mock_experiment_dir):
+    def fixture_experiment_dir(
+        self, global_settings, remote_connection, test_base_directory_on_cluster
+    ):
         """Fixture providing the remote experiment directory."""
         experiment_dir, _ = remote_connection.run_function(
-            mock_experiment_dir, global_settings.experiment_name, None
+            experiment_directory,
+            global_settings.experiment_name,
+            test_base_directory_on_cluster,
         )
         return experiment_dir
 
@@ -136,20 +101,27 @@ class TestDaskCluster:
 
         assert remote_connection.run_function(create_experiment_dir_and_assert_it_exists)
 
-    @pytest.fixture(name="cluster_kwargs")
-    def fixture_cluster_kwargs(self, cluster_settings, remote_connection, test_name):
-        """Keyword arguments to initialize the cluster scheduler."""
+    @pytest.fixture(name="basic_cluster_kwargs")
+    def fixture_basic_cluster_kwargs(self, cluster_settings, test_base_directory_on_cluster):
+        """Basic keyword arguments to initialize the cluster scheduler."""
         return {
             "workload_manager": cluster_settings["workload_manager"],
+            "queue": cluster_settings.get("queue"),
+            "cluster_internal_address": cluster_settings["cluster_internal_address"],
+            "experiment_base_dir": test_base_directory_on_cluster,
+        }
+
+    @pytest.fixture(name="cluster_kwargs")
+    def fixture_cluster_kwargs(self, basic_cluster_kwargs, remote_connection, test_name):
+        """Keyword arguments to initialize the cluster scheduler."""
+        return basic_cluster_kwargs | {
             "walltime": "00:10:00",
             "num_jobs": 1,
             "min_jobs": 1,
             "num_procs": 1,
             "num_nodes": 1,
             "remote_connection": remote_connection,
-            "cluster_internal_address": cluster_settings["cluster_internal_address"],
             "experiment_name": test_name,
-            "queue": cluster_settings.get("queue"),
         }
 
     def test_new_experiment_dir(self, cluster_kwargs, remote_connection, experiment_dir):
@@ -277,7 +249,7 @@ class TestDaskCluster:
         results = load_result(global_settings.result_file(".pickle"))
 
         # The data has to be deleted before the assertion
-        self.delete_simulation_data(remote_connection)
+        self.delete_old_simulation_data(remote_connection)
 
         # assert statements
         np.testing.assert_array_almost_equal(
@@ -288,7 +260,9 @@ class TestDaskCluster:
     @testbook(
         "tutorials/3_grid_iterator_fourc_remote.ipynb",
     )
-    def test_fourc_remote_tutorial(tb, tmp_path, cluster_settings, fourc_cluster_path):
+    def test_fourc_remote_tutorial(
+        tb, tmp_path, test_name, cluster_settings, fourc_cluster_path, basic_cluster_kwargs
+    ):
         """Test for tutorial 3: Remote 4C simulation with grid iterator.
 
         The notebook is run with injected lines of code to replace placeholders.
@@ -306,13 +280,8 @@ class TestDaskCluster:
             "remote_queens_repository": cluster_settings["remote_queens_repository"],
             "gateway": cluster_settings["gateway"],
         }
-        cluster_scheduler_kwargs = {
-            "workload_manager": cluster_settings["workload_manager"],
-            "queue": cluster_settings.get("queue"),
-            "cluster_internal_address": cluster_settings["cluster_internal_address"],
-        }
 
-        kwargs_dicts = [jobscript_driver_kwargs, remote_connection_kwargs, cluster_scheduler_kwargs]
+        kwargs_dicts = [jobscript_driver_kwargs, remote_connection_kwargs, basic_cluster_kwargs]
         dict_names = [
             "jobscript_driver_kwargs",
             "remote_connection_kwargs",
@@ -335,7 +304,15 @@ if not {dict_name}.keys() == {dict_name_injected}.keys():
 {dict_name} = {dict_name_injected}
             """
 
+        # replace placeholder dicts
         tb.inject(injected_cell, after=6, run=False)
+        # replace experiment name and output dir
+        tb.inject(
+            f"experiment_name = {test_name!r}\noutput_dir = {tmp_path!r}",
+            after=8,
+            run=False,
+        )
+        # assert expected output
         tb.inject(
             "np.testing.assert_allclose(max_displacement_magnitude_per_run, "
             "[0.17606783, 0.22969808, 0.27944426, 0.22969808, 0.2782447,  0.32395894, 0.27944426, "
@@ -343,18 +320,19 @@ if not {dict_name}.keys() == {dict_name_injected}.keys():
             after=14,
             run=False,
         )
-        inject_mock_base_dir(tb, tmp_path)
 
+        # run the notebook
         tb.execute()
 
-    def delete_simulation_data(self, remote_connection):
-        """Delete simulation data on the cluster.
+    def delete_old_simulation_data(self, remote_connection):
+        """Delete old simulation data on the cluster.
 
-        This approach deletes test simulation data older than seven days
+        This approach deletes test simulation data older than seven days.
+
         Args:
             remote_connection (RemoteConnection): connection to remote cluster.
         """
-        # Delete data from tests older then 1 week
+        # Delete data from tests older than 1 week
         command = (
             "find "
             + str(self.pytest_base_directory_on_cluster())

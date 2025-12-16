@@ -126,8 +126,18 @@ class Cluster(Dask):
         self.allowed_failures = allowed_failures
 
         # get the path of the experiment directory on remote host
+        _logger.info(
+            "remote_experiment_dir args: %s, %s, %s",
+            experiment_name,
+            experiment_base_dir,
+            overwrite_existing_experiment,
+        )
         experiment_dir = self.remote_experiment_dir(
             experiment_name, experiment_base_dir, overwrite_existing_experiment
+        )
+        _logger.info(
+            "remote_experiment_dir return: %s",
+            experiment_dir,
         )
 
         _logger.debug(
