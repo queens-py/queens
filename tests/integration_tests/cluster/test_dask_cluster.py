@@ -23,6 +23,7 @@ from pathlib import Path
 
 import numpy as np
 import pytest
+from testbook import testbook
 
 import queens.schedulers.cluster as cluster_scheduler  # pylint: disable=consider-using-from-import
 from queens.data_processors.pvd_file import PvdFile
@@ -37,6 +38,7 @@ from queens.utils.io import load_result
 from queens.utils.path import relative_path_from_root
 from queens.utils.remote_operations import RemoteConnection
 from test_utils.integration_tests import fourc_build_path_from_home
+from test_utils.tutorial_tests import inject_mock_base_dir
 
 _logger = logging.getLogger(__name__)
 
@@ -281,6 +283,69 @@ class TestDaskCluster:
         np.testing.assert_array_almost_equal(
             results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
+
+    @staticmethod
+    @testbook(
+        "tutorials/3_grid_iterator_fourc_remote.ipynb",
+    )
+    def test_fourc_remote_tutorial(tb, tmp_path, cluster_settings, fourc_cluster_path):
+        """Test for tutorial 3: Remote 4C simulation with grid iterator.
+
+        The notebook is run with injected lines of code to replace placeholders.
+        It is checked that the replaced dict entries already exist in the notebook.
+        """
+        jobscript_driver_kwargs = {
+            "jobscript_template": cluster_settings["jobscript_template"],
+            "executable": fourc_cluster_path,
+            "extra_options": {"cluster_script": cluster_settings["cluster_script_path"]},
+        }
+        remote_connection_kwargs = {
+            "host": cluster_settings["host"],
+            "user": cluster_settings["user"],
+            "remote_python": cluster_settings["remote_python"],
+            "remote_queens_repository": cluster_settings["remote_queens_repository"],
+            "gateway": cluster_settings["gateway"],
+        }
+        cluster_scheduler_kwargs = {
+            "workload_manager": cluster_settings["workload_manager"],
+            "queue": cluster_settings.get("queue"),
+            "cluster_internal_address": cluster_settings["cluster_internal_address"],
+        }
+
+        kwargs_dicts = [jobscript_driver_kwargs, remote_connection_kwargs, cluster_scheduler_kwargs]
+        dict_names = [
+            "jobscript_driver_kwargs",
+            "remote_connection_kwargs",
+            "cluster_scheduler_kwargs",
+        ]
+
+        injected_cell = """from pathlib import PosixPath"""
+
+        for kwargs_dict, dict_name in zip(kwargs_dicts, dict_names):
+            dict_name_injected = f"{dict_name}_injected"
+            injected_cell += f"""
+{dict_name_injected} = {kwargs_dict}
+if not {dict_name}.keys() == {dict_name_injected}.keys():
+    raise KeyError(
+        f"The keys of the injected dictionary are not the same as the keys of the "
+        f"placeholder dictionary in the notebook.\\n"
+        f"Injected keys: {{{dict_name_injected}.keys()}}\\n"
+        f"Placeholder keys: {{{dict_name}.keys()}}"
+    )
+{dict_name} = {dict_name_injected}
+            """
+
+        tb.inject(injected_cell, after=6, run=False)
+        tb.inject(
+            "np.testing.assert_allclose(max_displacement_magnitude_per_run, "
+            "[0.17606783, 0.22969808, 0.27944426, 0.22969808, 0.2782447,  0.32395894, 0.27944426, "
+            "0.32395894, 0.36635981])",
+            after=14,
+            run=False,
+        )
+        inject_mock_base_dir(tb, tmp_path)
+
+        tb.execute()
 
     def delete_simulation_data(self, remote_connection):
         """Delete simulation data on the cluster.

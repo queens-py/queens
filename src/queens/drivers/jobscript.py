@@ -106,17 +106,18 @@ class Jobscript(Driver):
 
         Args:
             parameters (Parameters): Parameters object.
-            input_templates (str, Path, dict): Path(s) to simulation input template.
-            jobscript_template (str, Path): Path to jobscript template or read-in jobscript
-                                            template.
-            executable (str, Path): Path to main executable of respective software.
+            input_templates (str, Path, dict): (Local) path(s) to simulation input template.
+            jobscript_template (str, Path): (Local) path to jobscript template or read-in jobscript
+                template.
+            executable (str, Path): Path to main executable of respective software. Is a remote
+                path when using the Cluster scheduler.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
             jobscript_file_name (str, opt): Jobscript file name (default: 'jobscript.sh').
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
-                                                          jobscript exit code.
+                jobscript exit code.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.input_templates = self.create_input_templates_dict(input_templates)
