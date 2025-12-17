@@ -118,13 +118,12 @@ def fixture_create_experiment_dir(experiment_dir):
 
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
-def test_deletion_of_empty_experiment_dir(
+def test_empty_experiment_dir_is_deleted(
     global_settings, tmp_path, test_name, experiment_dir, scheduler_class
 ):
-    """Test the deletion of an empty experiment directory.
+    """Test that an empty experiment directory is deleted.
 
-    The experiment directory should be deleted when exiting the global
-    settings context.
+    This should happen when exiting the global settings context.
     """
     with global_settings:
         scheduler_class(
@@ -138,12 +137,12 @@ def test_deletion_of_empty_experiment_dir(
 
 
 @pytest.mark.parametrize("scheduler_class", [Local, Pool])
-def test_deletion_of_experiment_dir_with_files(
+def test_experiment_dir_with_files_is_not_deleted(
     global_settings, tmp_path, test_name, experiment_dir, scheduler_class
 ):
-    """Test the deletion of an experiment directory containing files.
+    """Test that an experiment directory containing files is not deleted.
 
-    The experiment directory should NOT be deleted when exiting the
+    Such an experiment directory should NOT be deleted when exiting the
     global settings context.
     """
     with global_settings:
