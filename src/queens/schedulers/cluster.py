@@ -17,6 +17,8 @@
 import logging
 import time
 from datetime import timedelta
+from pathlib import Path
+from typing import Sequence
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
@@ -301,3 +303,22 @@ class Cluster(Dask):
         """
         destination = f"{self.experiment_dir}/"
         self.remote_connection.copy_to_remote(paths, destination)
+
+    def copy_files_from_experiment_dir(
+        self,
+        destination: Path = Path("./").absolute().resolve(),
+        verbose: bool = True,
+        exclude: str | Sequence | None = None,
+        filters: str | None = None,
+    ):
+        """Copy files from experiment directory.
+
+        Args:
+            destination (Path): Path to the directory where the files from the experiment
+                directory should be copied to
+            verbose: True for verbose
+            exclude: Options to exclude
+            filters: Filters for rsync
+        """
+        source = f"{self.experiment_dir}/"
+        self.remote_connection.copy_from_remote(source, destination, verbose, exclude, filters)
