@@ -3,8 +3,6 @@
 echo $HOME
 cd $HOME
 
-source /home/cluster_tools/user/load_four_c_environment.sh
-
 module list
 ##########################################
 #                                        #
