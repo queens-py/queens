@@ -74,7 +74,7 @@ The code checks are conducted with [Pylint](https://pylint.org/),
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
 is checked with [ruff](https://github.com/astral-sh/ruff).
 Complete and meaningful docstrings are required as they are used to generate the
-[documentation](#book-documentation).
+[documentation](https://www.github.com/queens-py/queens/blob/main/doc/README.md).
 
 ##### QUEENS coding conventions
 Like every codebase, QUEENS follows some project-specific coding conventions. Below is a list of common ones:

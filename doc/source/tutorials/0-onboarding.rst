@@ -14,12 +14,12 @@ Steps to get started with QUEENS
 
       git clone git@github.com:queens-py/queens.git
 
-#. Read through our `introduction <https://queens-py.github.io/queens/intro.html>`_ and
-   follow the instructions in the "Installation" section to set up your local environment.
+#. Read through our :doc:`introduction <../introduction>` and follow the instructions in the
+   "Installation" section to set up your local environment.
 
 #. If you plan to contribute to the project, please read through our
-   `contributing guidelines <https://queens-py.github.io/queens/contributing.html>`_ and
-   follow the instructions there to configure our git-hooks.
+   :doc:`contributing guidelines <../contributing>` and follow the instructions there to configure
+   our git-hooks.
 
 #. Install an integrated development environment (IDE) of your choice if you do not already have
    one.
@@ -39,8 +39,8 @@ Steps to get started with QUEENS
       "editor.defaultFormatter": "ms-python.black-formatter",
       "black-formatter.args": ["--line-length", "100"],
 
-#. Browse through our `documentation <https://queens-py.github.io/queens/overview.html>`_ and our
-   other tutorials to get a first impression.
+#. Browse through our :doc:`documentation <../packages>` and our other tutorials to get a first
+   impression.
 
 #. *Optional*: If you are comfortable with it, feel free to introduce yourself in our
    `discussions forum <https://github.com/queens-py/queens/discussions/categories/introduce-
@@ -78,7 +78,7 @@ Python
 If you have made it this far, you will probably end up coding in Python.
 For an introduction to Python, you can check out
 `this written tutorial <https://docs.python.org/3/tutorial/>`_ or
-`this video <https://www.youtube.com/watch?v=kqtD5dpn9C8>`_.
+`this 1h video <https://www.youtube.com/watch?v=kqtD5dpn9C8>`_.
 
 Linux
 *****
@@ -89,7 +89,7 @@ There is no big difference from Mac or Windows besides the extended use of the t
 as the command line.
 At first, this might seem cumbersome, but once you master a basic set of commands, it becomes super
 efficient!
-Check out `this article <https://maker.pro/linux/tutorial/basic-linux-commands-for-beginners>`_ to
+Check out `this tutorial <https://maker.pro/linux/tutorial/basic-linux-commands-for-beginners>`_ to
 start learning some basic Linux commands.
 *Bonus:* If you really want to become a nerd, also have a look at the
 `VIM editor <https://opensource.com/article/19/3/getting-started-vim>`_.

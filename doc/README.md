@@ -18,14 +18,14 @@ When building the documentation on your machine for the first time or after addi
 
 ```bash
 cd <queens-base-directory>
-sphinx-apidoc -o doc/source src/ -f -M
+sphinx-apidoc -o doc/source src/ -fMT
 ```
 
 To actually build the html-documentation, navigate into the doc folder and run the make command:
 
 ```bash
 cd doc
-sphinx-build -b html -d build/doctrees source build/html
+sphinx-build -b html -d build/doctrees source build/html -W
 ```
 
 You can now view the documentation in your favorite browser by opening `build/html/index.html`.

@@ -4,14 +4,7 @@ Welcome to the QUEENS FAQ section! Here, you'll find answers to some of the most
 
 > If you have encountered a problem that you think is common, please go add a new question and answer to the FAQ. These are real time-savers and a vital part of our community.
 
-## Dependency management
-
 ```{toctree}
-faq/requirements
-```
-
-## Directories and simulation model outputs
-
-```{toctree}
-faq/directories
+:glob:
+faqs/*
 ```

@@ -193,8 +193,8 @@ class MixtureModel(Variational):
         log-sum-exp trick [1] in order to reduce floating point issues.
 
         References:
-        [1] :  David M. Blei, Alp Kucukelbir & Jon D. McAuliffe (2017) Variational Inference: A
-               Review for Statisticians, Journal of the American Statistical Association, 112:518
+            [1] David M. Blei, Alp Kucukelbir & Jon D. McAuliffe (2017) Variational Inference: A
+            Review for Statisticians, Journal of the American Statistical Association, 112:518
 
         Args:
             variational_parameters (np.ndarray): Variational parameters

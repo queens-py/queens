@@ -28,17 +28,17 @@ jobs:
         env:
           PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
         run: |
-            $PYTHON_PACKAGE_MANAGER activate queens
-            pip install -e .[tutorial]
-            python -m ipykernel install --user --name queens --display-name "Python (queens)"
+          $PYTHON_PACKAGE_MANAGER activate queens
+          pip install -e .[tutorial]
+          python -m ipykernel install --user --name queens --display-name "Python (queens)"
       - name: Sphinx build
         env:
           PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
         run: |
           $PYTHON_PACKAGE_MANAGER activate queens
-          sphinx-apidoc -o doc/source src/ -f -M
+          sphinx-apidoc -o doc/source src/ -fMT
           cd doc
-          sphinx-build -b html -d build/doctrees source build/html
+          sphinx-build -b html -d build/doctrees source build/html -W
       - name: Upload html
         uses: actions/upload-pages-artifact@v3
         with:

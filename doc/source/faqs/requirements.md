@@ -1,4 +1,6 @@
-# What are the requirements for QUEENS?
+# Dependency Management
+
+## What are the requirements for QUEENS?
 
 Currently, QUEENS is only tested on UNIX systems. Besides Python, QUEENS requires [rsync](https://rsync.samba.org/) in order to copy simulation files.
 
