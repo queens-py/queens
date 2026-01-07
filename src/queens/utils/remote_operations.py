@@ -280,7 +280,7 @@ class RemoteConnection(Connection):
                 exclude=exclude,
                 filters=filters,
                 rsh=remote_shell_command,
-                host=host,
+                destination_host=host,
                 rsync_options=["--out-format='%n'", "--checksum"],
             )
             # Run rsync command
@@ -315,25 +315,15 @@ class RemoteConnection(Connection):
                 remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
                 _logger.debug("Using remote shell command %s", remote_shell_command)
 
-            # Helper function to add "user@host:" prefix to source(s)
-            def make_remote_paths(paths: str | Path | Sequence) -> str | Path | Sequence:
-                if isinstance(paths, (str, Path)):
-                    return f"{host}:{paths}"
-                # assume Sequence
-                return [f"{host}:{p}" for p in paths]
-
-            # since we pass host=None below, we need to manually prepend the host to the source
-            remote_source = make_remote_paths(source)
-
             rsync_cmd = assemble_rsync_command(
-                remote_source,  # remote side
+                source,  # remote side
                 destination,  # local side
                 verbose=verbose,
                 archive=True,
                 exclude=exclude,
                 filters=filters,
                 rsh=remote_shell_command,
-                host=None,  # None, otherwise the host string will be prepended to the destination
+                source_host=host,
                 rsync_options=["--out-format='%n'", "--checksum"],
             )
             # Run rsync command
