@@ -248,6 +248,32 @@ class RemoteConnection(Connection):
         _logger.info("Sync of remote repository was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
 
+    def _copy(self, rsync_args_dict: dict) -> None:
+        """Copy files or folders from a source to a destination.
+
+        Args:
+            rsync_args_dict: Dictionary with the arguments for the rsync
+                command that takes care of the copy
+        """
+        # retrieve the source and destination from the rsync_args_dict for
+        # convenience
+        source = rsync_args_dict["source"]
+        destination = rsync_args_dict["destination"]
+        if not is_empty(source):
+            _logger.debug("Copying from %s to %s", source, destination)
+            remote_shell_command = None
+            if self.gateway is not None:
+                remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
+                _logger.debug("Using remote shell command %s", remote_shell_command)
+                rsync_args_dict["rsh"] = remote_shell_command
+            rsync_cmd = assemble_rsync_command(**rsync_args_dict)
+            # Run rsync command
+            result = self.local(rsync_cmd, in_stream=False)
+            _logger.debug(result.stdout)
+            _logger.debug("Copying complete.")
+        else:
+            _logger.debug("List of source files was empty. Did not copy anything.")
+
     def copy_to_remote(
         self,
         source: str | Path | Sequence,
@@ -265,30 +291,17 @@ class RemoteConnection(Connection):
             exclude: Options to exclude
             filters: Filters for rsync
         """
-        if not is_empty(source):
-            host = f"{self.user}@{self.host}"
-            _logger.debug("Copying from %s to %s", source, destination)
-            remote_shell_command = None
-            if self.gateway is not None:
-                remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
-                _logger.debug("Using remote shell command %s", remote_shell_command)
-            rsync_cmd = assemble_rsync_command(
-                source,
-                destination,
-                verbose=verbose,
-                archive=True,
-                exclude=exclude,
-                filters=filters,
-                rsh=remote_shell_command,
-                destination_host=host,
-                rsync_options=["--out-format='%n'", "--checksum"],
-            )
-            # Run rsync command
-            result = self.local(rsync_cmd, in_stream=False)
-            _logger.debug(result.stdout)
-            _logger.debug("Copying complete.")
-        else:
-            _logger.debug("List of source files was empty. Did not copy anything.")
+        rsync_args_dict = {
+            "source": source,
+            "destination": destination,
+            "verbose": verbose,
+            "archive": True,
+            "exclude": exclude,
+            "filters": filters,
+            "destination_host": f"{self.user}@{self.host}",
+            "rsync_options": ["--out-format='%n'", "--checksum"],
+        }
+        self._copy(rsync_args_dict)
 
     def copy_from_remote(
         self,
@@ -298,40 +311,26 @@ class RemoteConnection(Connection):
         exclude: str | Sequence | None = None,
         filters: str | None = None,
     ) -> None:
-        """Copy files or folders to remote.
+        """Copy files or folders from remote to local machine.
 
         Args:
-            source: Paths to copy
-            destination: Destination relative to host
+            source: Paths to copy from remote machine
+            destination: Destination on local machine
             verbose: True for verbose
             exclude: Options to exclude
             filters: Filters for rsync
         """
-        if not is_empty(source):
-            host = f"{self.user}@{self.host}"
-            _logger.debug("Copying from %s to %s", source, destination)
-            remote_shell_command = None
-            if self.gateway is not None:
-                remote_shell_command = f"ssh {self.gateway.user}@{self.gateway.host} ssh"
-                _logger.debug("Using remote shell command %s", remote_shell_command)
-
-            rsync_cmd = assemble_rsync_command(
-                source,  # remote side
-                destination,  # local side
-                verbose=verbose,
-                archive=True,
-                exclude=exclude,
-                filters=filters,
-                rsh=remote_shell_command,
-                source_host=host,
-                rsync_options=["--out-format='%n'", "--checksum"],
-            )
-            # Run rsync command
-            result = self.local(rsync_cmd, in_stream=False)
-            _logger.debug(result.stdout)
-            _logger.debug("Copying complete.")
-        else:
-            _logger.debug("List of source files was empty. Did not copy anything.")
+        rsync_args_dict = {
+            "source": source,  # remote side
+            "destination": destination,  # local side
+            "verbose": verbose,
+            "archive": True,
+            "exclude": exclude,
+            "filters": filters,
+            "source_host": f"{self.user}@{self.host}",
+            "rsync_options": ["--out-format='%n'", "--checksum"],
+        }
+        self._copy(rsync_args_dict)
 
     def build_remote_environment(
         self,

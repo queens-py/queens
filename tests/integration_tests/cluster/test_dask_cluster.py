@@ -296,14 +296,8 @@ class TestDaskCluster:
         # 1) we make sure that the result file is contained in the local copy
         assert (local_data_path / "output-structure.pvd").exists()
 
-        # 2) we create a PvDFile data processor ...
-        local_processor = PvdFile(
-            field_name="displacement",
-            file_name_identifier="output-structure.pvd",
-            file_options_dict={},
-        )
-        # 3) ... and use it to extract the data from the local copy of the remote data
-        local_data = local_processor(local_data_path)
+        # 2) and use a data processor to extract the data from the local copy of the remote data
+        local_data = data_processor(local_data_path)
 
         # if everything worked correctly, the data extracted this way should
         # match the expected output
