@@ -292,11 +292,12 @@ class Cluster(Dask):
         exclude: str | Sequence | None = None,
         filters: str | None = None,
     ):
-        """Copy files from experiment directory.
+        """Copy files from remote experiment directory to the local machine.
 
         Args:
-            destination (Path): Path to the directory where the files from the remote experiment
-                directory should be copied to
+            destination (Path): Path to the local directory where the files from the remote
+                experiment directory should be copied to. If None, the default base directory
+                `~/queens-experiments/` is used.
             verbose: True for verbose
             exclude: Options to exclude
             filters: Filters for rsync
@@ -304,7 +305,7 @@ class Cluster(Dask):
         if destination is None:
             # We use None as experiment_base_dir to get the default base directory, since we do not
             # save it explicitly in the constructor but only use it to construct the location of
-            # the remote experiment dir. That said, we cannot easily retrieve the used
+            # the remote experiment_dir. That said, we cannot easily retrieve the used
             # experiment_base_dir from self.experiment_dir here because the remote os might be
             # different from the local os, resulting in a different path structure (i.e., different
             # home directory names in case of experiment_base_dir=None). If the user wants to
