@@ -87,6 +87,7 @@ class Cluster(Dask):
         verbose=True,
         experiment_base_dir=None,
         overwrite_existing_experiment=False,
+        job_script_prologue=None,
     ):
         """Init method for the cluster scheduler.
 
@@ -110,6 +111,8 @@ class Cluster(Dask):
             experiment_base_dir (str, Path): Base directory for the simulation outputs
             overwrite_existing_experiment (bool): If True, overwrite experiment directory if it
                 exists already. If False, prompt user for confirmation before overwriting.
+            job_script_prologue (list, opt): List of commands to be executed before starting a
+                worker.
         """
         self.remote_connection = remote_connection
         self.remote_connection.open()
@@ -124,6 +127,7 @@ class Cluster(Dask):
         self.queue = queue
         self.cluster_internal_address = cluster_internal_address
         self.allowed_failures = allowed_failures
+        self.job_script_prologue = job_script_prologue
 
         # get the path of the experiment directory on remote host
         experiment_dir = self.remote_experiment_dir(
@@ -232,6 +236,7 @@ class Cluster(Dask):
             "job_directives_skip": job_directives_skip,
             "job_extra_directives": [job_extra_directives],
             "worker_extra_args": ["--lifetime", worker_lifetime, "--lifetime-stagger", "2m"],
+            "job_script_prologue": self.job_script_prologue,
             # keep this hardcoded to 1, the number of threads for the mpi run is handled by
             # job_extra_directives. Note that the number of workers is not the number of
             # parallel simulations!

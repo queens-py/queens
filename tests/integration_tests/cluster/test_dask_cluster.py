@@ -20,6 +20,7 @@ import logging
 import os
 from dataclasses import asdict, dataclass
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import pytest
@@ -148,6 +149,7 @@ class TestDaskCluster:
             "cluster_internal_address": cluster_settings["cluster_internal_address"],
             "experiment_name": test_name,
             "queue": cluster_settings.get("queue"),
+            "job_script_prologue": cluster_settings.get("job_script_prologue"),
         }
 
     def test_new_experiment_dir(self, cluster_kwargs, remote_connection, experiment_dir):
@@ -323,6 +325,7 @@ class ClusterConfig:
     default_python_path: str
     cluster_script_path: Path
     queue: str | None = None
+    job_script_prologue: List[str] | None = None
 
     dict = asdict
 
@@ -356,6 +359,7 @@ CHARON_CONFIG = ClusterConfig(
     cluster_internal_address="192.168.2.253",
     default_python_path="$HOME/miniconda3/envs/queens/bin/python",
     cluster_script_path=Path(),
+    job_script_prologue=["source /home/cluster_tools/user/load_four_c_environment.sh"],
 )
 
 CLUSTER_CONFIGS = {
