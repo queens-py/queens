@@ -218,6 +218,7 @@ class TestDaskCluster:
         fourc_cluster_path,
         fourc_example_expected_output,
         global_settings,
+        tmp_path,
     ):
         """Test remote 4C simulations with DASK jobqueue and MC iterator.
 
@@ -236,6 +237,7 @@ class TestDaskCluster:
             fourc_cluster_path (Path): paths to 4C executable on the cluster
             fourc_example_expected_output (np.ndarray): Expected output for the MC samples
             global_settings (GlobalSettings): object containing experiment name and tmp_path
+            tmp_path (Path): Temporary path for storing remote data locally
         """
         fourc_input_file_template = third_party_inputs / "fourc" / "solid_runtime_hex8.4C.yaml"
 
@@ -276,13 +278,30 @@ class TestDaskCluster:
         # Load results
         results = load_result(global_settings.result_file(".pickle"))
 
-        # The data has to be deleted before the assertion
+        # Copy the data from the remote location to a temporary local directory
+        # before it is deleted on the remote cluster
+        local_data_path = Path(tmp_path) / "remote_computation_data"
+        scheduler.copy_files_from_experiment_dir(local_data_path)
+
+        # The remote data has to be deleted before the assertion
         self.delete_simulation_data(remote_connection)
 
         # assert statements
         np.testing.assert_array_almost_equal(
             results["raw_output_data"]["result"], fourc_example_expected_output, decimal=6
         )
+
+        # Now we test whether copying of the remote data worked correctly
+
+        # 1) we make sure that the result file is contained in the local copy
+        assert (local_data_path / "output-structure.pvd").exists()
+
+        # 2) and use a data processor to extract the data from the local copy of the remote data
+        local_data = data_processor(local_data_path)
+
+        # if everything worked correctly, the data extracted this way should
+        # match the expected output
+        np.testing.assert_array_almost_equal(local_data, fourc_example_expected_output, decimal=6)
 
     def delete_simulation_data(self, remote_connection):
         """Delete simulation data on the cluster.

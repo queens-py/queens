@@ -32,7 +32,8 @@ def assemble_rsync_command(
     filters: str | None = None,
     verbose: bool = True,
     rsh: str | None = None,
-    host: str | None = None,
+    source_host: str | None = None,
+    destination_host: str | None = None,
     rsync_options: Sequence | None = None,
 ) -> str:
     """Assemble rsync command.
@@ -45,7 +46,8 @@ def assemble_rsync_command(
         filters: Filters for rsync
         verbose: True for verbose
         rsh: Remote ssh command
-        host: Host to which to copy the files
+        source_host: Host from which to copy the files
+        destination_host: Host to which to copy the files
         rsync_options: Additional rsync options
 
     Returns:
@@ -71,8 +73,10 @@ def assemble_rsync_command(
         options.extend(listify(rsync_options))
     if rsh:
         options.append(f"--rsh='{rsh}'")
-    if host:
-        destination = f"{host}:{destination}"
+    if source_host:
+        source = [f"{source_host}:{file}" for file in listify(source)]
+    if destination_host:
+        destination = f"{destination_host}:{destination}"
 
     options_string = " ".join([str(option) for option in options])
     source_string = " ".join([str(file) for file in listify(source)])
@@ -88,7 +92,8 @@ def rsync(
     filters: str | None = None,
     verbose: bool = True,
     rsh: str | None = None,
-    host: str | None = None,
+    source_host: str | None = None,
+    destination_host: str | None = None,
     rsync_options: Sequence | None = None,
 ) -> None:
     """Run rsync command.
@@ -101,7 +106,8 @@ def rsync(
         filters: Filters for rsync
         verbose: True for verbose
         rsh: Remote ssh command
-        host: Host where to copy the files to
+        source_host: Host from which to copy the files
+        destination_host: Host to which to copy the files
         rsync_options: Additional rsync options
     """
     if not is_empty(source):
@@ -113,7 +119,8 @@ def rsync(
             filters=filters,
             verbose=verbose,
             rsh=rsh,
-            host=host,
+            source_host=source_host,
+            destination_host=destination_host,
             rsync_options=rsync_options,
         )
 

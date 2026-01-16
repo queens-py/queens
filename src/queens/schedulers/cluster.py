@@ -17,6 +17,8 @@
 import logging
 import time
 from datetime import timedelta
+from pathlib import Path
+from typing import Sequence
 
 from dask.distributed import Client
 from dask_jobqueue import PBSCluster, SLURMCluster
@@ -173,24 +175,6 @@ class Cluster(Dask):
 
         return experiment_dir
 
-    def local_experiment_dir(
-        self, experiment_name, experiment_base_dir, overwrite_existing_experiment
-    ):
-        """Get the local experiment directory.
-
-        Args:
-            experiment_name (str): name of the current experiment
-            experiment_base_dir (str, Path): Base directory for the simulation outputs
-            overwrite_existing_experiment (bool): If true, continue and overwrite experiment
-                directory. If false, prompt user for confirmation before continuing and overwriting.
-
-        Returns:
-            experiment_dir (Path): Path to local experiment directory.
-        """
-        raise NotImplementedError(
-            "The Cluster scheduler should not use the local but the remote experiment directory."
-        )
-
     def _start_cluster_and_connect_client(self):
         """Start a Dask cluster and a client that connects to it.
 
@@ -299,5 +283,36 @@ class Cluster(Dask):
             paths (Path, list): Paths to files or directories that should be copied to experiment
                 directory
         """
-        destination = f"{self.experiment_dir}/"
-        self.remote_connection.copy_to_remote(paths, destination)
+        self.remote_connection.copy_to_remote(paths, self.experiment_dir)
+
+    def copy_files_from_experiment_dir(
+        self,
+        destination: Path | None = None,
+        verbose: bool = True,
+        exclude: str | Sequence | None = None,
+        filters: str | None = None,
+    ):
+        """Copy files from remote experiment directory to the local machine.
+
+        Args:
+            destination (Path): Path to the local directory where the files from the remote
+                experiment directory should be copied to. If None, the default base directory
+                `~/queens-experiments/` is used.
+            verbose: True for verbose
+            exclude: Options to exclude
+            filters: Filters for rsync
+        """
+        if destination is None:
+            # We use None as experiment_base_dir to get the default base directory, since we do not
+            # save it explicitly in the constructor but only use it to construct the location of
+            # the remote experiment_dir. That said, we cannot easily retrieve the used
+            # experiment_base_dir from self.experiment_dir here because the remote os might be
+            # different from the local os, resulting in a different path structure (i.e., different
+            # home directory names in case of experiment_base_dir=None). If the user wants to
+            # specify a custom destination, they can do so via the destination argument.
+            destination = self.local_experiment_dir(
+                self.experiment_name, None, overwrite_existing_experiment=True
+            ).parent
+        self.remote_connection.copy_from_remote(
+            self.experiment_dir, destination, verbose, exclude, filters
+        )
