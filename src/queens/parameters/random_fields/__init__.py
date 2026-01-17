@@ -33,5 +33,5 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name: str) -> RandomField:
+def __getattr__(name: str) -> type[RandomField]:
     return import_class_from_class_module_map(name, class_module_map, __name__)

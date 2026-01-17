@@ -14,12 +14,30 @@
 #
 """Mixture Model Variational Distribution."""
 
+from typing import Generic, Iterable, TypeAlias, TypeVar
+
 import numpy as np
 
-from queens.variational_distributions._variational_distribution import Variational
+from queens.variational_distributions._variational_distribution import (
+    ArrayNParams,
+    ArrayNParamsComponent,
+    ArrayNParamsXNParams,
+    ArrayNParamsXNSamples,
+    ArrayNSamples,
+    ArrayNSamplesXNDims,
+    NDims,
+    NSamples,
+    Variational,
+)
+
+NComponents = TypeVar("NComponents", bound=int)
+V = TypeVar("V", bound=Variational)
+ArrayNComponents: TypeAlias = np.ndarray[  # pylint: disable=invalid-name
+    tuple[NComponents], np.dtype[np.floating]
+]
 
 
-class MixtureModel(Variational):
+class MixtureModel(Variational, Generic[V]):
     r"""Mixture model variational distribution class.
 
     Every component is a member of the same distribution family. Uses the parameterization:
@@ -32,25 +50,24 @@ class MixtureModel(Variational):
     This allows the weight parameters :math:`\lambda_{weights}` to be unconstrained.
 
     Attributes:
-        n_components (int): Number of mixture components.
+        n_components: Number of mixture components.
         base_distribution: Variational distribution object for the components.
-        n_parameters (int): Number of parameters used in the parameterization.
+        n_parameters: Number of parameters used in the parameterization.
     """
 
-    def __init__(self, base_distribution, dimension, n_components):
+    def __init__(self, base_distribution: V, dimension: NDims, n_components: NComponents) -> None:
         """Initialize mixture model.
 
         Args:
-            dimension (int): Dimension of the random variable
-            n_components (int): Number of mixture components
             base_distribution: Variational distribution object for the components
+            dimension: Dimension of the random variable
+            n_components: Number of mixture components
         """
-        super().__init__(dimension)
+        super().__init__(dimension, n_parameters=n_components * base_distribution.n_parameters)
         self.n_components = n_components
         self.base_distribution = base_distribution
-        self.n_parameters = n_components * base_distribution.n_parameters
 
-    def initialize_variational_parameters(self, random=False):
+    def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
         Default weights initialization:
@@ -63,11 +80,10 @@ class MixtureModel(Variational):
         The component initialization is handle by the component itself.
 
         Args:
-            random (bool, optional): If True, a random initialization is used. Otherwise the
-                                     default is selected
+            random: If True, a random initialization is used. Otherwise the default is selected
 
         Returns:
-            variational_parameters (np.ndarray):  variational parameters (1 x n_params)
+            Variational parameters
         """
         variational_parameters_components = (
             self.base_distribution.initialize_variational_parameters(random)
@@ -87,25 +103,29 @@ class MixtureModel(Variational):
 
         return np.concatenate([variational_parameters_components, variational_parameters_weights])
 
-    def construct_variational_parameters(self, component_parameters_list, weights):
+    def construct_variational_parameters(  # pylint: disable=arguments-differ
+        self, parameters_per_component: list[Iterable[np.ndarray]], weights: ArrayNComponents
+    ) -> ArrayNParams:
         """Construct the variational parameters from the probabilities.
 
         Args:
-            component_parameters_list (list): List of the component parameters of the components
-            weights (np.ndarray): Probabilities of the distribution
+            parameters_per_component: Distribution parameters per component
+            weights: Probabilities of the distribution
 
         Returns:
-            variational_parameters (np.ndarray): Variational parameters
+            Variational parameters
         """
         variational_parameters = []
-        for component_parameters in component_parameters_list:
+        for parameters in parameters_per_component:
             variational_parameters.append(
-                self.base_distribution.construct_variational_parameters(*component_parameters)
+                self.base_distribution.construct_variational_parameters(*parameters)
             )
         variational_parameters.append(np.log(weights).flatten())
         return np.concatenate(variational_parameters)
 
-    def _construct_component_variational_parameters(self, variational_parameters):
+    def _construct_component_variational_parameters(
+        self, variational_parameters: ArrayNParams
+    ) -> tuple[list[ArrayNParamsComponent], ArrayNComponents]:
         """Reconstruct the weights and parameters of the mixture components.
 
         Creates a list containing the variational parameters of the different components.
@@ -113,11 +133,11 @@ class MixtureModel(Variational):
         The list is nested, each entry correspond to the parameters of a component.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
+            variational_parameters: Variational parameters
 
         Returns:
-            variational_parameters_list (list): List of the variational parameters of the components
-            weights (np.ndarray): Weights of the mixture
+            Variational parameters of the components
+            Weights of the mixture
         """
         n_parameters_comp = self.base_distribution.n_parameters
         variational_parameters_list = []
@@ -131,18 +151,19 @@ class MixtureModel(Variational):
         weights = weights / np.sum(weights)
         return variational_parameters_list, weights
 
-    def reconstruct_distribution_parameters(self, variational_parameters):
+    def reconstruct_distribution_parameters(
+        self, variational_parameters: ArrayNParams
+    ) -> tuple[list[tuple[list | np.ndarray]], ArrayNComponents]:
         """Reconstruct the weights and parameters of the mixture components.
 
         The list is nested, each entry correspond to the parameters of a component.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
+            variational_parameters: Variational parameters
 
         Returns:
-            distribution_parameters_list (list): List of the distribution parameters of the
-                                                 components
-            weights (np.ndarray): Weights of the mixture
+            Distribution parameters of the components
+            Weights of the mixture
         """
         n_parameters_comp = self.base_distribution.n_parameters
         distribution_parameters_list = []
@@ -159,7 +180,7 @@ class MixtureModel(Variational):
         weights = weights / np.sum(weights)
         return distribution_parameters_list, weights
 
-    def draw(self, variational_parameters, n_draws=1):
+    def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.
 
         Uses a two-step process:
@@ -167,13 +188,13 @@ class MixtureModel(Variational):
             2. Sample from the selected component
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
-            n_draws (int): Number of samples to draw
+            variational_parameters: Variational parameters
+            n_draws: Number of samples to draw
 
         Returns:
-            samples (np.ndarray): Row wise samples of the variational distribution
+            Samples
         """
-        parameters_list, weights = self._construct_component_variational_parameters(
+        parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
         samples = []
@@ -181,15 +202,15 @@ class MixtureModel(Variational):
             # Select component to draw from
             component = np.argmax(np.random.multinomial(1, weights))
             # Draw a sample of this component
-            sample = self.base_distribution.draw(parameters_list[component], 1)
+            sample = self.base_distribution.draw(parameters[component], 1)
             samples.append(sample)
         samples = np.concatenate(samples, axis=0)
         return samples
 
-    def logpdf(self, variational_parameters, x):
-        """Logpdf evaluated using the variational parameters at samples *x*.
+    def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
+        """Log-PDF evaluated using the variational parameters at samples *x*.
 
-        Is a general implementation using the logpdf function of the components. Uses the
+        Is a general implementation using the log-PDF function of the components. Uses the
         log-sum-exp trick [1] in order to reduce floating point issues.
 
         References:
@@ -197,55 +218,57 @@ class MixtureModel(Variational):
                Review for Statisticians, Journal of the American Statistical Association, 112:518
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
-            x (np.ndarray): Row-wise samples
+            variational_parameters: Variational parameters
+            x: Row-wise samples
 
         Returns:
-            logpdf (np.ndarray): Row vector of the logpdfs
+            Row vector of the Log-PDF values
         """
-        parameters_list, weights = self._construct_component_variational_parameters(
+        parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
-        logpdf = []
+        logpdf_lst = []
         x = np.atleast_2d(x)
         # Parameter for the log-sum-exp trick
         max_logpdf = -np.inf * np.ones(len(x))
         for j in range(self.n_components):
-            logpdf.append(np.log(weights[j]) + self.base_distribution.logpdf(parameters_list[j], x))
-            max_logpdf = np.maximum(max_logpdf, logpdf[-1])
-        logpdf = np.array(logpdf) - np.tile(max_logpdf, (self.n_components, 1))
+            logpdf_lst.append(np.log(weights[j]) + self.base_distribution.logpdf(parameters[j], x))
+            max_logpdf = np.maximum(max_logpdf, logpdf_lst[-1])
+        logpdf = np.array(logpdf_lst) - np.tile(max_logpdf, (self.n_components, 1))
         logpdf = np.sum(np.exp(logpdf), axis=0)
         logpdf = np.log(logpdf) + max_logpdf
         return logpdf
 
-    def pdf(self, variational_parameters, x):
+    def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Pdf evaluated using the variational parameters at given samples `x`.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
-            x (np.ndarray): Row-wise samples
+            variational_parameters: Variational parameters
+            x: Row-wise samples
 
         Returns:
-            pdf (np.ndarray): Row vector of the pdfs
+            Row vector of the PDF values
         """
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
-    def grad_params_logpdf(self, variational_parameters, x):
-        """Logpdf gradient w.r.t. the variational parameters.
+    def grad_params_logpdf(
+        self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
+    ) -> ArrayNParamsXNSamples:
+        """Log-PDF gradient w.r.t. the variational parameters.
 
         Evaluated at samples *x*. Also known as the score function.
         Is a general implementation using the score functions of
         the components.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
-            x (np.ndarray): Row-wise samples
+            variational_parameters: Variational parameters
+            x: Row-wise samples
 
         Returns:
-            score (np.ndarray): Column-wise scores
+            Column-wise scores
         """
-        parameters_list, weights = self._construct_component_variational_parameters(
+        parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
         x = np.atleast_2d(x)
@@ -258,9 +281,9 @@ class MixtureModel(Variational):
         logpdf = self.logpdf(variational_parameters, x)
         for j in range(self.n_components):
             # coefficient for the score term of every component
-            precoeff = np.exp(self.base_distribution.logpdf(parameters_list[j], x) - logpdf)
+            precoeff = np.exp(self.base_distribution.logpdf(parameters[j], x) - logpdf)
             # Score function of the jth component
-            score_comp = self.base_distribution.grad_params_logpdf(parameters_list[j], x)
+            score_comp = self.base_distribution.grad_params_logpdf(parameters[j], x)
             component_block.append(
                 weights[j] * np.tile(precoeff, (len(score_comp), 1)) * score_comp
             )
@@ -270,34 +293,37 @@ class MixtureModel(Variational):
         score = np.vstack((np.concatenate(component_block, axis=0), weights_block))
         return score
 
-    def fisher_information_matrix(self, variational_parameters, n_samples=10000):
+    def fisher_information_matrix(
+        self, variational_parameters: ArrayNParams, n_samples: int = 10000
+    ) -> ArrayNParamsXNParams:
         """Approximate the Fisher information matrix using Monte Carlo.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
-            n_samples (int, optional): number of samples for a MC FIM estimation
+            variational_parameters: Variational parameters
+            n_samples: Number of samples for a MC FIM estimation
 
         Returns:
-            FIM (np.ndarray): Matrix (num parameters x num parameters)
+            Fisher information matrix
         """
         samples = self.draw(variational_parameters, n_samples)
         scores = self.grad_params_logpdf(variational_parameters, samples)
-        fim = 0
+        n_var_params = scores.shape[0]
+        fim = np.zeros((n_var_params, n_var_params))
         for j in range(n_samples):
             fim = fim + np.outer(scores[:, j], scores[:, j])
         fim = fim / n_samples
         return fim
 
-    def export_dict(self, variational_parameters):
+    def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 
         Args:
-            variational_parameters (np.ndarray): Variational parameters
+            variational_parameters: Variational parameters
 
         Returns:
-            export_dict (dictionary): Dict containing distribution information
+            Dictionary containing distribution information
         """
-        parameters_list, weights = self._construct_component_variational_parameters(
+        parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
         export_dict = {
@@ -309,7 +335,7 @@ class MixtureModel(Variational):
         }
         # Loop over the components
         for j in range(self.n_components):
-            component_dict = self.base_distribution.export_dict(parameters_list[j])
+            component_dict = self.base_distribution.export_dict(parameters[j])
             component_key = "component_" + str(j)
             export_dict.update({component_key: component_dict})
         return export_dict

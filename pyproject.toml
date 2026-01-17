@@ -175,7 +175,7 @@ exclude = '''(?x)(
     ^(.gitlab|.github|config|doc|tests|test_utils)/|
     ^src/(example_simulator_functions|queens_interfaces)/|
     ^src/queens/(data_processors|drivers|iterators|models)/|
-    ^src/queens/(schedulers|stochastic_optimizers|variational_distributions|visualization)/|
+    ^src/queens/(schedulers|stochastic_optimizers|visualization)/|
     ^src/queens/(main.py|global_settings.py)
 ).*$'''
 [[tool.mypy.overrides]]
