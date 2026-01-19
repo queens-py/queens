@@ -293,14 +293,17 @@ class TestDaskCluster:
 
         # Now we test whether copying of the remote data worked correctly
 
-        # 1) we make sure that the result file is contained in the local copy
-        assert (local_data_path / "output-structure.pvd").exists()
+        local_experiment_path = local_data_path / global_settings.experiment_name
+        local_data = np.zeros_like(fourc_example_expected_output)
+        for i in range(2):
+            # 1) we make sure that the result files are contained in the local copy
+            output_path = local_experiment_path / str(i) / "output"
+            assert (output_path / "output-structure.pvd").exists()
 
-        # 2) and use a data processor to extract the data from the local copy of the remote data
-        local_data = data_processor(local_data_path)
+            # 2) and use a data processor to extract the data from the local copy of the remote data
+            local_data[i] = data_processor(output_path)
 
-        # if everything worked correctly, the data extracted this way should
-        # match the expected output
+        # The extracted local data should match the expected output
         np.testing.assert_array_almost_equal(local_data, fourc_example_expected_output, decimal=6)
 
     def delete_simulation_data(self, remote_connection):
