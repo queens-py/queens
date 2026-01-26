@@ -20,8 +20,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
-
 from queens.drivers._driver import Driver
 from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
@@ -193,7 +191,7 @@ class Jobscript(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -202,7 +200,7 @@ class Jobscript(Driver):
         """Run the driver.
 
         Args:
-            sample (np.array): Input sample.
+            inputs (dict): Input sample.
             job_id (int): Job ID.
             num_procs (int): Number of processors.
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -215,9 +213,7 @@ class Jobscript(Driver):
             job_id, experiment_dir
         )
 
-        sample_dict = self.parameters.sample_as_dict(sample)
-
-        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
+        metadata = SimulationMetadata(job_id=job_id, inputs=inputs, job_dir=job_dir)
 
         with metadata.time_code("prepare_input_files"):
             job_options = JobOptions(
@@ -233,7 +229,7 @@ class Jobscript(Driver):
 
             # Create the input files
             self.prepare_input_files(
-                job_options.add_data_and_to_dict(sample_dict), experiment_dir, input_files
+                job_options.add_data_and_to_dict(inputs), experiment_dir, input_files
             )
 
             jobscript_file = job_dir / self.jobscript_file_name

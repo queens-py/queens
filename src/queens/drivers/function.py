@@ -113,7 +113,7 @@ class Function(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -122,7 +122,7 @@ class Function(Driver):
         """Run the driver.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_name (str): name of QUEENS experiment.
@@ -131,8 +131,7 @@ class Function(Driver):
         Returns:
             Result and potentially the gradient
         """
-        sample_dict = self.parameters.sample_as_dict(sample)
         if self.function_requires_job_id:
-            sample_dict["job_id"] = job_id
-        results = self.function(sample_dict)
+            inputs["job_id"] = job_id
+        results = self.function(inputs)
         return results
