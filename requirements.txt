@@ -24,7 +24,7 @@ bcrypt==4.2.0
     # via paramiko
 black==24.10.0
     # via -r requirements.in
-bokeh==3.6.1
+bokeh==3.8.2
     # via -r requirements.in
 cachetools==5.5.0
     # via pymc
