@@ -544,7 +544,7 @@ vtk==9.3.1
     # via
     #   -r requirements.in
     #   pyvista
-werkzeug==3.0.6
+werkzeug==3.1.5
     # via tensorboard
 wheel==0.44.0
     # via astunparse
