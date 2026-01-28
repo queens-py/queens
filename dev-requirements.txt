@@ -356,7 +356,7 @@ typing-extensions==4.12.2
     #   pydata-sphinx-theme
 untokenize==0.1.1
     # via docformatter
-urllib3==2.2.3
+urllib3==2.6.3
     # via
     #   -c requirements.txt
     #   requests
