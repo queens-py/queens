@@ -113,7 +113,7 @@ fabric==3.2.2
     # via -r requirements.in
 farama-notifications==0.0.4
     # via gymnasium
-filelock==3.16.1
+filelock==3.20.3
     # via
     #   pytensor
     #   torch

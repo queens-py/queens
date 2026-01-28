@@ -80,7 +80,7 @@ executing==2.2.0
     # via stack-data
 fastjsonschema==2.20.0
     # via nbformat
-filelock==3.16.1
+filelock==3.20.3
     # via
     #   -c requirements.txt
     #   virtualenv
