@@ -120,7 +120,7 @@ filelock==3.16.1
     #   triton
 flatbuffers==24.3.25
     # via tensorflow
-fonttools==4.54.1
+fonttools==4.60.2
     # via matplotlib
 fsspec==2024.10.0
     # via
