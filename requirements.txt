@@ -512,7 +512,7 @@ toolz==1.0.0
     #   logical-unification
     #   minikanren
     #   partd
-torch==2.5.1
+torch==2.8.0
     # via stable-baselines3
 tornado==6.4.1
     # via
