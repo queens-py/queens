@@ -1,3 +1,5 @@
+# Directories and Simulation Model Outputs
+
 ## What is the Output Directory in QUEENS?
 
 The output directory, commonly referred to as `output_dir`, is a designated space where all results from iterators are stored. You must specify this directory within the `GlobalSettings` object.

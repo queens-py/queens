@@ -150,6 +150,11 @@ pygments_style = "sphinx"
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
 
+# Warn about all references where the target cannot be found
+nitpicky = True
+
+# Suppress specific warnings
+suppress_warnings = ["misc.copy_overwrite", "ref.attr", "ref.class", "ref.func"]
 
 # -- Options for HTML output ----------------------------------------------
 

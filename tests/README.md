@@ -10,7 +10,7 @@ Therefore, we test the QUEENS code base
 - to find bugs faster
 
 ## :construction_worker: Writing tests
-- New tests are required if a new feature is introduced (see our [contributing guidelines](../CONTRIBUTING.md)).
+- New tests are required if a new feature is introduced (see our [contributing guidelines](https://github.com/queens-py/queens/blob/main/CONTRIBUTING.md)).
 - Our tests are written according to the [arrange-act-assert](https://docs.pytest.org/en/stable/explanation/anatomy.html) principle.
 - Whenever possible, use [pytest fixtures](https://docs.pytest.org/en/latest/explanation/fixtures.html) to parameterize tests.
 

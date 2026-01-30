@@ -74,13 +74,13 @@ The code checks are conducted with [Pylint](https://pylint.org/),
 Compliance with [Google style docstrings](https://github.com/google/styleguide/blob/gh-pages/pyguide.md#38-comments-and-docstrings)
 is checked with [ruff](https://github.com/astral-sh/ruff).
 Complete and meaningful docstrings are required as they are used to generate the
-[documentation](#book-documentation).
+[documentation](https://www.github.com/queens-py/queens/blob/main/doc/README.md).
 
 ##### QUEENS coding conventions
 Like every codebase, QUEENS follows some project-specific coding conventions. Below is a list of common ones:
 - Use `pathlib.Path` objects instead of strings to handle paths and directories.
-- If relative paths within the QUEENS source are needed, use the [relative_path_from_source](queens/utils/path.py#L23) function.
-- Decorate the init method of QUEENS objects with the `log_init_args` decorator from [queens/utils/logger_setting.py](queens/utils/logger_settings.py#L239). This automatically logs the arguments passed to the init.
+- If relative paths within the QUEENS source are needed, use the [relative_path_from_queens_source](src/queens/utils/path.py#L24) function.
+- Decorate the init method of QUEENS objects with the `log_init_args` decorator from [src/queens/utils/logger_settings.py](src/queens/utils/logger_settings.py#L248). This automatically logs the arguments passed to the init.
 - We only allow disabling pylint warnings for specific lines, not for entire files. If you disable warnings, please use the long pylint description, not just the code.
 ##### Commit messages
 Please provide meaningful commit messages based on the
