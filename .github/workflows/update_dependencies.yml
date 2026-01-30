@@ -1,0 +1,21 @@
+name: update_dependencies
+on:
+    schedule:
+        - cron: "0 0 1 2 *" # 1st of February at 00:00 UTC
+        - cron: "0 0 1 8 *" # 1st of August at 00:00 UTC
+    push: # TODO: remove later, only for testing
+jobs:
+    run_renovate:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v6.0.2
+            - name: Run self-hosted Renovate
+              uses: renovatebot/github-action@v44.2.5
+              with:
+                  #   token: ${{ secrets.RENOVATE_TOKEN }}
+                  token: ${{ secrets.RENOVATE_TOKEN_MY_QUEENS_FORK }}
+              env:
+                  #   RENOVATE_REPOSITORIES: "queens-py/queens"
+                  RENOVATE_REPOSITORIES: "leahaeusel/queens"
+                  RENOVATE_BRANCH_PREFIX: "renovate-action/"
