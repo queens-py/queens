@@ -19,6 +19,9 @@ dependencies:
   - libopenblas==0.3.28
 # required for jupyter notebook integration into the sphinx documentation
   - pandoc
+# required because newer versions have deprecated the pkg_resources module, which is needed for
+# liccheck==0.9.2, gpflow==2.9.2
+  - setuptools<82
 # Only install pip-tools via pip itself since
 # all other pip dependencies should be managed
 # via pip-tools in the requirements.in files
