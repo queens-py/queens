@@ -259,7 +259,7 @@ class TestCluster:
 
     @staticmethod
     @testbook(
-        "tutorials/3_grid_iterator_fourc_remote.ipynb",
+        "tutorials/5_grid_iterator_4C_remote/5_grid_iterator_4C_remote.ipynb",
     )
     def test_fourc_remote_tutorial(
         tb,
@@ -267,14 +267,14 @@ class TestCluster:
         test_name,
         basic_jobscript_kwargs,
         remote_connection_kwargs,
-        basic_cluster_kwargs,
+        minimal_cluster_kwargs,
     ):
         """Test for tutorial 3: Remote 4C simulation with grid iterator.
 
         The notebook is run with injected lines of code to replace placeholders.
         It is checked that the replaced dict entries already exist in the notebook.
         """
-        kwargs_dicts = [basic_jobscript_kwargs, remote_connection_kwargs, basic_cluster_kwargs]
+        kwargs_dicts = [basic_jobscript_kwargs, remote_connection_kwargs, minimal_cluster_kwargs]
         dict_names = [
             "jobscript_driver_kwargs",
             "remote_connection_kwargs",
@@ -510,8 +510,8 @@ def fixture_create_experiment_dir(remote_connection, experiment_dir):
     assert remote_connection.run_function(create_experiment_dir_and_assert_it_exists)
 
 
-@pytest.fixture(name="basic_cluster_kwargs", scope="session")
-def fixture_basic_cluster_kwargs(cluster_config, experiment_base_dir_cluster):
+@pytest.fixture(name="minimal_cluster_kwargs", scope="session")
+def fixture_minimal_cluster_kwargs(cluster_config, experiment_base_dir_cluster):
     """Basic keyword arguments to initialize the cluster scheduler.
 
     These kwargs are constant for all cluster tests.
@@ -521,13 +521,14 @@ def fixture_basic_cluster_kwargs(cluster_config, experiment_base_dir_cluster):
         "queue": cluster_config.get("queue"),
         "cluster_internal_address": cluster_config["cluster_internal_address"],
         "experiment_base_dir": experiment_base_dir_cluster,
+        "job_script_prologue": cluster_config.get("job_script_prologue"),
     }
 
 
 @pytest.fixture(name="cluster_kwargs")
-def fixture_cluster_kwargs(basic_cluster_kwargs, remote_connection, test_name):
+def fixture_cluster_kwargs(minimal_cluster_kwargs, remote_connection, test_name):
     """Keyword arguments to initialize the cluster scheduler."""
-    return basic_cluster_kwargs | {
+    return minimal_cluster_kwargs | {
         "walltime": "00:10:00",
         "num_jobs": 1,
         "min_jobs": 1,

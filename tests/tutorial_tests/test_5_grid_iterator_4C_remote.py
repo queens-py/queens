@@ -12,8 +12,8 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Placeholder for integration test of 3-grid-iterator-4C-remote tutorial.
+"""Placeholder for integration test of 5_grid_iterator_4C_remote tutorial.
 
-The actual test is in tests/integration_tests/cluster/test_dask_cluster.py.
-This file ensures that the tutorial is not run by tests/tutorial_tests/test_tutorials.py.
+This file ensures that the tutorial is not run by tests/tutorial_tests/test_tutorials.py since those tests are only run locally and do not have access to a remote cluster, which is needed for this tutorial.
+The actual test of this tutorial is in tests/integration_tests/cluster/test_dask_cluster.py.
 """
