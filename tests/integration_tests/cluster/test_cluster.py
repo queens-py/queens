@@ -259,9 +259,9 @@ class TestCluster:
 
     @staticmethod
     @testbook(
-        "tutorials/5_grid_iterator_4C_remote/5_grid_iterator_4C_remote.ipynb",
+        "tutorials/5_grid_iterator_4c_remote/5_grid_iterator_4c_remote.ipynb",
     )
-    def test_fourc_remote_tutorial(
+    def test_4c_remote_tutorial(
         tb,
         tmp_path,
         test_name,
