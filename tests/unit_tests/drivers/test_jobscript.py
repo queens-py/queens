@@ -244,7 +244,7 @@ def test_multiple_input_files(jobscript_driver, job_options, injected_input_file
     sample = np.array(list(sample_dict.values()))
 
     # Run the driver
-    jobscript_driver.run(
+    jobscript_driver.run_from_parameters(
         sample=sample,
         job_id=job_options.job_id,
         num_procs=job_options.num_procs,
@@ -283,7 +283,7 @@ def test_error_in_jobscript_template(
     sample = np.array(list(sample_dict.values()))
 
     with expectation:
-        jobscript_driver.run(
+        jobscript_driver.run_from_parameters(
             sample=sample,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
@@ -314,7 +314,7 @@ def test_nonzero_exit_code(
     sample = np.array(list(sample_dict.values()))
 
     with expectation:
-        jobscript_driver.run(
+        jobscript_driver.run_from_parameters(
             sample=sample,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,

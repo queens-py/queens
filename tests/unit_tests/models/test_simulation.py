@@ -28,7 +28,7 @@ def test_init():
     driver = Mock()
     model_obj = Simulation(scheduler=scheduler, driver=driver)
     assert model_obj.scheduler == scheduler
-    assert model_obj.driver == driver
+    assert model_obj.function == driver
 
 
 @pytest.fixture(name="scheduler_response")
