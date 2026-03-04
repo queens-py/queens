@@ -12,9 +12,8 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Utility functions for tutorial 4."""
+"""Plotting functions for tutorial 3."""
 import os
-from pathlib import Path
 
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["VTK_DEFAULT_RENDER_WINDOW_OFFSCREEN"] = "1"
@@ -55,18 +54,3 @@ def plot_results(
         (0.0, 0.0, 0.2749999999999999),
         (-0.97637930372977, -0.08995062285804697, 0.19644933366041056),
     ]
-
-
-def find_repo_root(start: Path) -> Path:
-    """Find the repository root by going upwards from a starting directory.
-
-    Args:
-        start (Path): Starting directory to begin the upward search.
-
-    Returns:
-        Path: Path to the detected repository root (containing ``pyproject.toml``).
-    """
-    for p in [start, *start.parents]:
-        if (p / "pyproject.toml").exists():
-            return p
-    raise RuntimeError(f"Could not find repo root from {start}")
