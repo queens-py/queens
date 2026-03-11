@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Data for tutorial 4."""
+"""Data for tutorial 3."""
 import numpy as np
 
 experimental_elementwise_cauchy_stress = np.array(
