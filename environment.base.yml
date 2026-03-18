@@ -11,6 +11,7 @@ dependencies:
   # to ensure that performance optimized backends are used,
   # the following packages are installed from conda
   # for example BLAS libraries like Intel MKL for numpy
+  - setuptools<82 #restriction due to gpflow needing pkg_resources
   - cython
   - numba
   - numpy
@@ -42,6 +43,7 @@ dependencies:
   - optax  # google jax based optimizer
   - tensorflow
   - tensorflow-probability
+  - tf-keras
   - jax
   - pymc
   - stable-baselines3
