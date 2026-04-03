@@ -51,6 +51,7 @@ jobs:
       - name: Sphinx build
         env:
           PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
+          PYTHONPATH: ${{ github.workspace }}
         run: |
           set -euxo pipefail
           $PYTHON_PACKAGE_MANAGER activate queens
