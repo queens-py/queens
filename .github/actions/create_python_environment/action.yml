@@ -16,11 +16,9 @@ runs:
       env:
         PYTHON_PACKAGE_MANAGER: conda
       run: |
-        $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock -y
+        $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock mamba -y
         $PYTHON_PACKAGE_MANAGER activate base
-        # Clear potentially broken package-cache state
-        conda clean --packages --tarballs --index-cache --yes
-        conda-lock install -n queens composed.conda-lock.yml
+        conda-lock install --conda mamba -n queens composed.conda-lock.yml
         $PYTHON_PACKAGE_MANAGER activate queens
         pip install --no-deps -e .
         $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
