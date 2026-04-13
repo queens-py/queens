@@ -10,14 +10,15 @@ runs:
   using: composite
   steps:
     - uses: conda-incubator/setup-miniconda@v3
+      with:
+        miniforge-version: "latest"
     - name: Create conda-lock environment and install QUEENS
       id: environment
       shell: bash -l {0}
       env:
         PYTHON_PACKAGE_MANAGER: conda
       run: |
-        $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock mamba -y
-        $PYTHON_PACKAGE_MANAGER activate base
+        $PYTHON_PACKAGE_MANAGER install -c conda-forge conda-lock -y
         conda-lock install --conda mamba -n queens composed.conda-lock.yml
         $PYTHON_PACKAGE_MANAGER activate queens
         pip install --no-deps -e .
