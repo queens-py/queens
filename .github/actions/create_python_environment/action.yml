@@ -17,6 +17,7 @@ runs:
         PYTHON_PACKAGE_MANAGER: conda
       run: |
         $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock -y
+        $PYTHON_PACKAGE_MANAGER activate base
         conda-lock install -n queens composed.conda-lock.yml
         $PYTHON_PACKAGE_MANAGER activate queens
         pip install --no-deps -e .
