@@ -57,6 +57,11 @@ if __name__ == "__main__":
         choices=SUPPORTED_PACKAGE_MANAGERS,
         help="package manager used for the creation of the remote environment",
     )
+    parser.add_argument(
+        "--use-conda-lock",
+        action="store_true",
+        help="install the remote environment from composed.conda-lock.yml",
+    )
 
     args = parser.parse_args(sys.argv[1:])
 
@@ -69,4 +74,6 @@ if __name__ == "__main__":
     )
     remote_connection.open()
     remote_connection.sync_remote_repository()
-    remote_connection.build_remote_environment(package_manager=args.package_manager)
+    remote_connection.build_remote_environment(
+        package_manager=args.package_manager, use_conda_lock=args.use_conda_lock
+    )

@@ -25,6 +25,7 @@ repos:
         entry: check-added-large-files
         language: python
         types: [text]
+        exclude: '^composed\.conda-lock\.yml$'
       - id: check-license-header
         name: check for correct license header
         entry: licenseheaders
@@ -70,6 +71,7 @@ repos:
           - -f=colored
         language: python
         types: ["yaml"]
+        exclude: '^composed\.conda-lock\.yml$'
       - id: pylint
         name: pylint
         entry: pylint

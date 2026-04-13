@@ -46,7 +46,7 @@ workflow:
   before_script:
     - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
     # This ensures that the correct queens source is used
-    - pip install -e .[develop]
+    - pip install --no-deps -e .
     - echo Queens source for testing is $(pip list | grep -o '/.*')
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
@@ -56,9 +56,10 @@ workflow:
   before_script:
     - 'echo "Using python environment manager: `$PYTHON_PACKAGE_MANAGER --version`"'
   script:
-    - $PYTHON_PACKAGE_MANAGER env create -f environment.yml -n queens-$CI_PIPELINE_ID
+    - $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock -y
+    - conda-lock install -n queens-$CI_PIPELINE_ID composed.conda-lock.yml
     - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
-    - pip install -e .[develop]
+    - pip install --no-deps -e .
     - $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
   artifacts:
     name: "conda_env-$CI_PIPELINE_ID.yml"
@@ -89,11 +90,11 @@ imcs-build_conda_env:
     - ENV_PREFIX=queens-$CI_PIPELINE_ID
     - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.11 cloudpickle fabric
     - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
-    - pip install -e . --no-dependencies
+    - pip install --no-deps -e .
     - python src/queens/utils/remote_build.py
       --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
       --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
-      $PYTHON_PACKAGE_MANAGER
+      $PYTHON_PACKAGE_MANAGER --use-conda-lock
 
 thought-build_conda_env:
   extends:

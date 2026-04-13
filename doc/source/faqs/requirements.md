@@ -4,4 +4,14 @@
 
 Currently, QUEENS is only tested on UNIX systems. Besides Python, QUEENS requires [rsync](https://rsync.samba.org/) in order to copy simulation files.
 
-The Python dependencies for QUEENS can be found in the `requirements.txt` file. There are a lot of them and we are working on reducing them, or at least making them optional.
+The Python dependencies for QUEENS are managed through the conda environment files in the repository
+root:
+
+- `environment.base.yml`
+- `environment.dev.yml`
+- `environment.tutorials.yml`
+- `environment.fourc.yml`
+
+For reproducible installs, QUEENS also provides the composed lock file `composed.conda-lock.yml`.
+
+For more information see the [README.md](README.md).

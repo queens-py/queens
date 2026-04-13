@@ -335,12 +335,15 @@ class RemoteConnection(Connection):
     def build_remote_environment(
         self,
         package_manager: str = DEFAULT_PACKAGE_MANAGER,
+        use_conda_lock: bool = False,
     ) -> None:
         """Build remote QUEENS environment.
 
         Args:
             package_manager: Package manager used for the creation of the environment ("mamba" or
                 "conda")
+            use_conda_lock: Install the environment from composed.conda-lock.yml instead of the
+                layered environment files
         """
         if package_manager not in SUPPORTED_PACKAGE_MANAGERS:
             raise ValueError(
@@ -379,13 +382,27 @@ class RemoteConnection(Connection):
         _logger.info("Build remote QUEENS environment...")
         start_time = time.time()
         environment_name = Path(self.remote_python).parents[1].name
-        command_string = (
-            f"cd {self.remote_queens_repository}; "
-            f"{package_manager} remove --name {environment_name} --all -y;"
-            f"{package_manager} env create -f environment.yml --name {environment_name}; "
-            f"{package_manager} activate {environment_name};"
-            f"pip install -e ."
-        )
+        if use_conda_lock:
+            command_string = (
+                f"cd {self.remote_queens_repository}; "
+                f"{package_manager} install -n base -c conda-forge conda-lock -y;"
+                f"{package_manager} remove --name {environment_name} --all -y;"
+                f"conda-lock install -n {environment_name} composed.conda-lock.yml; "
+                f"{package_manager} activate {environment_name};"
+                f"pip install --no-deps -e ."
+            )
+        else:
+            command_string = (
+                f"cd {self.remote_queens_repository}; "
+                f"{package_manager} remove --name {environment_name} --all -y;"
+                f"{package_manager} env create -f environment.base.yml --name {environment_name}; "
+                f"{package_manager} env update -f environment.dev.yml --name {environment_name}; "
+                f"{package_manager} env update -f environment.tutorials.yml"
+                f"--name {environment_name}; "
+                f"{package_manager} env update -f environment.fourc.yml --name {environment_name}; "
+                f"{package_manager} activate {environment_name};"
+                f"pip install --no-deps -e ."
+            )
         result = self.run(command_string, in_stream=False)
 
         _logger.debug(result.stdout)

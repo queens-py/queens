@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "queens"
 authors = [{ name = "QUEENS developers" }]
-dynamic = ["version", "dependencies", "optional-dependencies"]
+dynamic = ["version"]
 description = "A general purpose framework for Uncertainty Quantification, Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -22,20 +22,6 @@ keywords = [
 
 [tool.setuptools.dynamic]
 version = { attr = "queens.__VERSION__" }
-dependencies = { file = ["requirements.in"] }
-optional-dependencies = { safe = { file = [
-    "requirements.txt",
-] }, develop = { file = [
-    "dev-requirements.txt", # We fix the development packages, other linters might fail
-] }, safe_develop = { file = [
-    "requirements.txt",
-    "dev-requirements.txt",
-] }, fourc = { file = [
-    "src/queens_interfaces/fourc/fourc_requirements.txt",
-] }, tutorial = { file = [
-    "requirements.txt",
-    "tutorial-requirements.txt",
-] } }
 
 # cli utils
 [project.scripts]

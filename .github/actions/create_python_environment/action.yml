@@ -10,16 +10,16 @@ runs:
   using: composite
   steps:
     - uses: conda-incubator/setup-miniconda@v3
-    - name: Create environment and install QUEENS
+    - name: Create conda-lock environment and install QUEENS
       id: environment
       shell: bash -l {0}
       env:
         PYTHON_PACKAGE_MANAGER: conda
       run: |
-        $PYTHON_PACKAGE_MANAGER env create -f environment.yml
+        $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock -y
+        conda-lock install -n queens composed.conda-lock.yml
         $PYTHON_PACKAGE_MANAGER activate queens
-        pip install torch==2.5.1 --index-url https://download.pytorch.org/whl/cpu
-        pip install -e .[safe_develop,fourc]
+        pip install --no-deps -e .
         $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
         $PYTHON_PACKAGE_MANAGER list
         echo "ppm=$PYTHON_PACKAGE_MANAGER" >> $GITHUB_OUTPUT
