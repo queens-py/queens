@@ -17,6 +17,7 @@
 Modules for multi-query mapping of inputs to outputs, such as parameter
 samples to model evaluations.
 """
+
 from typing import TYPE_CHECKING
 
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map
