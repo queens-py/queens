@@ -9,7 +9,58 @@ authors = [{ name = "QUEENS developers" }]
 dynamic = ["version"]
 description = "A general purpose framework for Uncertainty Quantification, Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+dependencies = [
+    "setuptools<82",
+    "cython",
+    "numba",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "dask",
+    "distributed",
+    "dask-jobqueue",
+    "bokeh",
+    "fabric",
+    "xarray",
+    "pydoe",
+    "salib",
+    "vtk",
+    "pyvista",
+    "autograd",
+    "chaospy",
+    "pyyaml",
+    "jinja2",
+    "arviz",
+    "gpflow>=2.9.2",
+    "optax",
+    "tensorflow>=2.19.1",
+    "tensorflow-probability",
+    "tf-keras",
+    "jax",
+    "pymc",
+    "stable-baselines3",
+    "matplotlib",
+    "seaborn",
+    "plotly",
+    "pytest",
+    "py",
+    "pytest-codestyle",
+    "pytest-cov",
+    "pytest-mock",
+    "pytest-xdist",
+    "mock",
+    "tqdm",
+    "tomli",
+    "pathos",
+    "black>=24.4.2",
+    "gnuplotlib",
+    "diversipy",
+    "particles @ git+https://github.com/nchopin/particles.git",
+    "scikit-activeml>=0.4.1",
+    "wheel>=0.46.3"
+]
 keywords = [
     "gaussian processes",
     "uncertainty quantification",
@@ -167,3 +218,53 @@ exclude = '''(?x)(
 [[tool.mypy.overrides]]
 module = ["yaml"]
 follow_untyped_imports = true
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "nodefaults"]
+platforms = ["linux-64", "osx-arm64"]
+
+[tool.pixi.dependencies]
+setuptools = "<82"
+cython = "*"
+numba = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+dask = "*"
+distributed = "*"
+dask-jobqueue = "*"
+bokeh = "*"
+fabric = "*"
+xarray = "*"
+pydoe = "*"
+salib = "*"
+vtk = "*"
+pyvista = "*"
+autograd = "*"
+chaospy = "*"
+pyyaml = "*"
+jinja2 = "*"
+arviz = "*"
+gpflow = "*"
+optax = "*"
+tensorflow = "*"
+tensorflow-probability = "*"
+tf-keras = "*"
+jax = "*"
+pymc = "*"
+stable-baselines3 = "*"
+matplotlib = "*"
+seaborn = "*"
+plotly = "*"
+pytest = "*"
+py = "*"
+pytest-codestyle = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+pytest-xdist = "*"
+mock = "*"
+tqdm = "*"
+tomli = "*"
+pathos = "*"
+black = ">=24.4.2"
