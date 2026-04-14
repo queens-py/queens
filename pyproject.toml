@@ -224,6 +224,7 @@ channels = ["conda-forge", "nodefaults"]
 platforms = ["linux-64", "osx-arm64"]
 
 [tool.pixi.dependencies]
+python = "*"
 setuptools = "<82"
 cython = "*"
 numba = "*"
@@ -268,3 +269,125 @@ tqdm = "*"
 tomli = "*"
 pathos = "*"
 black = ">=24.4.2"
+pip = "*"
+
+[tool.pixi.feature.queens]
+channels = ["conda-forge", "nodefaults"]
+
+[tool.pixi.feature.queens.dependencies]
+python = "*"
+setuptools = "<82"
+cython = "*"
+numba = "*"
+numpy = "*"
+pandas = "*"
+scikit-learn = "*"
+scipy = "*"
+dask = "*"
+distributed = "*"
+dask-jobqueue = "*"
+bokeh = "*"
+fabric = "*"
+xarray = "*"
+pydoe = "*"
+salib = "*"
+vtk = "*"
+pyvista = "*"
+autograd = "*"
+chaospy = "*"
+pyyaml = "*"
+jinja2 = "*"
+arviz = "*"
+gpflow = "*"
+optax = "*"
+tensorflow = "*"
+tensorflow-probability = "*"
+tf-keras = "*"
+jax = "*"
+pymc = "*"
+stable-baselines3 = "*"
+matplotlib = "*"
+seaborn = "*"
+plotly = "*"
+pytest = "*"
+py = "*"
+pytest-codestyle = "*"
+pytest-cov = "*"
+pytest-mock = "*"
+pytest-xdist = "*"
+mock = "*"
+tqdm = "*"
+tomli = "*"
+pathos = "*"
+black = ">=24.4.2"
+pip = "*"
+
+[tool.pixi.feature.dev]
+channels = ["conda-forge", "nodefaults"]
+
+[tool.pixi.feature.dev.dependencies]
+pylint = ">=2.16"
+isort = ">=5.0"
+pre-commit = "*"
+pre-commit-hooks = ">=4.4.0"
+sphinx = "*"
+nbsphinx = "*"
+pydata-sphinx-theme = "*"
+pandoc = "*"
+commitizen = ">=3.12.0"
+docformatter = ">=1.5.1"
+yamllint = ">=1.19.0"
+ruff = "*"
+nbstripout = "*"
+myst-parser = "*"
+testbook = "*"
+ipykernel = "*"
+mypy = "*"
+pip = "*"
+
+[tool.pixi.feature.tutorials]
+channels = ["conda-forge", "nodefaults"]
+
+[tool.pixi.feature.tutorials.dependencies]
+scikit-fem = "*"
+
+[tool.pixi.feature.fourc]
+channels = ["conda-forge", "nodefaults"]
+
+[tool.pixi.feature.fourc.dependencies]
+pip = "*"
+
+[tool.pixi.environments]
+queens = { features = ["queens", "dev", "tutorials", "fourc"], no-default-feature = true }
+queens-base = { features = []}
+queens-dev = { features = ["dev"]}
+queens-full = { features = ["dev", "tutorials", "fourc"]}
+
+[dependency-groups]
+#queens = ["gnuplotlib", "diversipy", "particles @ git+https://github.com/nchopin/particles.git", "scikit-activeml>=0.4.1"]
+#dev = ["liccheck", "pylint-exit", "licenseheaders"]
+dev = [  "pylint>=2.16",
+    "isort>=5.0",
+    "pre-commit",
+    "pre-commit-hooks>=4.4.0",
+    "sphinx",
+    "nbsphinx",
+    "pydata-sphinx-theme",
+    "pandoc",
+    "commitizen>=3.12.0",
+    "docformatter>=1.5.1",
+    "yamllint>=1.19.0",
+    "ruff",
+    "nbstripout",
+    "myst-parser",
+    "testbook",
+    "ipykernel",
+    "mypy",
+    "liccheck", "pylint-exit", "licenseheaders"]
+#fourc = ["fourcipp"]
+
+[project.optional-dependencies]
+#queens = ["gnuplotlib", "diversipy", "particles @ git+https://github.com/nchopin/particles.git", "scikit-activeml>=0.4.1"]
+tutorials =["scikit-fem"]
+fourc = ["fourcipp"]
+all = ["queens[fourc]", "queens[tutorials]"]
