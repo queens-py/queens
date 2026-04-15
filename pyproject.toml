@@ -12,54 +12,53 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "setuptools<82",
-    "cython",
-    "numba",
-    "numpy",
-    "pandas",
-    "scikit-learn",
-    "scipy",
-    "dask",
-    "distributed",
-    "dask-jobqueue",
-    "bokeh",
-    "fabric",
-    "xarray",
-    "pydoe",
-    "salib",
-    "vtk",
-    "pyvista",
-    "autograd",
-    "chaospy",
-    "pyyaml",
-    "jinja2",
-    "arviz",
+    "cython>=3.0.11",
+    "numba>=0.60.0",
+    "numpy>=1.26.4",
+    "pandas>=2.2.3",
+    "scikit-learn>=1.5.2",
+    "scipy>=1.14.1",
+    "dask>=2024.10.0",
+    "distributed>=2024.10.0",
+    "dask-jobqueue>=0.9.0",
+    "bokeh>=3.6.1",
+    "fabric>=3.2.2",
+    "xarray>=2024.10.0",
+    "pydoe>=0.3.8",
+    "salib>=1.5.1",
+    "vtk>=9.3.1",
+    "pyvista>=0.44.1",
+    "autograd>=1.7.0",
+    "chaospy>=4.3.17",
+    "pyyaml>=6.0.2",
+    "jinja2>=3.1.4",
+    "arviz>=0.20.0",
     "gpflow>=2.9.2",
-    "optax",
-    "tensorflow>=2.19.1",
-    "tensorflow-probability",
-    "tf-keras",
-    "jax",
-    "pymc",
-    "stable-baselines3",
-    "matplotlib",
-    "seaborn",
-    "plotly",
-    "pytest",
-    "py",
-    "pytest-codestyle",
-    "pytest-cov",
-    "pytest-mock",
-    "pytest-xdist",
-    "mock",
-    "tqdm",
-    "tomli",
-    "pathos",
-    "black>=24.4.2",
-    "gnuplotlib",
-    "diversipy",
+    "optax>=0.2.3",
+    "tensorflow>=2.18.0",
+    "tensorflow-probability>=0.25.0",
+    "tf-keras>=2.18.0",
+    "jax>=0.4.35",
+    "pymc>=5.17.0",
+    "stable-baselines3>=2.4.1",
+    "matplotlib>=3.9.2",
+    "seaborn>=0.13.2",
+    "plotly>=5.24.1",
+    "pytest>=8.3.3",
+    "py>=1.11.0",
+    "pytest-codestyle>=2.0.1",
+    "pytest-cov>=5.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-xdist>=3.6.1",
+    "mock>=5.1.0",
+    "tqdm>=4.66.6",
+    "tomli>=2.0.2",
+    "pathos>=0.3.3",
+    "black>=24.10.0",
+    "gnuplotlib>=0.42",
+    "diversipy>=0.9",
     "particles @ git+https://github.com/nchopin/particles.git",
-    "scikit-activeml>=0.4.1",
-    "wheel>=0.46.3"
+    "scikit-activeml>=0.5.2",
 ]
 keywords = [
     "gaussian processes",
@@ -226,79 +225,79 @@ platforms = ["linux-64", "osx-arm64"]
 [tool.pixi.dependencies]
 python = "*"
 setuptools = "<82"
-cython = "*"
-numba = "*"
-numpy = "*"
-pandas = "*"
-scikit-learn = "*"
-scipy = "*"
-dask = "*"
-distributed = "*"
-dask-jobqueue = "*"
-bokeh = "*"
-fabric = "*"
-xarray = "*"
-pydoe = "*"
-salib = "*"
-vtk = "*"
-pyvista = "*"
-autograd = "*"
-chaospy = "*"
-pyyaml = "*"
-jinja2 = "*"
-arviz = "*"
-gpflow = "*"
-optax = "*"
-tensorflow = "*"
-tensorflow-probability = "*"
-tf-keras = "*"
-jax = "*"
-pymc = "*"
-stable-baselines3 = "*"
-matplotlib = "*"
-seaborn = "*"
-plotly = "*"
-pytest = "*"
-py = "*"
-pytest-codestyle = "*"
-pytest-cov = "*"
-pytest-mock = "*"
-pytest-xdist = "*"
-mock = "*"
-tqdm = "*"
-tomli = "*"
-pathos = "*"
-black = ">=24.4.2"
+cython = ">=3.0.11"
+numba = ">=0.60.0"
+numpy = ">=1.26.4"
+pandas = ">=2.2.3"
+scikit-learn = ">=1.5.2"
+scipy = ">=1.14.1"
+dask = ">=2024.10.0"
+distributed = ">=2024.10.0"
+dask-jobqueue = ">=0.9.0"
+bokeh = ">=3.6.1"
+fabric = ">=3.2.2"
+xarray = ">=2024.10.0"
+pydoe = ">=0.3.8"
+salib = ">=1.5.1"
+vtk = ">=9.3.1"
+pyvista = ">=0.44.1"
+autograd = ">=1.7.0"
+chaospy = ">=4.3.17"
+pyyaml = ">=6.0.2"
+jinja2 = ">=3.1.4"
+arviz = ">=0.20.0"
+gpflow = ">=2.9.2"
+optax = ">=0.2.3"
+tensorflow = ">=2.18.0"
+tensorflow-probability = ">=0.25.0"
+tf-keras = ">=2.18.0"
+jax = ">=0.4.35"
+pymc = ">=5.17.0"
+stable-baselines3 = ">=2.4.1"
+matplotlib = ">=3.9.2"
+seaborn = ">=0.13.2"
+plotly = ">=5.24.1"
+pytest = ">=8.3.3"
+py = ">=1.11.0"
+pytest-codestyle = ">=2.0.1"
+pytest-cov = ">=5.0.0"
+pytest-mock = ">=3.14.0"
+pytest-xdist = ">=3.6.1"
+mock = ">=5.1.0"
+tqdm = ">=4.66.6"
+tomli = ">=2.0.2"
+pathos = ">=0.3.3"
+black = ">=24.10.0"
 pip = "*"
 
 [tool.pixi.feature.dev]
 channels = ["conda-forge", "nodefaults"]
 
 [tool.pixi.feature.dev.dependencies]
-pylint = ">=2.16"
-isort = ">=5.0"
-pre-commit = "*"
-pre-commit-hooks = ">=4.4.0"
-sphinx = "*"
-nbsphinx = "*"
-pydata-sphinx-theme = "*"
-pandoc = "*"
-commitizen = ">=3.12.0"
-docformatter = ">=1.5.1"
-yamllint = ">=1.19.0"
-ruff = "*"
-nbstripout = "*"
-myst-parser = "*"
-testbook = "*"
-ipykernel = "*"
-mypy = "*"
+pylint = ">=3.3.1"
+isort = ">=5.13.2"
+pre-commit = ">=4.0.1"
+pre-commit-hooks = ">=5.0.0"
+sphinx = ">=8.1.3"
+nbsphinx = ">=0.9.5"
+pydata-sphinx-theme = ">=0.16.0"
+pandoc = ">=2.4"
+commitizen = ">=3.30.0"
+docformatter = ">=1.7.5"
+yamllint = ">=1.35.1"
+ruff = ">=0.9.2"
+nbstripout = ">=0.8.1"
+myst-parser = ">=4.0.0"
+testbook = ">=0.4.2"
+ipykernel = ">=6.30.1"
+mypy = ">=1.18.2"
 pip = "*"
 
 [tool.pixi.feature.tutorials]
 channels = ["conda-forge", "nodefaults"]
 
 [tool.pixi.feature.tutorials.dependencies]
-scikit-fem = "*"
+scikit-fem = ">=11.0.0"
 
 [tool.pixi.feature.fourc]
 channels = ["conda-forge", "nodefaults"]
@@ -312,26 +311,26 @@ queens-dev = { features = ["dev"]}
 queens-full = { features = ["dev", "tutorials", "fourc"]}
 
 [dependency-groups]
-dev = [  "pylint>=2.16",
-    "isort>=5.0",
-    "pre-commit",
-    "pre-commit-hooks>=4.4.0",
-    "sphinx",
-    "nbsphinx",
-    "pydata-sphinx-theme",
-    "pandoc",
-    "commitizen>=3.12.0",
-    "docformatter>=1.5.1",
-    "yamllint>=1.19.0",
-    "ruff",
-    "nbstripout",
-    "myst-parser",
-    "testbook",
-    "ipykernel",
-    "mypy",
+dev = [  "pylint>=3.3.1",
+    "isort>=5.13.2",
+    "pre-commit>=4.0.1",
+    "pre-commit-hooks>=5.0.0",
+    "sphinx>=8.1.3",
+    "nbsphinx>=0.9.5",
+    "pydata-sphinx-theme>=0.16.0",
+    "pandoc>=2.4",
+    "commitizen>=3.30.0",
+    "docformatter>=1.7.5",
+    "yamllint>=1.35.1",
+    "ruff>=0.9.2",
+    "nbstripout>=0.8.1",
+    "myst-parser>=4.0.0",
+    "testbook>=0.4.2",
+    "ipykernel>=6.30.1",
+    "mypy>=1.18.2",
     "liccheck", "pylint-exit", "licenseheaders"]
 
 [project.optional-dependencies]
-tutorials =["scikit-fem"]
+tutorials =["scikit-fem>=11.0.0"]
 fourc = ["fourcipp"]
 all = ["queens[fourc]", "queens[tutorials]"]
