@@ -28,7 +28,7 @@ dependencies:
 
   # Others
   - xarray  # Special array format
-  - pyDOE  # design of experiments
+  - pydoe  # design of experiments
   - SALib  # for sensitivity analysis
   - vtk  # vtk format handler
   - pyvista

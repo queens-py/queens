@@ -17,7 +17,7 @@
 import logging
 
 import numpy as np
-from pyDOE import lhs
+from pydoe import lhs
 
 from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
