@@ -81,5 +81,5 @@ dependencies:
       - diversipy # sampling from space filling subsets # has no notable dependencies
       # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
       # - particles # currently causes problem by requiring numpy<2
-      - git+https://github.com/nchopin/particles.git
+      - particles@git+https://github.com/nchopin/particles.git
       - scikit-activeml>=0.4.1
