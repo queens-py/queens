@@ -14,7 +14,7 @@ dependencies = [
     "setuptools>=81.0.0,<82",
     "cython>=3.2.4",
     "numba>=0.65.0",
-    "numpy",
+    "numpy>=2.4.3",
     "pandas>=3.0.2",
     "scikit-learn>=1.8.0",
     "scipy>=1.17.1",
@@ -23,23 +23,23 @@ dependencies = [
     "dask-jobqueue>=0.9.0",
     "bokeh>=3.9.0",
     "fabric>=3.2.3",
-    "xarray>=2026.2.0",
-    "pydoe",
-    "salib",
+    "xarray>=2026.4.0",
+    "pydoe>=0.9.9",
+    "salib>=1.5.2",
     "vtk>=9.5.0",
     "pyvista>=0.47.3",
     "autograd>=1.8.0",
     "chaospy>=4.3.20",
     "pyyaml>=6.0.3",
     "jinja2>=3.1.6",
-    "arviz<1",
+    "arviz>=0.23.4,<1",
     "gpflow",
     "optax>=0.2.8",
-    "tensorflow",
+    "tensorflow>=2.18.0",
     "tensorflow-probability>=0.25.0",
     "tf-keras>=2.18.0",
     "jax>=0.5.2",
-    "pymc>=5.28.0",
+    "pymc>=5.28.4",
     "stable-baselines3>=2.8.0",
     "matplotlib>=3.10.8",
     "seaborn>=0.13.2",
@@ -237,7 +237,7 @@ distributed = ">=2026.3.0"
 dask-jobqueue = ">=0.9.0"
 bokeh = ">=3.9.0"
 fabric = ">=3.2.3"
-xarray = ">=2026.2.0"
+xarray = ">=2026.4.0"
 pydoe = ">=0.9.9"
 salib = ">=1.5.2"
 vtk = ">=9.5.0"
@@ -246,14 +246,14 @@ autograd = ">=1.8.0"
 chaospy = ">=4.3.20"
 pyyaml = ">=6.0.3"
 jinja2 = ">=3.1.6"
-arviz = ">=1.0.0"
+arviz = ">=0.23.4,<1"
 gpflow = ">=2.9.2"
 optax = ">=0.2.8"
 tensorflow = ">=2.18.0"
 tensorflow-probability = ">=0.25.0"
 tf-keras = ">=2.18.0"
 jax = ">=0.5.2"
-pymc = ">=5.28.0"
+pymc = ">=5.28.4"
 stable-baselines3 = ">=2.8.0"
 matplotlib = ">=3.10.8"
 seaborn = ">=0.13.2"
@@ -334,5 +334,5 @@ dev = [  "pylint>=4.0.5",
 
 [project.optional-dependencies]
 tutorials =["scikit-fem>=12.0.1"]
-fourc = ["fourcipp>=1.71.0"]
+fourc = ["fourcipp>=1.91.0"]
 all = ["queens[fourc]", "queens[tutorials]"]
