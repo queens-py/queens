@@ -281,7 +281,7 @@ pre-commit-hooks = ">=5.0.0"
 sphinx = ">=9.1.0"
 nbsphinx = ">=0.9.8"
 pydata-sphinx-theme = ">=0.17.0"
-pandoc = ">=3.9.0.2"
+pandoc = "*"
 commitizen = ">=4.13.10"
 docformatter = ">=1.7.7"
 yamllint = ">=1.38.0"
@@ -318,7 +318,7 @@ dev = [  "pylint>=4.0.5",
     "sphinx>=9.1.0",
     "nbsphinx>=0.9.8",
     "pydata-sphinx-theme>=0.17.0",
-    "pandoc>=3.9.0.2",
+    "pandoc",
     "commitizen>=4.13.10",
     "docformatter>=1.7.7",
     "yamllint>=1.38.0",
