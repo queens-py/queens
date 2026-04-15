@@ -45,7 +45,7 @@ dependencies:
   - tensorflow-probability
   - tf-keras
   - jax
-  - pymc
+  - pymc >= 5.28.4
   - stable-baselines3
 
   # making fancy plots
