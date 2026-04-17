@@ -96,6 +96,7 @@ Changelog = "https://github.com/queens-py/queens/blob/main/CHANGELOG.md"
 # Tools section
 [tool.black]
 line-length = 100
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
