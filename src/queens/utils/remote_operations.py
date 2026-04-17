@@ -339,7 +339,9 @@ class RemoteConnection(Connection):
         """
         remote_connect = f"{self.user}@{self.host}"
         result_which = self.run("which pixi", warn=True, in_stream=False)
-        if not result_which.ok:
+        _logger.debug(result_which.stdout)
+        if result_which.exited:
+            _logger.debug(result_which.stderr)
             _logger.warning(
                 "\nCould not find 'pixi' on '%s'. "
                 "The remote environment was not built automatically.\n"
