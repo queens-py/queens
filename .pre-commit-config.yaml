@@ -25,7 +25,7 @@ repos:
         entry: check-added-large-files
         language: python
         types: [text]
-        exclude: '^composed\.conda-lock\.yml$'
+        exclude: '^(composed\.conda-lock\.yml|pixi\.lock)$'
       - id: check-license-header
         name: check for correct license header
         entry: licenseheaders
