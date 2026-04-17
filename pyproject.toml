@@ -236,6 +236,9 @@ pathos = ">=0.3.5"
 black = ">=26.3.1"
 pip = ">=26.0.1"
 
+[tool.pixi.pypi-dependencies]
+queens = { path = ".", editable = true }
+
 [tool.pixi.feature.dev.dependencies]
 pylint = ">=4.0.5"
 isort = ">=8.0.1"

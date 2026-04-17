@@ -521,6 +521,7 @@ environments:
       - pypi: git+https://github.com/nchopin/particles.git#f71e94a21a11c73b58e2d694775b1b1d379b8854
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/_openmp_mutex-4.5-7_kmp_llvm.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/absl-py-2.4.0-pyhd8ed1ab_0.conda
@@ -941,6 +942,7 @@ environments:
       - pypi: git+https://github.com/nchopin/particles.git#f71e94a21a11c73b58e2d694775b1b1d379b8854
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
   queens-all:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -1475,6 +1477,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/11/0e/a9f6f81013e0deaf559b25711623864970fe6a098314e374ccb1540a4152/regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/_openmp_mutex-4.5-7_kmp_llvm.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/absl-py-2.4.0-pyhd8ed1ab_0.conda
@@ -1905,6 +1908,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/c8/3baa06d75c98c46d4cc4262b71fd2edb9062b5665e868bca57859dadf93a/regex-2026.4.4-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
   queens-base:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -2426,6 +2430,7 @@ environments:
       - pypi: git+https://github.com/nchopin/particles.git#f71e94a21a11c73b58e2d694775b1b1d379b8854
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/_openmp_mutex-4.5-7_kmp_llvm.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/absl-py-2.4.0-pyhd8ed1ab_0.conda
@@ -2846,6 +2851,7 @@ environments:
       - pypi: git+https://github.com/nchopin/particles.git#f71e94a21a11c73b58e2d694775b1b1d379b8854
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
   queens-dev:
     channels:
     - url: https://conda.anaconda.org/conda-forge/
@@ -3476,6 +3482,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/11/0e/a9f6f81013e0deaf559b25711623864970fe6a098314e374ccb1540a4152/regex-2026.4.4-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
       osx-arm64:
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/_openmp_mutex-4.5-7_kmp_llvm.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/_python_abi3_support-1.0-hd8ed1ab_2.conda
@@ -4005,6 +4012,7 @@ environments:
       - pypi: https://files.pythonhosted.org/packages/62/c8/3baa06d75c98c46d4cc4262b71fd2edb9062b5665e868bca57859dadf93a/regex-2026.4.4-cp312-cp312-macosx_11_0_arm64.whl
       - pypi: https://files.pythonhosted.org/packages/4a/49/bb935b2e68cf31e2b2face9d0841ac97447b6d0387d0c2d2255c7a2867da/scikit_activeml-1.0.0-py3-none-any.whl
       - pypi: https://files.pythonhosted.org/packages/fe/b6/e116761ceeb880b7ad4c6a7e1203538754dd7dda42538f08d6daaf8dfa4d/tensorflow_probability-0.25.0-py2.py3-none-any.whl
+      - pypi: ./
 packages:
 - conda: https://conda.anaconda.org/conda-forge/linux-64/_openmp_mutex-4.5-7_kmp_llvm.conda
   build_number: 7
@@ -14547,6 +14555,64 @@ packages:
   purls: []
   size: 45982348
   timestamp: 1759266212707
+- pypi: ./
+  name: queens
+  version: '1.1'
+  sha256: 7dea89b0168cdbdd1cf70f2f4dff09d3707423c52cc03ec73a13d01b1c06f1c0
+  requires_dist:
+  - setuptools>=81.0.0,<82
+  - cython>=3.2.4
+  - numba>=0.65.0
+  - numpy>=2.4.3
+  - pandas>=3.0.2
+  - scikit-learn>=1.8.0
+  - scipy>=1.17.1
+  - dask>=2026.3.0
+  - distributed>=2026.3.0
+  - dask-jobqueue>=0.9.0
+  - bokeh>=3.9.0
+  - fabric>=3.2.3
+  - xarray>=2026.4.0
+  - pydoe>=0.9.9
+  - salib>=1.5.2
+  - vtk>=9.5.0
+  - pyvista>=0.47.3
+  - autograd>=1.8.0
+  - chaospy>=4.3.20
+  - pyyaml>=6.0.3
+  - jinja2>=3.1.6
+  - arviz>=0.23.4,<1
+  - gpflow
+  - optax>=0.2.8
+  - tensorflow>=2.18.0
+  - tensorflow-probability>=0.25.0
+  - tf-keras>=2.18.0
+  - jax>=0.5.2
+  - pymc>=5.28.4
+  - stable-baselines3>=2.8.0
+  - matplotlib>=3.10.8
+  - seaborn>=0.13.2
+  - plotly>=6.6.0
+  - pytest>=9.0.3
+  - py>=1.11.0
+  - pytest-codestyle>=2.0.1
+  - pytest-cov>=7.1.0
+  - pytest-mock>=3.15.1
+  - pytest-xdist>=3.8.0
+  - mock>=5.2.0
+  - tqdm>=4.67.3
+  - tomli>=2.4.1
+  - pathos>=0.3.5
+  - black>=26.3.1
+  - gnuplotlib>=0.46
+  - diversipy>=0.9
+  - particles @ git+https://github.com/nchopin/particles.git
+  - scikit-activeml>=1.0.0
+  - scikit-fem>=12.0.1 ; extra == 'tutorials'
+  - fourcipp>=1.91.0 ; extra == 'fourc'
+  - queens[fourc] ; extra == 'all'
+  - queens[tutorials] ; extra == 'all'
+  requires_python: '>=3.12'
 - conda: https://conda.anaconda.org/conda-forge/noarch/questionary-2.1.1-pyhd8ed1ab_0.conda
   sha256: 0604c6dff3af5f53e34fceb985395d08287137f220450108a795bcd1959caf14
   md5: 34fa231b5c5927684b03bb296bb94ddc
