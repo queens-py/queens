@@ -46,6 +46,8 @@ jobs:
           ln -s /home/user/4C/bin/ config/4C_build
       - name: Code checks
         run: |
+          set -euo pipefail
+
           echo "::group::Run isort..."
           isort --check-only src/* tests
           echo "::endgroup::"
@@ -92,10 +94,14 @@ jobs:
         uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
         run: |
+          set -euo pipefail
+
           pytest -v -m "unit_tests or integration_tests or integration_tests_fourc" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
           python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
       - name: Run pytest for tutorials
         run: |
+          set -euo pipefail
+
           pytest -v -m "tutorial_tests"
       - name: Upload coverage report
         uses: actions/upload-pages-artifact@v3
