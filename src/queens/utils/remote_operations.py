@@ -338,10 +338,14 @@ class RemoteConnection(Connection):
             pixi_environment: Pixi workspace environment to install on the remote host
         """
         remote_connect = f"{self.user}@{self.host}"
-        result_which = self.run("which pixi", warn=True, in_stream=False)
-        _logger.debug(result_which.stdout)
+        _logger.info("Check availability of pixi on %s...", remote_connect)
+        result_which = self.run(
+            "bash -lc 'export PATH=\"$HOME/.pixi/bin:$PATH\"; command -v pixi'",
+            warn=True,
+            echo=True,
+            in_stream=False,
+        )
         if result_which.exited:
-            _logger.debug(result_which.stderr)
             _logger.warning(
                 "\nCould not find 'pixi' on '%s'. "
                 "The remote environment was not built automatically.\n"
@@ -354,11 +358,12 @@ class RemoteConnection(Connection):
         _logger.info("Build remote QUEENS environment...")
         start_time = time.time()
         command_string = (
-            f"cd {self.remote_queens_repository}; "
+            'bash -lc \'export PATH="$HOME/.pixi/bin:$PATH";'
+            f" cd {self.remote_queens_repository}; "
             f"rm -rf .pixi/envs/{pixi_environment}; "
-            f"pixi install --frozen --environment {pixi_environment}; "
+            f"pixi install --frozen --environment {pixi_environment};'"
         )
-        result = self.run(command_string, in_stream=False)
+        result = self.run(command_string, echo=True, in_stream=False)
 
         _logger.debug(result.stdout)
         _logger.info("Build of remote queens environment was successful.")
