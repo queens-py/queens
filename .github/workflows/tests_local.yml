@@ -44,9 +44,6 @@ jobs:
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/bin/ config/4C_build
-      - name: Show resolved pixi environment
-        run: |
-          pixi list --locked
       - name: Code checks
         run: |
           echo "::group::Run isort..."
