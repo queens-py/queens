@@ -341,13 +341,11 @@ class RemoteConnection(Connection):
         result_which = self.run("which pixi", warn=True, in_stream=False)
         if not result_which.ok:
             _logger.warning(
-                "Could not find 'pixi' on '%s'. "
-                "The remote environment was not built automatically.",
+                "\nCould not find 'pixi' on '%s'. "
+                "The remote environment was not built automatically.\n"
+                "Either install pixi and retry or install the Python environment manually on "
+                "the remote host. See the README.md for environment setup details.\n",
                 remote_connect,
-            )
-            _logger.warning(
-                "Either install pixi or install the Python environment manually on the remote host."
-                "See the README.md for environment setup details."
             )
             return
 
