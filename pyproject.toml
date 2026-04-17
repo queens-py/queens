@@ -162,6 +162,8 @@ ignore-packages = [
     "miniKanren",
     # vtk is under BSD-3-Clause see https://gitlab.kitware.com/vtk/vtk/-/blob/master/Copyright.txt?ref_type=heads
     "vtk",
+    # torch is under BSD-3-Clause
+    "torch",
 ]
 allow-only="MIT;MIT License;MIT-CMU;BSD;BSD License;BSD-2-Clause;BSD-3-Clause;BSD 3-Clause;3-Clause BSD License;BSD-2-Clause AND Apache-2.0 WITH LLVM-exception;BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0;Apache-2.0;Apache License 2.0;Apache Software License;Apache-2.0 OR BSD-3-Clause;Apache-2.0 OR BSD-2-Clause;Apache-2.0 AND CNRI-Python;Apache-2.0 AND MIT;ISC;PSF-2.0;Python Software Foundation License;MPL-2.0;Mozilla Public License 2.0;Mozilla Public License 2.0 (MPL 2.0);MPL-2.0 AND MIT;LGPL;LGPL-2.1;LGPL-3.0;LGPL-3.0-or-later;Zlib;0BSD;CC0-1.0"
 
