@@ -6,6 +6,8 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "queens"
 authors = [{ name = "QUEENS developers" }]
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE"]
 dynamic = ["version"]
 description = "A general purpose framework for Uncertainty Quantification, Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics"
 readme = "README.md"
