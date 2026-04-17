@@ -35,10 +35,6 @@ from queens.utils.run_subprocess import start_subprocess
 
 _logger = logging.getLogger(__name__)
 
-DEFAULT_PACKAGE_MANAGER = "mamba"
-FALLBACK_PACKAGE_MANAGER = "conda"
-SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
-
 
 class RemoteConnection(Connection):
     """This is class wrapper around the Connection class of fabric.
@@ -334,75 +330,34 @@ class RemoteConnection(Connection):
 
     def build_remote_environment(
         self,
-        package_manager: str = DEFAULT_PACKAGE_MANAGER,
-        use_conda_lock: bool = False,
+        pixi_environment: str = "queens-all",
     ) -> None:
-        """Build remote QUEENS environment.
+        """Build the remote QUEENS pixi environment.
 
         Args:
-            package_manager: Package manager used for the creation of the environment ("mamba" or
-                "conda")
-            use_conda_lock: Install the environment from composed.conda-lock.yml instead of the
-                layered environment files
+            pixi_environment: Pixi workspace environment to install on the remote host
         """
-        if package_manager not in SUPPORTED_PACKAGE_MANAGERS:
-            raise ValueError(
-                f"The package manager '{package_manager}' is not supported.\n"
-                f"Supported package managers are: {SUPPORTED_PACKAGE_MANAGERS}"
-            )
         remote_connect = f"{self.user}@{self.host}"
-
-        # check if requested package_manager is installed on remote machine:
-        def package_manager_exists_remote(package_manager_name: str) -> bool:
-            """Check if requested package manager exists on remote.
-
-            Args:
-                package_manager_name: name of package manager
-            """
-            result_which = self.run(f"which {package_manager_name}")
-            if result_which.stderr:
-                message = (
-                    f"Could not find requested package manager '{package_manager_name}' "
-                    f"on '{remote_connect}'."
-                )
-                if package_manager_name == DEFAULT_PACKAGE_MANAGER:
-                    _logger.warning(message)
-                    _logger.warning(
-                        "Trying to fall back to the '%s' package manager.", FALLBACK_PACKAGE_MANAGER
-                    )
-                    package_manager_exists_remote(package_manager_name=FALLBACK_PACKAGE_MANAGER)
-                else:
-                    raise RuntimeError(message)
-                return False
-            return True
-
-        if not package_manager_exists_remote(package_manager_name=package_manager):
-            package_manager = FALLBACK_PACKAGE_MANAGER
+        result_which = self.run("which pixi", warn=True, in_stream=False)
+        if not result_which.ok:
+            _logger.warning(
+                "Could not find 'pixi' on '%s'. "
+                "The remote environment was not built automatically.",
+                remote_connect,
+            )
+            _logger.warning(
+                "Either install pixi or install the Python environment manually on the remote host."
+                "See the README.md for environment setup details."
+            )
+            return
 
         _logger.info("Build remote QUEENS environment...")
         start_time = time.time()
-        environment_name = Path(self.remote_python).parents[1].name
-        if use_conda_lock:
-            command_string = (
-                f"cd {self.remote_queens_repository}; "
-                f"{package_manager} install -n base -c conda-forge conda-lock -y;"
-                f"{package_manager} remove --name {environment_name} --all -y;"
-                f"conda-lock install -n {environment_name} composed.conda-lock.yml; "
-                f"{package_manager} activate {environment_name};"
-                f"pip install --no-deps -e ."
-            )
-        else:
-            command_string = (
-                f"cd {self.remote_queens_repository}; "
-                f"{package_manager} remove --name {environment_name} --all -y;"
-                f"{package_manager} env create -f environment.base.yml --name {environment_name}; "
-                f"{package_manager} env update -f environment.dev.yml --name {environment_name}; "
-                f"{package_manager} env update -f environment.tutorials.yml"
-                f"--name {environment_name}; "
-                f"{package_manager} env update -f environment.fourc.yml --name {environment_name}; "
-                f"{package_manager} activate {environment_name};"
-                f"pip install --no-deps -e ."
-            )
+        command_string = (
+            f"cd {self.remote_queens_repository}; "
+            f"rm -rf .pixi/envs/{pixi_environment}; "
+            f"pixi install --frozen --environment {pixi_environment}; "
+        )
         result = self.run(command_string, in_stream=False)
 
         _logger.debug(result.stdout)

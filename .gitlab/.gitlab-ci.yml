@@ -8,21 +8,26 @@ variables:
   IMCS_TESTS:
     value: "1"
     description: "Run cluster tests at IMCS"
+  REMOTE_BUILD_DIR:
+    value: "/home/queens/builds/queens-$CI_PIPELINE_ID"
   LNM_REMOTE_PYTHON:
-    value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
+    value: "$REMOTE_BUILD_DIR/.pixi/envs/queens-dev/bin/python"
     description: "Python path on LNM clusters"
   LNM_REMOTE_ADDRESS:
     value: "thought"
     description: "Hostname of LNM cluster"
   IMCS_REMOTE_PYTHON:
-    value: "/home/queens/miniforge3/envs/queens-$CI_PIPELINE_ID/bin/python"
+    value: "$REMOTE_BUILD_DIR/.pixi/envs/queens-dev/bin/python"
     description: "Python path on IMCS clusters"
   IMCS_REMOTE_ADDRESS:
     value: "charon.bauv.unibw-muenchen.de"
     description: "Hostname of IMCS cluster"
-  PYTHON_PACKAGE_MANAGER:
-    value: "mamba"
-    description: "Python package manager to create the python environments"
+  PIXI_VERSION:
+    value: "v0.67.0"
+    description: "Pinned pixi version used by the CI pipeline"
+  PIXI_ENVIRONMENT:
+    value: "queens-dev"
+    description: "Pixi workspace environment used in CI jobs"
 #---------------------------------------------------------------------------------------------------
 # Define stages
 #---------------------------------------------------------------------------------------------------
@@ -42,63 +47,66 @@ workflow:
 #---------------------------------------------------------------------------------------------------
 # Define platform specific settings
 #---------------------------------------------------------------------------------------------------
-.ubuntu_settings:
+.check_pixi_available:
   before_script:
-    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
-    # This ensures that the correct queens source is used
-    - pip install --no-deps -e .
-    - echo Queens source for testing is $(pip list | grep -o '/.*')
+    - |
+      export PATH="$HOME/.pixi/bin:$PATH"
+      if ! command -v pixi >/dev/null 2>&1; then
+        curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION="$PIXI_VERSION" PIXI_HOME="$HOME/.pixi" bash
+      fi
+      pixi --version
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: build
 #---------------------------------------------------------------------------------------------------
-.build_conda_env:
+.build_pixi_env:
+  extends:
+    - .check_pixi_available
   stage: build
-  before_script:
-    - 'echo "Using python environment manager: `$PYTHON_PACKAGE_MANAGER --version`"'
   script:
-    - $PYTHON_PACKAGE_MANAGER install -n base -c conda-forge conda-lock -y
-    - conda-lock install -n queens-$CI_PIPELINE_ID composed.conda-lock.yml
-    - $PYTHON_PACKAGE_MANAGER activate queens-$CI_PIPELINE_ID
-    - pip install --no-deps -e .
-    - $PYTHON_PACKAGE_MANAGER env export > pipeline_conda_environment.yml
+    - pixi install --frozen -e "$PIXI_ENVIRONMENT"
+    - pixi list --frozen -e "$PIXI_ENVIRONMENT" > pipeline_pixi_environment.txt
   artifacts:
-    name: "conda_env-$CI_PIPELINE_ID.yml"
+    name: "pixi_env-$CI_PIPELINE_ID.txt"
     paths:
-      - pipeline_conda_environment.yml
+      - pipeline_pixi_environment.txt
     when: always
     expire_in: 4 weeks
 
-lnm-build_conda_env:
+lnm-build_pixi_env:
   extends:
-    - .build_conda_env
+    - .build_pixi_env
   tags:
     - lnm-build
   rules:
     - if: $LNM_TESTS == "1"
 
-imcs-build_conda_env:
+imcs-build_pixi_env:
   extends:
-    - .build_conda_env
+    - .build_pixi_env
   tags:
     - imcs-build
   rules:
     - if: $IMCS_TESTS == "1"
 #----------------------------------------------------------------------------------------------
-.build_conda_env_cluster:
+.build_pixi_env_cluster:
   stage: build
   script:
-    - ENV_PREFIX=queens-$CI_PIPELINE_ID
-    - $PYTHON_PACKAGE_MANAGER create -y --prefix ./$ENV_PREFIX python=3.11 cloudpickle fabric
-    - $PYTHON_PACKAGE_MANAGER activate ./$ENV_PREFIX
-    - pip install --no-deps -e .
-    - python src/queens/utils/remote_build.py
-      --host=$REMOTE_ADDRESS --user=queens --remote-python=$REMOTE_PYTHON
-      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID --package-manager
-      $PYTHON_PACKAGE_MANAGER --use-conda-lock
+    - |
+      ssh queens@$REMOTE_ADDRESS "bash -lc '
+        export PATH=\"\$HOME/.pixi/bin:\$PATH\"
+        if ! command -v pixi >/dev/null 2>&1; then
+          curl -fsSL https://pixi.sh/install.sh | PIXI_VERSION=\"$PIXI_VERSION\" PIXI_HOME=\"\$HOME/.pixi\" bash
+        fi
+        pixi --version
+      '"
+    - pixi run --frozen -e "$PIXI_ENVIRONMENT" python src/queens/utils/remote_build.py
+      --host=$REMOTE_ADDRESS --user=queens
+      --remote-queens-repository=$REMOTE_BUILD_DIR
+      --pixi-environment=$PIXI_ENVIRONMENT
 
-thought-build_conda_env:
+thought-build_pixi_env:
   extends:
-    - .build_conda_env_cluster
+    - .build_pixi_env_cluster
   variables:
     REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
@@ -107,9 +115,9 @@ thought-build_conda_env:
   rules:
     - if: $LNM_TESTS == "1"
 
-charon-build_conda_env:
+charon-build_pixi_env:
   extends:
-    - .build_conda_env_cluster
+    - .build_pixi_env_cluster
   variables:
     REMOTE_ADDRESS: $IMCS_REMOTE_ADDRESS
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
@@ -177,14 +185,14 @@ charon-build_4C:
 #---------------------------------------------------------------------------------------------------
 .cluster_tests:
   extends:
-    - .ubuntu_settings
+    - .check_pixi_available
   stage: tests
   script:
-    - pytest tests/integration_tests/cluster/
+    - pixi run --locked -e "$PIXI_ENVIRONMENT" pytest tests/integration_tests/cluster/
       -v -m $CLUSTER_MARKER --no-cov -o log_cli=true --log-cli-level=DEBUG
       --remote-user=queens
       --remote-python=$REMOTE_PYTHON
-      --remote-queens-repository=/home/queens/builds/queens-$CI_PIPELINE_ID
+      --remote-queens-repository=$REMOTE_BUILD_DIR
       --color=yes
       --pipeline-id=$CI_PIPELINE_ID
       --junitxml=test_junit.xml
@@ -204,8 +212,8 @@ lnm-cluster_tests:
     CLUSTER_MARKER: "lnm_cluster"
     REMOTE_PYTHON: $LNM_REMOTE_PYTHON
   needs:
-    - lnm-build_conda_env
-    - thought-build_conda_env
+    - lnm-build_pixi_env
+    - thought-build_pixi_env
     - thought-build_4C
   tags:
     - lnm-ubuntu
@@ -219,8 +227,8 @@ imcs-cluster_tests:
     CLUSTER_MARKER: "imcs_cluster"
     REMOTE_PYTHON: $IMCS_REMOTE_PYTHON
   needs:
-    - imcs-build_conda_env
-    - charon-build_conda_env
+    - imcs-build_pixi_env
+    - charon-build_pixi_env
     - charon-build_4C
   tags:
     - imcs-ubuntu
@@ -230,49 +238,18 @@ imcs-cluster_tests:
 #---------------------------------------------------------------------------------------------------
 # Jobs of stage: cleanup
 #---------------------------------------------------------------------------------------------------
-# Remove conda env on ubuntu runners
-.remove_conda_env:
+# Remove pixi environment and repository on cluster
+.remove_build_dir_cluster:
   stage: cleanup
   script:
-    - $PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID
-  when: always
-  variables:
-    GIT_STRATEGY: none
-
-lnm-remove_conda_env:
-  extends:
-    - .remove_conda_env
-  dependencies:
-    - lnm-build_conda_env
-  tags:
-    - lnm-build
-  rules:
-    - if: $LNM_TESTS == "1"
-
-imcs-remove_conda_env:
-  extends:
-    - .remove_conda_env
-  dependencies:
-    - imcs-build_conda_env
-  tags:
-    - imcs-build
-  rules:
-    - if: $IMCS_TESTS == "1"
-
-#---------------------------------------------------------------------------------------------------
-# Remove conda env and repository on cluster
-.remove_conda_env_cluster:
-  stage: cleanup
-  script:
-    - ssh queens@$REMOTE_ADDRESS "$PYTHON_PACKAGE_MANAGER env remove -n queens-$CI_PIPELINE_ID;
-      rm -rf /home/queens/builds/queens-$CI_PIPELINE_ID"
+    - ssh queens@$REMOTE_ADDRESS "rm -rf $REMOTE_BUILD_DIR;"
   when: always
 
-thought-cluster-remove_conda_env:
+thought-cluster-remove_build_dir:
   extends:
-    - .remove_conda_env_cluster
+    - .remove_build_dir_cluster
   dependencies:
-    - thought-build_conda_env
+    - thought-build_pixi_env
   variables:
     REMOTE_ADDRESS: $LNM_REMOTE_ADDRESS
   tags:
@@ -280,11 +257,11 @@ thought-cluster-remove_conda_env:
   rules:
     - if: $LNM_TESTS == "1"
 
-charon-cluster-remove_conda_env:
+charon-cluster-remove_build_dir:
   extends:
-    - .remove_conda_env_cluster
+    - .remove_build_dir_cluster
   dependencies:
-    - charon-build_conda_env
+    - charon-build_pixi_env
   variables:
     REMOTE_ADDRESS: $IMCS_REMOTE_ADDRESS
   tags:

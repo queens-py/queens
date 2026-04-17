@@ -20,20 +20,12 @@ import sys
 
 from queens.utils.remote_operations import RemoteConnection
 
-DEFAULT_PACKAGE_MANAGER = "mamba"
-FALLBACK_PACKAGE_MANAGER = "conda"
-SUPPORTED_PACKAGE_MANAGERS = [DEFAULT_PACKAGE_MANAGER, FALLBACK_PACKAGE_MANAGER]
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Build queens environment on remote machine.")
     parser.add_argument(
         "--host", type=str, required=True, help="hostname or ip address of remote host"
     )
     parser.add_argument("--user", type=str, default=None, required=False, help="remote username")
-    parser.add_argument(
-        "--remote-python", type=str, required=True, help="path to python environment on remote host"
-    )
     parser.add_argument(
         "--remote-queens-repository",
         type=str,
@@ -51,16 +43,10 @@ if __name__ == "__main__":
         ),
     )
     parser.add_argument(
-        "--package-manager",
+        "--pixi-environment",
         type=str,
-        default=DEFAULT_PACKAGE_MANAGER,
-        choices=SUPPORTED_PACKAGE_MANAGERS,
-        help="package manager used for the creation of the remote environment",
-    )
-    parser.add_argument(
-        "--use-conda-lock",
-        action="store_true",
-        help="install the remote environment from composed.conda-lock.yml",
+        default="queens-all",
+        help="pixi workspace environment to install on the remote host",
     )
 
     args = parser.parse_args(sys.argv[1:])
@@ -68,12 +54,10 @@ if __name__ == "__main__":
     remote_connection = RemoteConnection(
         host=args.host,
         user=args.user,
-        remote_python=args.remote_python,
+        remote_python="",
         remote_queens_repository=args.remote_queens_repository,
         gateway=args.gateway if args.gateway is None else json.loads(args.gateway),
     )
     remote_connection.open()
     remote_connection.sync_remote_repository()
-    remote_connection.build_remote_environment(
-        package_manager=args.package_manager, use_conda_lock=args.use_conda_lock
-    )
+    remote_connection.build_remote_environment(pixi_environment=args.pixi_environment)
