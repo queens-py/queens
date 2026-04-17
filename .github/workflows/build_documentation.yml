@@ -23,7 +23,16 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.67.0
+          cache: true
+          auth-host: prefix.dev
+          auth-token: ${{ secrets.PREFIX_DEV_TOKEN }}
+          environments: queens-dev
+          frozen: true
+          activate-environment: queens-dev
       - name: Mark repo as safe for git
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -34,26 +43,18 @@ jobs:
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/bin/ config/4C_build
-      - name: Create Python environment
-        id: environment
-        uses: ./.github/actions/create_python_environment
       - name: Register Jupyter kernel
-        env:
-          PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
         run: |
-            $PYTHON_PACKAGE_MANAGER activate queens
-            python -m ipykernel install --user --name queens --display-name "Python (queens)"
+          python -m ipykernel install --user --name queens --display-name "Python (queens)"
       - name: Install xvfb
         run: |
           apt-get update
           apt-get install -y xvfb
       - name: Sphinx build
         env:
-          PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
           PYTHONPATH: ${{ github.workspace }}
         run: |
           set -euxo pipefail
-          $PYTHON_PACKAGE_MANAGER activate queens
           sphinx-apidoc -o doc/source src/ -fMT
           cd doc
           xvfb-run -a sphinx-build -b html -d build/doctrees source build/html -W
