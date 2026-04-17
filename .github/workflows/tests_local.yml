@@ -69,7 +69,8 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Run nbstripout..."
-          find . -name '*.ipynb' -exec nbstripout --verify {} +
+          find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +
+
           echo "::endgroup::"
 
           # echo "::group::Create code quality report..."
