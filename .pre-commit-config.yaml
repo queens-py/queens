@@ -33,6 +33,12 @@ repos:
         language: python
         types: ["python"]
         pass_filenames: true
+      - id: check-pyproject-dependency-integrity
+        name: check pyproject dependency integrity
+        entry: python3 tools/dependencies/check_pyproject_dependency_integrity.py --path
+        language: system
+        files: '^pyproject\.toml$'
+        pass_filenames: true
       - id: docformatter
         name: docformatter
         entry: docformatter
