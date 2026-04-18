@@ -196,7 +196,8 @@ channels = ["conda-forge", "nodefaults"]
 platforms = ["linux-64", "osx-arm64"]
 
 [tool.pixi.dependencies]
-python = ">=3.12.13"
+python = ">=3.12"
+pip = ">=26.0.1"
 setuptools = ">=81.0.0,<82"
 cython = ">=3.2.4"
 numba = ">=0.65.0"
@@ -241,9 +242,12 @@ tqdm = ">=4.67.3"
 tomli = ">=2.4.1"
 pathos = ">=0.3.5"
 black = ">=26.3.1"
-pip = ">=26.0.1"
 
 [tool.pixi.pypi-dependencies]
+gnuplotlib = ">=0.46"
+diversipy = ">=0.9"
+particles = { git = "https://github.com/nchopin/particles.git"}
+scikit-activeml= ">=1.0.0"
 queens = { path = ".", editable = true }
 
 [tool.pixi.feature.dev.dependencies]
@@ -265,11 +269,16 @@ testbook = ">=0.4.2"
 ipykernel = ">=7.2.0"
 mypy = ">=1.20.1"
 pip-licenses = ">=5.5"
+[tool.pixi.feature.dev.pypi-dependencies]
+pylint-exit = ">=1.2.0"
+licenseheaders = ">=0.8.8"
 
 [tool.pixi.feature.tutorials.dependencies]
 scikit-fem = ">=12.0.1"
 
 [tool.pixi.feature.fourc.dependencies]
+[tool.pixi.feature.fourc.pypi-dependencies]
+fourcipp = ">=1.91.0"
 
 [tool.pixi.environments]
 queens-base = { features = []}
@@ -294,9 +303,9 @@ dev = [  "pylint>=4.0.5",
     "testbook>=0.4.2",
     "ipykernel>=7.2.0",
     "mypy>=1.20.1",
+    "pip-licenses>=5.5",
     "pylint-exit>=1.2.0",
     "licenseheaders>=0.8.8",
-    "pip-licenses>=5.5",
 ]
 
 [project.optional-dependencies]
