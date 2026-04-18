@@ -34,6 +34,7 @@ if TYPE_CHECKING:
     from queens.distributions.multinomial import Multinomial
     from queens.distributions.normal import Normal
     from queens.distributions.particle import Particle
+    from queens.distributions.truncated_normal import TruncatedNormal
     from queens.distributions.uniform import Uniform
     from queens.distributions.uniform_discrete import UniformDiscrete
 
