@@ -10,6 +10,10 @@ on:
       - main
   workflow_dispatch:
 
+permissions:
+  contents: read
+  pull-requests: write
+
 env:
   # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
   TEST_TIMING_OPTION: ""
@@ -37,6 +41,9 @@ jobs:
             queens-dev
           frozen: true
           activate-environment: queens-dev
+      - name: Mark repo as safe for git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
       - name: Install rsync
         run: |
           sudo apt-get update
@@ -44,10 +51,91 @@ jobs:
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/bin/ config/4C_build
+      - name: Check dependency declaration integrity
+        run: |
+          set -euo pipefail
+          # Validate that the PEP-style dependency declarations in pyproject.toml
+          # stay aligned with the pixi dependency sections.
+          python3 tools/dependencies/check_pyproject_dependency_integrity.py \
+            --path pyproject.toml \
+            --allow-version-mismatch gpflow
+      - name: Check pixi environment integrity
+        id: environment_integrity
+        run: |
+          set -euo pipefail
+
+          base_ref="main"
+          pyproject_diff_file="$(mktemp)"
+          git fetch --no-tags --depth=1 origin "${base_ref}"
+
+          pyproject_changed=false
+          # The diff helper returns:
+          #   0 if dependency-related declarations are unchanged,
+          #   1 if there is a relevant dependency diff,
+          #   >1 if the diff command itself failed.
+          if python3 tools/dependencies/diff_pyproject_dependency_declarations.py \
+            --base-ref "origin/${base_ref}" \
+            --head-ref HEAD \
+            > "${pyproject_diff_file}"; then
+            pyproject_changed=false
+          else
+            # $? is the exit status of the last command.
+            # when arriving here, the diff command found a diff (exit status 1) or
+            # the diff command itself failed (exit status >1).
+            pyproject_check_status=$?
+            if [ "${pyproject_check_status}" -eq 1 ]; then
+              pyproject_changed=true
+            else
+              echo "Failed to compare dependency-related pyproject.toml sections."
+              exit "${pyproject_check_status}"
+            fi
+          fi
+
+          lock_update_possible=false
+          # `pixi lock --check` exits non-zero when the current pyproject.toml
+          # would produce a different pixi.lock.
+          if ! pixi lock --check >/dev/null 2>&1; then
+            lock_update_possible=true
+          fi
+
+          {
+            echo "pyproject_changed=${pyproject_changed}"
+            echo "lock_update_possible=${lock_update_possible}"
+            echo "compare_ref=${base_ref}"
+          } >> "$GITHUB_OUTPUT"
+
+          {
+            echo "### Pixi Environment Integrity"
+            echo ""
+            echo "- dependency-relevant \`pyproject.toml\` changes vs \`${base_ref}\`: ${pyproject_changed}"
+            echo "- \`pixi.lock\` would change if refreshed: ${lock_update_possible}"
+            if [ "${pyproject_changed}" = "true" ]; then
+              echo ""
+              echo "<details>"
+              echo "<summary>Dependency diff</summary>"
+              echo ""
+              echo '```diff'
+              cat "${pyproject_diff_file}"
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          # Only fail if the dependency declarations changed and the lockfile is
+          # stale. A stale lockfile without dependency declaration changes is
+          # reported in the summary but does not block the workflow here.
+          if [ "${pyproject_changed}" = "true" ] && [ "${lock_update_possible}" = "true" ]; then
+            echo "pyproject.toml dependency sections changed compared to main"
+            echo "AND pixi.lock would be updated by pixi lock."
+            echo "Please regenerate and commit pixi.lock for this change."
+            exit 1
+          fi
       - name: Code checks
         run: |
           set -euo pipefail
 
+          # Run all checks in one fail-fast block so a tool failure is not
+          # hidden by later bookkeeping commands such as echo/endgroup lines.
           echo "::group::Run isort..."
           isort --check-only src/* tests
           echo "::endgroup::"
