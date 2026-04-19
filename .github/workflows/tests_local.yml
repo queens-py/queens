@@ -102,10 +102,14 @@ jobs:
             git restore --source=HEAD --staged --worktree pixi.lock 2>/dev/null
           fi
           lock_update_possible=false
+          # deactivate exit on error to allow `pixi lock --check --dry-run` to fail
+          set +e
           # `pixi lock --check --dry-run` exits non-zero when the current pyproject.toml
           # would produce a different pixi.lock without writing the lockfile to disk.
           pixi lock --check --dry-run
           exit_code_pixi_lock_check=$?
+          # reactivate exit on error
+          set -e
           echo "exit code: $exit_code_pixi_lock_check"
           if [ $exit_code_pixi_lock_check -ne 0 ]; then
             lock_update_possible=true
