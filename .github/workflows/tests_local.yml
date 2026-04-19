@@ -69,6 +69,7 @@ jobs:
           pyproject_diff_file="$(mktemp)"
           git fetch --no-tags --depth=1 origin "${base_ref}"
 
+          echo "::group::Check if dependency declarations changed..."
           pyproject_changed=false
           # The diff helper returns:
           #   0 if dependency-related declarations are unchanged,
@@ -91,13 +92,18 @@ jobs:
               exit "${pyproject_check_status}"
             fi
           fi
+          echo "Pyproject.toml dependency sections changed compared to ${base_ref}: ${pyproject_changed}"
+          echo "::endgroup::"
 
+          echo "::group::Check if pixi.lock would be updated by pixi lock..."
           lock_update_possible=false
           # `pixi lock --check` exits non-zero when the current pyproject.toml
           # would produce a different pixi.lock.
-          if ! pixi lock --check >/dev/null 2>&1; then
+          if ! pixi lock --check; then
             lock_update_possible=true
           fi
+          echo "pixi.lock would be updated by pixi lock: ${lock_update_possible}"
+          echo "::endgroup::"
 
           {
             echo "pyproject_changed=${pyproject_changed}"
@@ -105,11 +111,14 @@ jobs:
             echo "compare_ref=${base_ref}"
           } >> "$GITHUB_OUTPUT"
 
+
+          # ---- Write rich Markdown to Step Summary ----
           {
             echo "### Pixi Environment Integrity"
             echo ""
             echo "- dependency-relevant \`pyproject.toml\` changes vs \`${base_ref}\`: ${pyproject_changed}"
             echo "- \`pixi.lock\` would change if refreshed: ${lock_update_possible}"
+
             if [ "${pyproject_changed}" = "true" ]; then
               echo ""
               echo "<details>"
@@ -122,6 +131,21 @@ jobs:
             fi
           } >> "$GITHUB_STEP_SUMMARY"
 
+
+          # ---- Write clean, readable logs ----
+          echo "::group::Summary Pixi Environment Integrity"
+          echo "----------------------------------------"
+          echo "pyproject changes vs ${base_ref}: ${pyproject_changed}"
+          echo "pixi.lock update possible: ${lock_update_possible}"
+
+          if [ "${pyproject_changed}" = "true" ]; then
+            echo "::group::Dependency diff"
+            cat "${pyproject_diff_file}"
+            echo "::endgroup::"
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Do integrity check..."
           # Only fail if the dependency declarations changed and the lockfile is
           # stale. A stale lockfile without dependency declaration changes is
           # reported in the summary but does not block the workflow here.
@@ -130,7 +154,10 @@ jobs:
             echo "AND pixi.lock would be updated by pixi lock."
             echo "Please regenerate and commit pixi.lock for this change."
             exit 1
+          else
+            echo "Pixi environment integrity is OK."
           fi
+          echo "::endgroup::"
       - name: Code checks
         run: |
           set -euo pipefail
