@@ -96,6 +96,11 @@ jobs:
           echo "::endgroup::"
 
           echo "::group::Check if pixi.lock would be updated by pixi lock..."
+          # Detect any change (modified, deleted, untracked, etc.)
+          if [ -n "$(git status --porcelain -- pixi.lock)" ]; then
+            echo "Restoring pixi.lock from HEAD..."
+            git restore --source=HEAD --staged --worktree pixi.lock 2>/dev/null
+          fi
           lock_update_possible=false
           # `pixi lock --check` exits non-zero when the current pyproject.toml
           # would produce a different pixi.lock.
