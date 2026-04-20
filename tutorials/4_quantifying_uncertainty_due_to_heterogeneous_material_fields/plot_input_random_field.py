@@ -13,6 +13,9 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """Plotting functions for tutorial 4."""
+
+from typing import Any, cast
+
 import matplotlib.pyplot as plt
 import numpy as np
 import pyvista as pv
@@ -29,7 +32,7 @@ def plot_field(file_path: str, field: np.ndarray, ax: Axes3D, color_bar_title: s
         ax: 3D Matplotlib axis to plot into.
         color_bar_title: Label shown next to the color bar.
     """
-    mesh = pv.read(file_path)[0][0]
+    mesh = cast(pv.DataSet, cast(Any, pv.read(file_path))[0][0])
     mesh.cell_data["field"] = field
     cell_values = field
 

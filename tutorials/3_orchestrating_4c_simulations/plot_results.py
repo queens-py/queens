@@ -13,7 +13,9 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """Plotting functions for tutorial 3."""
+
 import os
+from typing import Any, cast
 
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["VTK_DEFAULT_RENDER_WINDOW_OFFSCREEN"] = "1"
@@ -21,7 +23,7 @@ os.environ["PYVISTA_JUPYTER_BACKEND"] = "static"
 
 import pyvista as pv
 
-fe_mesh = pv.read("beam_coarse.exo")
+fe_mesh = cast(pv.DataSet, cast(Any, pv.read("beam_coarse.exo")))
 
 
 def plot_results(
