@@ -216,7 +216,7 @@ jobs:
           mypy .
           echo "::endgroup::"
       - name: Check license headers
-        uses: apache/skywalking-eyes/header@v0.4.0
+        uses: apache/skywalking-eyes/header@v0.8.0
       - name: Check conventional commit messages
         uses: webiny/action-conventional-commits@v1.3.0
       - name: Run pytest
