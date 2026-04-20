@@ -55,7 +55,10 @@ def fixture_upper_bound():
 def fixture_truncated_normal(normal_mean, normal_std, lower_bound, upper_bound):
     """A truncated normal distribution."""
     return TruncatedNormal(
-        mean=normal_mean, std=normal_std, lower_bound=lower_bound, upper_bound=upper_bound
+        unbounded_mean=normal_mean,
+        unbounded_std=normal_std,
+        lower_bound=lower_bound,
+        upper_bound=upper_bound,
     )
 
 
@@ -77,8 +80,8 @@ def test_init_truncated_normal(
 ):
     """Test init method of TruncatedNormal distribution class."""
     assert truncated_normal.dimension == 1
-    np.testing.assert_equal(truncated_normal.mu, np.array(normal_mean).reshape(-1))
-    np.testing.assert_equal(truncated_normal.sigma, np.array(normal_std).reshape(-1))
+    np.testing.assert_equal(truncated_normal.unbounded_mean, np.array(normal_mean).reshape(-1))
+    np.testing.assert_equal(truncated_normal.unbounded_std, np.array(normal_std).reshape(-1))
     np.testing.assert_equal(truncated_normal.lower_bound, np.array(lower_bound).reshape(-1))
     np.testing.assert_equal(truncated_normal.upper_bound, np.array(upper_bound).reshape(-1))
     np.testing.assert_equal(truncated_normal.mean, scipy_reference.mean())
@@ -88,14 +91,22 @@ def test_init_truncated_normal(
 def test_init_truncated_normal_wrong_interval(normal_mean, normal_std):
     """Test init with lower bound greater than upper bound."""
     with pytest.raises(ValueError, match=r"Lower bound must be smaller than upper bound*"):
-        TruncatedNormal(mean=normal_mean, std=normal_std, lower_bound=0.5, upper_bound=0.1)
+        TruncatedNormal(
+            unbounded_mean=normal_mean,
+            unbounded_std=normal_std,
+            lower_bound=0.5,
+            upper_bound=0.1,
+        )
 
 
 def test_init_truncated_normal_negative_std(normal_mean, lower_bound, upper_bound):
     """Test init with non-positive std."""
-    with pytest.raises(ValueError, match=r"The parameter \'std\' has to be positive.*"):
+    with pytest.raises(ValueError, match=r"The parameter \'unbounded_std\' has to be positive.*"):
         TruncatedNormal(
-            mean=normal_mean, std=-0.1, lower_bound=lower_bound, upper_bound=upper_bound
+            unbounded_mean=normal_mean,
+            unbounded_std=-0.1,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
         )
 
 
@@ -103,7 +114,10 @@ def test_init_truncated_normal_multivariate(normal_std, lower_bound, upper_bound
     """Test init with multivariate mean raises NotImplementedError."""
     with pytest.raises(NotImplementedError, match=r"Only one-dimensional*"):
         TruncatedNormal(
-            mean=[0.3, 0.4], std=normal_std, lower_bound=lower_bound, upper_bound=upper_bound
+            unbounded_mean=[0.3, 0.4],
+            unbounded_std=normal_std,
+            lower_bound=lower_bound,
+            upper_bound=upper_bound,
         )
 
 

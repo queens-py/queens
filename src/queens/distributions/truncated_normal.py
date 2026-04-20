@@ -30,47 +30,56 @@ class TruncatedNormal(Continuous):
     mean and std of the underlying (unbounded) normal distribution.
 
     Internally, scipy.stats.truncnorm is used with standardized bounds
-    a = (lower_bound - mean) / std and b = (upper_bound - mean) / std.
+    a = (lower_bound - unbounded_mean) / unbounded_std and
+    b = (upper_bound - unbounded_mean) / unbounded_std.
 
     Attributes:
-        mu: Mean of the underlying (unbounded) normal distribution.
-        sigma: Standard deviation of the underlying (unbounded) normal distribution.
+        unbounded_mean: Mean of the underlying (unbounded) normal distribution.
+        unbounded_std: Standard deviation of the underlying (unbounded) normal distribution.
         lower_bound: Lower bound of the distribution.
         upper_bound: Upper bound of the distribution.
         scipy_truncnorm: Scipy truncated normal distribution object.
+        mean: (inherited) Mean of the truncated distribution, computed via scipy.
+        covariance: (inherited) Variance of the truncated distribution, computed via scipy.
+        dimension: (inherited) Dimensionality of the distribution (always 1).
     """
 
     @log_init_args
     def __init__(
-        self, mean: ArrayLike, std: ArrayLike, lower_bound: ArrayLike, upper_bound: ArrayLike
+        self,
+        unbounded_mean: ArrayLike,
+        unbounded_std: ArrayLike,
+        lower_bound: ArrayLike,
+        upper_bound: ArrayLike,
     ) -> None:
         """Initialize truncated normal distribution.
 
         Args:
-            mean: Mean of the underlying (unbounded) normal distribution.
-            std: Standard deviation of the underlying normal distribution. Must be positive.
+            unbounded_mean: Mean of the underlying (unbounded) normal distribution.
+            unbounded_std: Standard deviation of the underlying (unbounded) normal distribution.
+                Must be positive.
             lower_bound: Lower bound of the distribution. Must be smaller than upper_bound.
             upper_bound: Upper bound of the distribution.
         """
-        mu = np.array(mean).reshape(-1)
-        sigma = np.array(std).reshape(-1)
+        unbounded_mean = np.array(unbounded_mean).reshape(-1)
+        unbounded_std = np.array(unbounded_std).reshape(-1)
         lower_bound = np.array(lower_bound).reshape(-1)
         upper_bound = np.array(upper_bound).reshape(-1)
 
-        if max(mu.size, sigma.size, lower_bound.size, upper_bound.size) != 1:
+        if max(unbounded_mean.size, unbounded_std.size, lower_bound.size, upper_bound.size) != 1:
             raise NotImplementedError(
                 "Only one-dimensional truncated normal distributions are supported."
             )
 
-        super().check_positivity(std=sigma)
+        super().check_positivity(unbounded_std=unbounded_std)
         super().check_bounds(lower_bound, upper_bound)
 
-        a = (lower_bound - mu) / sigma
-        b = (upper_bound - mu) / sigma
-        scipy_truncnorm = scipy.stats.truncnorm(a, b, loc=mu, scale=sigma)
+        a = (lower_bound - unbounded_mean) / unbounded_std
+        b = (upper_bound - unbounded_mean) / unbounded_std
+        scipy_truncnorm = scipy.stats.truncnorm(a, b, loc=unbounded_mean, scale=unbounded_std)
 
-        self.mu = mu
-        self.sigma = sigma
+        self.unbounded_mean = unbounded_mean
+        self.unbounded_std = unbounded_std
         self.lower_bound = lower_bound
         self.upper_bound = upper_bound
         self.scipy_truncnorm = scipy_truncnorm
@@ -127,7 +136,7 @@ class TruncatedNormal(Continuous):
             Gradient of the log-PDF at positions
         """
         x = np.asarray(x).reshape(-1)
-        grad_logpdf = (self.mu - x) / self.sigma**2
+        grad_logpdf = (self.unbounded_mean - x) / self.unbounded_std**2
         return grad_logpdf
 
     def pdf(self, x: np.ndarray) -> np.ndarray:
