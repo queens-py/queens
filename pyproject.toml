@@ -195,7 +195,7 @@ follow_untyped_imports = true
 channels = ["conda-forge", "nodefaults"]
 platforms = ["linux-64", "osx-arm64"]
 
-[tool.pixi.dependencies]
+[tool.pixi.feature.base.dependencies]
 python = ">=3.12"
 pip = ">=26.0.1"
 setuptools = ">=81.0.0,<82"
@@ -243,7 +243,7 @@ tomli = ">=2.4.1"
 pathos = ">=0.3.5"
 black = ">=26.3.1"
 
-[tool.pixi.pypi-dependencies]
+[tool.pixi.feature.base.pypi-dependencies]
 gnuplotlib = ">=0.46"
 diversipy = ">=0.9"
 particles = { git = "https://github.com/nchopin/particles.git"}
@@ -281,9 +281,9 @@ scikit-fem = ">=12.0.1"
 fourcipp = ">=1.91.0"
 
 [tool.pixi.environments]
-queens-base = { features = []}
-queens-dev = { features = ["dev", "tutorials", "fourc"]}
-queens-all = { features = ["tutorials", "fourc"]}
+queens-base = { features = ["base"], no-default-feature = true}
+queens-dev = { features = ["base", "dev", "tutorials", "fourc"], no-default-feature = true}
+queens-all = { features = ["base","tutorials", "fourc"], no-default-feature = true}
 
 [dependency-groups]
 dev = [  "pylint>=4.0.5",

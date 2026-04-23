@@ -129,7 +129,7 @@ def _validate_base_dependencies(
     error_messages: list[str] = []
 
     project = pyproject.get("project", {})
-    tool_pixi = pyproject.get("tool", {}).get("pixi", {})
+    tool_pixi = pyproject.get("tool", {}).get("pixi", {}).get("feature", {}).get("base", {})
     pixi_dependencies = tool_pixi.get("dependencies", {})
     pixi_pypi_dependencies = tool_pixi.get("pypi-dependencies", {})
 
@@ -231,12 +231,14 @@ def _validate_feature_groups(
     feature with identical requirements should exist.
     """
     error_messages: list[str] = []
+    pep_names: list[str] = []
 
     dependency_groups = pyproject.get("dependency-groups", {})
     optional_dependencies = pyproject.get("project", {}).get("optional-dependencies", {})
     pixi_features = pyproject.get("tool", {}).get("pixi", {}).get("feature", {})
 
     for name, pep_dependencies in dependency_groups.items():
+        pep_names.append(name)
         feature = pixi_features.get(name)
         if feature is None:
             error_messages.append(
@@ -268,6 +270,7 @@ def _validate_feature_groups(
             )
             continue
 
+        pep_names.append(name)
         feature = pixi_features.get(name)
         if feature is None:
             error_messages.append(
@@ -285,6 +288,19 @@ def _validate_feature_groups(
                 pixi_dependencies_combined,
                 allowed_version_mismatches,
             )
+        )
+
+    # for each feature there should either be a dependency group or an optional dependency group
+    # except for some special features:
+    # 1. the base feature is covered by the project.dependencies
+    special_exception_features: list[str] = ["base"]
+    for feature_name in pixi_features.keys():
+        if feature_name in pep_names or feature_name in special_exception_features:
+            continue
+        error_messages.append(
+            f"Missing either a pep dependency group or optional dependency '{feature_name}' "
+            f"for the pixi feature [tool.pixi.feature.{feature_name}]."
+            ""
         )
 
     return error_messages
