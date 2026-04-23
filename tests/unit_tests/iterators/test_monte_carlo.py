@@ -21,15 +21,11 @@ from queens.iterators.monte_carlo import MonteCarlo
 
 
 @pytest.fixture(name="default_mc_iterator")
-def fixture_default_mc_iterator(
-    global_settings, default_simulation_model, default_parameters_mixed
-):
+def fixture_default_mc_iterator(global_settings, ishigami_90_mixed, default_parameters_mixed):
     """Default monte carlo iterator."""
-    default_simulation_model.driver.parameters = default_parameters_mixed
-
     # create LHS iterator
     my_iterator = MonteCarlo(
-        model=default_simulation_model,
+        model=ishigami_90_mixed,
         parameters=default_parameters_mixed,
         global_settings=global_settings,
         seed=42,

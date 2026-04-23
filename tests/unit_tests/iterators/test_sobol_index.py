@@ -22,13 +22,11 @@ from queens.iterators.sobol_index import SobolIndex
 
 @pytest.fixture(name="default_sobol_index_iterator")
 def fixture_default_sobol_index_iterator(
-    global_settings, default_simulation_model, default_parameters_uniform_3d
+    global_settings, ishigami_90_uniform, default_parameters_uniform_3d
 ):
     """Default sobol index iterator."""
-    default_simulation_model.driver.parameters = default_parameters_uniform_3d
-
     my_iterator = SobolIndex(
-        default_simulation_model,
+        ishigami_90_uniform,
         parameters=default_parameters_uniform_3d,
         global_settings=global_settings,
         seed=42,
@@ -44,13 +42,11 @@ def fixture_default_sobol_index_iterator(
 
 @pytest.fixture(name="default_sobol_index_iterator_mixed")
 def fixture_default_sobol_index_iterator_mixed(
-    global_settings, default_simulation_model, default_parameters_mixed
+    global_settings, ishigami_90_mixed, default_parameters_mixed
 ):
     """Default sobol index iterator with different distributions."""
-    default_simulation_model.driver.parameters = default_parameters_mixed
-
     my_iterator = SobolIndex(
-        model=default_simulation_model,
+        model=ishigami_90_mixed,
         parameters=default_parameters_mixed,
         global_settings=global_settings,
         seed=42,
