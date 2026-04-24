@@ -1,0 +1,137 @@
+# yamllint disable
+name: Testsuite
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+env:
+  # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
+  TEST_TIMING_OPTION: ""
+
+jobs:
+  run_tests_core:
+    name: core tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            pytest_markers: "unit_tests or integration_tests"
+          - os: macos-latest
+            pytest_markers: "unit_tests or integration_tests"
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.67.0
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            queens-base
+            queens-all
+            queens-dev
+          frozen: true
+          activate-environment: queens-dev
+      - name: Install QUEENS in workspace
+        run: |
+          pixi run --locked -e queens-dev python -m pip install --no-deps -e .
+      - name: Mark repo as safe for git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Ensure rsync is available
+        run: |
+          set -euo pipefail
+
+          if command -v rsync >/dev/null 2>&1; then
+            rsync --version
+          elif [ "${RUNNER_OS}" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y rsync
+            rsync --version
+          elif [ "${RUNNER_OS}" = "macOS" ]; then
+            brew install rsync
+            rsync --version
+          else
+            echo "Unsupported runner OS for rsync setup: ${RUNNER_OS}"
+            exit 1
+          fi
+      - name: Run pytest
+        run: |
+          set -euo pipefail
+
+          pytest -v -m "${{ matrix.pytest_markers }}" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
+          python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
+      - name: Run pytest for tutorials
+        run: |
+          set -euo pipefail
+
+          pytest -v -m "tutorial_tests"
+      - name: Upload coverage report
+        if: runner.os == 'Linux'
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: html-coverage-report
+          path: html_coverage_report/
+          retention-days: 7
+      - name: Publish junit pytest report
+        if: (success() || failure()) && runner.os == 'Linux'
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: "test_junit.xml"
+          annotate_only: true
+          job_summary: false
+
+  run_tests_fourc_linux:
+    name: 4C integration tests (linux)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-minimal:main
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.67.0
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            queens-base
+            queens-all
+            queens-dev
+          frozen: true
+          activate-environment: queens-dev
+      - name: Install QUEENS in workspace
+        run: |
+          pip install -e ./ --no-deps
+      - name: Mark repo as safe for git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Install rsync
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y rsync
+      - name: Create links to 4C
+        run: |
+          ln -s /home/user/4C/bin/ config/4C_build
+      - name: Run pytest for 4C integration tests
+        run: |
+          set -euo pipefail
+
+          pytest -v -m "integration_tests_fourc" $TEST_TIMING_OPTION --color=yes

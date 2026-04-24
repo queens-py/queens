@@ -1,5 +1,5 @@
 # yamllint disable
-name: build_documentation
+name: Build documentation
 
 on:
   pull_request:
