@@ -129,27 +129,32 @@ def _validate_base_dependencies(
     error_messages: list[str] = []
 
     project = pyproject.get("project", {})
-    tool_pixi = pyproject.get("tool", {}).get("pixi", {})
-    pixi_dependencies = tool_pixi.get("dependencies", {})
-    pixi_pypi_dependencies = tool_pixi.get("pypi-dependencies", {})
+    pixi_base_feature = pyproject.get("tool", {}).get("pixi", {}).get("feature", {}).get("base", {})
+    pixi_dependencies = pixi_base_feature.get("dependencies", {})
+    pixi_pypi_dependencies = pixi_base_feature.get("pypi-dependencies", {})
 
     ordered_conda = list(pixi_dependencies.items())
 
     if not ordered_conda:
-        return ["[tool.pixi.dependencies] is empty; expected at least python and pip."]
+        return ["[tool.pixi.feature.base] is empty; expected at least python and pip."]
 
     if ordered_conda[0][0] != "python":
-        error_messages.append("The first entry in [tool.pixi.dependencies] must be 'python'.")
+        error_messages.append(
+            "The first entry in [tool.pixi.feature.base.dependencies] must be 'python'."
+        )
     else:
         requires_python = project.get("requires-python")
         if ordered_conda[0][1] != requires_python:
             error_messages.append(
-                "Mismatch between project.requires-python and tool.pixi.dependencies.python: "
+                "Mismatch between project.requires-python and "
+                "tool.pixi.feature.base.dependencies.python: "
                 f"{requires_python!r} != {ordered_conda[0][1]!r}"
             )
 
     if len(ordered_conda) < 2 or ordered_conda[1][0] != "pip":
-        error_messages.append("The second entry in [tool.pixi.dependencies] must be 'pip'.")
+        error_messages.append(
+            "The second entry in [tool.pixi.feature.base.dependencies] must be 'pip'."
+        )
 
     combined = _combine_pixi_dependencies(pixi_dependencies, pixi_pypi_dependencies)
     if not combined:
