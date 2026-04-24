@@ -19,17 +19,9 @@ env:
   TEST_TIMING_OPTION: ""
 
 jobs:
-  run_tests_core:
-    name: core tests (${{ matrix.os }})
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            pytest_markers: "unit_tests or integration_tests"
-          - os: macos-latest
-            pytest_markers: "unit_tests or integration_tests"
+  run_code_checks:
+    name: code checks
+    runs-on: ubuntu-latest
     defaults:
       run:
         shell: bash -l {0}
@@ -49,26 +41,6 @@ jobs:
       - name: Install QUEENS in workspace
         run: |
           pip install -e ./ --no-deps
-      - name: Mark repo as safe for git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Ensure rsync is available
-        run: |
-          set -euo pipefail
-
-          if command -v rsync >/dev/null 2>&1; then
-            rsync --version
-          elif [ "${RUNNER_OS}" = "Linux" ]; then
-            sudo apt-get update
-            sudo apt-get install -y rsync
-            rsync --version
-          elif [ "${RUNNER_OS}" = "macOS" ]; then
-            brew install rsync
-            rsync --version
-          else
-            echo "Unsupported runner OS for rsync setup: ${RUNNER_OS}"
-            exit 1
-          fi
       - name: Check dependency declaration integrity
         run: |
           set -euo pipefail
@@ -187,7 +159,7 @@ jobs:
             echo "Pixi environment integrity is OK."
           fi
           echo "::endgroup::"
-      - name: Code checks
+      - name: isort
         run: |
           set -euo pipefail
 
@@ -197,9 +169,17 @@ jobs:
           isort --check-only src/* tests
           echo "::endgroup::"
 
+      - name: black
+        run: |
+          set -euo pipefail
+
           echo "::group::Run black..."
           black --check src/* tests
           echo "::endgroup::"
+
+      - name: pylint
+        run: |
+          set -euo pipefail
 
           echo "::group::Run pylint on src..."
           pylint --rcfile=.pylintrc --ignore=integration_tests src/ tests/
@@ -209,35 +189,106 @@ jobs:
           pylint --rcfile=.pylintrc --disable=duplicate-code tests/integration_tests/
           echo "::endgroup::"
 
-          echo "::group::Run ruff..."
-          ruff check
-          echo "::endgroup::"
-
-          echo "::group::Run nbstripout..."
-          find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +
-
-          echo "::endgroup::"
-
           # echo "::group::Create code quality report..."
           # pylint src/ tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
           # echo "::endgroup::"
 
+      - name: ruff
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run ruff..."
+          ruff check
+          echo "::endgroup::"
+
+      - name: nbstripout
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run nbstripout..."
+          find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +
+          echo "::endgroup::"
+
+      - name: pip-licenses - check compatibility of licenses of dependencies
+        run: |
+          set -euo pipefail
+
           echo "::group::Check compatibility with licenses of dependencies..."
           pip-licenses --python=.pixi/envs/queens-all/bin/python
           echo "::endgroup::"
+
+      - name: licenserc
+        run: |
+          set -euo pipefail
 
           echo "::group::Create an rc file for the license header check..."
           python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
           echo "::endgroup::"
 
+      - name: mypy
+        run: |
+          set -euo pipefail
+
           echo "::group::Check type hinting with mypy..."
           mypy .
           echo "::endgroup::"
+
       - name: Check license headers
         uses: apache/skywalking-eyes/header@v0.8.0
       - name: Check conventional commit messages
         uses: webiny/action-conventional-commits@v1.3.0
+
+  run_tests_core:
+    name: core tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            pytest_markers: "unit_tests or integration_tests"
+          - os: macos-latest
+            pytest_markers: "unit_tests or integration_tests"
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: prefix-dev/setup-pixi@v0.9.4
+        with:
+          pixi-version: v0.67.0
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            queens-base
+            queens-all
+            queens-dev
+          frozen: true
+          activate-environment: queens-dev
+      - name: Install QUEENS in workspace
+        run: |
+          pip install -e ./ --no-deps
+      - name: Mark repo as safe for git
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - name: Ensure rsync is available
+        run: |
+          set -euo pipefail
+
+          if command -v rsync >/dev/null 2>&1; then
+            rsync --version
+          elif [ "${RUNNER_OS}" = "Linux" ]; then
+            sudo apt-get update
+            sudo apt-get install -y rsync
+            rsync --version
+          elif [ "${RUNNER_OS}" = "macOS" ]; then
+            brew install rsync
+            rsync --version
+          else
+            echo "Unsupported runner OS for rsync setup: ${RUNNER_OS}"
+            exit 1
+          fi
       - name: Run pytest
         run: |
           set -euo pipefail
