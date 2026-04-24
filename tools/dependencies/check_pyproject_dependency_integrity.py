@@ -129,7 +129,7 @@ def _validate_base_dependencies(
     error_messages: list[str] = []
 
     project = pyproject.get("project", {})
-    tool_pixi = pyproject.get("tool", {}).get("pixi", {}).get("feature", {}).get("base", {})
+    tool_pixi = pyproject.get("tool", {}).get("pixi", {})
     pixi_dependencies = tool_pixi.get("dependencies", {})
     pixi_pypi_dependencies = tool_pixi.get("pypi-dependencies", {})
 
@@ -154,22 +154,6 @@ def _validate_base_dependencies(
     combined = _combine_pixi_dependencies(pixi_dependencies, pixi_pypi_dependencies)
     if not combined:
         return error_messages
-
-    if combined[-1][0] != "queens":
-        error_messages.append(
-            "The last combined pixi dependency entry must be the local editable 'queens' package."
-        )
-    else:
-        queens_spec = combined[-1][1]
-        if not (
-            isinstance(queens_spec, dict)
-            and queens_spec.get("path") == "."
-            and queens_spec.get("editable") is True
-        ):
-            error_messages.append(
-                "The final 'queens' pixi dependency must be declared as "
-                "{ path = '.', editable = true }."
-            )
 
     stripped_combined = [
         (name, spec) for name, spec in combined if name not in {"python", "pip", "queens"}
