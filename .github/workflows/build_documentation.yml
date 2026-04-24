@@ -32,6 +32,9 @@ jobs:
           environments: queens-dev
           frozen: true
           activate-environment: queens-dev
+      - name: Install QUEENS in workspace
+        run: |
+          pip install -e ./ --no-deps
       - name: Mark repo as safe for git
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
