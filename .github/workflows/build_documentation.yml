@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   build-documentation:
+    name: Build documentation
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-minimal:main
@@ -34,7 +35,7 @@ jobs:
           activate-environment: queens-dev
       - name: Install QUEENS in workspace
         run: |
-          pip install -e ./ --no-deps
+          pixi run --locked -e queens-dev python -m pip install --no-deps -e .
       - name: Mark repo as safe for git
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -67,6 +68,7 @@ jobs:
           retention-days: 1
 
   deploy-documentation:
+    name: Deploy documentation
     needs: build-documentation
     if: ${{github.ref == 'refs/heads/main'}}
     environment:
