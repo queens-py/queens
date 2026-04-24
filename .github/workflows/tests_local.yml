@@ -159,17 +159,38 @@ jobs:
             echo "Pixi environment integrity is OK."
           fi
           echo "::endgroup::"
-      - name: isort
+
+      - name: Check compatibility of licenses of dependencies
         run: |
           set -euo pipefail
 
-          # Run all checks in one fail-fast block so a tool failure is not
-          # hidden by later bookkeeping commands such as echo/endgroup lines.
+          echo "::group::Check compatibility with licenses of dependencies..."
+          pip-licenses --python=.pixi/envs/queens-all/bin/python
+          echo "::endgroup::"
+
+      - name: Create licenserc
+        run: |
+          set -euo pipefail
+
+          echo "::group::Create an rc file for the license header check..."
+          python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
+          echo "::endgroup::"
+
+      - name: Check license headers
+        uses: apache/skywalking-eyes/header@v0.8.0
+
+      - name: Check conventional commit messages
+        uses: webiny/action-conventional-commits@v1.3.0
+
+      - name: Run isort
+        run: |
+          set -euo pipefail
+
           echo "::group::Run isort..."
           isort --check-only src/* tests
           echo "::endgroup::"
 
-      - name: black
+      - name: Run black
         run: |
           set -euo pipefail
 
@@ -177,7 +198,7 @@ jobs:
           black --check src/* tests
           echo "::endgroup::"
 
-      - name: pylint
+      - name: Run pylint
         run: |
           set -euo pipefail
 
@@ -194,7 +215,7 @@ jobs:
           # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
           # echo "::endgroup::"
 
-      - name: ruff
+      - name: Run ruff
         run: |
           set -euo pipefail
 
@@ -202,7 +223,7 @@ jobs:
           ruff check
           echo "::endgroup::"
 
-      - name: nbstripout
+      - name: Run nbstripout
         run: |
           set -euo pipefail
 
@@ -210,23 +231,7 @@ jobs:
           find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +
           echo "::endgroup::"
 
-      - name: pip-licenses - check compatibility of licenses of dependencies
-        run: |
-          set -euo pipefail
-
-          echo "::group::Check compatibility with licenses of dependencies..."
-          pip-licenses --python=.pixi/envs/queens-all/bin/python
-          echo "::endgroup::"
-
-      - name: licenserc
-        run: |
-          set -euo pipefail
-
-          echo "::group::Create an rc file for the license header check..."
-          python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
-          echo "::endgroup::"
-
-      - name: mypy
+      - name: Run mypy
         run: |
           set -euo pipefail
 
@@ -234,10 +239,6 @@ jobs:
           mypy .
           echo "::endgroup::"
 
-      - name: Check license headers
-        uses: apache/skywalking-eyes/header@v0.8.0
-      - name: Check conventional commit messages
-        uses: webiny/action-conventional-commits@v1.3.0
 
   run_tests_core:
     name: core tests (${{ matrix.os }})
