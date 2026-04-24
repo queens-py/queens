@@ -14,4 +14,4 @@ root:
 
 For reproducible installs, QUEENS also provides the composed lock file `composed.conda-lock.yml`.
 
-For more information see the [README.md](README.md).
+For more information see the [README.md](../../../README.md).
