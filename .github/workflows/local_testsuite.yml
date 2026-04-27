@@ -152,27 +152,27 @@ jobs:
           activate-environment: queens-dev
           ensure-rsync: false
       - name: Download raw core test reports from Ubuntu
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: raw-test-reports-core-Linux
           path: reports/core-ubuntu
       - name: Download raw core test reports from macOS
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: raw-test-reports-core-macOS
           path: reports/core-macos
       - name: Download raw tutorial test reports from Ubuntu
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: raw-test-reports-tutorials-Linux
           path: reports/tutorials-ubuntu
       - name: Download raw tutorial test reports from macOS
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: raw-test-reports-tutorials-macOS
           path: reports/tutorials-macos
       - name: Download raw 4C test reports
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: raw-test-reports-fourc-Linux
           path: reports/fourc-ubuntu
