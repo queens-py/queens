@@ -1,0 +1,14 @@
+---
+channels:
+  - conda-forge
+  # We want to have a reproducible setup, so we don't want default channels,
+  # which may be different for different users. All required channels should
+  # be listed explicitly here.
+  - nodefaults
+dependencies:
+  # These packages need to be installed via pip
+  - pip
+  - pip:
+      # if these packages cause problems create environment without pip; activate env; try each package: pip install --dry-run <package>
+      # 4C
+      - fourcipp

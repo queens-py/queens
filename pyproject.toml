@@ -6,10 +6,58 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "queens"
 authors = [{ name = "QUEENS developers" }]
-dynamic = ["version", "dependencies", "optional-dependencies"]
+license = "LGPL-3.0-or-later"
+license-files = ["LICENSE"]
+dynamic = ["version"]
 description = "A general purpose framework for Uncertainty Quantification, Physics-Informed Machine Learning, Bayesian Optimization, Inverse Problems and Simulation Analytics"
 readme = "README.md"
-requires-python = ">=3.10"
+requires-python = ">=3.12"
+dependencies = [
+    "setuptools>=81.0.0,<82",
+    "numba>=0.65.0",
+    "numpy>=2.4.3",
+    "pandas>=3.0.2",
+    "scikit-learn>=1.8.0",
+    "scipy>=1.17.1",
+    "dask>=2026.3.0",
+    "distributed>=2026.3.0",
+    "dask-jobqueue>=0.9.0",
+    "fabric>=3.2.3",
+    "xarray>=2026.4.0",
+    "pydoe>=0.9.9",
+    "salib>=1.5.2",
+    "vtk>=9.5.0",
+    "pyvista>=0.47.3",
+    "chaospy>=4.3.20",
+    "pyyaml>=6.0.3",
+    "jinja2>=3.1.6",
+    "arviz>=0.23.4,<1",
+    "gpflow",
+    "tensorflow>=2.18.0",
+    "tensorflow-probability>=0.25.0",
+    "tf-keras>=2.18.0",
+    "jax>=0.5.2",
+    "pymc>=5.28.4",
+    "stable-baselines3>=2.8.0",
+    "matplotlib>=3.10.8",
+    "seaborn>=0.13.2",
+    "plotly>=6.6.0",
+    "pytest>=9.0.3",
+    "py>=1.11.0",
+    "pytest-codestyle>=2.0.1",
+    "pytest-cov>=7.1.0",
+    "pytest-mock>=3.15.1",
+    "pytest-xdist>=3.8.0",
+    "mock>=5.2.0",
+    "tqdm>=4.67.3",
+    "tomli>=2.4.1",
+    "pathos>=0.3.5",
+    "black>=26.3.1",
+    "gnuplotlib>=0.46",
+    "diversipy>=0.9",
+    "particles @ git+https://github.com/nchopin/particles.git",
+    "scikit-activeml>=1.0.0",
+]
 keywords = [
     "gaussian processes",
     "uncertainty quantification",
@@ -22,20 +70,6 @@ keywords = [
 
 [tool.setuptools.dynamic]
 version = { attr = "queens.__VERSION__" }
-dependencies = { file = ["requirements.in"] }
-optional-dependencies = { safe = { file = [
-    "requirements.txt",
-] }, develop = { file = [
-    "dev-requirements.txt", # We fix the development packages, other linters might fail
-] }, safe_develop = { file = [
-    "requirements.txt",
-    "dev-requirements.txt",
-] }, fourc = { file = [
-    "src/queens_interfaces/fourc/fourc_requirements.txt",
-] }, tutorial = { file = [
-    "requirements.txt",
-    "tutorial-requirements.txt",
-] } }
 
 # cli utils
 [project.scripts]
@@ -58,6 +92,7 @@ Changelog = "https://github.com/queens-py/queens/blob/main/CHANGELOG.md"
 # Tools section
 [tool.black]
 line-length = 100
+target-version = ["py312"]
 
 [tool.isort]
 profile = "black"
@@ -94,6 +129,7 @@ markers = [
 source = ["queens"]
 parallel = true
 branch = true
+relative_files = true
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
@@ -106,61 +142,31 @@ show_missing = false
 [tool.coverage.html]
 directory = "html_coverage_report"
 
-[tool.liccheck]
-authorized_licenses = [
-    "apache",
-    "apache 2.0",
-    "Apache-2.0",
-    "apache software license",
-    "apache license, version 2.0",
-    "apache license version 2.0",
-    "apache license 2.0",
-    "apache software",
-    "bsd",
-    "new bsd",
-    "bsd license",
-    "new bsd license",
-    "3-clause bsd",
-    "BSD 3-Clause",
-    "BSD-3-Clause",
-    "simplified bsd",
-    "CMU License (MIT-CMU)",
-    "gnu lgpl",
-    "GNU Library or Lesser General Public License (LGPL)",
-    "lgpl",
-    "historical permission notice and disclaimer (hpnd)",
-    "isc",
-    "isc license",
-    "isc license (iscl)",
-    "mit",
-    "mit license",
-    "mozilla public license 2.0",
-    "mozilla public license 2.0 (mpl 2.0)",
-    "python software foundation",
-    "python software foundation license",
-    "University of Illinois/NCSA Open Source",
-    "zlib/libpng",
+[tool.pip-licenses]
+from = "mixed"
+ignore-packages = [
+    # cons is under LGPL-3
+    "cons",
+    # queens (this library) is under a LGPL-3-or-later
+    "queens",
+    # fourcipp is under MIT
+    "fourcipp",
+    # scikit-activeml is under BSD 3-Clause License
+    "scikit-activeml",
+    # namex is under Apache 2.0 see https://github.com/fchollet/namex?tab=License-1-ov-file
+    "namex",
+    # miniKanren is under a BSD-3-Clause (sligthly modified a,b,c instead of 1.,2.,3. see https://github.com/pythological/kanren/blob/main/LICENSE.txt
+    "miniKanren",
+    # vtk is under BSD-3-Clause see https://gitlab.kitware.com/vtk/vtk/-/blob/master/Copyright.txt?ref_type=heads
+    "vtk",
+    # torch is under BSD-3-Clause
+    "torch",
+    # PySide6 is under (LGPLv3 or GPLv2 or GPLv3) see https://code.qt.io/cgit/pyside/pyside-setup.git/tree/README.pyside6.md
+    "PySide6",
+    # shiboken6 is under (LGPLv3 or GPLv2 or GPLv3) see https://code.qt.io/cgit/pyside/pyside-setup.git/tree/README.pyside6.md
+    "shiboken6",
 ]
-unauthorized_licenses = [
-    "gpl v3",
-    "gpl v2",
-    "gpl",
-    "GNU general public license (gpl)",
-    "IBM Public License",
-    "RPL",
-    "Reciprocal Public License",
-    "Sleepycat License",
-]
-[tool.liccheck.authorized_packages]
-# filelock has public domain license without restrictions
-# see https://github.com/tox-dev/py-filelock
-filelock = ">=3"
-# cons is under LGPL-3
-cons = ">=0.4.5"
-# namex is under Apache 2.0 see https://github.com/fchollet/namex?tab=License-1-ov-file
-namex = "==0.0.8"
-# setuptools is under MIT License
-setuptools = ">=79.0.0"
+allow-only="MIT;MIT License;MIT-CMU;BSD;BSD License;BSD-2-Clause;BSD-3-Clause;BSD 3-Clause;3-Clause BSD License;BSD-2-Clause AND Apache-2.0 WITH LLVM-exception;BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0;Apache-2.0;Apache License 2.0;Apache Software License;Apache-2.0 OR BSD-3-Clause;Apache-2.0 OR BSD-2-Clause;Apache-2.0 AND CNRI-Python;Apache-2.0 AND MIT;ISC;PSF-2.0;Python Software Foundation License;MPL-2.0;Mozilla Public License 2.0;Mozilla Public License 2.0 (MPL 2.0);MPL-2.0 AND MIT;LGPL;LGPL-2.1;LGPL-3.0;LGPL-3.0-or-later;Zlib;0BSD;CC0-1.0"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -181,3 +187,121 @@ exclude = '''(?x)(
 [[tool.mypy.overrides]]
 module = ["yaml"]
 follow_untyped_imports = true
+
+[tool.pixi.workspace]
+channels = ["conda-forge", "nodefaults"]
+platforms = ["linux-64", "osx-arm64"]
+
+[tool.pixi.feature.base.dependencies]
+python = ">=3.12"
+pip = ">=26.0.1"
+setuptools = ">=81.0.0,<82"
+numba = ">=0.65.0"
+numpy = ">=2.4.3"
+pandas = ">=3.0.2"
+scikit-learn = ">=1.8.0"
+scipy = ">=1.17.1"
+dask = ">=2026.3.0"
+distributed = ">=2026.3.0"
+dask-jobqueue = ">=0.9.0"
+fabric = ">=3.2.3"
+xarray = ">=2026.4.0"
+pydoe = ">=0.9.9"
+salib = ">=1.5.2"
+vtk = ">=9.5.0"
+pyvista = ">=0.47.3"
+chaospy = ">=4.3.20"
+pyyaml = ">=6.0.3"
+jinja2 = ">=3.1.6"
+arviz = ">=0.23.4,<1"
+gpflow = ">=2.9.2"
+tensorflow = ">=2.18.0"
+tensorflow-probability = ">=0.25.0"
+tf-keras = ">=2.18.0"
+jax = ">=0.5.2"
+pymc = ">=5.28.4"
+stable-baselines3 = ">=2.8.0"
+matplotlib = ">=3.10.8"
+seaborn = ">=0.13.2"
+plotly = ">=6.6.0"
+pytest = ">=9.0.3"
+py = ">=1.11.0"
+pytest-codestyle = ">=2.0.1"
+pytest-cov = ">=7.1.0"
+pytest-mock = ">=3.15.1"
+pytest-xdist = ">=3.8.0"
+mock = ">=5.2.0"
+tqdm = ">=4.67.3"
+tomli = ">=2.4.1"
+pathos = ">=0.3.5"
+black = ">=26.3.1"
+
+[tool.pixi.feature.base.pypi-dependencies]
+gnuplotlib = ">=0.46"
+diversipy = ">=0.9"
+particles = { git = "https://github.com/nchopin/particles.git"}
+scikit-activeml= ">=1.0.0"
+
+[tool.pixi.feature.dev.dependencies]
+pylint = ">=4.0.5"
+isort = ">=8.0.1"
+pre-commit = ">=4.5.1"
+pre-commit-hooks = ">=5.0.0"
+sphinx = ">=9.1.0"
+nbsphinx = ">=0.9.8"
+pydata-sphinx-theme = ">=0.17.0"
+pandoc = "*"
+commitizen = ">=4.13.10"
+docformatter = ">=1.7.7"
+yamllint = ">=1.38.0"
+ruff = ">=0.15.10"
+nbstripout = ">=0.9.1"
+myst-parser = ">=5.0.0"
+testbook = ">=0.4.2"
+ipykernel = ">=7.2.0"
+mypy = ">=1.20.1"
+pip-licenses = ">=5.5"
+
+[tool.pixi.feature.dev.pypi-dependencies]
+pylint-exit = ">=1.2.0"
+licenseheaders = ">=0.8.8"
+
+[tool.pixi.feature.tutorials.dependencies]
+scikit-fem = ">=12.0.1"
+
+[tool.pixi.feature.fourc.dependencies]
+[tool.pixi.feature.fourc.pypi-dependencies]
+fourcipp = ">=1.91.0"
+
+[tool.pixi.environments]
+queens-base = { features = ["base"], no-default-feature = true}
+queens-dev = { features = ["base", "dev", "tutorials", "fourc"], no-default-feature = true}
+queens-all = { features = ["base","tutorials", "fourc"], no-default-feature = true}
+
+[dependency-groups]
+dev = [  "pylint>=4.0.5",
+    "isort>=8.0.1",
+    "pre-commit>=4.5.1",
+    "pre-commit-hooks>=5.0.0",
+    "sphinx>=9.1.0",
+    "nbsphinx>=0.9.8",
+    "pydata-sphinx-theme>=0.17.0",
+    "pandoc",
+    "commitizen>=4.13.10",
+    "docformatter>=1.7.7",
+    "yamllint>=1.38.0",
+    "ruff>=0.15.10",
+    "nbstripout>=0.9.1",
+    "myst-parser>=5.0.0",
+    "testbook>=0.4.2",
+    "ipykernel>=7.2.0",
+    "mypy>=1.20.1",
+    "pip-licenses>=5.5",
+    "pylint-exit>=1.2.0",
+    "licenseheaders>=0.8.8",
+]
+
+[project.optional-dependencies]
+tutorials =["scikit-fem>=12.0.1"]
+fourc = ["fourcipp>=1.91.0"]
+all = ["queens[fourc]", "queens[tutorials]"]

@@ -6,11 +6,12 @@ We believe that documentation is essential and therefore welcome any improvement
 
 ## :woman_teacher: Build the documentation
 
-To build the documentation, you first need to set up a QUEENS environment as described in the [README.md](../README.md).
-In this Python environment, you also need to install packages for QUEENS development and tutorials and register the environment as a Jupyter kernel:
+To build the documentation, first set up a QUEENS environment as described in the
+[README](../README.md). For documentation work, use the development setup there, which
+includes the required documentation and tutorial dependencies.
+Next, register the environment as a Jupyter kernel with:
 
 ```bash
-pip install -e .[safe_develop,tutorial]
 python -m ipykernel install --user --name queens --display-name "Python (queens)"
 ```
 

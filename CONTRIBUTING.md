@@ -45,14 +45,12 @@ have to solve them yourself.
 ### :fishing_pole_and_fish: Pull requests
 
 #### 1. Install QUEENS in developer mode
-Install QUEENS as described in the [README.md](README.md) and run:
+Install QUEENS as described in the [README.md](README.md). The development environment is covered by
+the standard `mamba env ...` workflow in the README, so no additional dependency installation step is
+required. To expose your local checkout inside that environment, run:
 <!---installation_develop marker, do not remove this comment-->
 ```
-pip install -e .[develop]
-```
-or to do a safe develop install use:
-```
-pip install -e .[safe_develop]
+pip install --no-deps -e .
 ```
 <!---installation_develop marker, do not remove this comment-->
 

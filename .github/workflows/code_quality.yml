@@ -1,0 +1,235 @@
+# yamllint disable
+name: Code quality
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
+  TEST_TIMING_OPTION: ""
+
+jobs:
+  run_code_checks:
+    name: code checks
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash -l {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            queens-base
+            queens-all
+            queens-dev
+          activate-environment: queens-dev
+          ensure-rsync: false
+      - name: Check dependency declaration integrity
+        run: |
+          set -euo pipefail
+          # Validate that the PEP-style dependency declarations in pyproject.toml
+          # stay aligned with the pixi dependency sections.
+          python3 tools/dependencies/check_pyproject_dependency_integrity.py \
+            --path pyproject.toml \
+            --allow-version-mismatch gpflow
+      - name: Check pixi environment integrity
+        id: environment_integrity
+        run: |
+          set -euo pipefail
+
+          base_ref="main"
+          pyproject_diff_file="$(mktemp)"
+          git fetch --no-tags --depth=1 origin "${base_ref}"
+
+          echo "::group::Check if dependency declarations changed..."
+          pyproject_changed=false
+          # The diff helper returns:
+          #   0 if dependency-related declarations are unchanged,
+          #   1 if there is a relevant dependency diff,
+          #   >1 if the diff command itself failed.
+          if python3 tools/dependencies/diff_pyproject_dependency_declarations.py \
+            --base-ref "origin/${base_ref}" \
+            --head-ref HEAD \
+            > "${pyproject_diff_file}"; then
+            pyproject_changed=false
+          else
+            # $? is the exit status of the last command.
+            # when arriving here, the diff command found a diff (exit status 1) or
+            # the diff command itself failed (exit status >1).
+            pyproject_check_status=$?
+            if [ "${pyproject_check_status}" -eq 1 ]; then
+              pyproject_changed=true
+            else
+              echo "Failed to compare dependency-related pyproject.toml sections."
+              exit "${pyproject_check_status}"
+            fi
+          fi
+          echo "Pyproject.toml dependency sections changed compared to ${base_ref}: ${pyproject_changed}"
+          echo "::endgroup::"
+
+          echo "::group::Check if pixi.lock would be updated by pixi lock..."
+          # Detect any change (modified, deleted, untracked, etc.)
+          if [ -n "$(git status --porcelain -- pixi.lock)" ]; then
+            echo "Restoring pixi.lock from HEAD..."
+            git restore --source=HEAD --staged --worktree pixi.lock 2>/dev/null
+          fi
+          lock_update_possible=false
+          # deactivate exit on error to allow `pixi lock --check --dry-run` to fail
+          set +e
+          # `pixi lock --check --dry-run` exits non-zero when the current pyproject.toml
+          # would produce a different pixi.lock without writing the lockfile to disk.
+          pixi lock --check --dry-run
+          exit_code_pixi_lock_check=$?
+          # reactivate exit on error
+          set -e
+          echo "exit code: $exit_code_pixi_lock_check"
+          if [ $exit_code_pixi_lock_check -ne 0 ]; then
+            lock_update_possible=true
+          fi
+          echo "pixi.lock would be updated by pixi lock: ${lock_update_possible}"
+          echo "::endgroup::"
+
+          {
+            echo "pyproject_changed=${pyproject_changed}"
+            echo "lock_update_possible=${lock_update_possible}"
+            echo "compare_ref=${base_ref}"
+          } >> "$GITHUB_OUTPUT"
+
+
+          # ---- Write rich Markdown to Step Summary ----
+          {
+            echo "### Pixi Environment Integrity"
+            echo ""
+            echo "- dependency-relevant \`pyproject.toml\` changes vs \`${base_ref}\`: ${pyproject_changed}"
+            echo "- \`pixi.lock\` would change if refreshed: ${lock_update_possible}"
+
+            if [ "${pyproject_changed}" = "true" ]; then
+              echo ""
+              echo "<details>"
+              echo "<summary>Dependency diff</summary>"
+              echo ""
+              echo '```diff'
+              cat "${pyproject_diff_file}"
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+          # ---- Write clean, readable logs ----
+          echo "::group::Summary Pixi Environment Integrity"
+          echo "----------------------------------------"
+          echo "pyproject changes vs ${base_ref}: ${pyproject_changed}"
+          echo "pixi.lock update possible: ${lock_update_possible}"
+
+          if [ "${pyproject_changed}" = "true" ]; then
+            echo "::group::Dependency diff"
+            cat "${pyproject_diff_file}"
+            echo "::endgroup::"
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Do integrity check..."
+          # Only fail if the dependency declarations changed and the lockfile is
+          # stale. A stale lockfile without dependency declaration changes is
+          # reported in the summary but does not block the workflow here.
+          if [ "${pyproject_changed}" = "true" ] && [ "${lock_update_possible}" = "true" ]; then
+            echo "pyproject.toml dependency sections changed compared to main"
+            echo "AND pixi.lock would be updated by pixi lock."
+            echo "Please regenerate and commit pixi.lock for this change."
+            exit 1
+          else
+            echo "Pixi environment integrity is OK."
+          fi
+          echo "::endgroup::"
+
+      - name: Check compatibility of licenses of dependencies
+        run: |
+          set -euo pipefail
+
+          echo "::group::Check compatibility with licenses of dependencies..."
+          pip-licenses --python=.pixi/envs/queens-all/bin/python
+          echo "::endgroup::"
+
+      - name: Create licenserc
+        run: |
+          set -euo pipefail
+
+          echo "::group::Create an rc file for the license header check..."
+          python .gitlab/pipeline_utils/create_licenserc.py --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" --text_file "license_header.tmpl" --output_file ".licenserc.yaml" --placeholder "license_header"
+          echo "::endgroup::"
+
+      - name: Check license headers
+        uses: apache/skywalking-eyes/header@v0.8.0
+
+      - name: Check conventional commit messages
+        uses: webiny/action-conventional-commits@v1.3.0
+
+      - name: Run isort
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run isort..."
+          isort --check-only src/* tests
+          echo "::endgroup::"
+
+      - name: Run black
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run black..."
+          black --check src/* tests
+          echo "::endgroup::"
+
+      - name: Run pylint
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run pylint on src..."
+          pylint --rcfile=.pylintrc --ignore=integration_tests src/ tests/
+          echo "::endgroup::"
+
+          echo "::group::Run pylint on integration tests..."
+          pylint --rcfile=.pylintrc --disable=duplicate-code tests/integration_tests/
+          echo "::endgroup::"
+
+          # echo "::group::Create code quality report..."
+          # pylint src/ tests --rcfile=.pylintrc --output-format=json:pylint_warnings.json --fail-under 0
+          # python .gitlab/pipeline_utils/code_quality_creator.py pylint_warnings.json
+          # echo "::endgroup::"
+
+      - name: Run ruff
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run ruff..."
+          ruff check
+          echo "::endgroup::"
+
+      - name: Run nbstripout
+        run: |
+          set -euo pipefail
+
+          echo "::group::Run nbstripout..."
+          find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +
+          echo "::endgroup::"
+
+      - name: Run mypy
+        run: |
+          set -euo pipefail
+
+          echo "::group::Check type hinting with mypy..."
+          mypy .
+          echo "::endgroup::"

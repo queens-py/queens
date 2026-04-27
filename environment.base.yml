@@ -1,0 +1,85 @@
+---
+name: queens
+channels:
+  - conda-forge
+  # We want to have a reproducible setup, so we don't want default channels,
+  # which may be different for different users. All required channels should
+  # be listed explicitly here.
+  - nodefaults
+dependencies:
+  - python
+  # to ensure that performance optimized backends are used,
+  # the following packages are installed from conda
+  # for example BLAS libraries like Intel MKL for numpy
+  - setuptools<82 #restriction due to gpflow needing pkg_resources
+  - cython
+  - numba
+  - numpy
+  - pandas
+  - scikit-learn
+  - scipy
+
+  # Dask packages
+  - dask
+  - distributed  # dask.distributed
+  - dask-jobqueue
+  - bokeh  # for dask dashboard
+  - fabric   # for ssh connection
+
+  # Others
+  - xarray  # Special array format
+  - pydoe  # design of experiments
+  - SALib  # for sensitivity analysis
+  - vtk  # vtk format handler
+  - pyvista
+  - autograd  # wrapper around numpy for automated differentiation
+  - chaospy  # polynomial chaos
+  - pyyaml  # to load yaml files
+  - jinja2
+
+  # Machine learning libraries
+  - arviz  # Bayesian visualization
+  - gpflow  # LV and variational GPs
+  - optax  # google jax based optimizer
+  - tensorflow
+  - tensorflow-probability
+  - tf-keras
+  - jax
+  - pymc >= 5.28.4
+  - stable-baselines3
+
+  # making fancy plots
+  - matplotlib
+  - seaborn
+  - plotly
+
+  # testing framework
+  - pytest
+  - py
+  - pytest-codestyle
+  - pytest-cov
+  - pytest-mock
+  - pytest-xdist
+  - mock
+  - py
+
+  # Terminal utils
+  - tqdm  # a smart progress meter for loops
+  - tomli  # TOML parser
+
+  # Other Python stuff
+  - pathos  # multiprocessing with more complex python objects
+  - black>=24.4.2  # formatter for code created by QUEENS
+
+
+
+  # These packages need to be installed via pip
+  - pip
+  - pip:
+      # if these packages cause problems create environment without pip; activate env; try each package: pip install --dry-run <package>
+      - gnuplotlib  # for gnuplot based terminal ascii plots
+      - diversipy # sampling from space filling subsets # has no notable dependencies
+      # Chopin et al. sequential Monte-Carlo, filtering/smoothing package
+      # - particles # currently causes problem by requiring numpy<2
+      - particles@git+https://github.com/nchopin/particles.git
+      - scikit-activeml>=0.4.1

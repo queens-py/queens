@@ -1,0 +1,35 @@
+---
+channels:
+  - conda-forge
+  # We want to have a reproducible setup, so we don't want default channels,
+  # which may be different for different users. All required channels should
+  # be listed explicitly here.
+  - nodefaults
+dependencies:
+  # Development
+  - pylint>=2.16
+  - isort>=5.0
+  - pre-commit
+  - pre-commit-hooks>=4.4.0
+  - sphinx
+  - nbsphinx
+  - pydata-sphinx-theme
+  - pandoc
+  - commitizen>=3.12.0
+  - docformatter>=1.5.1
+  - yamllint>=1.19.0
+  - ruff
+  - nbstripout
+  - myst-parser
+  - testbook
+  - ipykernel
+  - mypy
+
+
+  # These packages need to be installed via pip
+  - pip
+  - pip:
+      # if these packages cause problems create environment without pip; activate env; try each package: pip install --dry-run <package>
+      - liccheck
+      - pylint-exit
+      - licenseheaders

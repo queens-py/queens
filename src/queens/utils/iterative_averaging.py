@@ -273,11 +273,11 @@ def l1_norm(vector: NumericalValue, averaged: bool = False) -> float | np.floati
     Returns:
         L1 norm of the vector
     """
-    vector = np.array(vector).flatten()
-    vector = np.nan_to_num(vector)
-    norm = np.sum(np.abs(vector))
+    vector_array = np.array(vector).flatten()
+    vector_array = np.nan_to_num(vector_array)
+    norm = np.sum(np.abs(vector_array))
     if averaged:
-        norm /= len(vector)
+        norm /= vector_array.size
     return norm
 
 
@@ -291,11 +291,11 @@ def l2_norm(vector: NumericalValue, averaged: bool = False) -> float | np.floati
     Returns:
         L2 norm of the vector
     """
-    vector = np.array(vector).flatten()
-    vector = np.nan_to_num(vector)
-    norm = np.sum(vector**2) ** 0.5
+    vector_array = np.array(vector).flatten()
+    vector_array = np.nan_to_num(vector_array)
+    norm = np.sum(vector_array**2) ** 0.5
     if averaged:
-        norm /= len(vector) ** 0.5
+        norm /= vector_array.size**0.5
     return norm
 
 

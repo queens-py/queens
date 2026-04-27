@@ -17,6 +17,7 @@
 Modules for parameter studies, uncertainty quantification, sensitivity
 analysis, Bayesian inverse analysis, and optimization.
 """
+
 from typing import TYPE_CHECKING
 
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map

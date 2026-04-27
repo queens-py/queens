@@ -57,15 +57,38 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 <!---installation marker, do not remove this comment-->
 Clone the QUEENS repository to your local machine. Navigate to its base directory, then:
 ```bash
-conda env create
+mamba env create -n queens -f environment.base.yml
 conda activate queens
-pip install -e .
+pip install --no-deps -e .
 ```
 
-**Note**: This installs QUEENS without any fixed dependency versions. In most cases this is no problem and gives you more freedom to install additional packages within your environment. Should there be a problem you can play it safe with fixed versions via
+This installs the core QUEENS environment. The local checkout is then exposed in that environment
+via `pip install --no-deps -e .`, which does not install any additional Python dependencies.
+
+Optional feature sets can be added afterwards when needed:
 ```bash
-pip install -e .[safe]
+mamba env update -n queens -f environment.dev.yml
+mamba env update -n queens -f environment.tutorials.yml
+mamba env update -n queens -f environment.fourc.yml
 ```
+
+These optional environment files are only needed if you want the corresponding features:
+
+* `environment.dev.yml` for development tools such as linting, type checks, and documentation builds
+* `environment.tutorials.yml` for the tutorial notebooks and examples
+* `environment.fourc.yml` for workflows that integrate QUEENS with [4C](https://github.com/4C-multiphysics/4C)
+
+If you only want to use the core QUEENS functionality, you can skip those optional environment updates.
+
+For development or if you encounter any problems, we recommend the reproducible `conda-lock` setup because it matches the CI pipeline environment:
+```bash
+conda-lock install -n queens composed.conda-lock.yml
+conda activate queens
+pip install --no-deps -e .
+```
+
+This is the safest option for contributors and debugging because it installs the exact dependency set
+used in CI. The tradeoff is that `composed.conda-lock.yml` includes all optional dependency groups as well.
 
 <!---installation marker, do not remove this comment-->
 

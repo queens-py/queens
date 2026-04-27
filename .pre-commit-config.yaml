@@ -1,7 +1,7 @@
 default_stages: [pre-commit, pre-merge-commit, pre-push, manual]
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.2 # Ruff version
+    rev: v0.9.2  # Ruff version
     hooks:
       # Run the linter.
       # Needs to placed before black, isort, and other formatters
@@ -25,12 +25,22 @@ repos:
         entry: check-added-large-files
         language: python
         types: [text]
+        exclude: '^(composed\.conda-lock\.yml|pixi\.lock)$'
       - id: check-license-header
         name: check for correct license header
         entry: licenseheaders
         args: ["-t", "license_header.tmpl", "--files"]
         language: python
         types: ["python"]
+        pass_filenames: true
+      - id: check-pyproject-dependency-integrity
+        name: check pyproject dependency integrity
+        entry: >
+          python3 tools/dependencies/check_pyproject_dependency_integrity.py
+          --allow-version-mismatch gpflow
+          --path
+        language: system
+        files: '^pyproject\.toml$'
         pass_filenames: true
       - id: docformatter
         name: docformatter
@@ -70,6 +80,7 @@ repos:
           - -f=colored
         language: python
         types: ["yaml"]
+        exclude: '^composed\.conda-lock\.yml$'
       - id: pylint
         name: pylint
         entry: pylint

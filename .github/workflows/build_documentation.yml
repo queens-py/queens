@@ -1,5 +1,5 @@
 # yamllint disable
-name: build_documentation
+name: Build documentation
 
 on:
   pull_request:
@@ -15,6 +15,7 @@ permissions:
 
 jobs:
   build-documentation:
+    name: Build documentation
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-minimal:main
@@ -23,26 +24,18 @@ jobs:
       run:
         shell: bash -l {0}
     steps:
-      - uses: actions/checkout@v4
-      - name: Mark repo as safe for git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Install rsync
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rsync
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: queens-dev
+          activate-environment: queens-dev
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/bin/ config/4C_build
-      - name: Create Python environment
-        id: environment
-        uses: ./.github/actions/create_python_environment
-      - name: Add tutorial dependencies
-        env:
-          PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
+      - name: Register Jupyter kernel
         run: |
-          $PYTHON_PACKAGE_MANAGER activate queens
-          pip install -e .[tutorial]
           python -m ipykernel install --user --name queens --display-name "Python (queens)"
       - name: Install xvfb
         run: |
@@ -50,21 +43,20 @@ jobs:
           apt-get install -y xvfb
       - name: Sphinx build
         env:
-          PYTHON_PACKAGE_MANAGER: ${{steps.environment.outputs.ppm}}
           PYTHONPATH: ${{ github.workspace }}
         run: |
           set -euxo pipefail
-          $PYTHON_PACKAGE_MANAGER activate queens
           sphinx-apidoc -o doc/source src/ -fMT
           cd doc
           xvfb-run -a sphinx-build -b html -d build/doctrees source build/html -W
       - name: Upload html
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: doc/build/html
           retention-days: 1
 
   deploy-documentation:
+    name: Deploy documentation
     needs: build-documentation
     if: ${{github.ref == 'refs/heads/main'}}
     environment:
@@ -74,4 +66,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

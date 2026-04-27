@@ -5,6 +5,6 @@ This package contains drivers and utilities realted to the for multiphysics code
 ## Material random field interface
 In order to create random material field in combintation with 4C, we require the package [fourcipp](https://github.com/4C-multiphysics/fourcipp). Therefore install QUEENS via (in the QUEENS main directory):
 ```
-pip install -e .[dev,fourc]
+mamba env update -n queens -f environment.fourc.yml
 ```
-(You can omit the `dev` if you don't require the additional development packages).
+For this you need a QUEENS environment, for instructions on how to set it up see the [README.md](../README.md).

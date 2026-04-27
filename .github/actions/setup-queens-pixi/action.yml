@@ -1,0 +1,77 @@
+name: Setup QUEENS pixi environment
+description: Set up pixi, install QUEENS editable into the selected environment, and optionally ensure rsync is available.
+
+inputs:
+  pixi-version:
+    description: Pixi version to install.
+    required: false
+    default: v0.67.0
+  cache:
+    description: Whether setup-pixi should enable caching.
+    required: false
+    default: "true"
+  cache-write:
+    description: Whether setup-pixi should write to the cache.
+    required: false
+    default: "false"
+  environments:
+    description: Whitespace-separated list of pixi environments to install.
+    required: false
+    default: queens-dev
+  activate-environment:
+    description: Pixi environment to activate and use for the editable install.
+    required: false
+    default: queens-dev
+  install-editable:
+    description: Whether to install QUEENS editable into the selected pixi environment.
+    required: false
+    default: "true"
+  ensure-rsync:
+    description: Whether to verify that rsync is available, installing it if necessary.
+    required: false
+    default: "true"
+
+runs:
+  using: composite
+  steps:
+    - uses: prefix-dev/setup-pixi@v0.9.4
+      with:
+        pixi-version: ${{ inputs.pixi-version }}
+        cache: ${{ inputs.cache }}
+        cache-write: ${{ inputs.cache-write }}
+        environments: ${{ inputs.environments }}
+        frozen: true
+        activate-environment: ${{ inputs.activate-environment }}
+
+    - name: Install QUEENS in workspace
+      if: ${{ inputs.install-editable != 'false' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        pixi run --locked -e "${{ inputs.activate-environment }}" python -m pip install --no-deps -e .
+
+    - name: Mark repo as safe for git
+      shell: bash
+      run: |
+        set -euo pipefail
+        git config --global --add safe.directory "${GITHUB_WORKSPACE}"
+
+    - name: Ensure rsync is available
+      if: ${{ inputs.ensure-rsync != 'false' }}
+      shell: bash
+      run: |
+        set -euo pipefail
+
+        if command -v rsync >/dev/null 2>&1; then
+          rsync --version
+        elif [ "${RUNNER_OS}" = "Linux" ]; then
+          sudo apt-get update
+          sudo apt-get install -y rsync
+          rsync --version
+        elif [ "${RUNNER_OS}" = "macOS" ]; then
+          brew install rsync
+          rsync --version
+        else
+          echo "Unsupported runner OS for rsync setup: ${RUNNER_OS}"
+          exit 1
+        fi
