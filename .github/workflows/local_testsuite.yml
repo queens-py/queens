@@ -139,6 +139,7 @@ jobs:
 
   report_test_results:
     name: report test results
+    if: always()
     runs-on: ubuntu-latest
     needs:
       - run_tests_core
