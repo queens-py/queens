@@ -12,7 +12,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 env:
   # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
