@@ -14,7 +14,6 @@ readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
     "setuptools>=81.0.0,<82",
-    "cython>=3.2.4",
     "numba>=0.65.0",
     "numpy>=2.4.3",
     "pandas>=3.0.2",
@@ -198,7 +197,6 @@ platforms = ["linux-64", "osx-arm64"]
 python = ">=3.12"
 pip = ">=26.0.1"
 setuptools = ">=81.0.0,<82"
-cython = ">=3.2.4"
 numba = ">=0.65.0"
 numpy = ">=2.4.3"
 pandas = ">=3.0.2"
