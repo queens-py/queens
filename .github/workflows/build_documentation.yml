@@ -50,7 +50,7 @@ jobs:
           cd doc
           xvfb-run -a sphinx-build -b html -d build/doctrees source build/html -W
       - name: Upload html
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           path: doc/build/html
           retention-days: 1

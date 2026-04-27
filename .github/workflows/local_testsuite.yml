@@ -200,7 +200,7 @@ jobs:
           annotate_only: true
           job_summary: false
       - name: Upload combined coverage report
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           name: html-coverage-report
           path: html_coverage_report/
