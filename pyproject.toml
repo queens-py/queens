@@ -129,6 +129,7 @@ markers = [
 source = ["queens"]
 parallel = true
 branch = true
+relative_files = true
 
 [tool.coverage.report]
 # Regexes for lines to exclude from consideration
