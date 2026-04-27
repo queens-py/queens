@@ -78,7 +78,7 @@ jobs:
           path: html_coverage_report/
           retention-days: 7
   run_tests_fourc_linux:
-    name: 4C integration tests (linux)
+    name: 4C integration tests (ubuntu-latest)
     runs-on: ubuntu-latest
     container:
       image: ghcr.io/4c-multiphysics/4c-minimal:main
