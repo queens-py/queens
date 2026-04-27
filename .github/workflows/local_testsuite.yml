@@ -75,11 +75,6 @@ jobs:
 
           pytest -v -m "${{ matrix.pytest_markers }}" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit.xml
           python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
-      - name: Run pytest for tutorials
-        run: |
-          set -euo pipefail
-
-          pytest -v -m "tutorial_tests"
       - name: Upload coverage report
         if: runner.os == 'Linux'
         uses: actions/upload-pages-artifact@v3
@@ -88,13 +83,25 @@ jobs:
           path: html_coverage_report/
           retention-days: 7
       - name: Publish junit pytest report
-        if: (success() || failure()) && runner.os == 'Linux'
+        if: success() || failure()
         uses: mikepenz/action-junit-report@v5
         with:
           report_paths: "test_junit.xml"
           annotate_only: true
           job_summary: false
+      - name: Run pytest for tutorials
+        run: |
+          set -euo pipefail
 
+          pytest -v -m  "tutorial_tests" --cov --cov-report=term --cov-report=html:html_coverage_report --cov-report=xml:xml_coverage_report.xml $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit_tutorials.xml
+          python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
+      - name: Publish junit pytest report
+        if: (success() || failure()) && runner.os == 'Linux'
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: "test_junit_tutorials.xml"
+          annotate_only: true
+          job_summary: false
   run_tests_fourc_linux:
     name: 4C integration tests (linux)
     runs-on: ubuntu-latest
@@ -119,7 +126,7 @@ jobs:
           activate-environment: queens-dev
       - name: Install QUEENS in workspace
         run: |
-          pip install -e ./ --no-deps
+          pixi run --locked -e queens-dev python -m pip install --no-deps -e .
       - name: Mark repo as safe for git
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
@@ -134,4 +141,12 @@ jobs:
         run: |
           set -euo pipefail
 
-          pytest -v -m "integration_tests_fourc" $TEST_TIMING_OPTION --color=yes
+          pytest -v -m "integration_tests_fourc" --cov --cov-report=term $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit_fourc.xml
+          python .github/xml_summaries_to_md.py test_junit.xml xml_coverage_report.xml >> $GITHUB_STEP_SUMMARY
+      - name: Publish junit pytest report
+        if: success() || failure()
+        uses: mikepenz/action-junit-report@v5
+        with:
+          report_paths: "test_junit_fourc.xml"
+          annotate_only: true
+          job_summary: false
