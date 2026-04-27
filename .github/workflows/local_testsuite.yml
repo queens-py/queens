@@ -38,10 +38,7 @@ jobs:
         with:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          environments: >-
-            queens-base
-            queens-all
-            queens-dev
+          environments: queens-dev
           activate-environment: queens-dev
       - name: Run pytest for unit tests and integration tests
         run: |
@@ -53,6 +50,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-test-reports-core-${{ runner.os }}
+          include-hidden-files: true
           path: |
             .coverage.core.${{ runner.os }}
             test_junit_core_${{ runner.os }}.xml
@@ -77,10 +75,7 @@ jobs:
         with:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          environments: >-
-            queens-base
-            queens-all
-            queens-dev
+          environments: queens-dev
           activate-environment: queens-dev
       - name: Run pytest for tutorial tests
         run: |
@@ -92,6 +87,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-test-reports-tutorials-${{ runner.os }}
+          include-hidden-files: true
           path: |
             .coverage.tutorials.${{ runner.os }}
             test_junit_tutorials_${{ runner.os }}.xml
@@ -113,10 +109,7 @@ jobs:
         with:
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
-          environments: >-
-            queens-base
-            queens-all
-            queens-dev
+          environments: queens-dev
           activate-environment: queens-dev
       - name: Create links to 4C
         run: |
@@ -131,6 +124,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: raw-test-reports-fourc-${{ runner.os }}
+          include-hidden-files: true
           path: |
             .coverage.fourc.${{ runner.os }}
             test_junit_fourc_${{ runner.os }}.xml
