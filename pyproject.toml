@@ -28,7 +28,6 @@ dependencies = [
     "salib>=1.5.2",
     "vtk>=9.5.0",
     "pyvista>=0.47.3",
-    "autograd>=1.8.0",
     "chaospy>=4.3.20",
     "pyyaml>=6.0.3",
     "jinja2>=3.1.6",
@@ -211,7 +210,6 @@ pydoe = ">=0.9.9"
 salib = ">=1.5.2"
 vtk = ">=9.5.0"
 pyvista = ">=0.47.3"
-autograd = ">=1.8.0"
 chaospy = ">=4.3.20"
 pyyaml = ">=6.0.3"
 jinja2 = ">=3.1.6"
