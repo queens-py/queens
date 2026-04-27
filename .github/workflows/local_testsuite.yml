@@ -47,7 +47,7 @@ jobs:
           COVERAGE_FILE=".coverage.core.${{ runner.os }}" pytest -v -m "${{ matrix.pytest_markers }}" --cov --cov-report=term $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit_core_${{ runner.os }}.xml
       - name: Upload raw core test reports
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: raw-test-reports-core-${{ runner.os }}
           include-hidden-files: true
@@ -84,7 +84,7 @@ jobs:
           COVERAGE_FILE=".coverage.tutorials.${{ runner.os }}" pytest -v -m "tutorial_tests" --cov --cov-report=term $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit_tutorials_${{ runner.os }}.xml
       - name: Upload raw tutorial test reports
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: raw-test-reports-tutorials-${{ runner.os }}
           include-hidden-files: true
@@ -121,7 +121,7 @@ jobs:
           COVERAGE_FILE=".coverage.fourc.${{ runner.os }}" pytest -v -m "integration_tests_fourc" --cov --cov-report=term $TEST_TIMING_OPTION --color=yes -o junit_logging=all --junitxml=test_junit_fourc_${{ runner.os }}.xml
       - name: Upload raw 4C test reports
         if: success() || failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: raw-test-reports-fourc-${{ runner.os }}
           include-hidden-files: true
