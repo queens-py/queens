@@ -194,7 +194,7 @@ jobs:
             xml_coverage_report.xml >> "$GITHUB_STEP_SUMMARY"
       - name: Publish combined junit pytest report
         if: success() || failure()
-        uses: mikepenz/action-junit-report@v5
+        uses: mikepenz/action-junit-report@v6
         with:
           report_paths: "reports/**/*.xml"
           annotate_only: true
