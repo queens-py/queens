@@ -25,24 +25,12 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v5
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: ./.github/actions/setup-queens-pixi
         with:
-          pixi-version: v0.67.0
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
           environments: queens-dev
-          frozen: true
           activate-environment: queens-dev
-      - name: Install QUEENS in workspace
-        run: |
-          pixi run --locked -e queens-dev python -m pip install --no-deps -e .
-      - name: Mark repo as safe for git
-        run: |
-          git config --global --add safe.directory "$GITHUB_WORKSPACE"
-      - name: Install rsync
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y rsync
       - name: Create links to 4C
         run: |
           ln -s /home/user/4C/bin/ config/4C_build

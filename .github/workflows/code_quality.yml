@@ -26,20 +26,16 @@ jobs:
         shell: bash -l {0}
     steps:
       - uses: actions/checkout@v5
-      - uses: prefix-dev/setup-pixi@v0.9.4
+      - uses: ./.github/actions/setup-queens-pixi
         with:
-          pixi-version: v0.67.0
           cache: true
           cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
           environments: >-
             queens-base
             queens-all
             queens-dev
-          frozen: true
           activate-environment: queens-dev
-      - name: Install QUEENS in workspace
-        run: |
-          pixi run --locked -e queens-dev python -m pip install --no-deps -e .
+          ensure-rsync: false
       - name: Check dependency declaration integrity
         run: |
           set -euo pipefail
