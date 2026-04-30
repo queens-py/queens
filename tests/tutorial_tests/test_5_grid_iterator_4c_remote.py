@@ -17,5 +17,5 @@
 This file ensures that the tutorial is not run by tests/tutorial_tests/test_tutorials.py since
 those tests are only run locally and do not have access to a remote cluster, which is needed for
 this tutorial.
-The actual test of this tutorial is in tests/integration_tests/cluster/test_dask_cluster.py.
+The actual test of this tutorial is in tests/integration_tests/cluster/test_cluster.py.
 """

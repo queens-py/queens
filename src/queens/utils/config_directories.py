@@ -68,12 +68,7 @@ def experiment_directory(
         experiment_base_directory = base_directory()
     else:
         # Replace ~ with home directory if necessary
-        experiment_base_directory_str = str(experiment_base_directory)
-        if experiment_base_directory_str.startswith("~"):
-            experiment_base_directory_str = experiment_base_directory_str.replace(
-                "~", str(Path().home()), 1
-            )
-        experiment_base_directory = Path(experiment_base_directory_str)
+        experiment_base_directory = Path(experiment_base_directory).expanduser()
 
     experiment_dir = experiment_base_directory / experiment_name
     return experiment_dir, experiment_dir.exists()
