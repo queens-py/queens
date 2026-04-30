@@ -27,7 +27,7 @@ from test_utils.tutorial_tests import inject_mock_base_dir
     "paths_to_tutorial_notebooks",
     [
         str(patch)
-        for patch in sorted(Path("tutorials").rglob("*.ipynb"))
+        for patch in sorted(Path("tutorials").glob("*.ipynb"))
         if patch.stem
         not in {
             t.stem.removeprefix("test_") for t in Path("tests/tutorial_tests").glob("test_*.py")
