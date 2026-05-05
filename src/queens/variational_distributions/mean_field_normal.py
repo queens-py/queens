@@ -250,8 +250,7 @@ class MeanFieldNormal(Variational):
         Returns:
             Gradients of the log-PDF w.r.t. the sample *x*. The first dimension of the array
                 corresponds to the different samples. The second dimension to different dimensions
-                within one sample. (Third dimension is empty and just added to keep slices two
-                dimensional.)
+                within one sample.
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         gradients_batch = -(sample_batch - mean.reshape(1, self.dimension)) / np.diag(cov).reshape(
