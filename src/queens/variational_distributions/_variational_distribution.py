@@ -25,6 +25,7 @@ NDims = TypeVar("NDims", bound=int)
 NSamples = TypeVar("NSamples", bound=int)
 NParams = TypeVar("NParams", bound=int)
 NParamsComponent = TypeVar("NParamsComponent", bound=int)
+V = TypeVar("V", bound="Variational")
 
 # Vectors
 ArrayNDims: TypeAlias = np.ndarray[tuple[NDims], np.dtype[np.floating]]

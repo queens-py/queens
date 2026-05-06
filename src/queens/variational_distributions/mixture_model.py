@@ -27,11 +27,11 @@ from queens.variational_distributions._variational_distribution import (
     ArrayNSamplesXNDims,
     NDims,
     NSamples,
+    V,
     Variational,
 )
 
 NComponents = TypeVar("NComponents", bound=int)
-V = TypeVar("V", bound=Variational)
 ArrayNComponents: TypeAlias = np.ndarray[  # pylint: disable=invalid-name
     tuple[NComponents], np.dtype[np.floating]
 ]
