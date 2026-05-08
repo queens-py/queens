@@ -52,7 +52,7 @@ def test_init():
         bounds=bounds,
     )
     assert model_obj.scheduler == scheduler
-    assert model_obj.driver == driver
+    assert model_obj.function == driver
     assert model_obj.finite_difference_method == finite_difference_method
     assert model_obj.step_size == step_size
     np.testing.assert_equal(model_obj.bounds, np.array(bounds))
