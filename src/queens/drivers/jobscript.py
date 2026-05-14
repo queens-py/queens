@@ -14,7 +14,6 @@
 #
 """Driver to run a jobscript."""
 
-
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -27,7 +26,7 @@ from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
 from queens.utils.io import read_file
 from queens.utils.logger_settings import log_init_args
-from queens.utils.metadata import SimulationMetadata
+from queens.utils.metadata import SimulationMetadata, get_metadata_from_job_dir, get_metadata_path
 from queens.utils.path import create_folder_if_not_existent
 from queens.utils.run_subprocess import run_subprocess
 
@@ -85,7 +84,9 @@ class Jobscript(Driver):
         jobscript_options (dict): Dictionary containing jobscript options.
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh').
         raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
-                                                 exit code.
+            exit code.
+        reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters are
+            the same and the previous jobscript ran successfully.
     """
 
     @log_init_args
@@ -101,6 +102,7 @@ class Jobscript(Driver):
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
+        reuse_existing_jobs=True,
     ):
         """Initialize Jobscript object.
 
@@ -118,6 +120,8 @@ class Jobscript(Driver):
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                 jobscript exit code.
+            reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters
+                are the same and the previous jobscript ran successfully.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.input_templates = self.create_input_templates_dict(input_templates)
@@ -133,6 +137,7 @@ class Jobscript(Driver):
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
         self.raise_error_on_jobscript_failure = raise_error_on_jobscript_failure
+        self.reuse_existing_jobs = reuse_existing_jobs
 
     @staticmethod
     def create_input_templates_dict(input_templates):
@@ -202,15 +207,91 @@ class Jobscript(Driver):
     ) -> dict:
         """Run the driver.
 
+        Either reuse existing results or run the jobscript.
+
         Args:
-            sample (np.array): Input sample.
-            job_id (int): Job ID.
-            num_procs (int): Number of processors.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): Name of QUEENS experiment.
+            sample: Input sample.
+            job_id: Job ID.
+            num_procs: Number of processors.
+            experiment_dir: Path to QUEENS experiment directory.
+            experiment_name: Name of QUEENS experiment.
 
         Returns:
-            Result and potentially the gradient.
+            Results.
+        """
+        job_dir = self.get_job_dir(job_id, experiment_dir)
+
+        if self.reuse_existing_jobs and self.metadata_exists(job_dir):
+            existing_metadata = get_metadata_from_job_dir(job_dir)
+            if not self.equal_inputs(existing_metadata, sample):
+                raise RuntimeError("Input parameters differ from existing job metadata. Abort...")
+
+            if self.successful_jobscript_run(existing_metadata):
+                return self.get_existing_results(job_dir)
+
+        return self.run_jobscript(sample, job_id, num_procs, experiment_dir, experiment_name)
+
+    @staticmethod
+    def metadata_exists(job_dir: Path) -> bool:
+        """Check if metadata file exists in job directory.
+
+        Args:
+            job_dir: Path to job directory.
+
+        Returns:
+            True if metadata file exists, False otherwise.
+        """
+        metadata_path = get_metadata_path(job_dir)
+        return metadata_path.is_file()
+
+    @staticmethod
+    def successful_jobscript_run(existing_metadata: dict) -> bool:
+        """Check if the jobscript run was successful.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+
+        Returns:
+            True if the jobscript run was successful, False otherwise.
+        """
+        jobscript_status = (
+            existing_metadata.get("times", {}).get("run_jobscript", {}).get("status", "")
+        )
+        return jobscript_status == "successful"
+
+    def equal_inputs(self, existing_metadata: dict, new_inputs: np.ndarray) -> bool:
+        """Check if the input parameters are equal.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+            new_inputs: New input parameters.
+
+        Returns:
+            True if the input parameters are equal, False otherwise.
+        """
+        existing_inputs = existing_metadata.get("inputs", {})
+        new_inputs_dict = self.parameters.sample_as_dict(new_inputs)
+        return existing_inputs == new_inputs_dict
+
+    def run_jobscript(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Run the jobscript.
+
+        Args:
+            sample: Input sample.
+            job_id: Job ID.
+            num_procs: Number of processors.
+            experiment_dir: Path to QUEENS experiment directory.
+            experiment_name: Name of QUEENS experiment.
+
+        Returns:
+            Jobscript results.
         """
         job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
             job_id, experiment_dir
@@ -250,11 +331,58 @@ class Jobscript(Driver):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd)
 
-        with metadata.time_code("data_processing"):
+        with metadata.time_code("process_data"):
             results = self._get_results(output_dir)
             metadata.outputs = results
 
         return results
+
+    def get_existing_results(self, job_dir: Path) -> dict:
+        """Get existing results from a previous driver run.
+
+        Args:
+            job_dir: Path to job directory.
+
+        Returns:
+            Results.
+        """
+        metadata = SimulationMetadata.init_from_file(job_dir)
+        output_dir = self.get_output_dir(job_dir)
+
+        with metadata.time_code("process_data_again"):
+            results = self._get_results(output_dir)
+            metadata.outputs = results
+
+        return results
+
+    @staticmethod
+    def get_job_dir(job_id: int, experiment_dir: Path) -> Path:
+        """Get job directory path.
+
+        Args:
+            job_id: Job ID.
+            experiment_dir: Path to QUEENS experiment directory.
+
+        Returns:
+            Path to job directory.
+        """
+        job_dir = experiment_dir / str(job_id)
+        return job_dir
+
+    @staticmethod
+    def get_output_dir(job_dir: Path, output_folder_name="output") -> Path:
+        """Get output directory path.
+
+        Args:
+            job_dir: Job directory path.
+            output_folder_name: Name of output folder.
+
+        Returns:
+            Path to output directory.
+        """
+        output_dir = job_dir / output_folder_name
+        create_folder_if_not_existent(output_dir)
+        return output_dir
 
     def _manage_paths(
         self, job_id, experiment_dir, output_folder_name="output", output_prefix="output"
@@ -274,9 +402,8 @@ class Jobscript(Driver):
             input_files (dict): Dict with name and path of the input file(s).
             log_file (Path): Path to log file.
         """
-        job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / output_folder_name
-        output_dir = create_folder_if_not_existent(output_dir)
+        job_dir = self.get_job_dir(job_id, experiment_dir)
+        output_dir = self.get_output_dir(job_dir, output_folder_name)
 
         output_file = output_dir / output_prefix
         log_file = output_dir / (output_prefix + ".log")
