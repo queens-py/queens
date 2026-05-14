@@ -22,6 +22,7 @@ from time import perf_counter
 import numpy as np
 import pytest
 
+from queens.data_processors.txt_file import TxtFile
 from queens.global_settings import GlobalSettings
 from queens.utils import config_directories
 from queens.utils.logger_settings import reset_logging
@@ -299,3 +300,36 @@ def fixture_disable_matplotlib_show():
     import matplotlib  # pylint: disable=import-outside-toplevel
 
     matplotlib.use("Agg")
+
+
+# --------------------------- Jobscript driver testing --------------------------------------------
+
+
+@pytest.fixture(name="time_file")
+def fixture_time_file():
+    """Name of a file in which to store the current time."""
+    return "time.txt"
+
+
+@pytest.fixture(name="current_time_jobscript_template")
+def fixture_current_time_jobscript_template(time_file):
+    """Jobscript template that outputs current time."""
+    return f"echo $(date +%s%N) > {{{{ output_dir }}}}/{time_file}"
+
+
+class TxtAsInt(TxtFile):
+    """Data processor for extracting an integer from a .txt file."""
+
+    def filter_and_manipulate_raw_data(self, raw_data):
+        """Convert the raw data (list of strings) to an integer."""
+        return int(raw_data[0].strip())
+
+
+@pytest.fixture(name="time_data_processor")
+def fixture_time_data_processor(time_file):
+    """Data processor for extracting an integer from a .txt file containing the current time."""
+    return TxtAsInt(
+        file_name_identifier=time_file,
+        file_options_dict={},
+        remove_logger_prefix_from_raw_data=False,
+    )
