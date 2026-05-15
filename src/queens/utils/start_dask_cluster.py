@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from queens.schedulers.cluster import VALID_WORKLOAD_MANAGERS
+from queens.schedulers._cluster_base import VALID_WORKLOAD_MANAGERS, _initialize_dask_cluster
 from queens.utils.logger_settings import setup_basic_logging
 from queens.utils.valid_options import get_option
 
@@ -81,24 +81,13 @@ if __name__ == "__main__":
     loop = asyncio.new_event_loop()
     asyncio.set_event_loop(loop)
     try:
-        _logger.info("Starting dask cluster of type: %s", dask_cluster_cls)
-        _logger.debug("Dask cluster kwargs:")
-        _logger.debug(dask_cluster_kwargs)
-        cluster = dask_cluster_cls(**dask_cluster_kwargs)
-
-        _logger.info("Adapting dask cluster settings")
-        _logger.debug("Dask cluster adapt kwargs:")
-        _logger.debug(dask_cluster_adapt_kwargs)
-        cluster.adapt(**dask_cluster_adapt_kwargs)
-
-        _logger.info("Dask cluster info:")
-        _logger.info(cluster)
-
-        dask_jobscript = experiment_dir / "dask_jobscript.sh"
-        _logger.info("Writing dask jobscript to:")
-        _logger.info(dask_jobscript)
-        dask_jobscript.write_text(str(cluster.job_script()))
-
+        cluster = _initialize_dask_cluster(
+            _logger,
+            dask_cluster_cls,
+            dask_cluster_kwargs,
+            dask_cluster_adapt_kwargs,
+            experiment_dir,
+        )
         loop.run_forever()
     except KeyboardInterrupt:
         _logger.info("Caught keyboard interrupt")
