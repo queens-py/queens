@@ -14,11 +14,68 @@
 #
 """Path utilities for QUEENS."""
 
+import tomllib
 from pathlib import Path
 from typing import Sequence
 
-PATH_TO_QUEENS_SOURCE = Path(__file__).parents[1]
-PATH_TO_ROOT = Path(__file__).parents[3]
+import queens
+
+PROJECT_NAME = "queens"
+
+
+def _is_queens_project_root(path: Path) -> bool:
+    """Check whether a path is the QUEENS project root.
+
+    This is done by looking for the pyproject.toml file. To ensure that
+    it is the QUEENS root, the name of the project defined in the file
+    should match.
+    """
+    pyproject_file = path / "pyproject.toml"
+    if not pyproject_file.is_file():
+        return False
+
+    try:
+        with pyproject_file.open("rb") as pyproject:
+            pyproject_data = tomllib.load(pyproject)
+    except (OSError, tomllib.TOMLDecodeError):
+        return False
+
+    return pyproject_data.get("project", {}).get("name") == PROJECT_NAME
+
+
+def _find_path_to_root(package_candidate: Path) -> Path:
+    """Find the QUEENS project root from source or installed package contexts.
+
+    Start from a candidate and as a fallback try to find the root:
+    1. Check whether the guessed source root is really root.
+    2. If not, check whether the current directory or one of its parents is root.
+    3. If not, search below the current directory for a root checkout
+    """
+    package_candidate = package_candidate.resolve()
+    if _is_queens_project_root(package_candidate):
+        return package_candidate
+
+    # search the parents (upwards)
+    cwd = Path.cwd().resolve()
+    for candidate in (cwd, *cwd.parents):
+        if _is_queens_project_root(candidate):
+            return candidate
+
+    # search downwards within cwd
+    for pyproject_file in cwd.rglob("pyproject.toml"):
+        candidate = pyproject_file.parent
+        if _is_queens_project_root(candidate):
+            return candidate
+
+    raise RuntimeError(
+        "Could not determine the QUEENS project root. Expected a pyproject.toml "
+        f"with [project].name = {PROJECT_NAME!r} at {package_candidate}, the current working "
+        f"directory {cwd}, one of its parents, or one of its subdirectories."
+    )
+
+
+PATH_TO_QUEENS_SOURCE = Path(queens.__file__).parent
+PATH_TO_ROOT = _find_path_to_root(Path(__file__).parents[3])
 
 
 def relative_path_from_queens_source(relative_path: str) -> Path:

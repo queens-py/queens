@@ -20,7 +20,7 @@
 
 <div align="center">
 
-[![tests-local-main](https://github.com/queens-py/queens/actions/workflows/tests_local.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/tests_local.yml?query=branch:main)
+[![tests-local-main](https://github.com/queens-py/queens/actions/workflows/local_testsuite.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/local_testsuite.yml?query=branch:main)
 [![build-documentation-main](https://github.com/queens-py/queens/actions/workflows/build_documentation.yml/badge.svg?branch=main)](https://github.com/queens-py/queens/actions/workflows/build_documentation.yml?query=branch:main)
 
 </div>
@@ -51,22 +51,49 @@ QUEENS (**Q**uantification of **U**ncertain **E**ffects in **En**gineering **S**
 ## :rocket: Getting started
 
 <!---prerequisites marker, do not remove this comment-->
->**Prerequisites**: Unix system and environment management system (we recommend [miniforge](https://conda-forge.org/download/))
+>**Prerequisites**: Python 3.12 or newer. For development, use [Pixi](https://pixi.sh/latest/).
 <!---prerequisites marker, do not remove this comment-->
-
+### Easy installation
 <!---installation marker, do not remove this comment-->
-Clone the QUEENS repository to your local machine. Navigate to its base directory, then:
+Clone the QUEENS repository and install it from the source checkout with:
 ```bash
-conda env create
-conda activate queens
-pip install -e .
+pip install .
+```
+We recommend using some form of environment management instead of installing into your system Python.
+For more details, see [the QUEENS documentation](https://queens-py.github.io/queens/introduction.html#installation).
+
+Optional runtime extras can be installed with:
+```bash
+pip install ".[tutorials]"
+pip install ".[fourc]"
+pip install ".[all]"
 ```
 
-**Note**: This installs QUEENS without any fixed dependency versions. In most cases this is no problem and gives you more freedom to install additional packages within your environment. Should there be a problem you can play it safe with fixed versions via
+### Recommended installation
+We recommend a modern project-based workflow based on [Pixi](https://pixi.sh/latest/) especially for development.
+After cloning the repository, installing with Pixi is as easy as:
 ```bash
-pip install -e .[safe]
+pixi install
+pixi run install-editable
 ```
+The default Pixi environment contains the core QUEENS dependencies. Use `all` for runtime
+extras without development tools. For named Pixi environments, run
+`pixi run -e <environment> install-editable` once for each environment you want to use.
 
+### Development installation
+For development, we recommend using [Pixi](https://pixi.sh/latest/) together with the `dev` environment.
+`dev` contains the full contributor setup, including development tools, tutorials, and the
+4C interface dependencies.
+Clone the repository and install with:
+```bash
+pixi install --environment dev
+pixi run -e dev install-editable
+```
+Useful development commands then look like:
+```bash
+pixi run -e dev pytest
+pixi run -e dev pre-commit run --all-files
+```
 <!---installation marker, do not remove this comment-->
 
 ## :crown: Workflow example

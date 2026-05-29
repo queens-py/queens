@@ -197,7 +197,7 @@ class KarhunenLoeve(RandomField):
             dimension = latent_dimension
         else:
             eigenvalues_normed = eigenvalues / np.sum(eigenvalues)
-            dimension = (np.cumsum(eigenvalues_normed) < self.explained_variance).argmin() + 1
+            dimension = int((np.cumsum(eigenvalues_normed) < self.explained_variance).argmin()) + 1
             if dimension == 1 and eigenvalues_normed[0] <= self.explained_variance:
                 raise ValueError("Expansion failed.")
 

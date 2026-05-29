@@ -13,6 +13,7 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """4C random material fields preprocessor."""
+
 from pathlib import Path
 
 import numpy as np
@@ -22,7 +23,8 @@ try:
 except ImportError as exc:
     raise ImportError(
         "The required packages to construct random fields in QUEENS for 4C are not installed."
-        " Please install them via \n pip install -e .[fourc]"
+        " Install QUEENS with the 'fourc' extra, e.g. `python -m pip install \".[fourc]\"`, "
+        "or use a Pixi environment with the fourc feature such as `dev` or `all`."
     ) from exc
 
 

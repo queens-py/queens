@@ -14,7 +14,7 @@
 #
 """Particle Variational Distribution."""
 
-from typing import Sequence, Sized
+from collections.abc import Sequence, Sized
 
 import numpy as np
 

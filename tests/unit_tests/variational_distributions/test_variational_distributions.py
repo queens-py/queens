@@ -248,7 +248,7 @@ def fixture_joint_reference_data(mean_field_reference_data, fullrank_reference_d
 def fixture_mixture_reference_data(mean_field_reference_data):
     """Reference data for the mixture distribution."""
     distribution_1 = mean_field_reference_data.distribution
-    (mean_1, cov_1) = mean_field_reference_data.distribution_parameters
+    mean_1, cov_1 = mean_field_reference_data.distribution_parameters
     variational_parameters_1 = mean_field_reference_data.variational_parameters
     input_samples = mean_field_reference_data.input_samples
 

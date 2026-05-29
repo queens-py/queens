@@ -16,6 +16,7 @@
 
 Modules for probability distributions.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING

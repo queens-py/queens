@@ -30,6 +30,9 @@ from queens.schedulers.pool import Pool
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
+SAMPLER_STAT_RTOL = 1e-5
+SAMPLER_STAT_ATOL = 1e-8
+
 
 def test_nuts_gaussian(
     tmp_path,
@@ -37,7 +40,43 @@ def test_nuts_gaussian(
     _create_experimental_data,
     global_settings,
 ):
-    """Test case for nuts iterator."""
+    """Test NUTS sampling for a Gaussian-Gaussian Bayesian inference problem.
+
+    The test samples from a two-dimensional posterior with Gaussian prior and Gaussian
+    likelihood. Since both prior and likelihood are Gaussian, the posterior is Gaussian
+    again. The prior is
+
+        x ~ N(mu_0, Sigma_0),
+        mu_0 = [-2, 2]^T,
+        Sigma_0 = [[1, 0], [0, 1]].
+
+    The likelihood is evaluated at the observed value y = [0, 0]^T with
+
+        y | x ~ N(x, Sigma_L),
+        Sigma_L = [[1, 1/2], [1/2, 1]].
+
+    Therefore,
+
+        Sigma_p = (Sigma_0^{-1} + Sigma_L^{-1})^{-1}
+                = [[7/15, 2/15], [2/15, 7/15]],
+
+        mu_p = Sigma_p (Sigma_0^{-1} mu_0 + Sigma_L^{-1} y)
+             = Sigma_p mu_0
+             = [-2/3, 2/3]^T.
+
+    The converged Markov chain should therefore approximate
+
+        E[x | y] = [-2/3, 2/3]^T,
+        Var[x | y] = [7/15, 7/15],
+        Std[x | y] = [sqrt(7/15), sqrt(7/15)].
+
+    Note:
+        This behaviour is achieved by patching the Gaussian likelihood model
+        evaluation and gradient with ``target_density_gaussian_2d_with_grad``.
+        Instead of evaluating against the experimental data, the likelihood is
+        replaced by a fixed analytic Gaussian log-density corresponding to the
+        target distribution described above.
+    """
     # Parameters
     x1 = Normal(mean=[-2.0, 2.0], covariance=[[1.0, 0.0], [0.0, 1.0]])
     parameters = Parameters(x1=x1)
@@ -77,10 +116,18 @@ def test_nuts_gaussian(
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results["mean"].mean(axis=0) == pytest.approx(
-        np.array([-0.2868793496608573, 0.6474274597130008])
+    np.testing.assert_allclose(
+        results["mean"].mean(axis=0),
+        np.array([-1.0964337346677933, 0.9148542463484473]),
+        rtol=SAMPLER_STAT_RTOL,
+        atol=SAMPLER_STAT_ATOL,
     )
-    assert results["var"].mean(axis=0) == pytest.approx([0.08396277217936474, 0.10836256575521087])
+    np.testing.assert_allclose(
+        results["var"].mean(axis=0),
+        np.array([0.33594238408352364, 1.053294709724648]),
+        rtol=SAMPLER_STAT_RTOL,
+        atol=SAMPLER_STAT_ATOL,
+    )
 
 
 @pytest.fixture(name="_create_experimental_data")

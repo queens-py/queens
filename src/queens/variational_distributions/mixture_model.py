@@ -197,14 +197,14 @@ class MixtureModel(Variational, Generic[V]):
         parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
-        samples = []
+        samples_lst = []
         for _ in range(n_draws):
             # Select component to draw from
             component = np.argmax(np.random.multinomial(1, weights))
             # Draw a sample of this component
             sample = self.base_distribution.draw(parameters[component], 1)
-            samples.append(sample)
-        samples = np.concatenate(samples, axis=0)
+            samples_lst.append(sample)
+        samples = np.concatenate(samples_lst, axis=0)
         return samples
 
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:

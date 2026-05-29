@@ -14,6 +14,9 @@
 #
 """Integration tests for the RPVI iterator."""
 
+import shlex
+import sys
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -30,7 +33,6 @@ from queens.schedulers import Local, Pool
 from queens.stochastic_optimizers import Adam
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
-from queens.utils.run_subprocess import run_subprocess
 from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 
 
@@ -322,8 +324,7 @@ def fixture_write_custom_likelihood_model(module_path):
 @pytest.fixture(name="python_path")
 def fixture_python_path():
     """Current python path."""
-    _, _, stdout, _ = run_subprocess("which python")
-    return stdout.strip()
+    return shlex.quote(sys.executable)
 
 
 @pytest.fixture(name="rpvi_jobscript_template", scope="session")

@@ -14,7 +14,6 @@
 #
 """Extract QUEENS example from the readme."""
 
-
 from pathlib import Path
 
 from queens.utils.path import relative_path_from_root

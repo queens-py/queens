@@ -14,6 +14,8 @@
 #
 """Mean-Field Normal Variational Distribution."""
 
+from typing import cast
+
 import numpy as np
 
 from queens.utils.logger_settings import log_init_args
@@ -117,11 +119,10 @@ class MeanFieldNormal(Variational):
             Mean value of the distribution
             Covariance matrix of the distribution
         """
-        mean, cov = (
-            variational_parameters[: self.dimension],
-            np.exp(2 * variational_parameters[self.dimension :]),
-        )
-        return mean.reshape(-1, 1), np.diag(cov)
+        mean = variational_parameters[: self.dimension].reshape(-1, 1)
+        covariance_vector = np.exp(2 * variational_parameters[self.dimension :])
+        covariance = np.diag(covariance_vector)
+        return cast(ArrayNDimsX1, mean), covariance
 
     def _grad_reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
@@ -166,13 +167,13 @@ class MeanFieldNormal(Variational):
             Row vector of the Log-PDF values
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
-        mean = mean.flatten()
+        mean_flat = mean.flatten()
         cov = np.diag(cov)
         x = np.atleast_2d(x)
         logpdf = (
             -0.5 * self.dimension * np.log(2 * np.pi)
             - np.sum(variational_parameters[self.dimension :])
-            - 0.5 * np.sum((x - mean) ** 2 / cov, axis=1)
+            - 0.5 * np.sum((x - mean_flat) ** 2 / cov, axis=1)
         )
         return logpdf.flatten()
 
@@ -206,10 +207,10 @@ class MeanFieldNormal(Variational):
             Column-wise scores
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
-        mean = mean.flatten()
+        mean_flat = mean.flatten()
         cov = np.diag(cov)
-        dlogpdf_dmu = (x - mean) / cov
-        dlogpdf_dsigma = (x - mean) ** 2 / cov - np.ones(x.shape)
+        dlogpdf_dmu = (x - mean_flat) / cov
+        dlogpdf_dsigma = (x - mean_flat) ** 2 / cov - np.ones(x.shape)
         score = np.concatenate(
             [
                 dlogpdf_dmu.T.reshape(self.dimension, len(x)),

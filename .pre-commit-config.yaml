@@ -1,13 +1,5 @@
 default_stages: [pre-commit, pre-merge-commit, pre-push, manual]
 repos:
-  - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.2 # Ruff version
-    hooks:
-      # Run the linter.
-      # Needs to placed before black, isort, and other formatters
-      - id: ruff
-        types_or: [ python, pyi ]
-        args: [--fix]
   - repo: local
     hooks:
       - id: trailing-whitespace
@@ -32,6 +24,20 @@ repos:
         language: python
         types: ["python"]
         pass_filenames: true
+      - id: check-pyproject-dependency-integrity
+        name: check pyproject dependency integrity
+        entry: >
+          python3 tools/dependencies/check_pyproject_dependency_integrity.py
+          --allow-version-mismatch gpflow
+          --path
+        language: system
+        files: '^pyproject\.toml$'
+        pass_filenames: true
+      - id: ruff-check
+        name: ruff check
+        entry: ruff check --fix --force-exclude
+        language: system
+        types_or: [ python, pyi, jupyter, pyproject ]
       - id: docformatter
         name: docformatter
         entry: docformatter
@@ -64,9 +70,6 @@ repos:
         name: yamllint
         entry: yamllint
         args:
-          - > # This is needed to lint the jinja templates
-            -d={extends: default, rules: {braces: {max-spaces-inside: 1}
-            , brackets: disable, document-start: disable, "line-length": {"max": 100}}}
           - -f=colored
         language: python
         types: ["yaml"]
@@ -103,9 +106,8 @@ repos:
           ^src/queens/(schedulers|stochastic_optimizers|visualization)/|
           ^src/queens/(main.py|global_settings.py)
           ).*$
-  - repo: https://github.com/kynan/nbstripout
-    rev: 0.8.1
-    hooks:
       - id: nbstripout
         name: Strip outputs from Jupyter notebooks
+        entry: nbstripout
+        language: system
         files: \.ipynb$

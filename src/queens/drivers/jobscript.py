@@ -14,7 +14,6 @@
 #
 """Driver to run a jobscript."""
 
-
 import logging
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -248,7 +247,7 @@ class Jobscript(Driver):
 
         with metadata.time_code("run_jobscript"):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
-            self._run_executable(job_id, execute_cmd)
+            self._run_executable(job_id, execute_cmd, log_file)
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -288,18 +287,21 @@ class Jobscript(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file
 
-    def _run_executable(self, job_id, execute_cmd):
+    def _run_executable(self, job_id, execute_cmd, log_file):
         """Run executable.
 
         Args:
             job_id (int): Job ID.
             execute_cmd (str): Executed command.
+            log_file (Path): Path to redirected jobscript output.
         """
         process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
             raise_error_on_subprocess_failure=False,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
+            if log_file.is_file():
+                stdout += f"\n\nContents of {log_file}:\n{read_file(log_file)}"
             raise SubprocessError.construct_error_from_command(
                 command=execute_cmd,
                 command_output=stdout,

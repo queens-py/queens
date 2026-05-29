@@ -1,0 +1,207 @@
+name: Testsuite
+
+"on":
+  schedule:
+    - cron: "0 1 * * *"
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
+  TEST_TIMING_OPTION: ""
+
+jobs:
+  run_tests_core:
+    name: core tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: dev
+          activate-environment: dev
+      - name: Run pytest for unit tests and integration tests
+        uses: ./.github/actions/run-pytest-suite
+        with:
+          test-suite-name: core.${{ runner.os }}
+          markers: "unit_tests or integration_tests"
+
+  run_tests_tutorials:
+    name: tutorial tests (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+          - os: macos-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: dev
+          activate-environment: dev
+      - name: Run pytest for tutorial tests
+        uses: ./.github/actions/run-pytest-suite
+        with:
+          test-suite-name: tutorials.${{ runner.os }}
+          markers: tutorial_tests
+
+  run_tests_fourc:
+    name: 4C integration tests (ubuntu-latest)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-minimal:main
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash -l -eo pipefail {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: dev
+          activate-environment: dev
+      - name: Create links to 4C
+        run: |
+          ln -s /home/user/4C/bin/ config/4C_build
+      - name: Run pytest for 4C integration tests
+        uses: ./.github/actions/run-pytest-suite
+        with:
+          test-suite-name: fourc.${{ runner.os }}
+          markers: integration_tests_fourc
+
+  run_tests_tutorials_fourc:
+    name: 4C tutorial tests (ubuntu-latest)
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/4c-multiphysics/4c-minimal:main
+      options: --user root --env OMPI_ALLOW_RUN_AS_ROOT=1 --env OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1
+    defaults:
+      run:
+        shell: bash -l -eo pipefail {0}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: dev
+          activate-environment: dev
+      - name: Create links to 4C
+        run: |
+          ln -s /home/user/4C/bin/ config/4C_build
+      - name: Run pytest for 4C tutorial tests
+        uses: ./.github/actions/run-pytest-suite
+        with:
+          test-suite-name: tutorials_fourc.${{ runner.os }}
+          markers: tutorial_tests_fourc
+
+  report_test_results:
+    name: report test results
+    if: always()
+    runs-on: ubuntu-latest
+    needs:
+      - run_tests_core
+      - run_tests_tutorials
+      - run_tests_fourc
+      - run_tests_tutorials_fourc
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: dev
+          activate-environment: dev
+          ensure-rsync: false
+      - name: Download raw core test reports from Ubuntu
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_core.Linux
+          path: reports/core-ubuntu
+      - name: Download raw core test reports from macOS
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_core.macOS
+          path: reports/core-macos
+      - name: Download raw tutorial test reports from Ubuntu
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_tutorials.Linux
+          path: reports/tutorials-ubuntu
+      - name: Download raw tutorial test reports from macOS
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_tutorials.macOS
+          path: reports/tutorials-macos
+      - name: Download raw 4C test reports
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_fourc.Linux
+          path: reports/fourc-ubuntu
+      - name: Download raw 4C tutorial test reports
+        uses: actions/download-artifact@v8
+        with:
+          name: raw_test_reports_tutorials_fourc.Linux
+          path: reports/tutorials-fourc-ubuntu
+      - name: Combine Ubuntu coverage data and build reports
+        run: |
+          cp reports/core-ubuntu/.coverage.core.Linux .coverage.core.Linux
+          cp reports/tutorials-ubuntu/.coverage.tutorials.Linux .coverage.tutorials.Linux
+          cp reports/fourc-ubuntu/.coverage.fourc.Linux .coverage.fourc.Linux
+          cp \
+            reports/tutorials-fourc-ubuntu/.coverage.tutorials_fourc.Linux \
+            .coverage.tutorials_fourc.Linux
+
+          coverage combine \
+            .coverage.core.Linux \
+            .coverage.tutorials.Linux \
+            .coverage.fourc.Linux \
+            .coverage.tutorials_fourc.Linux
+          coverage html -d html_coverage_report
+          coverage xml -o xml_coverage_report.xml
+          coverage report
+
+          python .github/xml_summaries_to_md.py \
+            xml_coverage_report.xml \
+            reports/core-ubuntu/test_junit_core.Linux.xml \
+            reports/core-macos/test_junit_core.macOS.xml \
+            reports/tutorials-ubuntu/test_junit_tutorials.Linux.xml \
+            reports/tutorials-macos/test_junit_tutorials.macOS.xml \
+            reports/fourc-ubuntu/test_junit_fourc.Linux.xml \
+            reports/tutorials-fourc-ubuntu/test_junit_tutorials_fourc.Linux.xml \
+            >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload combined coverage report
+        uses: actions/upload-pages-artifact@v5
+        with:
+          name: html-coverage-report
+          path: html_coverage_report/
+          retention-days: 7

@@ -316,7 +316,7 @@ class Optimization(Iterator):
         start = time.time()
 
         # minimization with bounds using Jacobian
-        if self.algorithm in {"L-BFGS-B", "TNC"}:
+        if self.algorithm == "L-BFGS-B":
             self.solution = minimize(
                 self.objective,
                 self.initial_guess,
@@ -324,6 +324,15 @@ class Optimization(Iterator):
                 jac=self.jacobian,
                 bounds=self.bounds,
                 options={"maxiter": int(1e4), "disp": self.verbose_output},
+            )
+        elif self.algorithm == "TNC":
+            self.solution = minimize(
+                self.objective,
+                self.initial_guess,
+                method=self.algorithm,
+                jac=self.jacobian,
+                bounds=self.bounds,
+                options={"maxfun": int(1e4), "disp": self.verbose_output},
             )
         # Constrained Optimization BY Linear Approximation:
         # minimization with constraints without Jacobian

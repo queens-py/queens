@@ -18,6 +18,10 @@ Is a wrapper on the *chaospy* library.
 """
 
 import logging
+import re
+import sys
+import warnings
+from importlib import metadata
 
 import chaospy as cp
 import numpy as np
@@ -33,6 +37,71 @@ from queens.utils.process_outputs import write_results
 from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
+_NUMPOLY_RESHAPE_FIX_VERSION = "1.3.9"
+
+
+def _version_parts(version):
+    """Return numeric release parts from a version string."""
+    release_parts = []
+    for part in version.split("+", maxsplit=1)[0].split("."):
+        match = re.match(r"\d+", part)
+        if match is None:
+            break
+        release_parts.append(int(match.group()))
+    return tuple(release_parts)
+
+
+def _version_less_than(version, minimum_version):
+    """Compare simple numeric version strings."""
+    version_parts = _version_parts(version)
+    minimum_parts = _version_parts(minimum_version)
+    length = max(len(version_parts), len(minimum_parts))
+    version_parts += (0,) * (length - len(version_parts))
+    minimum_parts += (0,) * (length - len(minimum_parts))
+    return version_parts < minimum_parts
+
+
+def _installed_version(package_name):
+    """Return installed package version or *None* if it is unavailable."""
+    try:
+        return metadata.version(package_name)
+    except metadata.PackageNotFoundError:
+        return None
+
+
+def _numpy_rejects_newshape_keyword():
+    """Does the installed NumPy reject the reshape keyword."""
+    try:
+        np.reshape(np.array([0]), newshape=-1)  # pylint: disable=no-value-for-parameter
+    except TypeError as exc:
+        return "newshape" in str(exc)
+    return False
+
+
+def has_macos_numpoly_reshape_mismatch():
+    """Does the installed macOS dependencies trigger reshape mismatch."""
+    numpoly_version = _installed_version("numpoly")
+    return (
+        sys.platform == "darwin"
+        and _numpy_rejects_newshape_keyword()
+        and numpoly_version is not None
+        and _version_less_than(numpoly_version, _NUMPOLY_RESHAPE_FIX_VERSION)
+    )
+
+
+def _warn_if_macos_numpoly_reshape_mismatch():
+    """Warn about a known macOS NumPy/numpoly compatibility mismatch."""
+    if has_macos_numpoly_reshape_mismatch():
+        warnings.warn(
+            "PolynomialChaos may fail on macOS with this NumPy/numpoly dependency "
+            f"combination: NumPy {np.__version__} rejects "
+            "numpy.reshape(..., newshape=...), while installed numpoly "
+            f"{_installed_version('numpoly')} is older than {_NUMPOLY_RESHAPE_FIX_VERSION}. "
+            "This is a downstream compatibility issue; use Linux or a dependency set "
+            "with the upstream numpoly fix until it is released.",
+            RuntimeWarning,
+            stacklevel=3,
+        )
 
 
 class PolynomialChaos(Iterator):
@@ -81,6 +150,7 @@ class PolynomialChaos(Iterator):
             seed (int, opt): Seed for random number generation
         """
         super().__init__(model, parameters, global_settings)
+        _warn_if_macos_numpoly_reshape_mismatch()
 
         if not isinstance(num_collocation_points, int) or num_collocation_points < 1:
             raise ValueError("Number of samples for the polynomial must be a positive integer!")

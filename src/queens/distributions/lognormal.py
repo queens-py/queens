@@ -65,7 +65,14 @@ class LogNormal(Continuous):
         Returns:
             CDF at positions
         """
-        return self.normal_distribution.cdf(np.log(x))
+        x = np.asarray(x, dtype=float).reshape(-1, self.dimension)
+        cdf = np.zeros(x.shape[0])
+        positive_support = np.all(x > 0, axis=1)
+
+        if np.any(positive_support):
+            cdf[positive_support] = self.normal_distribution.cdf(np.log(x[positive_support]))
+
+        return cdf
 
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.

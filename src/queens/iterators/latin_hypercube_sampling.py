@@ -17,7 +17,7 @@
 import logging
 
 import numpy as np
-from pyDOE import lhs
+from pydoe import lhs
 
 from queens.iterators._iterator import Iterator
 from queens.utils.logger_settings import log_init_args
@@ -81,7 +81,8 @@ class LatinHypercubeSampling(Iterator):
 
     def pre_run(self):
         """Generate samples for subsequent LHS analysis."""
-        np.random.seed(self.seed)
+        seed_sequence = np.random.SeedSequence(self.seed)
+        lhs_rng = np.random.default_rng(seed_sequence.spawn(1)[0])
 
         num_inputs = self.parameters.num_parameters
 
@@ -92,7 +93,11 @@ class LatinHypercubeSampling(Iterator):
 
         # create latin hyper cube samples in unit hyper cube
         hypercube_samples = lhs(
-            num_inputs, self.num_samples, criterion=self.criterion, iterations=self.num_iterations
+            num_inputs,
+            self.num_samples,
+            criterion=self.criterion,
+            iterations=self.num_iterations,
+            seed=lhs_rng,
         )
         # scale and transform samples according to the inverse cdf
         self.samples = self.parameters.inverse_cdf_transform(hypercube_samples)

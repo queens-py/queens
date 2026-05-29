@@ -20,6 +20,8 @@ import numpy as np
 import tensorflow as tf
 import tensorflow_probability as tfp
 import tf_keras as keras
+from numpy.random import SeedSequence
+from tf_keras.initializers import Initializer
 
 from queens.models.surrogates._surrogate import Surrogate
 from queens.utils.configure_tensorflow import configure_keras, configure_tensorflow
@@ -44,8 +46,7 @@ class GaussianNeuralNetwork(Surrogate):
     Attributes:
         nn_model (tf.model):  Tensorflow based Bayesian neural network model
         num_epochs (int): Number of training epochs for variational optimization
-        optimizer_seed (int): Random seed used for initialization of stochastic gradient decent
-                              optimizer
+        seed (int): Seed for pseudo-random number generation
         verbosity_on (bool): Boolean for model verbosity during training. True=verbose
         batch_size (int): Size of data-batch (smaller than the training data size)
         scaler_x (obj): Scaler for inputs
@@ -76,7 +77,7 @@ class GaussianNeuralNetwork(Surrogate):
         num_epochs=None,
         batch_size=None,
         adams_training_rate=None,
-        optimizer_seed=None,
+        seed=None,
         verbosity_on=None,
         nodes_per_hidden_layer_lst=None,
         activation_per_hidden_layer_lst=None,
@@ -93,7 +94,7 @@ class GaussianNeuralNetwork(Surrogate):
             num_epochs (int): Number of epochs used for variational training of the BNN
             batch_size (int): Size of data-batch (smaller than the training data size)
             adams_training_rate (float): Training rate for the ADAMS gradient decent optimizer
-            optimizer_seed (int): Random seed for stochastic optimization routine
+            seed (int): Seed for pseudo-random number generation
             verbosity_on (bool): Boolean for model verbosity during training. True=verbose
             nodes_per_hidden_layer_lst (lst): List containing number of nodes per hidden layer of
                                           the Neural Network. The length of the list
@@ -130,7 +131,8 @@ class GaussianNeuralNetwork(Surrogate):
 
         self.nn_model = None
         self.num_epochs = num_epochs
-        self.optimizer_seed = optimizer_seed
+        self.seed = seed
+        self._seed_sequence = SeedSequence(seed)
         self.verbosity_on = verbosity_on
         self.batch_size = batch_size
         self.scaler_x = get_option(VALID_SCALER, data_scaling)()
@@ -165,7 +167,10 @@ class GaussianNeuralNetwork(Surrogate):
             keras.layers.Dense(
                 int(num_nodes),
                 activation=activation,
-                kernel_initializer=self.kernel_initializer,
+                kernel_initializer=self._create_seeded_initializer(
+                    self.kernel_initializer,
+                    self._spawn_child_seed_sequence(),
+                ),
             )
             for num_nodes, activation in zip(
                 self.nodes_per_hidden_layer, self.activation_per_hidden_layer
@@ -177,6 +182,10 @@ class GaussianNeuralNetwork(Surrogate):
             keras.layers.Dense(
                 2 * output_dim,
                 activation="linear",
+                kernel_initializer=self._create_seeded_initializer(
+                    "glorot_uniform",
+                    self._spawn_child_seed_sequence(),
+                ),
             ),
             tfp.layers.DistributionLambda(
                 lambda d: tfd.Normal(
@@ -197,6 +206,30 @@ class GaussianNeuralNetwork(Surrogate):
         )
 
         return model
+
+    def _spawn_child_seed_sequence(self):
+        """Spawn a child sequence from the optimizer seed sequence."""
+        return self._seed_sequence.spawn(1)[0]
+
+    def _create_seeded_initializer(self, initializer: Initializer, seed_sequence: SeedSequence):
+        """Create a Keras initializer with an explicit child seed."""
+        if initializer is None:
+            initializer = "glorot_uniform"
+        initializer = keras.initializers.get(initializer)
+        if not hasattr(initializer, "get_config"):
+            return initializer
+
+        config = initializer.get_config()
+        if "seed" in config and config["seed"] is None:
+            config["seed"] = self._keras_seed_from_seed_sequence(seed_sequence)
+            initializer = initializer.__class__.from_config(config)
+        return initializer
+
+    @staticmethod
+    def _keras_seed_from_seed_sequence(seed_sequence: SeedSequence) -> int:
+        """Create a Keras-compatible integer seed."""
+        seed = int(seed_sequence.generate_state(1, dtype=np.uint32)[0] % np.iinfo(np.int32).max)
+        return seed or 1
 
     @staticmethod
     def negative_log_likelihood(y, random_variable_y):
@@ -258,7 +291,8 @@ class GaussianNeuralNetwork(Surrogate):
         self.num_refinements += 1
 
         # set the random seeds for optimization/training
-        keras.utils.set_random_seed(self.optimizer_seed)
+        training_seed_sequence = self._spawn_child_seed_sequence()
+        keras.utils.set_random_seed(self._keras_seed_from_seed_sequence(training_seed_sequence))
         history = self.nn_model.fit(
             self.x_train,
             self.y_train,

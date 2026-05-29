@@ -1,0 +1,213 @@
+name: Code quality
+
+"on":
+  schedule:
+    - cron: "0 1 * * *"
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Set TEST_TIMING_OPTION if local test should be timed. Default is off.
+  TEST_TIMING_OPTION: ""
+
+jobs:
+  run_code_checks:
+    name: Check code quality
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v6
+      - uses: ./.github/actions/setup-queens-pixi
+        with:
+          cache: true
+          cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
+          environments: >-
+            all
+            dev
+          activate-environment: dev
+          ensure-rsync: false
+      - name: Check dependency declaration integrity
+        run: |
+          # Validate that the PEP-style dependency declarations in pyproject.toml
+          # stay aligned with the pixi dependency sections.
+          python3 tools/dependencies/check_pyproject_dependency_integrity.py \
+            --path pyproject.toml \
+            --allow-version-mismatch gpflow
+      - name: Check pixi environment integrity
+        id: environment_integrity
+        run: |
+          base_ref="main"
+          pyproject_diff_file="$(mktemp)"
+          git fetch --no-tags --depth=1 origin "${base_ref}"
+
+          echo "::group::Check if dependency declarations changed..."
+          pyproject_changed=false
+          # The diff helper returns:
+          #   0 if dependency-related declarations are unchanged,
+          #   1 if there is a relevant dependency diff,
+          #   >1 if the diff command itself failed.
+          if python3 tools/dependencies/diff_pyproject_dependency_declarations.py \
+            --base-ref "origin/${base_ref}" \
+            --head-ref HEAD \
+            > "${pyproject_diff_file}"; then
+            pyproject_changed=false
+          else
+            # $? is the exit status of the last command.
+            # when arriving here, the diff command found a diff (exit status 1) or
+            # the diff command itself failed (exit status >1).
+            pyproject_check_status=$?
+            if [ "${pyproject_check_status}" -eq 1 ]; then
+              pyproject_changed=true
+            else
+              echo "Failed to compare dependency-related pyproject.toml sections."
+              exit "${pyproject_check_status}"
+            fi
+          fi
+          echo "Pyproject.toml dependency sections changed compared to ${base_ref}:" \
+            "${pyproject_changed}"
+          echo "::endgroup::"
+
+          echo "::group::Check if pixi.lock would be updated by pixi lock..."
+          # Detect any change (modified, deleted, untracked, etc.)
+          if [ -n "$(git status --porcelain -- pixi.lock)" ]; then
+            echo "Restoring pixi.lock from HEAD..."
+            git restore --source=HEAD --staged --worktree pixi.lock 2>/dev/null
+          fi
+          lock_update_possible=false
+          # deactivate exit on error to allow `pixi lock --check --dry-run` to fail
+          set +e
+          # `pixi lock --check --dry-run` exits non-zero when the current pyproject.toml
+          # would produce a different pixi.lock without writing the lockfile to disk.
+          pixi lock --check --dry-run
+          exit_code_pixi_lock_check=$?
+          # reactivate exit on error
+          set -e
+          echo "exit code: $exit_code_pixi_lock_check"
+          if [ $exit_code_pixi_lock_check -ne 0 ]; then
+            lock_update_possible=true
+          fi
+          echo "pixi.lock would be updated by pixi lock: ${lock_update_possible}"
+          echo "::endgroup::"
+
+          {
+            echo "pyproject_changed=${pyproject_changed}"
+            echo "lock_update_possible=${lock_update_possible}"
+            echo "compare_ref=${base_ref}"
+          } >> "$GITHUB_OUTPUT"
+
+
+          # ---- Write rich Markdown to Step Summary ----
+          {
+            echo "### Pixi Environment Integrity"
+            echo ""
+            echo "- dependency-relevant \`pyproject.toml\` changes:"
+            echo "  - compare ref: \`${base_ref}\`"
+            echo "  - changed: ${pyproject_changed}"
+            echo "- \`pixi.lock\` would change if refreshed: ${lock_update_possible}"
+
+            if [ "${pyproject_changed}" = "true" ]; then
+              echo ""
+              echo "<details>"
+              echo "<summary>Dependency diff</summary>"
+              echo ""
+              echo '```diff'
+              cat "${pyproject_diff_file}"
+              echo '```'
+              echo "</details>"
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+
+
+          # ---- Write clean, readable logs ----
+          echo "::group::Summary Pixi Environment Integrity"
+          echo "----------------------------------------"
+          echo "pyproject changes vs ${base_ref}: ${pyproject_changed}"
+          echo "pixi.lock update possible: ${lock_update_possible}"
+
+          if [ "${pyproject_changed}" = "true" ]; then
+            echo "::group::Dependency diff"
+            cat "${pyproject_diff_file}"
+            echo "::endgroup::"
+          fi
+          echo "::endgroup::"
+
+          echo "::group::Do integrity check..."
+          # Only fail if the dependency declarations changed and the lockfile is
+          # stale. A stale lockfile without dependency declaration changes is
+          # reported in the summary but does not block the workflow here.
+          if [ "${pyproject_changed}" = "true" ] && [ "${lock_update_possible}" = "true" ]; then
+            echo "pyproject.toml dependency sections changed compared to main"
+            echo "AND pixi.lock would be updated by pixi lock."
+            echo "Please regenerate and commit pixi.lock for this change."
+            exit 1
+          else
+            echo "Pixi environment integrity is OK."
+          fi
+          echo "::endgroup::"
+
+      - name: Check compatibility of licenses of dependencies
+        run: |
+          pip-licenses --python=.pixi/envs/all/bin/python
+
+      - name: Run basic pre-commit checks
+        run: |
+          pre-commit run trailing-whitespace --all-files
+          pre-commit run end-of-file-fixer --all-files
+          pre-commit run check-added-large-files --all-files
+
+      - name: Create a licenserc file
+        run: |
+          python .gitlab/pipeline_utils/create_licenserc.py \
+            --template_file ".gitlab/pipeline_utils/.licenserc_template.yaml" \
+            --text_file "license_header.tmpl" \
+            --output_file ".licenserc.yaml" \
+            --placeholder "license_header"
+
+          echo "Created an rc file for the license header check."
+
+      - name: Check license headers
+        uses: apache/skywalking-eyes/header@v0.8.0
+
+      - name: Run ruff
+        run: |
+          ruff check
+
+      - name: Check conventional commit messages
+        uses: webiny/action-conventional-commits@v1.4.2
+
+      - name: Run isort
+        run: |
+          isort --check-only src/* tests
+
+      - name: Run black
+        run: |
+          black --check src/* tests
+
+      - name: Run yamllint
+        run: |
+          yamllint -f=colored .
+
+      - name: Run pylint
+        run: |
+          echo "Run pylint on src:"
+          pylint --rcfile=.pylintrc --ignore=integration_tests src/ tests/
+
+          echo
+          echo "Run pylint on integration tests:"
+          pylint --rcfile=.pylintrc --disable=duplicate-code tests/integration_tests/
+
+      - name: Run mypy
+        run: |
+          mypy .
+
+      - name: Run nbstripout
+        run: |
+          find . -path './.pixi' -prune -o -name '*.ipynb' -exec nbstripout --verify {} +

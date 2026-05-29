@@ -63,8 +63,8 @@ def timedelta_to_str(timedelta_obj):
     """
     # Time in seconds
     time_in_seconds = int(timedelta_obj.total_seconds())
-    (minutes, seconds) = divmod(time_in_seconds, 60)
-    (hours, minutes) = divmod(minutes, 60)
+    minutes, seconds = divmod(time_in_seconds, 60)
+    hours, minutes = divmod(minutes, 60)
     return f"{hours:02}:{minutes:02}:{seconds:02}"
 
 

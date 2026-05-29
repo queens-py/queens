@@ -14,6 +14,8 @@
 #
 """Full-Rank Normal Variational Distribution."""
 
+from typing import cast
+
 import numpy as np
 import scipy
 from numba import njit
@@ -158,7 +160,7 @@ class FullRankNormal(Variational):
         cholesky_covariance[idx] = cholesky_covariance_array
         cov = np.matmul(cholesky_covariance, cholesky_covariance.T)
 
-        return mean, cov, cholesky_covariance
+        return cast(ArrayNDimsX1, mean), cov, cholesky_covariance
 
     def _grad_reconstruct_distribution_parameters(self) -> Array1XNParams:
         """Gradient of the parameter reconstruction.
@@ -167,7 +169,7 @@ class FullRankNormal(Variational):
             Gradient vector of the reconstruction w.r.t. the variational parameters
         """
         grad_reconstruct_params = np.ones((1, self.n_parameters))
-        return grad_reconstruct_params
+        return cast(Array1XNParams, grad_reconstruct_params)
 
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.

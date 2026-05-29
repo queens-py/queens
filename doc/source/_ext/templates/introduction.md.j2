@@ -26,14 +26,69 @@
 
 {{ extract_from_markdown_by_marker("installation", readme_path) }}
 
-For development, install the additional required packages via:
-{{ extract_from_markdown_by_marker("installation_develop", contributing_path) }}
+### User-managed environments
 
-> Note: We recommend using conda/mamba environments and installing performance-critical packages (e.g., numpy, scipy, ...) using `conda install <packagename>.` The reason for this is the choice of BLAS library (linear algebra packages). Conda (depending on the channel) installs numpy and the [mkl](https://www.intel.com/content/www/us/en/developer/articles/technical/intel-mkl-and-third-party-applications-how-to-use-them-together.html) library from Intel, in contrast to pip which defaults back to the linear algebra package installed on the system. According to certain benchmarks ([here](http://markus-beuckelmann.de/blog/boosting-numpy-blas.html) or [here](https://medium.com/analytics-vidhya/why-conda-install-instead-of-pip-install-ba4c6826a0ae)), the mkl library is able to outperform other linear algebra libraries, especially on Intel devices. Particularly for use cases where linear algebra operations dominate the computational costs, the benefit can be huge.
+QUEENS should be installed into an isolated Python environment rather than into your system Python.
+The examples below use different environment managers, but the idea is always the same:
 
+1. Create an environment with Python 3.12 or newer.
+2. Activate that environment.
+3. Check that `python` points to the environment and has the expected version.
+4. Install QUEENS from the repository root with `python -m pip install .`.
+
+#### `venv`
+
+Use `venv` if you already have Python 3.12 installed on your system:
+
+```bash
+git clone https://github.com/queens-py/queens.git
+cd queens
+python3.12 -m venv .venv
+source .venv/bin/activate
+python --version
+python -m pip install --upgrade pip
+python -m pip install .
+```
+
+After activation, `python --version` should report Python 3.12 or newer. If `python3.12` is not
+available, install Python 3.12 first with your system package manager or another Python installer.
+
+#### `uv venv`
+
+If you use [uv](https://docs.astral.sh/uv/), let uv install and select Python 3.12:
+
+```bash
+git clone https://github.com/queens-py/queens.git
+cd queens
+uv python install 3.12
+uv venv --python 3.12
+source .venv/bin/activate
+python --version
+python -m pip install .
+```
+
+#### Conda
+
+Conda-style environment managers can create an environment with the required Python version directly:
+
+```bash
+git clone https://github.com/queens-py/queens.git
+cd queens
+conda create -n queens python=3.12
+conda activate queens
+python --version
+python -m pip install .
+```
+
+The same pattern also applies to compatible tools such as Mamba or Micromamba.
+
+For development, prefer the locked Pixi environments shown above because they keep dependency
+resolution and editable installs aligned with CI.
+
+### Testing installation
 To test for a successful installation, run the test suite:
 ```
-pytest -n <number_of_workers>
+pixi run -e dev pytest
 ```
 Consult the [documentation of QUEENS tests](testing) for more details on testing.
 

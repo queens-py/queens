@@ -277,7 +277,7 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
         nodes_per_hidden_layer_lst=[5, 5],
         nugget_std=1e-05,
         num_epochs=1,
-        optimizer_seed=42,
+        seed=42,
         refinement_epochs_decay=0.7,
         verbosity_on=True,
     )
@@ -411,7 +411,7 @@ def fixture_expected_variational_cov():
 @pytest.fixture(name="expected_variational_mean_nn")
 def fixture_expected_variational_mean_nn():
     """Expected variational mean."""
-    exp_var_mean = np.array([0.19221321, 0.33134219]).reshape(-1, 1)
+    exp_var_mean = np.array([0.5416671, 0.48222166]).reshape(-1, 1)
 
     return exp_var_mean
 
@@ -419,5 +419,5 @@ def fixture_expected_variational_mean_nn():
 @pytest.fixture(name="expected_variational_cov_nn")
 def fixture_expected_variational_cov_nn():
     """Expected variational covariance."""
-    exp_var_cov = np.array([[0.01245263, 0.0], [0.0, 0.01393423]])
+    exp_var_cov = np.array([[0.07173655, 0.0], [0.0, 0.08576683]])
     return exp_var_cov

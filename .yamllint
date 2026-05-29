@@ -1,0 +1,15 @@
+---
+extends: default
+
+ignore: |
+  .pixi/
+  .venv/
+
+rules:
+  # Allow single spaces inside braces for Jinja templates.
+  braces:
+    max-spaces-inside: 1
+  brackets: disable
+  document-start: disable
+  line-length:
+    max: 100

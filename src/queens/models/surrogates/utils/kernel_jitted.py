@@ -19,7 +19,6 @@ import warnings
 import numpy as np
 from numba import jit, njit, prange
 from numba.core.errors import NumbaDeprecationWarning, NumbaPendingDeprecationWarning
-from numpy.linalg.linalg import cholesky
 
 warnings.simplefilter("ignore", category=NumbaDeprecationWarning)
 warnings.simplefilter("ignore", category=NumbaPendingDeprecationWarning)
@@ -74,7 +73,7 @@ def squared_exponential(x_train_mat, hyper_param_lst):
             partial_sigma_0_sq[i, j] = np.exp(-(delta**2) / (2.0 * l_scale_sq))
 
     # calculate first the cholesky decomposition
-    cholesky_k_mat = cholesky(k_mat)
+    cholesky_k_mat = np.linalg.cholesky(k_mat)
 
     partial_sigma_n = np.eye(k_mat.shape[0])
 
@@ -374,7 +373,7 @@ def matern_3_2(x_train_mat, hyper_param_lst):
             )
 
     # calculate first the cholesky decomposition
-    cholesky_k_mat = cholesky(k_mat)
+    cholesky_k_mat = np.linalg.cholesky(k_mat)
 
     partial_sigma_n = np.eye(k_mat.shape[0])
 

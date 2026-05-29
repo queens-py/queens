@@ -17,26 +17,30 @@
 import numpy as np
 from testbook import testbook
 
-from test_utils.tutorial_tests import inject_mock_base_dir
+from queens.utils.path import relative_path_from_root
+from test_utils.tutorial_tests import inject_mock_base_dir, markers_for_notebook
+
+NOTEBOOK_PATH = relative_path_from_root("tutorials/1_grid_iterator_rosenbrock.ipynb")
+
+pytestmark = markers_for_notebook(NOTEBOOK_PATH)
 
 
 @testbook(
-    "tutorials/1_grid_iterator_rosenbrock.ipynb",
+    NOTEBOOK_PATH,
 )
 def test_output_tutorial_1(tb, tmp_path):
     """Parameterized test case for tutorial 1: Grid Iterator Rosenbrock.
 
-    The notebook is run with injected lines of codes for testing
-    that the final results are as expected.
+    The notebook is run with injected lines of codes for testing that
+    the final results are as expected.
     """
     optimal_fun = 2.957935e-11
     optimal_x = np.array([0.99999463, 0.99998915]).tolist()
-
     # inject testing cells
     tb.inject(
-        """np.testing.assert_allclose(X1, X1_QUEENS)
-np.testing.assert_allclose(X2, X2_QUEENS)
-np.testing.assert_allclose(Z, Z_QUEENS)""",
+        "np.testing.assert_allclose(X1, X1_QUEENS)\n"
+        "np.testing.assert_allclose(X2, X2_QUEENS)\n"
+        "np.testing.assert_allclose(Z, Z_QUEENS)",
         after=28,
         run=False,
     )
