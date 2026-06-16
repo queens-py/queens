@@ -248,7 +248,8 @@ charon-build_pixi_env:
           $LOAD_MODULES \
           module list ; \
           cd ~/workspace ; \
-          rm -rfv fourc_source fourc_build ; \
+          rm -rf fourc_source fourc_build ; \
+          echo Removed folders fourc_source and fourc_build ; \
           git clone --depth 1 https://github.com/4C-multiphysics/4C.git fourc_source ; \
           mkdir fourc_build ; \
           cd fourc_build ; \
