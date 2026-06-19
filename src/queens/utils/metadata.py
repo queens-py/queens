@@ -14,6 +14,8 @@
 #
 """Metadata objects."""
 
+from __future__ import annotations
+
 from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
@@ -35,7 +37,7 @@ METADATA_FILETYPE = ".yaml"
 class SimulationMetadata:
     """Simulation metadata object.
 
-    This objects holds metadata, times code sections and exports them to yaml.
+    This objects holds metadata, times code sections, and exports them to yaml.
 
     Attributes:
         job_id: Id of the job
@@ -55,16 +57,32 @@ class SimulationMetadata:
             job_dir: Directory in which to write the metadata
         """
         self.job_id = job_id
-        self.timestamp: str | None = None
+        self.timestamp = self._get_timestamp()
         self.inputs = inputs
-        self.file_path = (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+        self.file_path = get_metadata_path(job_dir)
         self.outputs = None
         self.times: dict = {}
-        self._create_timestamp()
 
-    def _create_timestamp(self) -> None:
-        """Create timestamp in a nice format."""
-        self.timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+    @classmethod
+    def init_from_file(cls, job_dir: Path) -> SimulationMetadata:
+        """Initialize a SimulationMetadata object from an existing metadata file.
+
+        Args:
+            job_dir: Job directory in which the metadata file is located.
+
+        Returns:
+            SimulationMetadata object.
+        """
+        simulation_metadata = cls(-1, {}, job_dir)
+        metadata_dict = yaml.safe_load(simulation_metadata.file_path.read_text(encoding="utf-8"))
+        for key, value in metadata_dict.items():
+            setattr(simulation_metadata, key, value)
+        return simulation_metadata
+
+    def _get_timestamp(self) -> str:
+        """Get timestamp in a nice format."""
+        timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+        return timestamp
 
     def to_dict(self) -> dict[str, Any]:
         """Create dictionary from object.
@@ -117,6 +135,9 @@ class SimulationMetadata:
             run_time = perf_counter() - start
             # Add the runtime of this code section
             self.times[code_section_name]["time"] = run_time
+            # Add the timestamp when re-using existing job data
+            if code_section_name == "process_data_again":
+                self.times[code_section_name]["timestamp"] = self._get_timestamp()
             # Export since the job is either finished or failed
             self.export()
 
@@ -127,6 +148,34 @@ class SimulationMetadata:
             Table of the metdata object
         """
         return get_str_table("Simulation Metadata", self.to_dict())
+
+
+def get_metadata_path(job_dir: str | Path) -> Path:
+    """Get metadata file path from a job directory.
+
+    Args:
+        job_dir: Job directory
+
+    Returns:
+        metadata_path: Path to the metadata file
+    """
+    return (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+
+
+def get_metadata_from_job_dir(job_dir: Path) -> dict:
+    """Get metadata from a job directory.
+
+    Args:
+        job_dir: Job directory
+
+    Returns:
+        metadata (dict): metadata of a job
+    """
+    metadata_path = get_metadata_path(job_dir)
+    metadata = yaml.safe_load(metadata_path.read_text())
+    if metadata is None:
+        metadata = {}
+    return metadata
 
 
 def get_metadata_from_experiment_dir(experiment_dir: Path | str) -> Iterator[Any]:
@@ -141,7 +190,7 @@ def get_metadata_from_experiment_dir(experiment_dir: Path | str) -> Iterator[Any
         Metadata of a job
     """
     for job_dir in job_dirs_in_experiment_dir(experiment_dir):
-        metadata_path = (job_dir / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+        metadata_path = get_metadata_path(job_dir)
         yield yaml.safe_load(metadata_path.read_text())
 
 

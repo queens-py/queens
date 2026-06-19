@@ -16,6 +16,7 @@
 
 import os
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -26,6 +27,7 @@ from queens.distributions import FreeVariable
 from queens.drivers.jobscript import JobOptions, Jobscript
 from queens.parameters import Parameters
 from queens.utils.exceptions import SubprocessError
+from queens.utils.metadata import get_metadata_from_job_dir
 
 
 @pytest.fixture(name="parameters")
@@ -65,17 +67,17 @@ def fixture_input_templates(tmp_path, job_options, parameters):
     return input_template_1, input_template_2
 
 
-@pytest.fixture(name="jobscript_template")
-def fixture_jobscript_template():
+@pytest.fixture(name="dummy_jobscript_template")
+def fixture_dummy_jobscript_template():
     """Dummy jobscript template."""
     return 'echo "This is a dummy jobscript"'
 
 
 @pytest.fixture(name="jobscript_template_path")
-def fixture_jobscript_template_path(tmp_path, jobscript_template):
+def fixture_jobscript_template_path(tmp_path, dummy_jobscript_template):
     """Generate a dummy jobscript template."""
     jobscript_template_path = tmp_path / "dummy_jobscript_template.sh"
-    jobscript_template_path.write_text(jobscript_template)
+    jobscript_template_path.write_text(dummy_jobscript_template)
 
     return jobscript_template_path
 
@@ -92,8 +94,8 @@ def fixture_executable(tmp_path):
     return executable
 
 
-@pytest.fixture(name="data_processor")
-def fixture_data_processor():
+@pytest.fixture(name="dummy_data_processor")
+def fixture_dummy_data_processor():
     """Dummy data processor."""
     return NumpyFile(
         file_name_identifier="dummy.npy",
@@ -173,11 +175,11 @@ def fixture_jobscript_driver(parameters, input_templates, executable):
 @pytest.fixture(name="args_init")
 def fixture_args_init(
     parameters,
-    jobscript_template,
+    dummy_jobscript_template,
     executable,
     input_template,
     files_to_copy,
-    data_processor,
+    dummy_data_processor,
     gradient_data_processor,
     jobscript_file_name,
     extra_options,
@@ -189,11 +191,11 @@ def fixture_args_init(
     """
     args_init = {
         "parameters": parameters,
-        "jobscript_template": jobscript_template,
+        "jobscript_template": dummy_jobscript_template,
         "executable": executable,
         "input_templates": input_template,
         "files_to_copy": files_to_copy,
-        "data_processor": data_processor,
+        "data_processor": dummy_data_processor,
         "gradient_data_processor": gradient_data_processor,
         "jobscript_file_name": jobscript_file_name,
         "extra_options": extra_options.copy(),
@@ -213,6 +215,18 @@ def assert_jobscript_driver_attributes(jobscript_driver, args_init, extra_option
     assert jobscript_driver.gradient_data_processor == args_init["gradient_data_processor"]
     assert jobscript_driver.jobscript_file_name == args_init["jobscript_file_name"]
     assert jobscript_driver.jobscript_options == extra_options
+
+
+def get_file_times(directory: Path) -> dict:
+    """Get modification times of all files in a directory.
+
+    Args:
+        directory: Directory to check
+
+    Returns:
+        Dictionary mapping file names to their modification times
+    """
+    return {f: os.path.getmtime(directory / f) for f in os.listdir(directory)}
 
 
 def test_init_from_jobscript_template_str(args_init, extra_options):
@@ -388,3 +402,125 @@ def test_long_jobscript_template_str(parameters, input_template):
         executable="",
     )
     assert jobscript_driver.jobscript_template == long_str
+
+
+def run_jobscript_driver(
+    jobscript_driver: Jobscript, sample: np.ndarray, job_options: dict
+) -> dict:
+    """Run the jobscript driver.
+
+    Args:
+        jobscript_driver: Jobscript driver to run.
+        sample: Input sample.
+        job_options: Job options.
+
+    Returns:
+        Results from the jobscript run.
+    """
+    return jobscript_driver.run(
+        sample=sample,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+
+
+def test_successfully_reusing_existing_jobs(
+    args_init, job_options, current_time_jobscript_template, time_data_processor
+):
+    """Test that existing results are reused when the inputs match."""
+    args_init["jobscript_template"] = current_time_jobscript_template
+    args_init["data_processor"] = time_data_processor
+    jobscript_driver = Jobscript(**args_init)
+    inputs = np.array([-1, 3])
+    output_dir = job_options.output_dir
+
+    # First run to generate results
+    first_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
+
+    # Capture the output directory contents after the first run
+    first_output_file_times = get_file_times(output_dir)
+    first_metadata = get_metadata_from_job_dir(job_options.job_dir)
+
+    # Second run with the same inputs to test reusing existing results
+    second_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
+
+    # Capture the output directory contents after the second run
+    second_output_file_times = get_file_times(output_dir)
+    second_metadata = get_metadata_from_job_dir(job_options.job_dir)
+
+    # Assert output files were were not modified
+    assert first_output_file_times == second_output_file_times
+    assert first_result == second_result
+
+    # Assert metadata entries remain the same, except for metadata["times"]["process_data_again"]
+    assert "process_data_again" not in first_metadata["times"]
+    first_metadata["times"]["process_data_again"] = second_metadata["times"]["process_data_again"]
+    assert first_metadata == second_metadata
+
+
+def test_error_on_reuse_with_different_inputs(args_init, job_options):
+    """Test that a runtime error is raised for mismatching inputs on reuse."""
+    jobscript_driver = Jobscript(**args_init)
+
+    initial_inputs = np.array([1, 2])
+    different_inputs = np.array([2, 3])
+
+    run_jobscript_driver(jobscript_driver, initial_inputs, job_options)
+
+    with pytest.raises(
+        RuntimeError, match="Input parameters differ from existing job metadata. Abort..."
+    ):
+        run_jobscript_driver(jobscript_driver, different_inputs, job_options)
+
+
+def test_running_jobscript_again_when_reuse_disabled(
+    args_init, job_options, current_time_jobscript_template, time_data_processor
+):
+    """Test that the jobscript is rerun when reuse_existing_jobs is False."""
+    args_init["reuse_existing_jobs"] = False
+    args_init["jobscript_template"] = current_time_jobscript_template
+    args_init["data_processor"] = time_data_processor
+    jobscript_driver = Jobscript(**args_init)
+    inputs = np.array([1, 2])
+
+    first_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
+    first_metadata = get_metadata_from_job_dir(job_options.job_dir)
+
+    second_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
+    second_metadata = get_metadata_from_job_dir(job_options.job_dir)
+
+    assert first_result != second_result
+    assert first_result["result"] == first_metadata["outputs"]["result"]
+    assert second_result["result"] == second_metadata["outputs"]["result"]
+
+
+def test_running_jobscript_again_after_failed_run(
+    args_init,
+    job_options,
+    current_time_jobscript_template,
+    time_data_processor,
+    time_file,
+):
+    """Test that a failed jobscript run triggers a rerun on the next call."""
+    args_init["jobscript_template"] = "exit 1"
+    args_init["raise_error_on_jobscript_failure"] = True
+    args_init["data_processor"] = time_data_processor
+    jobscript_driver = Jobscript(**args_init)
+    inputs = np.array([1, 2])
+
+    with pytest.raises(SubprocessError):
+        run_jobscript_driver(jobscript_driver, inputs, job_options)
+
+    failed_metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert failed_metadata["times"]["run_jobscript"]["status"] == "failed"
+
+    jobscript_driver.jobscript_template = current_time_jobscript_template
+
+    results = run_jobscript_driver(jobscript_driver, inputs, job_options)
+    assert (job_options.output_dir / time_file).is_file()
+    assert results["result"] is not None
+
+    success_metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert success_metadata["times"]["run_jobscript"]["status"] == "successful"
