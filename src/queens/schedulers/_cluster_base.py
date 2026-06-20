@@ -193,7 +193,7 @@ class _BaseCluster(Dask):
         job_extra_directives = dask_cluster_options["job_extra_directives"](
             self.num_nodes, self.num_procs
         )
-        job_directives_skip = dask_cluster_options["job_directives_skip"]
+        job_directives_skip = list(dask_cluster_options["job_directives_skip"])
         if self.queue is None:
             job_directives_skip.append("#SBATCH -p")
 
