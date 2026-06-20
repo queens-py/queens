@@ -87,6 +87,7 @@ markers = [
     "integration_tests_fourc: Integration tests with fourc",
     "lnm_cluster: Integration tests with LNM clusters (require access to LNM network)",
     "imcs_cluster:  Integration tests with LNM clusters (require access to IMCS network)",
+    "cluster_local: Integration tests running ClusterLocal against a local SLURM (require SLURM)",
     "max_time_for_test(time_in_seconds):  Maximum time this test should take (if exceeded and used with '--test-timing' an error is raised)",
 ]
 
