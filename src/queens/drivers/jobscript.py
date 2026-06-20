@@ -14,8 +14,8 @@
 #
 """Driver to run a jobscript."""
 
-
 import logging
+from collections import deque
 from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
@@ -32,6 +32,8 @@ from queens.utils.path import create_folder_if_not_existent
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
+
+JOBSCRIPT_LOG_TAIL_LINES = 25
 
 
 @dataclass
@@ -74,6 +76,27 @@ class JobOptions:
         return self.to_dict() | additional_data
 
 
+def read_log_file_tail(log_file: Path, number_of_lines: int) -> tuple[str, bool]:
+    """Read the last lines of a log file.
+
+    Args:
+        log_file: Path to the log file.
+        number_of_lines: Maximum number of lines to read.
+
+    Returns:
+        The requested log file tail and whether the log file was truncated.
+    """
+    lines = deque(maxlen=number_of_lines + 1)
+    with open(log_file, "r", encoding="utf-8") as file:
+        lines.extend(file)
+
+    is_truncated = len(lines) > number_of_lines
+    if is_truncated:
+        lines.popleft()
+
+    return "".join(lines), is_truncated
+
+
 class Jobscript(Driver):
     """Driver to run an executable with a jobscript.
 
@@ -106,17 +129,18 @@ class Jobscript(Driver):
 
         Args:
             parameters (Parameters): Parameters object.
-            input_templates (str, Path, dict): Path(s) to simulation input template.
-            jobscript_template (str, Path): Path to jobscript template or read-in jobscript
-                                            template.
-            executable (str, Path): Path to main executable of respective software.
+            input_templates (str, Path, dict): (Local) path(s) to simulation input template.
+            jobscript_template (str, Path): (Local) path to jobscript template or read-in jobscript
+                template.
+            executable (str, Path): Path to main executable of respective software. Is a remote
+                path when using the Cluster scheduler.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
             jobscript_file_name (str, opt): Jobscript file name (default: 'jobscript.sh').
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
-                                                          jobscript exit code.
+                jobscript exit code.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.input_templates = self.create_input_templates_dict(input_templates)
@@ -247,7 +271,7 @@ class Jobscript(Driver):
 
         with metadata.time_code("run_jobscript"):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
-            self._run_executable(job_id, execute_cmd)
+            self._run_executable(job_id, execute_cmd, log_file)
 
         with metadata.time_code("data_processing"):
             results = self._get_results(output_dir)
@@ -287,18 +311,28 @@ class Jobscript(Driver):
 
         return job_dir, output_dir, output_file, input_files, log_file
 
-    def _run_executable(self, job_id, execute_cmd):
+    def _run_executable(self, job_id, execute_cmd, log_file):
         """Run executable.
 
         Args:
             job_id (int): Job ID.
             execute_cmd (str): Executed command.
+            log_file (Path): Path to redirected jobscript output.
         """
         process_returncode, _, stdout, stderr = run_subprocess(
             execute_cmd,
             raise_error_on_subprocess_failure=False,
         )
         if self.raise_error_on_jobscript_failure and process_returncode:
+            if log_file.is_file():
+                log_tail, is_truncated = read_log_file_tail(log_file, JOBSCRIPT_LOG_TAIL_LINES)
+                stdout += f"\n\nContents of {log_file}:\n"
+                if is_truncated:
+                    stdout += (
+                        f"Log file output truncated to the last "
+                        f"{JOBSCRIPT_LOG_TAIL_LINES} lines.\n"
+                    )
+                stdout += log_tail
             raise SubprocessError.construct_error_from_command(
                 command=execute_cmd,
                 command_output=stdout,

@@ -18,12 +18,23 @@ import pytest
 
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
-from queens.iterators.polynomial_chaos import PolynomialChaos
+from queens.iterators.polynomial_chaos import (
+    PolynomialChaos,
+    has_macos_numpoly_reshape_mismatch,
+)
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
+
+pytestmark = pytest.mark.skipif(
+    has_macos_numpoly_reshape_mismatch(),
+    reason=(
+        "Skipped on macOS only for the known downstream numpoly/NumPy mismatch: "
+        "numpoly < 1.3.9 calls numpy.reshape(..., newshape=...), which this NumPy rejects."
+    ),
+)
 
 
 def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):

@@ -153,6 +153,11 @@ todo_include_todos = True
 # Warn about all references where the target cannot be found
 nitpicky = True
 
+# Ignore TypeVar references used for generic type annotations.
+nitpick_ignore = [
+    ("py:obj", "queens.variational_distributions._variational_distribution.V"),
+]
+
 # Suppress specific warnings
 suppress_warnings = ["misc.copy_overwrite", "ref.attr", "ref.class", "ref.func"]
 

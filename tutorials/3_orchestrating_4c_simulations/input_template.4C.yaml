@@ -1,0 +1,56 @@
+TITLE:
+  QUEENS injected:
+    poisson_ratio: {{ poisson_ratio }}
+    young: {{ young }}
+PROBLEM TYPE:
+  PROBLEMTYPE: "Structure"
+STRUCTURAL DYNAMIC:
+  INT_STRATEGY: "Standard"
+  DYNAMICTYPE: "Statics"
+  NUMSTEP: 1
+  MAXTIME: 1
+  MAXITER: 7
+  RESULTSEVERY: 0
+  RESTARTEVERY: 0
+  DIVERCONT: stop
+  LINEAR_SOLVER: 1
+  TIMESTEP: 1
+IO:
+  VERBOSITY: "standard"
+  STRUCT_STRESS: Cauchy
+IO/RUNTIME VTK OUTPUT:
+  INTERVAL_STEPS: 1
+IO/RUNTIME VTK OUTPUT/STRUCTURE:
+  OUTPUT_STRUCTURE: true
+  DISPLACEMENT: true
+  STRESS_STRAIN: true
+SOLVER 1:
+  SOLVER: "UMFPACK"
+  NAME: "Direct Solver"
+MATERIALS:
+  - MAT: 1
+    MAT_Struct_StVenantKirchhoff:
+      YOUNG: {{ young }}
+      NUE: {{ poisson_ratio }}
+      DENS: 1
+DESIGN SURF DIRICH CONDITIONS:
+  - E: 2
+    ENTITY_TYPE: node_set_id
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0]
+    FUNCT: [null, null, null]
+  - E: 1
+    ENTITY_TYPE: node_set_id
+    NUMDOF: 3
+    ONOFF: [1, 1, 1]
+    VAL: [0, 0, 0.55]
+    FUNCT: [null, null, null]
+STRUCTURE GEOMETRY:
+  FILE: ../beam_coarse.exo
+  ELEMENT_BLOCKS:
+    - ID: 1
+      SOLID:
+        HEX8:
+          MAT: 1
+          KINEM: nonlinear

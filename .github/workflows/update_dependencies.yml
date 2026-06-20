@@ -1,0 +1,121 @@
+name: Update Dependencies
+
+"on":
+  workflow_dispatch:
+  schedule:
+    - cron: "0 5 1 * *"
+
+permissions:
+  contents: read
+
+jobs:
+  update-pixi:
+    name: Update Dependencies
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Create GitHub App token
+        id: update_dependencies_token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.UPDATE_DEPENDENCIES_APP_CLIENT_ID }}
+          private-key: ${{ secrets.UPDATE_DEPENDENCIES_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@v6
+      - name: Find latest Pixi release
+        id: pixi_release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          latest_version="$(
+            gh api \
+              -H "Accept: application/vnd.github+json" \
+              --paginate \
+              "/repos/prefix-dev/pixi/releases" |
+              jq -rs '
+                [
+                  .[][]
+                  | select(.draft | not)
+                  | select(.prerelease | not)
+                  | .tag_name as $tag
+                  | select($tag | test("^v[0-9]+\\.[0-9]+\\.[0-9]+$"))
+                  | ($tag | capture(
+                      "^v(?<major>[0-9]+)\\.(?<minor>[0-9]+)\\.(?<patch>[0-9]+)$"
+                    )) as $version
+                  | {
+                      tag: $tag,
+                      major: ($version.major | tonumber),
+                      minor: ($version.minor | tonumber),
+                      patch: ($version.patch | tonumber)
+                    }
+                ]
+                | sort_by(.major, .minor, .patch)
+                | last
+                | .tag
+              '
+          )"
+
+          if [ -z "${latest_version}" ] || [ "${latest_version}" = "null" ]; then
+            echo "No stable Pixi release tag matching vMAJOR.MINOR.PATCH found."
+            exit 1
+          fi
+
+          current_version="$(tr -d '[:space:]' < .pixi-version)"
+          echo "current_version=${current_version}" >> "$GITHUB_OUTPUT"
+          echo "latest_version=${latest_version}" >> "$GITHUB_OUTPUT"
+
+          if [ "${current_version}" = "${latest_version}" ]; then
+            echo "version_changed=false" >> "$GITHUB_OUTPUT"
+            echo "Pixi is already up to date: ${current_version}"
+          else
+            echo "version_changed=true" >> "$GITHUB_OUTPUT"
+            echo "Pixi update available: ${current_version} -> ${latest_version}"
+          fi
+      - name: Update Pixi version file
+        if: ${{ steps.pixi_release.outputs.version_changed == 'true' }}
+        run: |
+          printf '%s\n' "${{ steps.pixi_release.outputs.latest_version }}" > .pixi-version
+      - name: Set up Pixi
+        uses: ./.github/actions/setup-queens-pixi
+        with:
+          install-editable: false
+          ensure-rsync: false
+      - name: Update Pixi lockfile
+        run: |
+          pixi update --json | pixi exec pixi-diff-to-markdown > pixi_lock_update.md
+      - name: Write pull request body
+        env:
+          CURRENT_PIXI_VERSION: ${{ steps.pixi_release.outputs.current_version }}
+          LATEST_PIXI_VERSION: ${{ steps.pixi_release.outputs.latest_version }}
+          VERSION_CHANGED: ${{ steps.pixi_release.outputs.version_changed }}
+        run: |
+          {
+            if [ "${VERSION_CHANGED}" = "false" ]; then
+              echo "Pixi is already up to date at \`${CURRENT_PIXI_VERSION}\`."
+            else
+              echo "Update Pixi from \`${CURRENT_PIXI_VERSION}\` to" \
+                "\`${LATEST_PIXI_VERSION}\`."
+              echo ""
+              echo "Release: https://github.com/prefix-dev/pixi/releases/tag/${LATEST_PIXI_VERSION}"
+            fi
+
+            echo ""
+            cat pixi_lock_update.md
+          } > pixi_update.md
+      - name: Create pull request
+        uses: peter-evans/create-pull-request@v8
+        with:
+          token: ${{ steps.update_dependencies_token.outputs.token }}
+          commit-message: "build: update dependencies"
+          title: Update dependencies
+          body-path: pixi_update.md
+          branch: update-dependencies
+          base: main
+          labels: pixi
+          delete-branch: true
+          add-paths: |
+            .pixi-version
+            pixi.lock

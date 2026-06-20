@@ -16,6 +16,7 @@
 
 Modules for probability distributions.
 """
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -34,6 +35,7 @@ if TYPE_CHECKING:
     from queens.distributions.multinomial import Multinomial
     from queens.distributions.normal import Normal
     from queens.distributions.particle import Particle
+    from queens.distributions.truncated_normal import TruncatedNormal
     from queens.distributions.uniform import Uniform
     from queens.distributions.uniform_discrete import UniformDiscrete
 
@@ -41,5 +43,5 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name: str) -> Distribution:
+def __getattr__(name: str) -> type[Distribution]:
     return import_class_from_class_module_map(name, class_module_map, __name__)

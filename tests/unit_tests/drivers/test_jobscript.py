@@ -323,6 +323,61 @@ def test_nonzero_exit_code(
         )
 
 
+def test_nonzero_exit_code_includes_jobscript_log(parameters, input_template, job_options):
+    """Test that failed jobscript errors include the redirected log."""
+    jobscript_driver = Jobscript(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template='echo "jobscript failed"; exit 1',
+        executable="",
+        raise_error_on_jobscript_failure=True,
+    )
+    sample_dict = parameters.sample_as_dict(np.array([1, 2]))
+    sample = np.array(list(sample_dict.values()))
+
+    with pytest.raises(SubprocessError, match="jobscript failed"):
+        jobscript_driver.run(
+            sample=sample,
+            job_id=job_options.job_id,
+            num_procs=job_options.num_procs,
+            experiment_dir=job_options.experiment_dir,
+            experiment_name=job_options.experiment_name,
+        )
+
+
+def test_nonzero_exit_code_includes_only_jobscript_log_tail(
+    parameters, input_template, job_options
+):
+    """Test that failed jobscript include only the log tail."""
+    log_lines = [f'echo "jobscript line {line:02}"' for line in range(1, 31)]
+    jobscript_driver = Jobscript(
+        parameters=parameters,
+        input_templates=input_template,
+        jobscript_template="\n".join(log_lines + ["exit 1"]),
+        executable="",
+        raise_error_on_jobscript_failure=True,
+    )
+    sample_dict = parameters.sample_as_dict(np.array([1, 2]))
+    sample = np.array(list(sample_dict.values()))
+
+    with pytest.raises(SubprocessError) as error:
+        jobscript_driver.run(
+            sample=sample,
+            job_id=job_options.job_id,
+            num_procs=job_options.num_procs,
+            experiment_dir=job_options.experiment_dir,
+            experiment_name=job_options.experiment_name,
+        )
+
+    error_message = str(error.value)
+    assert "Contents of" in error_message
+    assert "Log file output truncated to the last 25 lines." in error_message
+    assert "jobscript line 01" not in error_message
+    assert "jobscript line 05" not in error_message
+    assert "jobscript line 06" in error_message
+    assert "jobscript line 30" in error_message
+
+
 def test_long_jobscript_template_str(parameters, input_template):
     """Test that a long jobscript template string does not raise an error."""
     long_str = "dummy" * 100

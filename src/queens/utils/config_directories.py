@@ -67,7 +67,8 @@ def experiment_directory(
     if experiment_base_directory is None:
         experiment_base_directory = base_directory()
     else:
-        experiment_base_directory = Path(experiment_base_directory)
+        # Replace ~ with home directory if necessary
+        experiment_base_directory = Path(experiment_base_directory).expanduser()
 
     experiment_dir = experiment_base_directory / experiment_name
     return experiment_dir, experiment_dir.exists()

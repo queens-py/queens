@@ -17,7 +17,12 @@
 from pathlib import Path
 from typing import Sequence
 
-PATH_TO_QUEENS_SOURCE = Path(__file__).parents[1]
+import queens
+
+PATH_TO_QUEENS_SOURCE = Path(queens.__file__).parent
+
+# this path to root is used during runtime and thus needs to be shipped with a build even though it
+# is not useful in that scenario.
 PATH_TO_ROOT = Path(__file__).parents[3]
 
 
@@ -33,23 +38,6 @@ def relative_path_from_queens_source(relative_path: str) -> Path:
         Absolute path to the file
     """
     full_path = PATH_TO_QUEENS_SOURCE / relative_path
-    return full_path
-
-
-def relative_path_from_root(relative_path: str) -> Path:
-    """Create relative path from root directory.
-
-    As an example to create: *src/queens/folder/file.A* .
-
-    Call *relative_path_from_root("src/queens/folder/file.A")* .
-
-    Args:
-        relative_path: Path starting from the root directory
-
-    Returns:
-        Absolute path to the file
-    """
-    full_path = PATH_TO_ROOT / relative_path
     return full_path
 
 

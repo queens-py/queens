@@ -18,15 +18,15 @@ from pathlib import Path, PurePath
 
 import pytest
 
+import queens
 from queens.utils.path import (
     PATH_TO_QUEENS_SOURCE,
-    PATH_TO_ROOT,
     check_if_path_exists,
     create_folder_if_not_existent,
     is_empty,
     relative_path_from_queens_source,
-    relative_path_from_root,
 )
+from test_utils.path import PATH_TO_ROOT, relative_path_from_root
 
 THIS_PATH = Path(__file__).parent
 
@@ -40,7 +40,7 @@ def fixture_path_to_root():
 @pytest.fixture(name="path_to_queens_source")
 def fixture_path_to_queens_source():
     """Path to QUEENS source."""
-    return THIS_PATH.parents[2] / "src/queens"
+    return Path(queens.__file__).parent
 
 
 def test_path_to_queens_source(path_to_queens_source):

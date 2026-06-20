@@ -19,19 +19,30 @@ from pathlib import Path
 import pytest
 from testbook import testbook
 
-from test_utils.tutorial_tests import inject_mock_base_dir
+from test_utils.tutorial_tests import (
+    ALL_TUTORIAL_NOTEBOOKS,
+    _validate_tutorial_notebook_markers,
+    inject_mock_base_dir,
+    inject_notebook_execution_context,
+    notebook_param,
+)
+
+_validate_tutorial_notebook_markers()
+
+TUTORIAL_NOTEBOOKS_WITH_DEDICATED_TESTS = {
+    path.stem.removeprefix("test_")
+    for path in Path("tests/tutorial_tests").glob("test_*.py")
+    if path.name != Path(__file__).name
+}
 
 
-# tested jupyter notebooks should be added to the list below
+# Notebooks with dedicated output assertions are collected in their own test modules.
 @pytest.mark.parametrize(
     "paths_to_tutorial_notebooks",
     [
-        str(patch)
-        for patch in sorted(Path("tutorials").glob("*.ipynb"))
-        if patch.stem
-        not in {
-            t.stem.removeprefix("test_") for t in Path("tests/tutorial_tests").glob("test_*.py")
-        }
+        notebook_param(path)
+        for path in ALL_TUTORIAL_NOTEBOOKS
+        if Path(path).stem not in TUTORIAL_NOTEBOOKS_WITH_DEDICATED_TESTS
     ],
 )
 def test_notebooks(tmp_path, paths_to_tutorial_notebooks):
@@ -41,6 +52,9 @@ def test_notebooks(tmp_path, paths_to_tutorial_notebooks):
     any errors/assertions.
     """
     with testbook(paths_to_tutorial_notebooks, timeout=-1) as tb:
+        notebook_dir = Path(paths_to_tutorial_notebooks).resolve().parent
+        inject_notebook_execution_context(tb, notebook_dir)
+
         # Patch base_directory to avoid writing test data to user's home dir.
         # Note that tb.patch converts the mocked Path to a string, so we have to use tb.inject.
         inject_mock_base_dir(tb, tmp_path)

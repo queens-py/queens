@@ -82,3 +82,6 @@ venv.bak/
 
 # best editor ever files
 *.swp
+# pixi environments
+.pixi/*
+!.pixi/config.toml

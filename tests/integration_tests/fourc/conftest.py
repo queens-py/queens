@@ -40,6 +40,6 @@ def fixture_setup_symbolic_links_fourc(fourc_link):
             "4C! \n"
             "You can create the necessary symbolic link on Linux via:\n"
             "-------------------------------------------------------------------------\n"
-            "ln -s <path-to-4C-build-directory> <queens-base-dir>/config/4C_build\n"
+            "ln -s <path-to-4C-build-directory> <queens-root-dir>/config/4C_build\n"
             "-------------------------------------------------------------------------\n"
         ) from error

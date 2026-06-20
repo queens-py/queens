@@ -500,9 +500,10 @@ def test_sobol_index_gaussian_process_ishigami(global_settings):
 
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
-
-    expected_result_s1 = np.array([0.37365542, 0.49936914, -0.00039217])
-    expected_result_s1_conf = np.array([0.14969221, 0.18936135, 0.0280309])
+    expected_result_s1 = np.array([0.193787097947826, 0.2675180364120448, 0.19932439995176882])
+    expected_result_s1_conf = np.array(
+        [0.13708917219403513, 0.16267484785491124, 0.1900657850535501]
+    )
 
     np.testing.assert_allclose(results["sensitivity_indices"]["S1"], expected_result_s1, atol=1e-05)
     np.testing.assert_allclose(

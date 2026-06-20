@@ -322,6 +322,18 @@ def test_filter_by_target_values(default_data_processor, default_raw_data):
     np.testing.assert_allclose(expected_data, processed_data)
 
 
+def test_filter_by_target_values_no_value_within_tolerance(
+    default_data_processor, default_raw_data
+):
+    """Test filter by target values without an index value within tol."""
+    default_data_processor.filter_type = "by_target_values"
+    default_data_processor.filter_target_values = [0.07]
+    default_data_processor.filter_tol = 1e-3
+
+    with pytest.raises(RuntimeError, match="No index values found within tolerance"):
+        default_data_processor.filter_and_manipulate_raw_data(default_raw_data)
+
+
 def test_filter_by_row_index(default_data_processor, default_raw_data):
     """Test filter by row index."""
     default_data_processor.filter_type = "by_row_index"

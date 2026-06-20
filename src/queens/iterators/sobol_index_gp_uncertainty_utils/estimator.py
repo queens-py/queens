@@ -240,7 +240,7 @@ class SobolIndexEstimator:
                     number_parameters,
                 )
             )
-            data[:, :, :, :] = np.NaN
+            data[:, :, :, :] = np.nan
             estimates_second_order = xr.DataArray(
                 data=data,
                 dims=("gp_realization", "bootstrap", "parameter", "crossparameter"),

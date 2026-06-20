@@ -200,7 +200,7 @@ class MetropolisHastingsPyMC(PyMC):
         """Additional post run for MH."""
         super().post_run()
         _logger.info(
-            "Acceptance rate is: %f",
+            "Acceptance rate is: %s",
             self.step.accepted_sum / self.num_samples,
         )
 

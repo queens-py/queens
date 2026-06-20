@@ -194,7 +194,7 @@ class BMFMC(Model):
             X_cols (list, optional): For `man_features`, list of columns from the X-matrix to be
                                      used as informative features.
             num_features (int, optional): For `opt_features`, number of features to be used.
-            hf_model (model, optional): High-fidelity model used to run simulations and generate
+            hf_model (Model, optional): High-fidelity model used to run simulations and generate
                                         training data.
             path_to_lf_mc_data (str or list of str, optional): Path(s) to low-fidelity MC data
                                                                files.

@@ -352,11 +352,18 @@ class CsvFile(DataProcessor):
         Returns:
             DataFrame: Filtered data.
         """
-        if any(raw_data):
-            target_indices = []
-            for target_value in self.filter_target_values:
-                target_indices.append(
-                    int(np.where(np.abs(raw_data.index - target_value) <= self.filter_tol)[0])
+        if not raw_data.empty:
+            target_indices = raw_data.index.get_indexer(
+                self.filter_target_values,
+                method="nearest",
+                tolerance=self.filter_tol,
+            )
+
+            if (target_indices == -1).any():
+                missing_targets = np.asarray(self.filter_target_values)[target_indices == -1]
+                raise RuntimeError(
+                    f"No index values found within tolerance {self.filter_tol} "
+                    f"for target values {missing_targets.tolist()}."
                 )
 
             return raw_data.iloc[target_indices]
@@ -371,13 +378,21 @@ class CsvFile(DataProcessor):
         Returns:
             DataFrame: Filtered data.
         """
-        if any(raw_data):
-            range_start = int(
-                np.where(np.abs(raw_data.index - self.filter_range[0]) <= self.filter_tol)[0]
+        if not raw_data.empty:
+            range_start, range_end = raw_data.index.get_indexer(
+                self.filter_range,
+                method="nearest",
+                tolerance=self.filter_tol,
             )
-            range_end = int(
-                np.where(np.abs(raw_data.index - self.filter_range[-1]) <= self.filter_tol)[-1]
-            )
+
+            if -1 in (range_start, range_end):
+                missing_targets = np.asarray(self.filter_range)[
+                    np.asarray([range_start, range_end]) == -1
+                ]
+                raise RuntimeError(
+                    f"No index values found within tolerance {self.filter_tol} "
+                    f"for range values {missing_targets.tolist()}."
+                )
 
             return raw_data.iloc[range_start : range_end + 1]
         return None

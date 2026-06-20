@@ -17,6 +17,7 @@
 The test is based on the low-fidelity Borehole function.
 """
 
+import numpy as np
 import pytest
 
 from queens.distributions.uniform import Uniform
@@ -62,13 +63,36 @@ def test_latin_hypercube_sampling_borehole83(global_settings):
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results["mean"] == pytest.approx(62.05240444441511)
-    assert results["var"] == pytest.approx(1371.7554224384000)
+    np.testing.assert_allclose(results["mean"], 61.910468085219456, rtol=1e-6, atol=1e-12)
+    np.testing.assert_allclose(results["var"], 1336.5420586597304, rtol=1e-6, atol=1e-12)
 
 
 @pytest.mark.max_time_for_test(20)
 def test_latin_hypercube_sampling_branin78(global_settings):
-    """Test case for latin hyper cube iterator."""
+    """Test Latin hypercube sampling for the high-fidelity Branin function.
+
+    The test samples the high-fidelity Branin benchmark function
+
+        f(x_1, x_2) =
+            (-1.275 x_1^2 / pi^2 + 5 x_1 / pi + x_2 - 6)^2
+            + (10 - 5 / (4 pi)) cos(x_1) + 10
+
+    with independent uniform input distributions
+
+        x_1 ~ U[-5, 10],
+        x_2 ~ U[0, 15].
+
+    For these distributions, the exact moments are analytically defined by
+
+        E[f] = 1 / 15^2 int_{-5}^{10} int_0^{15} f(x_1, x_2) dx_2 dx_1
+             = 54.3071982719085,
+
+        Var[f] = 1 / 15^2 int_{-5}^{10} int_0^{15} (f(x_1, x_2) - E[f])^2 dx_2 dx_1
+               = 2626.687312415944.
+
+    The assertions below check the deterministic sample statistics of the seeded
+    Latin hypercube run, not the exact distribution moments.
+    """
     # Parameters
     x1 = Uniform(lower_bound=-5, upper_bound=10)
     x2 = Uniform(lower_bound=0, upper_bound=15)
@@ -94,5 +118,5 @@ def test_latin_hypercube_sampling_branin78(global_settings):
     # Load results
     results = load_result(global_settings.result_file(".pickle"))
 
-    assert results["mean"] == pytest.approx(53.17279969296224)
-    assert results["var"] == pytest.approx(2581.6502630157715)
+    np.testing.assert_allclose(results["mean"], 54.25531895299926, rtol=1e-6, atol=1e-12)
+    np.testing.assert_allclose(results["var"], 2483.786406285974, rtol=1e-6, atol=1e-12)

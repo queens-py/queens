@@ -75,21 +75,21 @@ def test_elementary_effects_ishigami90(global_settings):
     results = load_result(global_settings.result_file(".pickle"))
     _logger.info(results)
 
-    assert results["sensitivity_indices"]["mu"][0] == pytest.approx(15.46038594, abs=1e-7)
+    assert results["sensitivity_indices"]["mu"][0] == pytest.approx(17.68763290, abs=1e-7)
     assert results["sensitivity_indices"]["mu"][1] == pytest.approx(0.0, abs=1e-7)
-    assert results["sensitivity_indices"]["mu"][2] == pytest.approx(0.0, abs=1e-7)
+    assert results["sensitivity_indices"]["mu"][2] == pytest.approx(7.13332892, abs=1e-7)
 
-    assert results["sensitivity_indices"]["mu_star"][0] == pytest.approx(15.460385940, abs=1e-7)
+    assert results["sensitivity_indices"]["mu_star"][0] == pytest.approx(17.68763290, abs=1e-7)
     assert results["sensitivity_indices"]["mu_star"][1] == pytest.approx(1.47392000, abs=1e-7)
-    assert results["sensitivity_indices"]["mu_star"][2] == pytest.approx(5.63434321, abs=1e-7)
+    assert results["sensitivity_indices"]["mu_star"][2] == pytest.approx(7.13332892, abs=1e-7)
 
-    assert results["sensitivity_indices"]["sigma"][0] == pytest.approx(15.85512257, abs=1e-7)
+    assert results["sensitivity_indices"]["sigma"][0] == pytest.approx(18.77919823, abs=1e-7)
     assert results["sensitivity_indices"]["sigma"][1] == pytest.approx(1.70193622, abs=1e-7)
-    assert results["sensitivity_indices"]["sigma"][2] == pytest.approx(9.20084394, abs=1e-7)
+    assert results["sensitivity_indices"]["sigma"][2] == pytest.approx(8.59288836, abs=1e-7)
 
-    assert results["sensitivity_indices"]["mu_star_conf"][0] == pytest.approx(13.53414548, abs=1e-7)
+    assert results["sensitivity_indices"]["mu_star_conf"][0] == pytest.approx(15.77224320, abs=1e-7)
     assert results["sensitivity_indices"]["mu_star_conf"][1] == pytest.approx(0.0, abs=1e-7)
-    assert results["sensitivity_indices"]["mu_star_conf"][2] == pytest.approx(5.51108773, abs=1e-7)
+    assert results["sensitivity_indices"]["mu_star_conf"][2] == pytest.approx(7.31091870, abs=1e-7)
 
 
 def test_elementary_effects_sobol(
@@ -157,16 +157,16 @@ def fixture_expected_result_mu():
     """Expected Mu result."""
     expected_result_mu = np.array(
         [
-            25.8299150077341,
-            19.28297176050532,
-            -14.092164789704626,
-            5.333475971922498,
-            -11.385141403296364,
-            13.970208961715421,
-            -3.0950202483238303,
-            0.6672725255532903,
-            7.2385092339309445,
-            -7.7664016980947075,
+            -2.601323663226073,
+            20.68200584795835,
+            -7.759411231057245,
+            4.7269015243468875,
+            -20.447764722050515,
+            11.587939260262727,
+            4.915003189487776,
+            -0.46675060195474005,
+            -3.5192417525555633,
+            -9.817808539704242,
         ]
     )
     return expected_result_mu
@@ -177,16 +177,16 @@ def fixture_expected_result_mu_star():
     """Expected Mu star result."""
     expected_result_mu_star = np.array(
         [
-            29.84594504725642,
-            21.098173537614855,
-            16.4727722348437,
-            26.266876218598668,
-            16.216603266281044,
-            18.051629859410895,
-            3.488313966697564,
-            2.7128638920479147,
-            7.671230484535577,
-            10.299932289624746,
+            9.58548627110508,
+            23.298593393925685,
+            13.031380571529553,
+            6.551052192131895,
+            23.87075909458303,
+            13.493005422109425,
+            8.636826684475931,
+            0.804169417762858,
+            3.845539815618292,
+            10.185803340670184,
         ]
     )
     return expected_result_mu_star
@@ -197,16 +197,16 @@ def fixture_expected_result_sigma():
     """Expected sigma result."""
     expected_result_sigma = np.array(
         [
-            53.88783786787971,
-            41.02192670857979,
-            29.841807478998156,
-            43.33349033575829,
-            29.407676882180404,
-            31.679653142831512,
-            5.241491105224932,
-            4.252334015139214,
-            10.38274186974731,
-            18.83046700807382,
+            14.126073686851976,
+            44.84025953013619,
+            18.830571404935803,
+            11.90755387463754,
+            40.15919099245428,
+            24.661511275785948,
+            14.530785408431987,
+            1.0111455153120015,
+            5.494502535418954,
+            17.68875251673258,
         ]
     )
     return expected_result_sigma

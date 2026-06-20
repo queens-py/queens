@@ -34,7 +34,12 @@ def assert_monte_carlo_iterator_results(results, expected_mean, expected_var):
 
 
 def assert_surrogate_model_output(
-    output, mean_ref, var_ref, grad_mean_ref=None, grad_var_ref=None, decimals=(2, 2, 2, 2)
+    output,
+    mean_ref,
+    var_ref,
+    grad_mean_ref=None,
+    grad_var_ref=None,
+    decimals=(2, 2, 2, 2),
 ):
     """Assert the equality of the output with the provided reference values.
 

@@ -14,10 +14,9 @@
 #
 """Extract QUEENS example from the readme."""
 
-
 from pathlib import Path
 
-from queens.utils.path import relative_path_from_root
+from test_utils.path import relative_path_from_root
 
 
 def extract_from_markdown_file_by_marker(marker_name, md_file):

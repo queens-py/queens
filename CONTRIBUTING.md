@@ -45,14 +45,12 @@ have to solve them yourself.
 ### :fishing_pole_and_fish: Pull requests
 
 #### 1. Install QUEENS in developer mode
-Install QUEENS as described in the [README.md](README.md) and run:
+Install QUEENS as described in the [README.md](https://github.com/queens-py/queens/blob/main/README.md).
+For contributions, use the Pixi development environment and expose your local clone inside it:
 <!---installation_develop marker, do not remove this comment-->
-```
-pip install -e .[develop]
-```
-or to do a safe develop install use:
-```
-pip install -e .[safe_develop]
+```bash
+pixi install --environment dev
+pixi run -e dev install-editable
 ```
 <!---installation_develop marker, do not remove this comment-->
 
@@ -82,6 +80,53 @@ Like every codebase, QUEENS follows some project-specific coding conventions. Be
 - If relative paths within the QUEENS source are needed, use the [relative_path_from_queens_source](src/queens/utils/path.py#L24) function.
 - Decorate the init method of QUEENS objects with the `log_init_args` decorator from [src/queens/utils/logger_settings.py](src/queens/utils/logger_settings.py#L248). This automatically logs the arguments passed to the init.
 - We only allow disabling pylint warnings for specific lines, not for entire files. If you disable warnings, please use the long pylint description, not just the code.
+
+##### Changing dependencies
+QUEENS declares dependencies in `pyproject.toml` and locks the Pixi environments in `pixi.lock`.
+For a short overview of the available environments, see the
+[requirements FAQ](doc/source/faqs/requirements.md). This section describes how to add, remove, or
+update dependencies.
+
+When changing dependencies, keep the PEP-style dependency declarations and the Pixi declarations in
+sync:
+- Runtime dependencies belong in `[project].dependencies` and the matching
+  `[tool.pixi.feature.base]` dependency section.
+- Optional runtime dependencies belong in `[project.optional-dependencies]` and a matching
+  `[tool.pixi.feature.<name>]` section.
+- Development-only tools belong in `[dependency-groups].dev` and the matching
+  `[tool.pixi.feature.dev]` dependency section.
+- In Pixi sections, use `dependencies` for Conda packages and `pypi-dependencies` for packages that
+  must be installed from PyPI or a Git source.
+- Do not add test, linting, formatting, documentation, or release tooling to the base runtime
+  dependencies unless it is actually needed by QUEENS at runtime.
+
+After editing `pyproject.toml`, run the dependency integrity check. The same check is installed as a
+pre-commit hook and also runs in CI:
+```bash
+pixi run -e dev pre-commit run check-pyproject-dependency-integrity --files pyproject.toml
+```
+
+If dependency declarations changed, refresh the lockfile and commit it together with
+`pyproject.toml`:
+```bash
+pixi lock
+git add pyproject.toml pixi.lock
+```
+
+The CI pipeline checks this as well: if dependency-relevant sections in `pyproject.toml` changed and
+`pixi lock --check --dry-run` would update `pixi.lock`, the code quality job fails. Before opening
+or updating a pull request, it is useful to verify the lockfile locally:
+```bash
+pixi lock --check --dry-run
+```
+
+Finally, reinstall or update the affected Pixi environment and run a focused test or smoke check:
+```bash
+pixi install --environment dev
+pixi run -e dev install-editable
+pixi run -e dev pytest
+```
+
 ##### Commit messages
 Please provide meaningful commit messages based on the
 [Conventional Commits guidelines](https://www.conventionalcommits.org/en/v1.0.0/).

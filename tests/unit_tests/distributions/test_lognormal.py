@@ -212,7 +212,6 @@ def test_cdf_lognormal_2d(lognormal_2d, mean_2d, covariance_2d, sample_pos_2d):
     ref_sol = scipy.stats.lognorm.cdf(
         sample_pos_2d[:, 0], scale=np.exp(mean_2d[0]), s=std[0]
     ) * scipy.stats.lognorm.cdf(sample_pos_2d[:, 1], scale=np.exp(mean_2d[1]), s=std[1])
-    ref_sol[ref_sol == 0] = np.nan  # Queens Log Normal is not defined for <=0.
     np.testing.assert_allclose(lognormal_2d.cdf(sample_pos_2d), ref_sol)
 
 
