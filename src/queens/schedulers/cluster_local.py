@@ -53,7 +53,6 @@ class ClusterLocal(_BaseCluster):
         dask_cluster_cls = dask_cluster_options["dask_cluster_cls"]
 
         remote_port = get_port()
-        local_port_dashboard = get_port()
         remote_port_dashboard = get_port()
 
         scheduler_options = {
@@ -74,8 +73,8 @@ class ClusterLocal(_BaseCluster):
                 dask_cluster_adapt_kwargs,
                 self.experiment_dir,
             )
-        except Exception as e:
-            raise RuntimeError() from e
+        except Exception as exc:
+            raise RuntimeError("Failed to initialize local Dask cluster") from exc
 
         for i in range(20, 0, -1):  # 20 tries to connect
             _logger.debug("Trying to connect to Dask Cluster: try #%d", i)
@@ -84,10 +83,10 @@ class ClusterLocal(_BaseCluster):
                 break
             except OSError as exc:
                 if i == 1:
-                    raise OSError() from exc
+                    raise OSError("Failed to connect to local Dask cluster") from exc
                 time.sleep(1)
 
-        return client, local_port_dashboard
+        return client, remote_port_dashboard
 
     def copy_files_to_experiment_dir(self, paths):
         """Copy file to experiment directory.

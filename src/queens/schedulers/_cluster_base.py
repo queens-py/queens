@@ -250,7 +250,8 @@ class _BaseCluster(Dask):
         Args:
             worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
         """
-        self.client.retire_workers(workers=list(worker))
+        workers = [worker] if isinstance(worker, str) else list(worker)
+        self.client.retire_workers(workers=workers)
 
     @staticmethod
     def delete_experiment_dir_if_empty(_):
