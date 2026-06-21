@@ -32,11 +32,7 @@ _logger = logging.getLogger(__name__)
 
 
 class ClusterLocal(_BaseCluster):
-    """Cluster (local) scheduler for QUEENS.
-
-    Can be used to schedule jobs to a cluster scheduler with local
-    access i.e. without a network connection.
-    """
+    """Cluster scheduler with local access (no network connection)."""
 
     def _get_experiment_dir(
         self, experiment_name, experiment_base_dir, overwrite_existing_experiment
@@ -48,7 +44,6 @@ class ClusterLocal(_BaseCluster):
 
     def _start_cluster(self, dask_cluster_kwargs, dask_cluster_adapt_kwargs):
         """Start a Dask cluster and connect a client locally."""
-        # collect all settings for the dask cluster
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, self.workload_manager)
         dask_cluster_cls = dask_cluster_options["dask_cluster_cls"]
 
@@ -89,10 +84,5 @@ class ClusterLocal(_BaseCluster):
         return client, remote_port_dashboard
 
     def copy_files_to_experiment_dir(self, paths):
-        """Copy file to experiment directory.
-
-        Args:
-            paths (Path, list): paths to files or directories that should be copied to experiment
-                                directory
-        """
+        """Copy file to experiment directory."""
         return Scheduler.copy_files_to_experiment_dir(self, paths)

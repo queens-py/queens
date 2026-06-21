@@ -64,13 +64,12 @@ def fixture_mock_dask_layer(monkeypatch):
             """Return a fake future without running anything."""
             return FakeFuture()
 
-    # deterministic, unique ports instead of querying the operating system
+    # deterministic ports instead of querying the OS
     ports = itertools.count(10000)
     monkeypatch.setattr(cluster_local, "get_port", lambda: next(ports))
     monkeypatch.setattr(cluster_local, "Client", FakeClient)
 
-    # use the real directive logic but swap in the fake cluster class; fresh
-    # copies of the skip lists keep the tests independent of one another
+    # real directive logic, fake cluster class; copy skip lists per test
     fake_managers = {
         name: {
             "dask_cluster_cls": FakeCluster,
@@ -115,7 +114,7 @@ def test_dask_cluster_kwargs_slurm(mock_dask_layer, test_name, tmp_path):
 
     assert cluster.kwargs["job_name"] == test_name
     assert cluster.kwargs["memory"] == "10TB"
-    # the walltime is increased by 5 minutes to let workers shut down in time
+    # walltime + 5 min for worker shutdown
     assert cluster.kwargs["walltime"] == "00:15:00"
     assert cluster.kwargs["job_extra_directives"] == ["--ntasks=1"]
     assert cluster.kwargs["worker_extra_args"] == [
@@ -124,7 +123,7 @@ def test_dask_cluster_kwargs_slurm(mock_dask_layer, test_name, tmp_path):
         "--lifetime-stagger",
         "2m",
     ]
-    # one core/process per worker - parallelism is over jobs, not threads
+    # one core/process per worker
     assert cluster.kwargs["cores"] == 1
     assert cluster.kwargs["processes"] == 1
     assert cluster.kwargs["n_workers"] == 1

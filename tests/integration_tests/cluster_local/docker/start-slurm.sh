@@ -3,17 +3,12 @@ set -euo pipefail
 
 log() { echo "[start-slurm] $*"; }
 
-# ---------------------------------------------------------------------------
-# Make the configured NodeName / SlurmctldHost match THIS container's hostname,
-# so slurmd registers against the right node regardless of the CI hostname.
-# ---------------------------------------------------------------------------
+# Put this container's hostname into the SLURM config (must match or slurmd won't start).
 HOST="$(hostname -s)"
 log "Container hostname: ${HOST}"
 sed -i "s/PLACEHOLDER_HOST/${HOST}/g" /etc/slurm/slurm.conf
 
-# ---------------------------------------------------------------------------
-# 1) munge authentication (must be up before slurmctld/slurmd)
-# ---------------------------------------------------------------------------
+# Start munge auth (needed before slurmctld/slurmd).
 log "Starting munged..."
 chown -R munge:munge /run/munge
 runuser -u munge -- /usr/sbin/munged --force
@@ -24,9 +19,7 @@ if ! munge -n | unmunge >/dev/null 2>&1; then
 fi
 log "munge OK."
 
-# ---------------------------------------------------------------------------
-# 2) slurmctld (controller) as the slurm user
-# ---------------------------------------------------------------------------
+# Start the controller (slurmctld) as the slurm user.
 log "Starting slurmctld..."
 runuser -u slurm -- /usr/sbin/slurmctld
 for _ in $(seq 1 30); do
@@ -34,9 +27,7 @@ for _ in $(seq 1 30); do
     sleep 1
 done
 
-# ---------------------------------------------------------------------------
-# 3) slurmd (compute) as root (it must be root to launch jobs as other users)
-# ---------------------------------------------------------------------------
+# Start the compute daemon (slurmd) as root (needs root to run jobs as other users).
 log "Starting slurmd..."
 if ! /usr/sbin/slurmd; then
     log "ERROR: slurmd failed to start. Diagnostics:"
@@ -47,9 +38,7 @@ if ! /usr/sbin/slurmd; then
     exit 1
 fi
 
-# ---------------------------------------------------------------------------
-# 4) wait until the node is IDLE; nudge it back if it registered DOWN/DRAINED
-# ---------------------------------------------------------------------------
+# Wait for the node to become IDLE; resume it if it came up DOWN/DRAINED.
 log "Waiting for node to become IDLE..."
 ready=0
 for i in $(seq 1 60); do
@@ -79,9 +68,7 @@ fi
 log "Cluster is up:"
 sinfo
 
-# ---------------------------------------------------------------------------
-# 5) exec the passed command AS slurmuser, from the repo dir
-# ---------------------------------------------------------------------------
+# Run the passed command as slurmuser, from the repo dir.
 if [ "$#" -eq 0 ]; then
     set -- bash -l
 fi

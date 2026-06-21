@@ -45,18 +45,7 @@ VALID_WORKLOAD_MANAGERS = {
 
 
 def timedelta_to_str(timedelta_obj):
-    """Format a timedelta object to str.
-
-    This function seems unnecessarily complicated, but unfortunately the datetime library does not
-     support this formatting for timedeltas. Returns the format HH:MM:SS.
-
-    Args:
-        timedelta_obj (datetime.timedelta): Timedelta object to format
-
-    Returns:
-        str: String of the timedelta object
-    """
-    # Time in seconds
+    """Format a timedelta object as HH:MM:SS."""
     time_in_seconds = int(timedelta_obj.total_seconds())
     minutes, seconds = divmod(time_in_seconds, 60)
     hours, minutes = divmod(minutes, 60)
@@ -66,11 +55,7 @@ def timedelta_to_str(timedelta_obj):
 def _initialize_dask_cluster(
     logger, dask_cluster_cls, dask_cluster_kwargs, dask_cluster_adapt_kwargs, experiment_dir
 ):
-    """Initialize a Dask cluster.
-
-    Start dask cluster, adapt it to the requested worker settings, and
-    write jobscript.
-    """
+    """Start a Dask cluster, adapt worker settings, and write the jobscript."""
     logger.info("Starting dask cluster of type: %s", dask_cluster_cls)
     logger.debug("Dask cluster kwargs:")
     logger.debug(dask_cluster_kwargs)
@@ -114,9 +99,7 @@ class _BaseCluster(Dask):
         overwrite_existing_experiment=False,
         job_script_prologue=None,
     ):
-        """Init method for the abstract cluster scheduler.
-
-        The total number of cores per job is given by num_procs*num_nodes.
+        """Init the abstract cluster scheduler (cores per job = num_procs*num_nodes).
 
         Args:
             experiment_name (str): Name of the current experiment
@@ -185,10 +168,8 @@ class _BaseCluster(Dask):
         """Start a Dask cluster and a client that connects to it.
 
         Returns:
-            client (Client): Dask client that is connected to and submits computations to a Dask
-                cluster.
+            client (Client): Dask client connected to the cluster.
         """
-        # collect all settings for the dask cluster
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, self.workload_manager)
         job_extra_directives = dask_cluster_options["job_extra_directives"](
             self.num_nodes, self.num_procs
@@ -228,7 +209,6 @@ class _BaseCluster(Dask):
             "maximum_jobs": self.num_jobs,
         }
 
-        # start dask cluster
         client, dashboard_port = self._start_cluster(dask_cluster_kwargs, dask_cluster_adapt_kwargs)
 
         _logger.debug("Submitting dummy job to check basic functionality of client.")
@@ -242,14 +222,7 @@ class _BaseCluster(Dask):
         return client
 
     def restart_worker(self, worker):
-        """Restart a worker.
-
-        This method retires a dask worker. The Client.adapt method of dask takes cares of submitting
-        new workers subsequently.
-
-        Args:
-            worker (str, tuple): Worker to restart. This can be a worker address, name, or a both.
-        """
+        """Retire a worker (Dask's adapt resubmits a new one)."""
         workers = [worker] if isinstance(worker, str) else list(worker)
         self.client.retire_workers(workers=workers)
 

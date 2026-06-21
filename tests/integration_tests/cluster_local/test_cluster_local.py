@@ -14,10 +14,7 @@
 #
 """Integration test for the ClusterLocal scheduler.
 
-This test runs a small QUEENS Monte Carlo study through ``ClusterLocal`` against
-a real single-node SLURM installation. It is marked ``cluster_local`` and
-therefore only runs in the dedicated SLURM environment (e.g. the SLURM CI
-container), not in the regular test suite.
+Only runs in the SLURM CI container.
 """
 
 import logging
