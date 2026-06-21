@@ -2,7 +2,7 @@
 #
 # Single-node, container-safe SLURM image for the `cluster_local` integration
 # test.
-FROM ubuntu:24.04
+FROM ubuntu:22.04
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -36,10 +36,12 @@ RUN dd if=/dev/urandom bs=1 count=1024 of=/etc/munge/munge.key 2>/dev/null \
     && chmod 0400 /etc/munge/munge.key
 
 # --- SLURM config (hostname placeholder patched at boot) ---
+# slurm 21.08 (Ubuntu 22.04) does not auto-initialize cgroup/v2 with
+# proctrack/linuxproc + task/none, so no cgroup.conf is needed -- this avoids
+# the cgroup/dbus startup failures that slurm 23.11 (Ubuntu 24.04) hit in a
+# non-privileged container. Matches dask-jobqueue's CI (slurm 21.08).
 COPY tests/integration_tests/cluster_local/docker/slurm.conf /etc/slurm/slurm.conf
-COPY tests/integration_tests/cluster_local/docker/cgroup.conf /etc/slurm/cgroup.conf
-RUN chown slurm:slurm /etc/slurm/slurm.conf /etc/slurm/cgroup.conf \
-    && chmod 0644 /etc/slurm/slurm.conf /etc/slurm/cgroup.conf
+RUN chown slurm:slurm /etc/slurm/slurm.conf && chmod 0644 /etc/slurm/slurm.conf
 
 # --- pixi ---
 ARG PIXI_VERSION=v0.68.1
