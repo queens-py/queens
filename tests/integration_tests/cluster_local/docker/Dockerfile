@@ -37,7 +37,9 @@ RUN dd if=/dev/urandom bs=1 count=1024 of=/etc/munge/munge.key 2>/dev/null \
 
 # --- SLURM config (hostname placeholder patched at boot) ---
 COPY tests/integration_tests/cluster_local/docker/slurm.conf /etc/slurm/slurm.conf
-RUN chown slurm:slurm /etc/slurm/slurm.conf && chmod 0644 /etc/slurm/slurm.conf
+COPY tests/integration_tests/cluster_local/docker/cgroup.conf /etc/slurm/cgroup.conf
+RUN chown slurm:slurm /etc/slurm/slurm.conf /etc/slurm/cgroup.conf \
+    && chmod 0644 /etc/slurm/slurm.conf /etc/slurm/cgroup.conf
 
 # --- pixi ---
 ARG PIXI_VERSION=v0.68.1
