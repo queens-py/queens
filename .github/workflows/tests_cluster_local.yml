@@ -24,5 +24,5 @@ jobs:
       - name: Run cluster_local tests against real SLURM
         run: |
           docker run --rm queens-slurm-ci:local \
-            /opt/conda/bin/conda run --no-capture-output -n queens \
+            pixi run --frozen -e dev \
               pytest -m cluster_local tests/integration_tests/cluster_local/ -v

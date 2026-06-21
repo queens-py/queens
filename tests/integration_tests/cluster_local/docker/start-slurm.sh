@@ -1,13 +1,4 @@
 #!/usr/bin/env bash
-#
-# Boot munge + slurmctld + slurmd in a single container, wait until the node is
-# IDLE, then exec the passed command as the non-root user `slurmuser`.
-#
-# SLURM refuses to run batch jobs submitted by root, so the test command (which
-# ends up calling `sbatch` via dask-jobqueue) must run as a normal user.
-#
-# Start order (munge first) and the wait-for-sinfo loop follow dask-jobqueue's
-# ci/slurm/docker-entrypoint.sh.
 set -euo pipefail
 
 log() { echo "[start-slurm] $*"; }
@@ -89,4 +80,4 @@ if [ "$#" -eq 0 ]; then
 fi
 log "Executing as slurmuser: $*"
 cd /opt/queens
-exec runuser -u slurmuser -- "$@"
+exec runuser -u slurmuser -- env HOME=/home/slurmuser "$@"
