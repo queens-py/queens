@@ -38,7 +38,14 @@ done
 # 3) slurmd (compute) as root (it must be root to launch jobs as other users)
 # ---------------------------------------------------------------------------
 log "Starting slurmd..."
-/usr/sbin/slurmd
+if ! /usr/sbin/slurmd; then
+    log "ERROR: slurmd failed to start. Diagnostics:"
+    echo "--- slurmd.log ---";    tail -n 200 /var/log/slurm/slurmd.log    2>/dev/null || echo "(no slurmd.log)"
+    echo "--- slurmctld.log ---"; tail -n 200 /var/log/slurm/slurmctld.log 2>/dev/null || echo "(no slurmctld.log)"
+    echo "--- foreground 'slurmd -Dvvv' (10s, shows the real error) ---"
+    timeout 10 /usr/sbin/slurmd -Dvvv 2>&1 | head -n 120 || true
+    exit 1
+fi
 
 # ---------------------------------------------------------------------------
 # 4) wait until the node is IDLE; nudge it back if it registered DOWN/DRAINED
