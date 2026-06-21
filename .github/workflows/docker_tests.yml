@@ -1,5 +1,5 @@
 # yamllint disable
-name: tests_cluster_local
+name: Docker tests
 
 on:
   pull_request:
@@ -10,6 +10,7 @@ on:
 
 jobs:
   run_cluster_local_tests:
+    name: local cluster scheduler
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
