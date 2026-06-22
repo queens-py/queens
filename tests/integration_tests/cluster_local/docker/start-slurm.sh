@@ -1,6 +1,11 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Boot sequence for the single-node SLURM CI container (PID 1 via tini):
+#   patch hostname into slurm.conf -> munged -> slurmctld (wait for ping) ->
+#   slurmd -> wait for node IDLE (resume if DOWN) -> exec test cmd as slurmuser.
+# Hostname is patched because slurmd requires NodeName to equal `hostname -s`.
+
 log() { echo "[start-slurm] $*"; }
 
 # Put this container's hostname into the SLURM config (must match or slurmd won't start).

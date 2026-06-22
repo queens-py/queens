@@ -1,4 +1,3 @@
-# yamllint disable
 name: Docker tests
 
 on:
@@ -13,7 +12,7 @@ jobs:
     name: local cluster scheduler
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Build single-node SLURM image
         run: |
