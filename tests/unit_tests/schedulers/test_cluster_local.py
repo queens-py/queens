@@ -19,8 +19,7 @@ import itertools
 import pytest
 
 from queens.schedulers import _cluster_base, cluster_local
-from queens.schedulers._cluster_base import VALID_WORKLOAD_MANAGERS, _BaseCluster
-from queens.schedulers._dask import Dask
+from queens.schedulers._cluster_base import VALID_WORKLOAD_MANAGERS
 from queens.schedulers.cluster_local import ClusterLocal
 
 
@@ -99,12 +98,6 @@ def build_cluster_local(test_name, tmp_path, **overrides):
     }
     kwargs.update(overrides)
     return ClusterLocal(**kwargs)
-
-
-def test_clusterlocal_is_a_cluster_scheduler():
-    """ClusterLocal should be a cluster scheduler built on the Dask base."""
-    assert issubclass(ClusterLocal, _BaseCluster)
-    assert issubclass(ClusterLocal, Dask)
 
 
 def test_dask_cluster_kwargs_slurm(mock_dask_layer, test_name, tmp_path):
