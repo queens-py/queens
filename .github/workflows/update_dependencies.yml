@@ -24,7 +24,7 @@ jobs:
           private-key: ${{ secrets.UPDATE_DEPENDENCIES_APP_PRIVATE_KEY }}
           permission-contents: write
           permission-pull-requests: write
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: Find latest Pixi release
         id: pixi_release
         env:
