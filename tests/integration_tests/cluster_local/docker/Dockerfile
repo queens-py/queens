@@ -37,12 +37,12 @@ RUN dd if=/dev/urandom bs=1 count=1024 of=/etc/munge/munge.key 2>/dev/null \
 COPY tests/integration_tests/cluster_local/docker/slurm.conf /etc/slurm/slurm.conf
 RUN chown slurm:slurm /etc/slurm/slurm.conf && chmod 0644 /etc/slurm/slurm.conf
 
-# Install pixi (version pinned for reproducibility)
-ARG PIXI_VERSION=v0.68.1
+# Install pixi (version from .pixi-version)
+COPY .pixi-version /tmp/.pixi-version
 ENV PIXI_HOME=/opt/pixi
 ENV PATH=/opt/pixi/bin:$PATH
 RUN curl -fsSL https://pixi.sh/install.sh | \
-        env PIXI_VERSION="${PIXI_VERSION}" PIXI_NO_PATH_UPDATE=1 bash \
+        env PIXI_VERSION="$(tr -d '[:space:]' < /tmp/.pixi-version)" PIXI_NO_PATH_UPDATE=1 bash \
     && pixi --version
 
 # Install QUEENS into the dev pixi environment
