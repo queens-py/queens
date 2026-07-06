@@ -11,7 +11,7 @@ log() { echo "[start-slurm] $*"; }
 # Put this container's hostname into the SLURM config (must match or slurmd won't start).
 HOST="$(hostname -s)"
 log "Container hostname: ${HOST}"
-sed -i "s/PLACEHOLDER_HOST/${HOST}/g" /etc/slurm/slurm.conf
+sed -i "s/HOSTNAME_PLACEHOLDER/${HOST}/g" /etc/slurm/slurm.conf
 
 # Start munge auth (needed before slurmctld/slurmd).
 log "Starting munged..."

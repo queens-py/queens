@@ -25,10 +25,10 @@ from queens.schedulers.cluster_local import ClusterLocal
 
 @pytest.fixture(name="mock_dask_layer")
 def fixture_mock_dask_layer(monkeypatch):
-    """Replace the real dask-jobqueue layer with lightweight fakes."""
+    """Replace the real dask-jobqueue layer with lightweight mocks."""
     created = {}
 
-    class FakeCluster:
+    class MockCluster:
         """Stand-in for ``SLURMCluster``/``PBSCluster``."""
 
         def __init__(self, **kwargs):
@@ -42,9 +42,9 @@ def fixture_mock_dask_layer(monkeypatch):
 
         def job_script(self):
             """Return a dummy jobscript."""
-            return "#!/bin/bash\n# fake dask jobscript\n"
+            return "#!/bin/bash\n# mock dask jobscript\n"
 
-    class FakeFuture:
+    class MockFuture:
         """Stand-in for a Dask future."""
 
         @staticmethod
@@ -52,7 +52,7 @@ def fixture_mock_dask_layer(monkeypatch):
             """Return a dummy result immediately."""
             return "Dummy job"
 
-    class FakeClient:
+    class MockClient:
         """Stand-in for ``dask.distributed.Client``."""
 
         def __init__(self, *args, **kwargs):  # pylint: disable=unused-argument
@@ -60,25 +60,25 @@ def fixture_mock_dask_layer(monkeypatch):
 
         @staticmethod
         def submit(function, *args, **kwargs):  # pylint: disable=unused-argument
-            """Return a fake future without running anything."""
-            return FakeFuture()
+            """Return a mock future without running anything."""
+            return MockFuture()
 
     # deterministic ports instead of querying the OS
     ports = itertools.count(10000)
     monkeypatch.setattr(cluster_local, "get_port", lambda: next(ports))
-    monkeypatch.setattr(cluster_local, "Client", FakeClient)
+    monkeypatch.setattr(cluster_local, "Client", MockClient)
 
-    # real directive logic, fake cluster class; copy skip lists per test
-    fake_managers = {
+    # real directive logic, mock cluster class; copy skip lists per test
+    mock_managers = {
         name: {
-            "dask_cluster_cls": FakeCluster,
+            "dask_cluster_cls": MockCluster,
             "job_extra_directives": options["job_extra_directives"],
             "job_directives_skip": list(options["job_directives_skip"]),
         }
         for name, options in VALID_WORKLOAD_MANAGERS.items()
     }
-    monkeypatch.setattr(_cluster_base, "VALID_WORKLOAD_MANAGERS", fake_managers)
-    monkeypatch.setattr(cluster_local, "VALID_WORKLOAD_MANAGERS", fake_managers)
+    monkeypatch.setattr(_cluster_base, "VALID_WORKLOAD_MANAGERS", mock_managers)
+    monkeypatch.setattr(cluster_local, "VALID_WORKLOAD_MANAGERS", mock_managers)
 
     return created
 
@@ -158,7 +158,7 @@ def test_jobscript_is_written(test_name, tmp_path):
     scheduler = build_cluster_local(test_name, tmp_path)
     jobscript = scheduler.experiment_dir / "dask_jobscript.sh"
     assert jobscript.exists()
-    assert "fake dask jobscript" in jobscript.read_text()
+    assert "mock dask jobscript" in jobscript.read_text()
 
 
 def test_pbs_workload_manager(mock_dask_layer, test_name, tmp_path):

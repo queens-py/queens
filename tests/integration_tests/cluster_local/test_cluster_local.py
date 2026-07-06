@@ -73,5 +73,7 @@ def test_cluster_local_monte_carlo(global_settings, tmp_path):
     results = load_result(global_settings.result_file(".pickle"))
     output = np.asarray(results["raw_output_data"]["result"])
 
-    assert output.shape[0] == num_samples
-    assert np.all(np.isfinite(output))
+    expected_output = np.array(
+        [[4.109284571375], [5.222775161322], [10.065812237396], [8.883062649700]]
+    )
+    np.testing.assert_array_almost_equal(output, expected_output, decimal=4)
