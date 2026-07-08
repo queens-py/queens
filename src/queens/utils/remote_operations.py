@@ -19,7 +19,6 @@ import json
 import logging
 import pickle
 import shlex
-import socket
 import time
 import uuid
 from functools import partial
@@ -31,6 +30,7 @@ from fabric import Connection
 from invoke.exceptions import UnexpectedExit
 
 from queens.utils.path import PATH_TO_ROOT, is_empty
+from queens.utils.ports import get_port
 from queens.utils.rsync import assemble_rsync_command
 from queens.utils.run_subprocess import start_subprocess
 
@@ -373,17 +373,6 @@ class RemoteConnection(Connection):
         _logger.debug(result.stdout)
         _logger.info("Build of remote queens environment was successful.")
         _logger.info("It took: %s s.\n", time.time() - start_time)
-
-
-def get_port() -> int:
-    """Get free port.
-
-    Returns:
-        Free port
-    """
-    sock = socket.socket()
-    sock.bind(("", 0))
-    return int(sock.getsockname()[1])
 
 
 VALID_CONNECTION_TYPES = {"remote_connection": RemoteConnection}

@@ -25,7 +25,7 @@ from queens.schedulers._cluster_base import (
     _initialize_dask_cluster,
 )
 from queens.schedulers._scheduler import Scheduler
-from queens.utils.remote_operations import get_port
+from queens.utils.ports import get_port
 from queens.utils.valid_options import get_option
 
 _logger = logging.getLogger(__name__)
@@ -47,16 +47,16 @@ class ClusterLocal(_BaseCluster):
         dask_cluster_options = get_option(VALID_WORKLOAD_MANAGERS, self.workload_manager)
         dask_cluster_cls = dask_cluster_options["dask_cluster_cls"]
 
-        remote_port = get_port()
-        remote_port_dashboard = get_port()
+        port = get_port()
+        port_dashboard = get_port()
 
         scheduler_options = {
-            "port": remote_port,
-            "dashboard_address": remote_port_dashboard,
+            "port": port,
+            "dashboard_address": port_dashboard,
             "allowed_failures": self.allowed_failures,
         }
         if self.cluster_internal_address:
-            scheduler_options["contact_address"] = f"{self.cluster_internal_address}:{remote_port}"
+            scheduler_options["contact_address"] = f"{self.cluster_internal_address}:{port}"
 
         dask_cluster_kwargs["scheduler_options"] = scheduler_options
 
@@ -81,7 +81,7 @@ class ClusterLocal(_BaseCluster):
                     raise OSError("Failed to connect to local Dask cluster") from exc
                 time.sleep(1)
 
-        return client, remote_port_dashboard
+        return client, port_dashboard
 
     def copy_files_to_experiment_dir(self, paths):
         """Copy file to experiment directory."""
