@@ -121,6 +121,25 @@ jobs:
           test-suite-name: tutorials_fourc.${{ runner.os }}
           markers: tutorial_tests_fourc
 
+  run_cluster_local_tests:
+    name: local cluster scheduler
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Build single-node SLURM image
+        run: |
+          docker build \
+            -f tests/integration_tests/cluster_local/docker/Dockerfile \
+            -t queens-slurm-ci:local \
+            .
+
+      - name: Run cluster_local tests against real SLURM
+        run: |
+          docker run --rm queens-slurm-ci:local \
+            pixi run --frozen -e dev \
+              pytest -m cluster_local tests/integration_tests/cluster_local/ -v
+
   report_test_results:
     name: report test results
     if: always()
