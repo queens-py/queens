@@ -170,6 +170,7 @@ disallow_untyped_decorators = true
 disallow_untyped_defs = true
 ignore_missing_imports = true
 disable_error_code = ["str-bytes-safe"]
+enable_error_code = ["explicit-override"]
 # Delete modules once type hinting has been introduced there
 exclude = '''(?x)(
     ^(.gitlab|.github|config|doc|tests|test_utils)/|
