@@ -30,6 +30,7 @@ if TYPE_CHECKING:
     from queens.distributions.categorical import Categorical
     from queens.distributions.exponential import Exponential
     from queens.distributions.free_variable import FreeVariable
+    from queens.distributions.gaussian_kde import GaussianKDE
     from queens.distributions.lognormal import LogNormal
     from queens.distributions.mean_field_normal import MeanFieldNormal
     from queens.distributions.multinomial import Multinomial
