@@ -9,6 +9,7 @@ doc/source/tutorials/*.ipynb
 # No results or logs
 *.pickle
 *.log
+tutorials/output/
 
 # but keep static rst files
 !doc/source/index.rst

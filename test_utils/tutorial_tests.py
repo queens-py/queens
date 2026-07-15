@@ -80,6 +80,7 @@ TUTORIAL_NOTEBOOKS_BY_MARKER = {
         relative_path_from_root(
             "tutorials/2_uncertainty_propagation_and_quantification.ipynb"
         ).as_posix(),
+        relative_path_from_root("tutorials/6_core_allocation.ipynb").as_posix(),
     ],
     "tutorial_tests_fourc": [
         relative_path_from_root(
