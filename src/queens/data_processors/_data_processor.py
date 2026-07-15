@@ -146,8 +146,8 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if len(file_list) > 1:
             raise RuntimeError(
                 "The data_processor module found several files for the "
-                "provided 'file_name_prefix'!"
-                "The files are: {file_list}."
+                f"provided 'file_name_identifier' ({self.file_name_identifier!r})."
+                f"The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
         if len(file_list) == 1:
