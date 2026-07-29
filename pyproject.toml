@@ -233,7 +233,6 @@ install-editable = "python -m pip install --no-deps --no-build-isolation -e ."
 [tool.pixi.feature.dev.dependencies]
 pytest = ">=9.0.3"
 py = ">=1.11.0"
-pytest-codestyle = ">=2.0.1"
 pytest-cov = ">=7.1.0"
 pytest-mock = ">=3.15.1"
 pytest-xdist = ">=3.8.0"
@@ -278,7 +277,6 @@ dev = { features = ["base", "dev", "tutorials", "fourc"], no-default-feature = t
 dev = [
     "pytest>=9.0.3",
     "py>=1.11.0",
-    "pytest-codestyle>=2.0.1",
     "pytest-cov>=7.1.0",
     "pytest-mock>=3.15.1",
     "pytest-xdist>=3.8.0",
