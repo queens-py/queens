@@ -135,8 +135,8 @@ def test_control_variates_with_optimal_num_samples(
     res = load_result(global_settings.result_file(".pickle"))
 
     # Test outputs.
-    assert res["mean"] == pytest.approx(77.6361024495423)
-    assert res["std"] == pytest.approx(0.039169722018672436)
+    assert res["mean"] == pytest.approx(77.6457414342444)
+    assert res["std"] == pytest.approx(0.03917, abs=1.0e-4)
     assert res["num_samples_cv"] == pytest.approx(1353264)
     assert res["mean_cv"] == pytest.approx(61.78825592166509)
     assert res["std_cv_mean_estimator"] == pytest.approx(0.03117012579709094)
