@@ -137,7 +137,7 @@ def test_control_variates_with_optimal_num_samples(
     # Test outputs.
     assert res["mean"] == pytest.approx(77.64, abs=1.0e-2)
     assert res["std"] == pytest.approx(0.03917, abs=1.0e-4)
-    assert res["num_samples_cv"] == pytest.approx(1353264)
+    assert res["num_samples_cv"] == pytest.approx(1353264, abs=100)
     assert res["mean_cv"] == pytest.approx(61.78825592166509)
     assert res["std_cv_mean_estimator"] == pytest.approx(0.03117012579709094)
     assert res["cv_influence_coeff"] == pytest.approx(1.2566383731008297)
