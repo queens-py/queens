@@ -16,16 +16,11 @@
 
 import pytest
 
-from queens.distributions.uniform import Uniform
-from queens.drivers.function import Function
 from queens.iterators.polynomial_chaos import (
     PolynomialChaos,
     has_macos_numpoly_reshape_mismatch,
 )
 from queens.main import run_iterator
-from queens.models.simulation import Simulation
-from queens.parameters.parameters import Parameters
-from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
 
 pytestmark = pytest.mark.skipif(
@@ -37,23 +32,10 @@ pytestmark = pytest.mark.skipif(
 )
 
 
-def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
+def test_polynomial_chaos_pseudo_spectral_borehole(
+    global_settings, borehole_parameters, borehole83_lofi_model
+):
     """Test case for the PC iterator using a pseudo spectral approach."""
-    # Parameters
-    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
-    r = Uniform(lower_bound=100, upper_bound=50000)
-    tu = Uniform(lower_bound=63070, upper_bound=115600)
-    hu = Uniform(lower_bound=990, upper_bound=1110)
-    tl = Uniform(lower_bound=63.1, upper_bound=116)
-    hl = Uniform(lower_bound=700, upper_bound=820)
-    l = Uniform(lower_bound=1120, upper_bound=1680)
-    kw = Uniform(lower_bound=9855, upper_bound=12045)
-    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
-
-    # Setup iterator
-    driver = Function(parameters=parameters, function="borehole83_lofi")
-    scheduler = Pool(experiment_name=global_settings.experiment_name)
-    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = PolynomialChaos(
         approach="pseudo_spectral",
         seed=42,
@@ -62,8 +44,8 @@ def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
         sparse=True,
         polynomial_order=2,
         result_description={"write_results": True},
-        model=model,
-        parameters=parameters,
+        model=borehole83_lofi_model,
+        parameters=borehole_parameters,
         global_settings=global_settings,
     )
 
@@ -76,23 +58,10 @@ def test_polynomial_chaos_pseudo_spectral_borehole(global_settings):
     assert results["covariance"] == pytest.approx([1312.23414971])
 
 
-def test_polynomial_chaos_collocation_borehole(global_settings):
+def test_polynomial_chaos_collocation_borehole(
+    global_settings, borehole_parameters, borehole83_lofi_model
+):
     """Test for the PC iterator using a collocation approach."""
-    # Parameters
-    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
-    r = Uniform(lower_bound=100, upper_bound=50000)
-    tu = Uniform(lower_bound=63070, upper_bound=115600)
-    hu = Uniform(lower_bound=990, upper_bound=1110)
-    tl = Uniform(lower_bound=63.1, upper_bound=116)
-    hl = Uniform(lower_bound=700, upper_bound=820)
-    l = Uniform(lower_bound=1120, upper_bound=1680)
-    kw = Uniform(lower_bound=9855, upper_bound=12045)
-    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
-
-    # Setup iterator
-    driver = Function(parameters=parameters, function="borehole83_lofi")
-    scheduler = Pool(experiment_name=global_settings.experiment_name)
-    model = Simulation(scheduler=scheduler, driver=driver)
     iterator = PolynomialChaos(
         approach="collocation",
         seed=42,
@@ -100,8 +69,8 @@ def test_polynomial_chaos_collocation_borehole(global_settings):
         sampling_rule="sobol",
         polynomial_order=2,
         result_description={"write_results": True},
-        model=model,
-        parameters=parameters,
+        model=borehole83_lofi_model,
+        parameters=borehole_parameters,
         global_settings=global_settings,
     )
 

@@ -116,7 +116,6 @@ markers = [
     "integration_tests_fourc: Integration tests with fourc",
     "lnm_cluster: Integration tests with LNM clusters (require access to LNM network)",
     "imcs_cluster:  Integration tests with LNM clusters (require access to IMCS network)",
-    "cluster_local: Integration tests running ClusterLocal against a local SLURM (require SLURM)",
     "max_time_for_test(time_in_seconds):  Maximum time this test should take (if exceeded and used with '--test-timing' an error is raised)",
 ]
 
@@ -161,7 +160,7 @@ ignore-packages = [
     # shiboken6 is under (LGPLv3 or GPLv2 or GPLv3) see https://code.qt.io/cgit/pyside/pyside-setup.git/tree/README.pyside6.md
     "shiboken6",
 ]
-allow-only="MIT;MIT License;MIT-CMU;BSD;BSD License;BSD-2-Clause;BSD-3-Clause;BSD 3-Clause;3-Clause BSD License;BSD-2-Clause AND Apache-2.0 WITH LLVM-exception;BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0;Apache-2.0;Apache License 2.0;Apache Software License;Apache-2.0 OR BSD-3-Clause;Apache-2.0 OR BSD-2-Clause;Apache-2.0 AND CNRI-Python;Apache-2.0 AND MIT;ISC;PSF-2.0;Python Software Foundation License;MPL-2.0;Mozilla Public License 2.0;Mozilla Public License 2.0 (MPL 2.0);MPL-2.0 AND MIT;LGPL;LGPL-2.1;LGPL-3.0;LGPL-3.0-or-later;Zlib;0BSD;CC0-1.0"
+allow-only="MIT;MIT License;MIT-CMU;MIT-0;BSD;BSD License;BSD-2-Clause;BSD-3-Clause;BSD 3-Clause;3-Clause BSD License;BSD-2-Clause AND Apache-2.0 WITH LLVM-exception;BSD-3-Clause AND 0BSD AND MIT AND Zlib AND CC0-1.0;Apache-2.0;Apache License 2.0;Apache Software License;Apache-2.0 OR BSD-3-Clause;Apache-2.0 OR BSD-2-Clause;Apache-2.0 AND CNRI-Python;Apache-2.0 AND MIT;ISC;PSF-2.0;Python Software Foundation License;MPL-2.0;Mozilla Public License 2.0;Mozilla Public License 2.0 (MPL 2.0);MPL-2.0 AND MIT;LGPL;LGPL-2.1;LGPL-3.0;LGPL-3.0-or-later;Zlib;0BSD;CC0-1.0"
 
 [tool.mypy]
 check_untyped_defs = true
@@ -234,7 +233,6 @@ install-editable = "python -m pip install --no-deps --no-build-isolation -e ."
 [tool.pixi.feature.dev.dependencies]
 pytest = ">=9.0.3"
 py = ">=1.11.0"
-pytest-codestyle = ">=2.0.1"
 pytest-cov = ">=7.1.0"
 pytest-mock = ">=3.15.1"
 pytest-xdist = ">=3.8.0"
@@ -279,7 +277,6 @@ dev = { features = ["base", "dev", "tutorials", "fourc"], no-default-feature = t
 dev = [
     "pytest>=9.0.3",
     "py>=1.11.0",
-    "pytest-codestyle>=2.0.1",
     "pytest-cov>=7.1.0",
     "pytest-mock>=3.15.1",
     "pytest-xdist>=3.8.0",

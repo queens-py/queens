@@ -196,7 +196,7 @@ def conditional_prediction_decorator(prediction_method, conditial_values):
     return predict
 
 
-def _check_boundary_response_method(estimator, response_method, _class_of_interest):
+def _check_boundary_response_method(estimator, response_method):
     """Get the classifier response function.
 
     We exploit this function to plot the conditional predictions by passing the conditional_values
