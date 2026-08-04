@@ -1,0 +1,73 @@
+name: Check pull request age
+"on":
+  schedule:
+    - cron: "49 0 * * *"
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+  pull-requests: read
+
+jobs:
+  check_pull_request_age:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check pull request age
+        # Pull request events contain the PR creation timestamp, so this step
+        # performs the actual age check.
+        if: github.event_name == 'pull_request'
+        env:
+          PR_CREATED_AT: ${{ github.event.pull_request.created_at }}
+        run: |
+          if [ -z "${PR_CREATED_AT}" ]; then
+            echo "This check must run on a pull request."
+            exit 1
+          fi
+
+          pr_created_at="$(date -u -d "${PR_CREATED_AT}" +%s)"
+          now="$(date -u +%s)"
+
+          if [ $((now - pr_created_at)) -lt 86400 ]; then
+            echo "This pull request must be open for 24 hours before this check passes."
+            exit 1
+          fi
+
+          echo "This pull request has been open for at least 24 hours."
+
+      - name: Re-run failed age checks for open pull requests
+        # Scheduled workflows do not run on a single PR. This step loops over PRs and
+        # reruns any failed age checks.
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          WORKFLOW_FILE: pull_request_age_check.yml
+        run: |
+          gh pr list \
+            --json number,headRefOid \
+            --jq '.[] | "\(.number) \(.headRefOid)"' |
+          # Loop over PRs and their head commits
+          while read -r pr_number head_sha; do
+            # Look up the latest failed age-check run on the PR's current
+            # head commit.
+            run_id="$(
+              gh run list \
+                --workflow "${WORKFLOW_FILE}" \
+                --event pull_request \
+                --commit "${head_sha}" \
+                --status failure \
+                --limit 1 \
+                --json databaseId \
+                --jq '.[0].databaseId'
+            )"
+
+            if [ -z "${run_id}" ]; then
+              echo "No failed age-check run found for pull request #${pr_number}."
+              continue
+            fi
+
+            echo "Re-running age check for pull request #${pr_number}."
+            gh run rerun "${run_id}"
+          done
