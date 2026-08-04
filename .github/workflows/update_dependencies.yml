@@ -110,7 +110,7 @@ jobs:
         with:
           token: ${{ steps.update_dependencies_token.outputs.token }}
           commit-message: "build: update dependencies"
-          title: Update dependencies
+          title: "build: update dependencies"
           body-path: pixi_update.md
           branch: update-dependencies
           base: main
