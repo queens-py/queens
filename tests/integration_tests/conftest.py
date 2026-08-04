@@ -17,6 +17,70 @@
 import numpy as np
 import pytest
 
+from queens.distributions.uniform import Uniform
+from queens.drivers.function import Function
+from queens.models.simulation import Simulation
+from queens.parameters import Parameters
+from queens.schedulers.pool import Pool
+
+
+@pytest.fixture(name="pool_scheduler")
+def fixture_pool_scheduler(global_settings):
+    """Pool scheduler for the integration tests."""
+    return Pool(experiment_name=global_settings.experiment_name)
+
+
+@pytest.fixture(name="borehole_parameters")
+def fixture_borehole_parameters():
+    """Parameters for the Borehole benchmark function."""
+    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
+    r = Uniform(lower_bound=100, upper_bound=50000)
+    tu = Uniform(lower_bound=63070, upper_bound=115600)
+    hu = Uniform(lower_bound=990, upper_bound=1110)
+    tl = Uniform(lower_bound=63.1, upper_bound=116)
+    hl = Uniform(lower_bound=700, upper_bound=820)
+    l = Uniform(lower_bound=1120, upper_bound=1680)
+    kw = Uniform(lower_bound=9855, upper_bound=12045)
+    return Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
+
+
+@pytest.fixture(name="park91a_parameters")
+def fixture_park91a_parameters():
+    """Parameters for the Park91a benchmark function."""
+    x1 = Uniform(lower_bound=0, upper_bound=1)
+    x2 = Uniform(lower_bound=0, upper_bound=1)
+    x3 = Uniform(lower_bound=0, upper_bound=1)
+    x4 = Uniform(lower_bound=0, upper_bound=1)
+    return Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
+
+
+@pytest.fixture(name="borehole83_lofi_model")
+def fixture_borehole83_lofi_model(borehole_parameters, pool_scheduler):
+    """Simulation model wrapping the low-fidelity Borehole function."""
+    driver = Function(parameters=borehole_parameters, function="borehole83_lofi")
+    return Simulation(scheduler=pool_scheduler, driver=driver)
+
+
+@pytest.fixture(name="borehole83_hifi_model")
+def fixture_borehole83_hifi_model(borehole_parameters, pool_scheduler):
+    """Simulation model wrapping the high-fidelity Borehole function."""
+    driver = Function(parameters=borehole_parameters, function="borehole83_hifi")
+    return Simulation(scheduler=pool_scheduler, driver=driver)
+
+
+@pytest.fixture(name="park91a_lofi_model")
+def fixture_park91a_lofi_model(park91a_parameters, pool_scheduler):
+    """Simulation model wrapping the low-fidelity Park91a function."""
+    driver = Function(parameters=park91a_parameters, function="park91a_lofi")
+    return Simulation(scheduler=pool_scheduler, driver=driver)
+
+
+@pytest.fixture(name="park91a_hifi_model")
+def fixture_park91a_hifi_model(park91a_parameters, pool_scheduler):
+    """Simulation model wrapping the high-fidelity Park91a function."""
+    driver = Function(parameters=park91a_parameters, function="park91a_hifi")
+    return Simulation(scheduler=pool_scheduler, driver=driver)
+
 
 @pytest.fixture(name="fourc_example_expected_output")
 def fixture_fourc_example_expected_output():

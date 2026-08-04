@@ -20,63 +20,25 @@ function.
 
 import pytest
 
-from queens.distributions.uniform import Uniform
-from queens.drivers.function import Function
 from queens.iterators.mlmc import MLMC
 from queens.main import run_iterator
-from queens.models.simulation import Simulation
-from queens.parameters import Parameters
-from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
 
 
-@pytest.fixture(name="parameters")
-def fixture_parameters():
-    """Parameters for the integration tests of the MLMC iterator."""
-    # Parameters
-    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
-    r = Uniform(lower_bound=100, upper_bound=50000)
-    tu = Uniform(lower_bound=63070, upper_bound=115600)
-    hu = Uniform(lower_bound=990, upper_bound=1110)
-    tl = Uniform(lower_bound=63.1, upper_bound=116)
-    hl = Uniform(lower_bound=700, upper_bound=820)
-    l = Uniform(lower_bound=1120, upper_bound=1680)
-    kw = Uniform(lower_bound=9855, upper_bound=12045)
-    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
-
-    return parameters
-
-
-@pytest.fixture(name="scheduler")
-def fixture_scheduler(global_settings):
-    """Scheduler for the integration tests of the MLMC iterator."""
-    # Set up scheduler.
-    scheduler = Pool(experiment_name=global_settings.experiment_name)
-
-    return scheduler
-
-
 @pytest.fixture(name="models")
-def fixture_models(parameters, scheduler):
+def fixture_models(borehole83_lofi_model, borehole83_hifi_model):
     """Models for the integration tests of the MLMC iterator."""
-    # Set up drivers.
-    driver0 = Function(parameters=parameters, function="borehole83_lofi")
-    driver1 = Function(parameters=parameters, function="borehole83_hifi")
-    # Set up models.
-    model0 = Simulation(scheduler=scheduler, driver=driver0)
-    model1 = Simulation(scheduler=scheduler, driver=driver1)
-
-    return [model0, model1]
+    return [borehole83_lofi_model, borehole83_hifi_model]
 
 
-def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
+def test_mlmc_borehole_given_num_samples(global_settings, borehole_parameters, models):
     """Test case for the iterator with a given number of samples."""
     # Set up iterator.
     iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
-        parameters=parameters,
+        parameters=borehole_parameters,
         global_settings=global_settings,
     )
 
@@ -93,14 +55,14 @@ def test_mlmc_borehole_given_num_samples(global_settings, parameters, models):
     assert result["num_samples"] == pytest.approx([1000, 100])
 
 
-def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
+def test_mlmc_borehole_bootstrap(global_settings, borehole_parameters, models):
     """Test case for the bootstrap estimate of the MLMC standard deviation."""
     # Set up iterator.
     iterator = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
-        parameters=parameters,
+        parameters=borehole_parameters,
         global_settings=global_settings,
         num_bootstrap_samples=200,
     )
@@ -118,14 +80,14 @@ def test_mlmc_borehole_bootstrap(global_settings, parameters, models):
     assert result["std_bootstrap"] == pytest.approx(1.4177144502392238)
 
 
-def test_mlmc_borehole_optimal_num_samples(global_settings, parameters, models):
+def test_mlmc_borehole_optimal_num_samples(global_settings, borehole_parameters, models):
     """Test case for the iterator with an optimal number of samples."""
     # Set up iterator.
     iterator_optimal = MLMC(
         seed=42,
         num_samples=[1000, 100],
         models=models,
-        parameters=parameters,
+        parameters=borehole_parameters,
         global_settings=global_settings,
         use_optimal_num_samples=True,
         cost_models=[1, 1000],

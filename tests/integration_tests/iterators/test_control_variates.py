@@ -16,65 +16,20 @@
 
 import pytest
 
-from queens.distributions.uniform import Uniform
-from queens.drivers.function import Function
 from queens.iterators.control_variates import ControlVariates
 from queens.main import run_iterator
-from queens.models.simulation import Simulation
-from queens.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
-
-
-@pytest.fixture(name="parameters")
-def fixture_parameters():
-    """Parameters for the integration tests."""
-    rw = Uniform(lower_bound=0.05, upper_bound=0.15)
-    r = Uniform(lower_bound=100, upper_bound=50000)
-    tu = Uniform(lower_bound=63070, upper_bound=115600)
-    hu = Uniform(lower_bound=990, upper_bound=1110)
-    tl = Uniform(lower_bound=63.1, upper_bound=116)
-    hl = Uniform(lower_bound=700, upper_bound=820)
-    l = Uniform(lower_bound=1120, upper_bound=1680)
-    kw = Uniform(lower_bound=9855, upper_bound=12045)
-    parameters = Parameters(rw=rw, r=r, tu=tu, hu=hu, tl=tl, hl=hl, l=l, kw=kw)
-
-    return parameters
 
 
 @pytest.fixture(name="scheduler")
 def fixture_scheduler(global_settings):
     """Scheduler for the integration tests."""
-    # Set up scheduler
-    scheduler = Pool(experiment_name=global_settings.experiment_name)
-
-    return scheduler
-
-
-@pytest.fixture(name="control_variate")
-def fixture_control_variate(parameters, scheduler):
-    """Control variate model for the integration tests."""
-    # Set up driver.
-    driver = Function(parameters=parameters, function="borehole83_lofi")
-    # Set up model.
-    model = Simulation(scheduler=scheduler, driver=driver)
-
-    return model
-
-
-@pytest.fixture(name="model_main")
-def fixture_model_main(parameters, scheduler):
-    """Main model for the integration tests."""
-    # Set up driver.
-    driver = Function(parameters=parameters, function="borehole83_hifi")
-    # Set up model.
-    model = Simulation(scheduler=scheduler, driver=driver)
-
-    return model
+    return Pool(experiment_name=global_settings.experiment_name)
 
 
 def test_control_variates_with_given_num_samples(
-    global_settings, parameters, model_main, control_variate
+    global_settings, borehole_parameters, borehole83_hifi_model, borehole83_lofi_model
 ):
     """Test function for control variates with a given number of samples."""
     # Number of samples on the cross-model estimator.
@@ -82,9 +37,9 @@ def test_control_variates_with_given_num_samples(
 
     # Set up iterator.
     iterator = ControlVariates(
-        model=model_main,
-        control_variate=control_variate,
-        parameters=parameters,
+        model=borehole83_hifi_model,
+        control_variate=borehole83_lofi_model,
+        parameters=borehole_parameters,
         global_settings=global_settings,
         seed=42,
         num_samples=n0,
@@ -106,7 +61,7 @@ def test_control_variates_with_given_num_samples(
 
 
 def test_control_variates_with_optimal_num_samples(
-    global_settings, parameters, model_main, control_variate
+    global_settings, park91a_parameters, park91a_hifi_model, park91a_lofi_model
 ):
     """Test function for control variates with optimal number of samples."""
     # Number of samples on the cross-model estimator.
@@ -118,9 +73,9 @@ def test_control_variates_with_optimal_num_samples(
 
     # Set up iterator.
     iterator = ControlVariates(
-        model=model_main,
-        control_variate=control_variate,
-        parameters=parameters,
+        model=park91a_hifi_model,
+        control_variate=park91a_lofi_model,
+        parameters=park91a_parameters,
         global_settings=global_settings,
         seed=42,
         num_samples=n0,
@@ -135,10 +90,10 @@ def test_control_variates_with_optimal_num_samples(
     res = load_result(global_settings.result_file(".pickle"))
 
     # Test outputs.
-    assert res["mean"] == pytest.approx(77.6457414342444)
-    assert res["std"] == pytest.approx(0.039169722018672436)
-    assert res["num_samples_cv"] == pytest.approx(1353264)
-    assert res["mean_cv"] == pytest.approx(61.78825592166509)
-    assert res["std_cv_mean_estimator"] == pytest.approx(0.03117012579709094)
-    assert res["cv_influence_coeff"] == pytest.approx(1.2566383731008297)
-    assert res["sample_ratio"] == pytest.approx(338316.21441286104)
+    assert res["mean"] == pytest.approx(8.486285171375979)
+    assert res["std"] == pytest.approx(1.0843641376888087)
+    assert res["num_samples_cv"] == pytest.approx(18)
+    assert res["mean_cv"] == pytest.approx(8.877129681945862)
+    assert res["std_cv_mean_estimator"] == pytest.approx(1.3203990388887525)
+    assert res["cv_influence_coeff"] == pytest.approx(0.676596107631806)
+    assert res["sample_ratio"] == pytest.approx(4.72194840557595)
