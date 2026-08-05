@@ -9,8 +9,73 @@ permissions:
   contents: read
 
 jobs:
+  check-existing-pr:
+    name: Check for open update PR
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    outputs:
+      exists: ${{ steps.check.outputs.exists }}
+    steps:
+      - name: Check for an open update-dependencies PR
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pr_json="$(
+            gh pr list \
+              --repo "${{ github.repository }}" \
+              --base main \
+              --head update-dependencies \
+              --state open \
+              --json number,url \
+              --jq '.[0] // empty'
+          )"
+
+          if [ -z "${pr_json}" ]; then
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          pr_number="$(echo "${pr_json}" | jq -r '.number')"
+          pr_url="$(echo "${pr_json}" | jq -r '.url')"
+          echo "exists=true" >> "$GITHUB_OUTPUT"
+          echo "::notice title=Update Dependencies::PR #${pr_number} (${pr_url}) is still open." \
+              "Skipping this run to avoid overwriting in-progress fixes " \
+              "— please merge or close it first."
+          {
+            echo "### Update Dependencies skipped"
+            echo "PR [#${pr_number}](${pr_url}) from a previous run is still open."
+            echo "Merge or close it so the next scheduled run can proceed."
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          marker="<!-- update-dependencies-stale-pr-notice -->"
+          existing_comment="$(
+            gh api "repos/${{ github.repository }}/issues/${pr_number}/comments" \
+              --paginate \
+              --jq "[.[] | select(.body | contains(\"${marker}\"))] | length"
+          )"
+
+          if [ "${existing_comment}" = "0" ]; then
+            {
+              echo "${marker}"
+              echo "This month's scheduled dependency update was skipped " \
+                "because this PR is still open."
+              echo "Merge or close this PR to let the next run proceed."
+              echo "Once resolved, you can manually re-run the workflow from the Actions tab" \
+                "(or \`gh workflow run update_dependencies.yml\`) instead of waiting for" \
+                "next month's schedule."
+            } > pr_comment.md
+
+            gh pr comment "${pr_number}" \
+              --repo "${{ github.repository }}" \
+              --body-file pr_comment.md
+          fi
+
   update-pixi:
     name: Update Dependencies
+    needs: check-existing-pr
+    if: needs.check-existing-pr.outputs.exists != 'true'
     runs-on: ubuntu-latest
     defaults:
       run:
