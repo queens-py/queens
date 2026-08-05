@@ -14,6 +14,8 @@
 #
 """Mean-field normal distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -67,6 +69,7 @@ class MeanFieldNormal(Continuous):
         mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, self.dimension)
         self.mean = mean
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -81,6 +84,7 @@ class MeanFieldNormal(Continuous):
         cdf = np.prod(cdf, axis=1).reshape(x.shape[0], -1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -96,6 +100,7 @@ class MeanFieldNormal(Continuous):
 
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
@@ -114,6 +119,7 @@ class MeanFieldNormal(Continuous):
 
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to x.
 
@@ -147,6 +153,7 @@ class MeanFieldNormal(Continuous):
 
         return grad_logpdf_var
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of cdf — quantiles).
 

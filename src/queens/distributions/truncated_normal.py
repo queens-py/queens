@@ -14,6 +14,8 @@
 #
 """Truncated normal distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -90,6 +92,7 @@ class TruncatedNormal(Continuous):
             dimension=1,
         )
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -102,6 +105,7 @@ class TruncatedNormal(Continuous):
         cdf = self.scipy_truncnorm.cdf(x).reshape(-1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -114,6 +118,7 @@ class TruncatedNormal(Continuous):
         samples = self.scipy_truncnorm.rvs(size=num_draws).reshape(-1, 1)
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
@@ -126,6 +131,7 @@ class TruncatedNormal(Continuous):
         logpdf = self.scipy_truncnorm.logpdf(x).reshape(-1)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to x.
 
@@ -139,6 +145,7 @@ class TruncatedNormal(Continuous):
         grad_logpdf = (self.unbounded_mean - x) / self.unbounded_std**2
         return grad_logpdf
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
@@ -151,6 +158,7 @@ class TruncatedNormal(Continuous):
         pdf = self.scipy_truncnorm.pdf(x).reshape(-1)
         return pdf
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of CDF — quantiles).
 

@@ -14,7 +14,7 @@
 #
 """Full-Rank Normal Variational Distribution."""
 
-from typing import cast
+from typing import cast, override
 
 import numpy as np
 import scipy
@@ -66,6 +66,7 @@ class FullRankNormal(Variational):
         n_parameters = (dimension * (dimension + 1)) // 2 + dimension
         super().__init__(dimension, n_parameters)
 
+    @override
     def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
@@ -99,6 +100,7 @@ class FullRankNormal(Variational):
 
         return variational_parameters
 
+    @override
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, mean: ArrayNDimsX1 | ArrayNDims, covariance: ArrayNDimsXNDims
     ) -> ArrayNParams:
@@ -125,6 +127,7 @@ class FullRankNormal(Variational):
             )
         return variational_parameters
 
+    @override
     def reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
     ) -> tuple[ArrayNDimsX1, ArrayNDimsXNDims]:
@@ -171,6 +174,7 @@ class FullRankNormal(Variational):
         grad_reconstruct_params = np.ones((1, self.n_parameters))
         return cast(Array1XNParams, grad_reconstruct_params)
 
+    @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.
 
@@ -187,6 +191,7 @@ class FullRankNormal(Variational):
         sample = np.dot(cholesky, np.random.randn(self.dimension, n_draws)).T + mean.reshape(1, -1)
         return sample
 
+    @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Log-PDF evaluated at the samples *x*.
 
@@ -213,6 +218,7 @@ class FullRankNormal(Variational):
         )
         return logpdf.flatten()
 
+    @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """PDF of evaluated at given samples *x*.
 
@@ -228,10 +234,11 @@ class FullRankNormal(Variational):
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
+    @override
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient w.r.t. to the variational parameters.
+        """Log-PDF gradient with respect to the variational parameters.
 
         Evaluated at samples *x*. Also known as the score function.
 
@@ -292,16 +299,16 @@ class FullRankNormal(Variational):
     def grad_sample_logpdf(
         self, variational_parameters: ArrayNParams, sample_batch: ArrayNSamplesXNDims
     ) -> ArrayNSamplesXNDims:
-        """Computes the gradient of the log-PDF w.r.t. to the sample *x*.
+        """Compute the gradient of the log-PDF with respect to the sample *x*.
 
         Args:
             variational_parameters: Variational parameters
             sample_batch: Row-wise samples
 
         Returns:
-            Gradients of the log-pdf w.r.t. the sample *x*. The first dimension of the array
-                corresponds to the different samples. The second dimension to different dimensions
-                within one sample.
+            Gradients of the log-pdf with respect to the sample *x*. The first dimension of the
+            array corresponds to the different samples. The second dimension to different
+            dimensions within one sample.
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         gradient_lst = []
@@ -313,6 +320,7 @@ class FullRankNormal(Variational):
         gradients_batch = np.array(gradient_lst)
         return gradients_batch.reshape(sample_batch.shape)
 
+    @override
     def fisher_information_matrix(
         self, variational_parameters: ArrayNParams
     ) -> ArrayNParamsXNParams:
@@ -359,6 +367,7 @@ class FullRankNormal(Variational):
 
         return scipy.linalg.block_diag(mu_block, sigma_block)
 
+    @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 

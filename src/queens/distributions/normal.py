@@ -14,6 +14,8 @@
 #
 """Normal distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -77,6 +79,7 @@ class Normal(Continuous):
         self.precision = precision
         self.logpdf_const = logpdf_const
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -91,6 +94,7 @@ class Normal(Continuous):
         ).reshape(-1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -104,6 +108,7 @@ class Normal(Continuous):
         samples = self.mean + np.dot(self.low_chol, uncorrelated_vector).T
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
@@ -117,6 +122,7 @@ class Normal(Continuous):
         logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to *x*.
 
@@ -130,6 +136,7 @@ class Normal(Continuous):
         grad_logpdf = np.dot(self.mean.reshape(1, -1) - x, self.precision)
         return grad_logpdf
 
+    @override
     def ppf(self, quantiles: ArrayLike) -> np.ndarray:
         """Percent point function (inverse of CDF — quantiles).
 

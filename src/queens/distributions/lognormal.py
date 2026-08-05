@@ -14,6 +14,8 @@
 #
 """LogNormal Distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.linalg
 import scipy.stats
@@ -56,6 +58,7 @@ class LogNormal(Continuous):
             mean=mean, covariance=covariance, dimension=self.normal_distribution.dimension
         )
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -74,6 +77,7 @@ class LogNormal(Continuous):
 
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -85,6 +89,7 @@ class LogNormal(Continuous):
         """
         return np.exp(self.normal_distribution.draw(num_draws=num_draws))
 
+    @override
     def logpdf(self, x: ArrayLike) -> np.ndarray:
         """Log of the probability density function.
 
@@ -103,6 +108,7 @@ class LogNormal(Continuous):
         )
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to *x*.
 
@@ -127,6 +133,7 @@ class LogNormal(Continuous):
         )
         return grad_logpdf
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
@@ -138,6 +145,7 @@ class LogNormal(Continuous):
         """
         return np.exp(self.logpdf(x))
 
+    @override
     def ppf(self, quantiles: ArrayLike) -> np.ndarray:
         """Percent point function (inverse of CDF — quantiles).
 

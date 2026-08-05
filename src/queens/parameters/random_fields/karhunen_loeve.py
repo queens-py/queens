@@ -15,6 +15,7 @@
 """Karhunen-Loève Random fields class."""
 
 import logging
+from typing import override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -93,6 +94,7 @@ class KarhunenLoeve(RandomField):
 
         super().__init__(coords, distribution, dimension=dimension)
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
 
@@ -104,6 +106,7 @@ class KarhunenLoeve(RandomField):
         """
         return self.distribution.draw(num_samples)
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get joint log-PDF of latent space.
 
@@ -115,6 +118,7 @@ class KarhunenLoeve(RandomField):
         """
         return self.distribution.logpdf(samples)
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get gradient of joint log-PDF of latent space.
 
@@ -131,6 +135,7 @@ class KarhunenLoeve(RandomField):
 
         return self.distribution.grad_logpdf(samples)
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand latent representation of samples.
 
@@ -146,6 +151,7 @@ class KarhunenLoeve(RandomField):
         samples_expanded = self.mean + np.matmul(samples, self.eigenbasis.T)
         return samples_expanded
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient of the field with respect to the latent parameters.
 

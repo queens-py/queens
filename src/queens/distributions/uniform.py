@@ -14,6 +14,8 @@
 #
 """Uniform distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -59,6 +61,7 @@ class Uniform(Continuous):
         self.pdf_const = pdf_const
         self.logpdf_const = logpdf_const
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -78,6 +81,7 @@ class Uniform(Continuous):
         )
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -92,6 +96,7 @@ class Uniform(Continuous):
         )
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
@@ -106,6 +111,7 @@ class Uniform(Continuous):
         logpdf = np.where(within_bounds, self.logpdf_const, -np.inf)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to *x*.
 
@@ -119,6 +125,7 @@ class Uniform(Continuous):
         grad_logpdf = np.zeros(x.shape)
         return grad_logpdf
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
@@ -134,6 +141,7 @@ class Uniform(Continuous):
         pdf = within_bounds * self.pdf_const
         return pdf
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of cdf — quantiles).
 

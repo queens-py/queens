@@ -14,7 +14,7 @@
 #
 """Mixture Model Variational Distribution."""
 
-from typing import Generic, Iterable, TypeAlias, TypeVar
+from typing import Generic, Iterable, TypeAlias, TypeVar, override
 
 import numpy as np
 
@@ -67,6 +67,7 @@ class MixtureModel(Variational, Generic[V]):
         self.n_components = n_components
         self.base_distribution = base_distribution
 
+    @override
     def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
@@ -103,6 +104,7 @@ class MixtureModel(Variational, Generic[V]):
 
         return np.concatenate([variational_parameters_components, variational_parameters_weights])
 
+    @override
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, parameters_per_component: list[Iterable[np.ndarray]], weights: ArrayNComponents
     ) -> ArrayNParams:
@@ -151,6 +153,7 @@ class MixtureModel(Variational, Generic[V]):
         weights = weights / np.sum(weights)
         return variational_parameters_list, weights
 
+    @override
     def reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
     ) -> tuple[list[tuple[list | np.ndarray]], ArrayNComponents]:
@@ -180,6 +183,7 @@ class MixtureModel(Variational, Generic[V]):
         weights = weights / np.sum(weights)
         return distribution_parameters_list, weights
 
+    @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
         """Draw *n_draw* samples from the variational distribution.
 
@@ -207,6 +211,7 @@ class MixtureModel(Variational, Generic[V]):
         samples = np.concatenate(samples_lst, axis=0)
         return samples
 
+    @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Log-PDF evaluated using the variational parameters at samples *x*.
 
@@ -239,6 +244,7 @@ class MixtureModel(Variational, Generic[V]):
         logpdf = np.log(logpdf) + max_logpdf
         return logpdf
 
+    @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
         """Pdf evaluated using the variational parameters at given samples `x`.
 
@@ -252,14 +258,14 @@ class MixtureModel(Variational, Generic[V]):
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
+    @override
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient w.r.t. the variational parameters.
+        """Log-PDF gradient with respect to the variational parameters.
 
-        Evaluated at samples *x*. Also known as the score function.
-        Is a general implementation using the score functions of
-        the components.
+        Evaluated at samples *x*. Also known as the score function. Is a general implementation
+        using the score functions of the components.
 
         Args:
             variational_parameters: Variational parameters
@@ -293,6 +299,7 @@ class MixtureModel(Variational, Generic[V]):
         score = np.vstack((np.concatenate(component_block, axis=0), weights_block))
         return score
 
+    @override
     def fisher_information_matrix(
         self, variational_parameters: ArrayNParams, n_samples: int = 10000
     ) -> ArrayNParamsXNParams:
@@ -314,6 +321,7 @@ class MixtureModel(Variational, Generic[V]):
         fim = fim / n_samples
         return fim
 
+    @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
         """Create a dict of the distribution based on the given parameters.
 

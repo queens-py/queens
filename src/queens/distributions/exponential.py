@@ -14,6 +14,8 @@
 #
 """Exponential distribution."""
 
+from typing import override
+
 import numpy as np
 
 from queens.distributions._distribution import Continuous
@@ -57,6 +59,7 @@ class Exponential(Continuous):
         self.pdf_const = pdf_const
         self.logpdf_const = logpdf_const
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -71,6 +74,7 @@ class Exponential(Continuous):
         cdf = np.where(condition, np.prod(1 - np.exp(-self.rate * x), axis=1), 0)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -83,6 +87,7 @@ class Exponential(Continuous):
         samples = np.random.exponential(scale=self.scale, size=(num_draws, self.dimension))
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
 
@@ -97,6 +102,7 @@ class Exponential(Continuous):
         logpdf = self.logpdf_const + np.where(condition, np.sum(-self.rate * x, axis=1), -np.inf)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
         """Gradient of the log-PDF with respect to *x*.
 
@@ -111,6 +117,7 @@ class Exponential(Continuous):
         grad_logpdf = np.where(condition, -self.rate, np.nan)
         return grad_logpdf
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of CDF — quantiles).
 

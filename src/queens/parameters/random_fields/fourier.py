@@ -14,7 +14,7 @@
 #
 """Fourier Random fields class."""
 
-from typing import TypeAlias
+from typing import TypeAlias, override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -127,6 +127,7 @@ class Fourier(RandomField):
             self.latent_index,
         )
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
 
@@ -138,6 +139,7 @@ class Fourier(RandomField):
         """
         return self.distribution.draw(num_samples)
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get joint log-PDF of latent space.
 
@@ -150,6 +152,7 @@ class Fourier(RandomField):
         logpdf = self.distribution.logpdf(samples)
         return logpdf
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get gradient of joint log-PDF of latent space.
 
@@ -166,6 +169,7 @@ class Fourier(RandomField):
 
         return self.distribution.grad_logpdf(samples)
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand latent representation of samples.
 
@@ -178,6 +182,7 @@ class Fourier(RandomField):
         sample_expanded = self.mean + self.std * np.matmul(samples, self.basis.T)
         return sample_expanded
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient with respect to the latent parameters.
 

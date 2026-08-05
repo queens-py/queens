@@ -15,7 +15,7 @@
 """Utils for data scaling."""
 
 import abc
-from typing import Any
+from typing import Any, override
 
 import numpy as np
 
@@ -80,6 +80,7 @@ class StandardScaler(Scaler):
         self.mean: np.ndarray | None = None
         self.standard_deviation: np.ndarray | None = None
 
+    @override
     def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
 
@@ -89,6 +90,7 @@ class StandardScaler(Scaler):
         self.mean = np.mean(x_mat)
         self.standard_deviation = np.std(x_mat)
 
+    @override
     def transform(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the scaling transformation on the data matrix.
 
@@ -104,6 +106,7 @@ class StandardScaler(Scaler):
         transformed_data = (x_mat - self.mean) / self.standard_deviation
         return transformed_data
 
+    @override
     def inverse_transform_mean(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation on the data matrix.
 
@@ -120,6 +123,7 @@ class StandardScaler(Scaler):
 
         return transformed_data
 
+    @override
     def inverse_transform_std(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation.
 
@@ -188,6 +192,7 @@ class StandardScaler(Scaler):
 class IdentityScaler(Scaler):
     """The identity scaler."""
 
+    @override
     def fit(self, x_mat: np.ndarray) -> None:
         """Fit/calculate the scaling based on the input samples.
 
@@ -195,6 +200,7 @@ class IdentityScaler(Scaler):
             x_mat: Data matrix that should be standardized
         """
 
+    @override
     def transform(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the scaling transformation on the data matrix.
 
@@ -206,6 +212,7 @@ class IdentityScaler(Scaler):
         """
         return x_mat
 
+    @override
     def inverse_transform_mean(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling transformation on the data matrix.
 
@@ -217,6 +224,7 @@ class IdentityScaler(Scaler):
         """
         return x_mat
 
+    @override
     def inverse_transform_std(self, x_mat: np.ndarray) -> np.ndarray:
         """Conduct the inverse scaling.
 

@@ -18,6 +18,7 @@ import abc
 import logging
 from abc import abstractmethod
 from collections.abc import Sequence, Sized
+from typing import override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -66,6 +67,7 @@ class Distribution(abc.ABC):
         export_dict = {"type": self.__class__.__name__, **export_dict}
         return export_dict
 
+    @override
     def __str__(self) -> str:
         """Get string for the given distribution.
 
@@ -117,6 +119,7 @@ class Continuous(Distribution):
             x: Positions at which the CDF is evaluated
         """
 
+    @override
     @abstractmethod
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
@@ -125,6 +128,7 @@ class Continuous(Distribution):
             num_draws: Number of draws
         """
 
+    @override
     @abstractmethod
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability density function.
@@ -141,6 +145,7 @@ class Continuous(Distribution):
             x: Positions at which the gradient of log-PDF is evaluated
         """
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.
 
@@ -242,6 +247,7 @@ class Discrete(Distribution):
 
         self.mean, self.covariance = self._compute_mean_and_covariance()
 
+    @override
     @abstractmethod
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
@@ -250,6 +256,7 @@ class Discrete(Distribution):
             num_draws: Number of draws
         """
 
+    @override
     @abstractmethod
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
@@ -260,6 +267,7 @@ class Discrete(Distribution):
             x: Positions at which the log-PDF is evaluated
         """
 
+    @override
     @abstractmethod
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability density function.

@@ -16,7 +16,7 @@
 
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, override
 
 from queens.utils.printing import get_str_table
 
@@ -86,6 +86,7 @@ class CollectionObject:
         """
         return [len(value) for value in self.values()]
 
+    @override
     def __str__(self) -> str:
         """Print table of current collection.
 

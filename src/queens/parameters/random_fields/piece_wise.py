@@ -15,6 +15,7 @@
 """Piece-wise random fields class."""
 
 from copy import deepcopy
+from typing import override
 
 import numpy as np
 
@@ -48,6 +49,7 @@ class PieceWise(RandomField):
         self.latent_1d_distribution = latent_1d_distribution
         self.distribution.dimension = self.dimension
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
         """Draw samples from the latent representation of the random field.
 
@@ -61,6 +63,7 @@ class PieceWise(RandomField):
         )
         return samples
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get joint log-PDF of latent space.
 
@@ -76,6 +79,7 @@ class PieceWise(RandomField):
             .sum(axis=1)
         )
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get gradient of joint log-PDF of latent space.
 
@@ -95,6 +99,7 @@ class PieceWise(RandomField):
             samples.shape
         )
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand latent representation of samples.
 
@@ -106,6 +111,7 @@ class PieceWise(RandomField):
         """
         return samples
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient of the field with respect to the latent parameters.
 

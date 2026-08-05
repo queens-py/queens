@@ -13,7 +13,9 @@
 # see <https://www.gnu.org/licenses/>.
 #
 """CustomRandomField module for tutorial 4."""
+
 from collections.abc import Callable
+from typing import override
 
 import numpy as np
 
@@ -45,6 +47,7 @@ class CustomRandomField(RandomField):
         self.expansion = expansion
         self.coordinates = coords["coords"]
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
         """Draw ``num_samples`` samples of the latent space.
 
@@ -53,6 +56,7 @@ class CustomRandomField(RandomField):
         """
         return self.latent_distribution.draw(num_samples)
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
         """Expand the random field realization.
 
@@ -69,6 +73,7 @@ class CustomRandomField(RandomField):
 
         return np.array(expansions)
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get joint logpdf of latent space.
 
@@ -77,6 +82,7 @@ class CustomRandomField(RandomField):
         """
         return self.latent_distribution.logpdf(samples)
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
         """Get gradient of joint logpdf of latent space.
 
@@ -85,6 +91,7 @@ class CustomRandomField(RandomField):
         """
         raise NotImplementedError()
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
         """Gradient of the field with respect to the latent variables."""
         raise NotImplementedError()

@@ -14,11 +14,13 @@
 #
 """General categorical distribution.
 
-Disclaimer: Most of our iterators are not able to handle categorical distributions.
+Disclaimer: Most of our iterators are not able to handle categorical
+distributions.
 """
 
 import itertools
 import logging
+from typing import override
 
 import numpy as np
 
@@ -62,6 +64,7 @@ class Categorical(Distribution):
         self.probabilities = probabilities
         self.categories = categories
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -86,6 +89,7 @@ class Categorical(Distribution):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
 
@@ -97,6 +101,7 @@ class Categorical(Distribution):
         """
         return np.log(self.pdf(x))
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability *mass* function.
 

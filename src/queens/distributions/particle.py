@@ -16,6 +16,7 @@
 
 import itertools
 import logging
+from typing import override
 
 import numpy as np
 
@@ -44,6 +45,7 @@ class Particle(Discrete):
         sample_space: Samples, i.e. possible outcomes of sampling the distribution
     """
 
+    @override
     def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
         """Compute the mean value and covariance of the mixture model.
 
@@ -61,6 +63,7 @@ class Particle(Discrete):
         )
         return mean, covariance
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
         """Cumulative distribution function.
 
@@ -74,6 +77,7 @@ class Particle(Discrete):
         closest_sample_event = np.searchsorted(self.sample_space.flatten(), x.flatten())
         return np.array([np.sum(self.probabilities[: (idx + 1)]) for idx in closest_sample_event])
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw samples.
 
@@ -97,6 +101,7 @@ class Particle(Discrete):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability mass function.
 
@@ -108,6 +113,7 @@ class Particle(Discrete):
         """
         return np.log(self.pdf(x))
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability mass function.
 
@@ -126,6 +132,7 @@ class Particle(Discrete):
 
         return self.probabilities[index]
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
         """Percent point function (inverse of CDF-quantiles).
 
