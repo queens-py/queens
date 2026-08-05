@@ -323,14 +323,6 @@ class MixtureModel(Variational, Generic[V]):
 
     @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )

@@ -284,14 +284,6 @@ class MeanFieldNormal(Variational):
 
     @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         sd = cov**0.5
         export_dict = {

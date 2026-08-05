@@ -127,14 +127,6 @@ class Uniform(Continuous):
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         x = x.reshape(-1, self.dimension)
         # Check if positions are within bounds of the uniform distribution
         within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)

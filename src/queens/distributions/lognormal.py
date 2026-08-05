@@ -135,14 +135,6 @@ class LogNormal(Continuous):
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         return np.exp(self.logpdf(x))
 
     @override

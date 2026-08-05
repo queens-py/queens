@@ -121,12 +121,7 @@ class Continuous(Distribution):
 
     @override
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-        """
+    def draw(self, num_draws: int = 1) -> np.ndarray: ...
 
     @override
     @abstractmethod
@@ -249,12 +244,7 @@ class Discrete(Distribution):
 
     @override
     @abstractmethod
-    def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-        """
+    def draw(self, num_draws: int = 1) -> np.ndarray: ...
 
     @override
     @abstractmethod
@@ -269,12 +259,7 @@ class Discrete(Distribution):
 
     @override
     @abstractmethod
-    def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-        """
+    def pdf(self, x: np.ndarray) -> np.ndarray: ...
 
     @abstractmethod
     def cdf(self, x: np.ndarray) -> np.ndarray | None:

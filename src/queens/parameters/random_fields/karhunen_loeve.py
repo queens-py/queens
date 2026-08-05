@@ -153,14 +153,6 @@ class KarhunenLoeve(RandomField):
 
     @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
-        """Gradient of the field with respect to the latent parameters.
-
-        Args:
-            upstream_gradient: Gradient with respect to all coords of the field
-
-        Returns:
-            Gradient of the field with respect to the latent parameters
-        """
         if self.eigenbasis is None:
             raise ValueError("Eigenbasis has not been computed yet.")
 

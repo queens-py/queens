@@ -145,11 +145,6 @@ class MovingAveraging(IterativeAveraging):
 
     @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Averaging window size": self.num_iter_for_avg})
 
@@ -199,11 +194,6 @@ class PolyakAveraging(IterativeAveraging):
 
     @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Number of iterations": self.iteration_counter})
 
@@ -259,11 +249,6 @@ class ExponentialAveraging(IterativeAveraging):
 
     @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Coefficient": self.coefficient})
 

@@ -82,11 +82,6 @@ class StandardScaler(Scaler):
 
     @override
     def fit(self, x_mat: np.ndarray) -> None:
-        """Fit/calculate the scaling based on the input samples.
-
-        Args:
-            x_mat: Data matrix that should be standardized
-        """
         self.mean = np.mean(x_mat)
         self.standard_deviation = np.std(x_mat)
 
@@ -193,12 +188,7 @@ class IdentityScaler(Scaler):
     """The identity scaler."""
 
     @override
-    def fit(self, x_mat: np.ndarray) -> None:
-        """Fit/calculate the scaling based on the input samples.
-
-        Args:
-            x_mat: Data matrix that should be standardized
-        """
+    def fit(self, x_mat: np.ndarray) -> None: ...
 
     @override
     def transform(self, x_mat: np.ndarray) -> np.ndarray:

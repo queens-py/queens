@@ -307,14 +307,6 @@ class Joint(Variational, Generic[V]):
 
     @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         export_dict = {
             "type": "joint",
             "dimension": self.dimension,

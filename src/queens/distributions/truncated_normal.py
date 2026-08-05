@@ -147,14 +147,6 @@ class TruncatedNormal(Continuous):
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         pdf = self.scipy_truncnorm.pdf(x).reshape(-1)
         return pdf
 

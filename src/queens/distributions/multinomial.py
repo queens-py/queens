@@ -100,18 +100,8 @@ class Multinomial(Discrete):
 
     @override
     def cdf(self, x: np.ndarray) -> None:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-        """
         super().check_1d()
 
     @override
     def ppf(self, quantiles: np.ndarray) -> None:
-        """Percent point function (inverse of CDF - quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-        """
         super().check_1d()

@@ -155,14 +155,6 @@ class Mixture(Continuous):
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         return np.exp(self.logpdf(x))
 
     @override
@@ -187,11 +179,6 @@ class Mixture(Continuous):
 
     @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-        """
         raise NotImplementedError("PPF not available for mixture models.")
 
     def responsibilities(self, x: np.ndarray) -> np.ndarray:
