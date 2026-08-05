@@ -49,12 +49,6 @@ class Multinomial(Discrete):
 
     @override
     def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
-        """Compute the mean value and covariance of the mixture model.
-
-        Returns:
-            Mean value of the distribution
-            Covariance of the distribution
-        """
         n_trials = self.sample_space[0]
         mean = n_trials * self.probabilities
         covariance = n_trials * (
@@ -64,38 +58,14 @@ class Multinomial(Discrete):
 
     @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples
-        """
         return np.random.multinomial(self.n_trials, self.probabilities, size=num_draws)
 
     @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability mass function.
-
-        Args:
-            x: Positions at which the log-PMF is evaluated
-
-        Returns:
-            Log-PMF at positions
-        """
         return self.scipy_multinomial.logpmf(x)
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability mass function.
-
-        Args:
-            x: Positions at which the PMF is evaluated
-
-        Returns:
-            PMF at positions
-        """
         return self.scipy_multinomial.pmf(x)
 
     @override

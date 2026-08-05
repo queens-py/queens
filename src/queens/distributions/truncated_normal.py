@@ -94,53 +94,21 @@ class TruncatedNormal(Continuous):
 
     @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         cdf = self.scipy_truncnorm.cdf(x).reshape(-1)
         return cdf
 
     @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         samples = self.scipy_truncnorm.rvs(size=num_draws).reshape(-1, 1)
         return samples
 
     @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         logpdf = self.scipy_truncnorm.logpdf(x).reshape(-1)
         return logpdf
 
     @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to x.
-
-        Args:
-            x: Positions at which the gradient of the log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF at positions
-        """
         x = np.asarray(x).reshape(-1)
         grad_logpdf = (self.unbounded_mean - x) / self.unbounded_std**2
         return grad_logpdf
@@ -152,13 +120,5 @@ class TruncatedNormal(Continuous):
 
     @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         ppf = self.scipy_truncnorm.ppf(quantiles).reshape(-1)
         return ppf

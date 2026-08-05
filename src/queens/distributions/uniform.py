@@ -63,14 +63,6 @@ class Uniform(Continuous):
 
     @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         cdf = np.prod(
             np.clip(
                 (x.reshape(-1, self.dimension) - self.lower_bound) / self.width,
@@ -83,14 +75,6 @@ class Uniform(Continuous):
 
     @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         samples = np.random.uniform(
             low=self.lower_bound, high=self.upper_bound, size=(num_draws, self.dimension)
         )
@@ -98,14 +82,6 @@ class Uniform(Continuous):
 
     @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         x = x.reshape(-1, self.dimension)
         within_bounds = (x >= self.lower_bound).all(axis=1) * (x <= self.upper_bound).all(axis=1)
         logpdf = np.where(within_bounds, self.logpdf_const, -np.inf)
@@ -113,14 +89,6 @@ class Uniform(Continuous):
 
     @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         x = x.reshape(-1, self.dimension)
         grad_logpdf = np.zeros(x.shape)
         return grad_logpdf
@@ -135,14 +103,6 @@ class Uniform(Continuous):
 
     @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of cdf — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         self.check_1d()
         ppf = scipy.stats.uniform.ppf(q=quantiles, loc=self.lower_bound, scale=self.width).reshape(
             -1

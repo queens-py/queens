@@ -49,20 +49,10 @@ class CustomRandomField(RandomField):
 
     @override
     def draw(self, num_samples: int) -> np.ndarray:
-        """Draw ``num_samples`` samples of the latent space.
-
-        Args:
-            num_samples (int): Batch size of samples to draw
-        """
         return self.latent_distribution.draw(num_samples)
 
     @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
-        """Expand the random field realization.
-
-        Args:
-            samples (np.array): Latent space variables to be expanded into a random field
-        """
         if samples.ndim == 1:
             return self.expansion(samples, self.coordinates)
 
@@ -75,23 +65,12 @@ class CustomRandomField(RandomField):
 
     @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get joint logpdf of latent space.
-
-        Args:
-            samples (np.array): Sample to evaluate logpdf
-        """
         return self.latent_distribution.logpdf(samples)
 
     @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get gradient of joint logpdf of latent space.
-
-        Args:
-            samples (np.array): Sample to evaluate gradient of logpdf
-        """
         raise NotImplementedError()
 
     @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
-        """Gradient of the field with respect to the latent variables."""
         raise NotImplementedError()

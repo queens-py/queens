@@ -61,14 +61,6 @@ class Exponential(Continuous):
 
     @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         x = x.reshape(-1, self.dimension)
         condition = (x >= 0).all(axis=1)
         cdf = np.where(condition, np.prod(1 - np.exp(-self.rate * x), axis=1), 0)
@@ -76,27 +68,11 @@ class Exponential(Continuous):
 
     @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         samples = np.random.exponential(scale=self.scale, size=(num_draws, self.dimension))
         return samples
 
     @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         x = x.reshape(-1, self.dimension)
         condition = (x >= 0).all(axis=1)
         logpdf = self.logpdf_const + np.where(condition, np.sum(-self.rate * x, axis=1), -np.inf)
@@ -104,14 +80,6 @@ class Exponential(Continuous):
 
     @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of the log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         x = x.reshape(-1, self.dimension)
         condition = (x >= 0).all(axis=1).reshape(-1, 1)
         grad_logpdf = np.where(condition, -self.rate, np.nan)
@@ -119,14 +87,6 @@ class Exponential(Continuous):
 
     @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         self.check_1d()
         ppf = -self.scale * np.log(1 - quantiles)
         return ppf

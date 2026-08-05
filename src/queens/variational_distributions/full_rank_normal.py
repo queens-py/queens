@@ -307,8 +307,8 @@ class FullRankNormal(Variational):
 
         Returns:
             Gradients of the log-pdf with respect to the sample *x*. The first dimension of the
-            array corresponds to the different samples. The second dimension to different
-            dimensions within one sample.
+                array corresponds to the different samples. The second dimension to different
+                dimensions within one sample.
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         gradient_lst = []

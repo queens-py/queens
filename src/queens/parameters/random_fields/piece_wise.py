@@ -51,13 +51,6 @@ class PieceWise(RandomField):
 
     @override
     def draw(self, num_samples: int) -> np.ndarray:
-        """Draw samples from the latent representation of the random field.
-
-        Args:
-            num_samples: Number of draws of latent random samples
-        Returns:
-            Drawn samples
-        """
         samples = self.latent_1d_distribution.draw(num_samples * self.dimension).reshape(
             num_samples, self.dimension
         )
@@ -65,14 +58,6 @@ class PieceWise(RandomField):
 
     @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get joint log-PDF of latent space.
-
-        Args:
-            samples: Latent space samples
-
-        Returns:
-            Log-PDF of the samples
-        """
         return (
             self.latent_1d_distribution.logpdf(samples.reshape(-1, 1))
             .reshape(samples.shape)
@@ -81,14 +66,6 @@ class PieceWise(RandomField):
 
     @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get gradient of joint log-PDF of latent space.
-
-        Args:
-            samples: Latent space samples
-
-        Returns:
-            Gradient of the log-PDF of the samples
-        """
         if not isinstance(self.latent_1d_distribution, HasGradLogPDF):
             raise TypeError(
                 f"The latent 1D distribution {self.latent_1d_distribution} does not have a "
@@ -101,14 +78,6 @@ class PieceWise(RandomField):
 
     @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
-        """Expand latent representation of samples.
-
-        Args:
-            samples: Latent representation of samples
-
-        Returns:
-            Expanded representation of samples
-        """
         return samples
 
     @override

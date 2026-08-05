@@ -66,14 +66,6 @@ class Categorical(Distribution):
 
     @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Samples of the categorical distribution
-        """
         samples_per_category = np.random.multinomial(num_draws, self.probabilities)
         samples_tuple = (
             [
@@ -93,6 +85,8 @@ class Categorical(Distribution):
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
 
+        In order to keep the interfaces unified the log-PMF is also accessed via the log-PDF.
+
         Args:
             x: Positions at which the log-PMF is evaluated
 
@@ -104,6 +98,8 @@ class Categorical(Distribution):
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability *mass* function.
+
+        In order to keep the interfaces unified the PMF is also accessed via the PDF.
 
         Args:
             x: Positions at which the PMF is evaluated

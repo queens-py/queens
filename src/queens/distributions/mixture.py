@@ -119,14 +119,6 @@ class Mixture(Continuous):
 
     @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF of the mixture model
-        """
         cdf = np.zeros(
             x.reshape(-1, self.component_distributions[0].dimension).shape[0], dtype=float
         )
@@ -136,14 +128,6 @@ class Mixture(Continuous):
 
     @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         log_weights = np.log(self.weights)
         weighted_logpdf = []
         for log_weight, component in zip(log_weights, self.component_distributions, strict=True):
@@ -159,14 +143,6 @@ class Mixture(Continuous):
 
     @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         responsibilities = self.responsibilities(x)
 
         grad_logpdf = 0
@@ -217,11 +193,6 @@ class Mixture(Continuous):
 
     @override
     def export_dict(self) -> dict:
-        """Create a dict of the distribution.
-
-        Returns:
-            Dictionary containing distribution information
-        """
         dictionary = super().export_dict()
         dictionary.pop("component_distributions")
         for i, components in enumerate(self.component_distributions):

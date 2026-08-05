@@ -37,16 +37,20 @@ class Distribution(abc.ABC):
 
         Args:
             num_draws: Number of draws
+
+        Returns:
+            Drawn samples from the distribution
         """
 
     @abstractmethod
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability *mass* function.
-
-        In order to keep the interfaces unified the PMF is also accessed via the PDF.
+        """Log of the probability density function.
 
         Args:
             x: Positions at which the log-PDF is evaluated
+
+        Returns:
+            log-PDF at positions
         """
 
     @abstractmethod
@@ -55,6 +59,9 @@ class Distribution(abc.ABC):
 
         Args:
             x: Positions at which the PDF is evaluated
+
+        Returns:
+            PDF at positions
         """
 
     def export_dict(self) -> dict:
@@ -117,6 +124,9 @@ class Continuous(Distribution):
 
         Args:
             x: Positions at which the CDF is evaluated
+
+        Returns:
+            CDF at positions
         """
 
     @override
@@ -125,12 +135,7 @@ class Continuous(Distribution):
 
     @override
     @abstractmethod
-    def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-        """
+    def logpdf(self, x: np.ndarray) -> np.ndarray: ...
 
     @abstractmethod
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
@@ -138,18 +143,13 @@ class Continuous(Distribution):
 
         Args:
             x: Positions at which the gradient of log-PDF is evaluated
+
+        Returns:
+            Gradient of the log-PDF evaluated at positions
         """
 
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         logpdf = self.logpdf(x)
         pdf = np.exp(logpdf) if logpdf is not None else None
         return pdf
@@ -160,6 +160,9 @@ class Continuous(Distribution):
 
         Args:
             quantiles: Quantiles at which the PPF is evaluated
+
+        Returns:
+            Positions which correspond to given quantiles
         """
 
     def check_1d(self) -> None:
@@ -259,7 +262,14 @@ class Discrete(Distribution):
 
     @override
     @abstractmethod
-    def pdf(self, x: np.ndarray) -> np.ndarray: ...
+    def pdf(self, x: np.ndarray) -> np.ndarray:
+        """Log of the probability *mass* function.
+
+        In order to keep the interfaces unified, the PMF is also accessed via the PDF.
+
+        Args:
+            x: Positions at which the log-PDF is evaluated
+        """
 
     @abstractmethod
     def cdf(self, x: np.ndarray) -> np.ndarray | None:
@@ -282,8 +292,8 @@ class Discrete(Distribution):
         """Compute the mean value and covariance of the distribution.
 
         Returns:
-            Mean value of the distribution
-            Covariance of the distribution
+            mean: Mean value of the distribution
+            covariance: Covariance of the distribution
         """
 
     def check_1d(self) -> None:

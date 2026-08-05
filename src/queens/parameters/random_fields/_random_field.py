@@ -51,10 +51,10 @@ class RandomField(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def draw(self, num_samples: int) -> np.ndarray:
-        """Draw samples of the latent space.
+        """Draw samples from the latent representation of the random field.
 
         Args:
-            num_samples (int): Batch size of samples to draw
+            num_samples: Number of draws of latent random samples
 
         Returns:
             Drawn samples
