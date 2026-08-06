@@ -35,4 +35,14 @@ class_module_map = extract_type_checking_imports(__file__)
 
 
 def __getattr__(name: str) -> type[Variational]:
+    """Lazily import a variational distribution class.
+
+    Allows importing it on first attribute access.
+
+    Args:
+        name: Name of the class to import.
+
+    Returns:
+        Imported class.
+    """
     return import_class_from_class_module_map(name, class_module_map, __name__)

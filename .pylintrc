@@ -230,7 +230,7 @@ name-group=
 
 # Regular expression which should only match function or class names that do
 # not require a docstring.
-no-docstring-rgx=__getattr__
+no-docstring-rgx=^$
 
 # Regular expression matching correct parameter specification variable names.
 # If left empty, parameter specification variable names will be checked with
