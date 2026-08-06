@@ -145,15 +145,6 @@ class MeanFieldNormal(Variational):
 
     @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draw* samples from the variational distribution.
-
-        Args:
-            variational_parameters: Variational parameters
-            n_draws: Number of samples to draw
-
-        Returns:
-            Samples
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         samples = np.random.randn(n_draws, self.dimension) * np.sqrt(np.diag(cov)).reshape(
             1, -1
@@ -162,15 +153,6 @@ class MeanFieldNormal(Variational):
 
     @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Log-PDF evaluated using the variational parameters at samples `x`.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the Log-PDF values
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         mean_flat = mean.flatten()
         cov = np.diag(cov)
@@ -184,17 +166,6 @@ class MeanFieldNormal(Variational):
 
     @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """PDF of the variational distribution evaluated at samples *x*.
-
-        First computes the log-PDF, which is numerically more stable for exponential distributions.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the PDF values
-        """
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
@@ -202,17 +173,6 @@ class MeanFieldNormal(Variational):
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient with respect to the variational parameters.
-
-        Evaluated at samples *x*. Also known as the score function.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Column-wise scores
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         mean_flat = mean.flatten()
         cov = np.diag(cov)

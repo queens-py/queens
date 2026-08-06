@@ -246,15 +246,6 @@ class MixtureModel(Variational, Generic[V]):
 
     @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Pdf evaluated using the variational parameters at given samples `x`.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the PDF values
-        """
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
@@ -262,18 +253,6 @@ class MixtureModel(Variational, Generic[V]):
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient with respect to the variational parameters.
-
-        Evaluated at samples *x*. Also known as the score function. Is a general implementation
-        using the score functions of the components.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Column-wise scores
-        """
         parameters, weights = self._construct_component_variational_parameters(
             variational_parameters
         )
