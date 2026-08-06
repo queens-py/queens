@@ -71,18 +71,18 @@ class Adjoint(Simulation):
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         num_samples = samples.shape[0]
-        # get last job_ids
-        last_job_ids = [self.scheduler.next_job_id - num_samples + i for i in range(num_samples)]
+        next_job_ids = self.scheduler.get_job_ids(num_samples)
         experiment_dir = self.scheduler.experiment_dir
 
-        # write adjoint data for each sample to adjoint files in old job directories
-        for job_id, grad_objective in zip(last_job_ids, upstream_gradient):
+        # write adjoint data for each sample to adjoint files in new job directories
+        for job_id, grad_objective in zip(next_job_ids, upstream_gradient):
             job_dir = current_job_directory(experiment_dir, job_id)
+            job_dir.mkdir(exist_ok=True)
             adjoint_file_path = job_dir.joinpath(self.adjoint_file)
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
         gradient = self.create_result_dict_from_scheduler_output(
-            self.scheduler.evaluate(samples, self.gradient_driver, job_ids=last_job_ids)
+            self.scheduler.evaluate(samples, self.gradient_driver, job_ids=next_job_ids)
         )["result"]
         return gradient
