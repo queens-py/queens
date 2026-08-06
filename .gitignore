@@ -67,8 +67,7 @@ config/
 requirements.tmp
 
 # vscode config files
-.vscode/settings.json
-.vscode/launch.json
+.vscode/
 *.code-workspace
 
 # environments
