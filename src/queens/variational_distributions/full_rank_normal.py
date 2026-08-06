@@ -176,15 +176,6 @@ class FullRankNormal(Variational):
 
     @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draw* samples from the variational distribution.
-
-        Args:
-            variational_parameters: Variational parameters
-            n_draws: Number of samples to draw
-
-        Returns:
-            Samples
-        """
         mean, _, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
         )
@@ -193,15 +184,6 @@ class FullRankNormal(Variational):
 
     @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Log-PDF evaluated at the samples *x*.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Log-PDF values
-        """
         mean, cov, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
         )
@@ -238,17 +220,6 @@ class FullRankNormal(Variational):
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient with respect to the variational parameters.
-
-        Evaluated at samples *x*. Also known as the score function.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Column-wise scores
-        """
         mean, cov, cholesky = self.reconstruct_distribution_parameters_with_cholesky(
             variational_parameters
         )
@@ -369,13 +340,6 @@ class FullRankNormal(Variational):
 
     @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-        Returns:
-            Dictionary containing distribution information
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         export_dict = {
             "type": "fullrank_Normal",

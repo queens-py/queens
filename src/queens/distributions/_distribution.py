@@ -263,7 +263,7 @@ class Discrete(Distribution):
     @override
     @abstractmethod
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability *mass* function.
+        """Probability *mass* function.
 
         In order to keep the interfaces unified, the PMF is also accessed via the PDF.
 

@@ -209,15 +209,6 @@ class Joint(Variational, Generic[V]):
 
     @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draw* samples from the variational distribution.
-
-        Args:
-            variational_parameters: Variational parameters
-            n_draws: Number of samples to draw
-
-        Returns:
-            Samples
-        """
         sample_array = []
         for parameters, distribution in self._zip_variational_parameters_distributions(
             variational_parameters
@@ -227,15 +218,6 @@ class Joint(Variational, Generic[V]):
 
     @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Log-PDF evaluated using the variational parameters at samples *x*.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the Log-PDF values
-        """
         logpdf = np.zeros(x.shape[0], dtype=float)
         for (
             parameters,
@@ -247,15 +229,6 @@ class Joint(Variational, Generic[V]):
 
     @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Pdf evaluated using the variational parameters at given samples `x`.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the PDF values
-        """
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 

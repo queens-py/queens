@@ -115,43 +115,16 @@ class Particle(Variational):
 
     @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draws* samples from distribution.
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            n_draws: Number of samples
-
-        Returns:
-            Samples
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.draw(n_draws)
 
     @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Evaluate the natural logarithm of the PDF.
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution
-
-        Returns:
-            Log-PDF values at the locations x
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.logpdf(x)
 
     @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Evaluate the probability density function (PDF).
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution
-
-        Returns:
-            Row vector of the PDF values
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.pdf(x)
 

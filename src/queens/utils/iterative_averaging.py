@@ -132,6 +132,14 @@ class MovingAveraging(IterativeAveraging):
 
     @override
     def average_computation(self, new_value: NumericalValue) -> NumpyValue:
+        """Compute the moving average.
+
+        Args:
+            new_value: New value to update the average
+
+        Returns:
+            The current average
+        """
         if isinstance(new_value, (np.floating, np.ndarray)):
             new_value = new_value.copy()
         self.data.append(new_value)
@@ -171,6 +179,14 @@ class PolyakAveraging(IterativeAveraging):
 
     @override
     def average_computation(self, new_value: NumericalValue) -> NumpyValue:
+        """Compute the Polyak average.
+
+        Args:
+            new_value: New value to update the average
+
+        Returns:
+            Returns the current average
+        """
         if isinstance(new_value, (np.ndarray)) and not isinstance(self.sum_over_iter, np.ndarray):
             self.sum_over_iter = np.zeros_like(new_value)
 
@@ -222,6 +238,14 @@ class ExponentialAveraging(IterativeAveraging):
     def average_computation(  # type: ignore[override]
         self, new_value: NumericalValue
     ) -> NumericalValue:
+        """Compute the exponential average.
+
+        Args:
+            new_value: New value to update the average.
+
+        Returns:
+            Returns the current average
+        """
         if self.current_average is None:
             raise ValueError("Current average has not been initialized.")
 

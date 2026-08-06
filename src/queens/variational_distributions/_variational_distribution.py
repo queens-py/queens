@@ -105,7 +105,7 @@ class Variational:
 
         Args:
             variational_parameters: Variational parameters
-            x: Locations to evaluate
+            x: Row-wise samples to evaluate
 
         Returns:
             Log-PDF values
@@ -121,7 +121,7 @@ class Variational:
 
         Args:
             variational_parameters: Variational parameters
-            x: Locations to evaluate
+            x: Row-wise samples to evaluate
 
         Returns:
             PDF values
@@ -133,13 +133,13 @@ class Variational:
         variational_parameters: ArrayNParams,
         x: ArrayNSamplesXNDims,
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient w.r.t. the variational parameters.
+        """Log-PDF gradient with respect to the variational parameters.
 
         Evaluated at samples  *x*. Also known as the score function.
 
         Args:
             variational_parameters: Variational parameters
-            x: Locations to evaluate
+            x: Row-wise samples to evaluate
 
         Returns:
             Gradient of the log-PDF w.r.t. the variational parameters
