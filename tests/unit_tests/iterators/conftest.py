@@ -17,7 +17,6 @@
 from copy import deepcopy
 
 import pytest
-from mock import Mock
 
 from queens.distributions.lognormal import LogNormal
 from queens.distributions.normal import Normal
@@ -28,10 +27,19 @@ from queens.parameters.parameters import Parameters
 from queens.schedulers.local import Local
 
 
-@pytest.fixture(name="default_simulation_model")
-def fixture_default_simulation_model():
+@pytest.fixture(name="ishigami_90_uniform")
+def fixture_ishigami_90_uniform(default_parameters_uniform_3d):
     """Default simulation model."""
-    driver = Function(parameters=Mock(), function="ishigami90")
+    driver = Function(parameters=default_parameters_uniform_3d, function="ishigami90")
+    scheduler = Local(experiment_name="dummy_experiment_name")
+    model = Simulation(scheduler=scheduler, driver=driver)
+    return model
+
+
+@pytest.fixture(name="ishigami_90_mixed")
+def fixture_ishigami_90_mixed(default_parameters_mixed):
+    """Default simulation model."""
+    driver = Function(parameters=default_parameters_mixed, function="ishigami90")
     scheduler = Local(experiment_name="dummy_experiment_name")
     model = Simulation(scheduler=scheduler, driver=driver)
     return model
