@@ -16,6 +16,7 @@
 
 import pickle
 from pathlib import Path
+from typing import override
 
 import numpy as np
 from skactiveml.classifier import SklearnClassifier
@@ -120,6 +121,7 @@ class ActiveLearningClassifier(Classifier):
             self.active_sampler_obj = UncertaintySampling(method="entropy", random_state=0)
         self.batch_size = batch_size
 
+    @override
     def train(  # type: ignore[override]
         self, x_train: np.ndarray, y_train: np.ndarray
     ) -> np.ndarray:

@@ -15,7 +15,7 @@
 """Iterative averaging utils."""
 
 import abc
-from typing import Callable, TypeAlias
+from typing import Callable, TypeAlias, override
 
 import numpy as np
 
@@ -72,7 +72,14 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
     def average_computation(self, new_value: NumericalValue) -> NumpyValue:
-        """Here, the averaging approach is implemented."""
+        """Compute the current average.
+
+        Args:
+            new_value: New value to update the average
+
+        Returns:
+            The current average
+        """
 
     def _get_print_dict(self) -> dict:
         """Get print dict.
@@ -87,6 +94,7 @@ class IterativeAveraging(metaclass=abc.ABCMeta):
         }
         return print_dict
 
+    @override
     def __str__(self) -> str:
         """String of iterative averager.
 
@@ -122,15 +130,8 @@ class MovingAveraging(IterativeAveraging):
         self.num_iter_for_avg: int = num_iter_for_avg
         self.data: list = []
 
+    @override
     def average_computation(self, new_value: NumericalValue) -> NumpyValue:
-        """Compute the moving average.
-
-        Args:
-            new_value: New value to update the average
-
-        Returns:
-            The current average
-        """
         if isinstance(new_value, (np.floating, np.ndarray)):
             new_value = new_value.copy()
         self.data.append(new_value)
@@ -141,12 +142,8 @@ class MovingAveraging(IterativeAveraging):
             average += data
         return average / len(self.data)
 
+    @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Averaging window size": self.num_iter_for_avg})
 
@@ -172,15 +169,8 @@ class PolyakAveraging(IterativeAveraging):
         self.iteration_counter: int = 1
         self.sum_over_iter: NumpyValue = np.float64(0.0)
 
+    @override
     def average_computation(self, new_value: NumericalValue) -> NumpyValue:
-        """Compute the Polyak average.
-
-        Args:
-            new_value: New value to update the average
-
-        Returns:
-            Returns the current average
-        """
         if isinstance(new_value, (np.ndarray)) and not isinstance(self.sum_over_iter, np.ndarray):
             self.sum_over_iter = np.zeros_like(new_value)
 
@@ -193,12 +183,8 @@ class PolyakAveraging(IterativeAveraging):
 
         return current_average
 
+    @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Number of iterations": self.iteration_counter})
 
@@ -232,17 +218,10 @@ class ExponentialAveraging(IterativeAveraging):
         super().__init__()
         self.coefficient: float = coefficient
 
+    @override
     def average_computation(  # type: ignore[override]
         self, new_value: NumericalValue
     ) -> NumericalValue:
-        """Compute the exponential average.
-
-        Args:
-            new_value: New value to update the average.
-
-        Returns:
-            Returns the current average
-        """
         if self.current_average is None:
             raise ValueError("Current average has not been initialized.")
 
@@ -251,12 +230,8 @@ class ExponentialAveraging(IterativeAveraging):
         )
         return current_average
 
+    @override
     def _get_print_dict(self) -> dict:
-        """Get print dict.
-
-        Returns:
-            Dictionary with data to print
-        """
         print_dict = super()._get_print_dict()
         print_dict.update({"Coefficient": self.coefficient})
 

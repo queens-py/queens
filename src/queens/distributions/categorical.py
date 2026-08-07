@@ -14,11 +14,13 @@
 #
 """General categorical distribution.
 
-Disclaimer: Most of our iterators are not able to handle categorical distributions.
+Disclaimer: Most of our iterators are not able to handle categorical
+distributions.
 """
 
 import itertools
 import logging
+from typing import override
 
 import numpy as np
 
@@ -62,15 +64,8 @@ class Categorical(Distribution):
         self.probabilities = probabilities
         self.categories = categories
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Samples of the categorical distribution
-        """
         samples_per_category = np.random.multinomial(num_draws, self.probabilities)
         samples_tuple = (
             [
@@ -86,8 +81,11 @@ class Categorical(Distribution):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
         """Log of the probability *mass* function.
+
+        In order to keep the interfaces unified the log-PMF is also accessed via the log-PDF.
 
         Args:
             x: Positions at which the log-PMF is evaluated
@@ -97,8 +95,11 @@ class Categorical(Distribution):
         """
         return np.log(self.pdf(x))
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         """Probability *mass* function.
+
+        In order to keep the interfaces unified the PMF is also accessed via the PDF.
 
         Args:
             x: Positions at which the PMF is evaluated

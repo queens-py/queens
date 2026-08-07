@@ -14,7 +14,7 @@
 #
 """Free Variable."""
 
-from typing import Any
+from typing import Any, override
 
 import numpy as np
 
@@ -38,26 +38,26 @@ class FreeVariable(Continuous):
         """
         super().__init__(mean=np.array([]), covariance=np.array([]), dimension=dimension)
 
+    @override
     def cdf(self, _: Any) -> np.ndarray:
-        """Cumulative distribution function."""
         raise ValueError("cdf method is not supported for FreeVariable.")
 
+    @override
     def draw(self, _: int = 1) -> np.ndarray:
-        """Draw samples."""
         raise ValueError("draw method is not supported for FreeVariable.")
 
+    @override
     def logpdf(self, _: Any) -> np.ndarray:
-        """Log of the probability density function."""
         raise ValueError("logpdf method is not supported for FreeVariable.")
 
+    @override
     def grad_logpdf(self, _: Any) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*."""
         raise ValueError("grad_logpdf method is not supported for FreeVariable.")
 
+    @override
     def pdf(self, _: Any) -> np.ndarray:
-        """Probability density function."""
         raise ValueError("pdf method is not supported for FreeVariable.")
 
+    @override
     def ppf(self, _: Any) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles)."""
         raise ValueError("ppf method is not supported for FreeVariable.")

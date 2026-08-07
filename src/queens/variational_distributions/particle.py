@@ -15,6 +15,7 @@
 """Particle Variational Distribution."""
 
 from collections.abc import Sequence, Sized
+from typing import override
 
 import numpy as np
 
@@ -50,6 +51,7 @@ class Particle(Variational):
         self.particles_obj = ParticleDistribution(np.ones(len(sample_space)), sample_space)
         super().__init__(self.particles_obj.dimension, n_parameters=len(sample_space))
 
+    @override
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, probabilities: ArrayNParams, sample_space: np.ndarray | Sequence[Sized]
     ) -> ArrayNParams:
@@ -66,6 +68,7 @@ class Particle(Variational):
         variational_parameters = np.log(probabilities).flatten()
         return variational_parameters
 
+    @override
     def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
@@ -92,6 +95,7 @@ class Particle(Variational):
 
         return variational_parameters
 
+    @override
     def reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
     ) -> tuple[ArrayNParams, np.ndarray]:
@@ -109,49 +113,26 @@ class Particle(Variational):
         self.particles_obj = ParticleDistribution(probabilities, self.particles_obj.sample_space)
         return probabilities, self.particles_obj.sample_space
 
+    @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draws* samples from distribution.
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            n_draws: Number of samples
-
-        Returns:
-            Samples
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.draw(n_draws)
 
+    @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Evaluate the natural logarithm of the PDF.
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution
-
-        Returns:
-            Log-PDF values at the locations x
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.logpdf(x)
 
+    @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Evaluate the probability density function (PDF).
-
-        Args:
-            variational_parameters: Variational parameters of the distribution
-            x: Locations at which to evaluate the distribution
-
-        Returns:
-            Row vector of the PDF values
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         return self.particles_obj.pdf(x)
 
+    @override
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        r"""Log-PDF gradient w.r.t. the variational parameters.
+        r"""Log-PDF gradient with respect to the variational parameters.
 
         Evaluated at samples  *x*. Also known as the score function.
 
@@ -181,6 +162,7 @@ class Particle(Variational):
         # Get the samples
         return sample_scores[index].T
 
+    @override
     def fisher_information_matrix(
         self, variational_parameters: ArrayNParams
     ) -> ArrayNParamsXNParams:
@@ -199,15 +181,8 @@ class Particle(Variational):
         fim = np.diag(probabilities) - np.outer(probabilities, probabilities)
         return fim
 
+    @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         self.reconstruct_distribution_parameters(variational_parameters)
         export_dict = {
             "type": type(self),

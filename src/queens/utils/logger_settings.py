@@ -19,7 +19,7 @@ import inspect
 import logging
 import sys
 from pathlib import Path
-from typing import Any, Callable, ParamSpec
+from typing import Any, Callable, ParamSpec, override
 
 from queens.utils.printing import get_str_table
 
@@ -42,6 +42,7 @@ class LogFilter(logging.Filter):
         super().__init__()
         self.level = level
 
+    @override
     def filter(self, record: logging.LogRecord) -> bool:
         """Filter the logging record.
 
@@ -62,6 +63,7 @@ class NewLineFormatter(logging.Formatter):
     format of the logging is broken for multiline messages.
     """
 
+    @override
     def format(self, record: logging.LogRecord) -> str:
         """Override format function.
 

@@ -14,6 +14,8 @@
 #
 """Normal distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -77,68 +79,33 @@ class Normal(Continuous):
         self.precision = precision
         self.logpdf_const = logpdf_const
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         cdf = scipy.stats.multivariate_normal.cdf(
             x.reshape(-1, self.dimension), mean=self.mean, cov=self.covariance
         ).reshape(-1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         uncorrelated_vector = np.random.randn(self.dimension, num_draws)
         samples = self.mean + np.dot(self.low_chol, uncorrelated_vector).T
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         dist = x.reshape(-1, self.dimension) - self.mean
         logpdf = self.logpdf_const - 0.5 * (np.dot(dist, self.precision) * dist).sum(axis=1)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         x = x.reshape(-1, self.dimension)
         grad_logpdf = np.dot(self.mean.reshape(1, -1) - x, self.precision)
         return grad_logpdf
 
+    @override
     def ppf(self, quantiles: ArrayLike) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         self.check_1d()
         ppf = scipy.stats.norm.ppf(
             quantiles, loc=self.mean, scale=self.covariance ** (1 / 2)

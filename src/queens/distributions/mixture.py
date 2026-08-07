@@ -15,7 +15,7 @@
 """Mixture distribution."""
 
 import logging
-from typing import Sequence
+from typing import Sequence, override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -84,6 +84,7 @@ class Mixture(Continuous):
         covariance -= np.outer(mean, mean)
         return mean, covariance
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
         """Draw *num_draw* samples from the variational distribution.
 
@@ -116,15 +117,8 @@ class Mixture(Continuous):
 
         return samples
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF of the mixture model
-        """
         cdf = np.zeros(
             x.reshape(-1, self.component_distributions[0].dimension).shape[0], dtype=float
         )
@@ -132,15 +126,8 @@ class Mixture(Continuous):
             cdf += weights * component.cdf(x)
         return cdf
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         log_weights = np.log(self.weights)
         weighted_logpdf = []
         for log_weight, component in zip(log_weights, self.component_distributions, strict=True):
@@ -150,26 +137,12 @@ class Mixture(Continuous):
 
         return logpdf
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         return np.exp(self.logpdf(x))
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         responsibilities = self.responsibilities(x)
 
         grad_logpdf = 0
@@ -180,12 +153,8 @@ class Mixture(Continuous):
 
         return np.array(grad_logpdf).reshape(len(x), -1)
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-        """
         raise NotImplementedError("PPF not available for mixture models.")
 
     def responsibilities(self, x: np.ndarray) -> np.ndarray:
@@ -222,12 +191,8 @@ class Mixture(Continuous):
         )
         return np.exp(inv_log_responsibility).T
 
+    @override
     def export_dict(self) -> dict:
-        """Create a dict of the distribution.
-
-        Returns:
-            Dictionary containing distribution information
-        """
         dictionary = super().export_dict()
         dictionary.pop("component_distributions")
         for i, components in enumerate(self.component_distributions):

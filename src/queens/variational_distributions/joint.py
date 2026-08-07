@@ -14,7 +14,7 @@
 #
 """Joint Variational Distribution."""
 
-from typing import Generic, Iterator, TypeAlias, TypeVar
+from typing import Generic, Iterator, TypeAlias, TypeVar, override
 
 import numpy as np
 import scipy
@@ -80,6 +80,7 @@ class Joint(Variational, Generic[V]):
                 f"dimensions of the subdistributions {np.sum(self.distributions_dimension)}"
             )
 
+    @override
     def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
@@ -100,6 +101,7 @@ class Joint(Variational, Generic[V]):
 
         return variational_parameters
 
+    @override
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, distributions_parameters: list
     ) -> ArrayNParams:
@@ -140,6 +142,7 @@ class Joint(Variational, Generic[V]):
         )
         return variational_parameters_list
 
+    @override
     def reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
     ) -> list[list[tuple[list | np.ndarray]]]:
@@ -204,16 +207,8 @@ class Joint(Variational, Generic[V]):
             strict=True,
         )
 
+    @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draw* samples from the variational distribution.
-
-        Args:
-            variational_parameters: Variational parameters
-            n_draws: Number of samples to draw
-
-        Returns:
-            Samples
-        """
         sample_array = []
         for parameters, distribution in self._zip_variational_parameters_distributions(
             variational_parameters
@@ -221,16 +216,8 @@ class Joint(Variational, Generic[V]):
             sample_array.append(distribution.draw(parameters, n_draws))
         return np.column_stack(sample_array)
 
+    @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Log-PDF evaluated using the variational parameters at samples *x*.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the Log-PDF values
-        """
         logpdf = np.zeros(x.shape[0], dtype=float)
         for (
             parameters,
@@ -240,27 +227,19 @@ class Joint(Variational, Generic[V]):
             logpdf += distribution.logpdf(parameters, samples)
         return logpdf
 
+    @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Pdf evaluated using the variational parameters at given samples `x`.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the PDF values
-        """
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
+    @override
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient w.r.t. the variational parameters.
+        """Log-PDF gradient with respect to the variational parameters.
 
-        Evaluated at samples *x*. Also known as the score function.
-        Is a general implementation using the score functions of
-        the components.
+        Evaluated at samples *x*. Also known as the score function. Is a general implementation
+        using the score functions of the components.
 
         Args:
             variational_parameters: Variational parameters
@@ -279,6 +258,7 @@ class Joint(Variational, Generic[V]):
 
         return np.row_stack(score)
 
+    @override
     def fisher_information_matrix(
         self, variational_parameters: ArrayNParams
     ) -> ArrayNParamsXNParams:
@@ -298,15 +278,8 @@ class Joint(Variational, Generic[V]):
 
         return scipy.linalg.block_diag(*fim)
 
+    @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         export_dict = {
             "type": "joint",
             "dimension": self.dimension,
