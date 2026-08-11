@@ -151,7 +151,7 @@ class Continuous(Distribution):
     @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
         logpdf = self.logpdf(x)
-        pdf = np.exp(logpdf) if logpdf is not None else None
+        pdf = np.exp(logpdf)
         return pdf
 
     @abstractmethod
