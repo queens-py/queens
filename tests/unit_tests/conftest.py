@@ -19,8 +19,16 @@ from unittest.mock import Mock, patch
 import numpy as np
 import pytest
 
-from queens.iterators.bmfia import BMFIA
-from queens.models.simulation import Simulation
+from queens.distributions import FreeVariable
+from queens.iterators import BMFIA
+from queens.models import Simulation
+from queens.parameters import Parameters
+
+
+@pytest.fixture(name="parameters")
+def fixture_parameters():
+    """Dummy parameters."""
+    return Parameters(parameter_1=FreeVariable(1), parameter_2=FreeVariable(1))
 
 
 @pytest.fixture(name="dummy_simulation_model")
