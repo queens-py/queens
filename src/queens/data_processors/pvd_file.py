@@ -15,6 +15,7 @@
 """Data processor class for pvd data extraction."""
 
 import logging
+from pathlib import Path
 
 import numpy as np
 import pyvista as pv
@@ -38,28 +39,27 @@ class PvdFile(DataProcessor):
     @log_init_args
     def __init__(
         self,
-        field_name,
-        file_name_identifier=None,
-        file_options_dict=None,
-        files_to_be_deleted_regex_lst=None,
-        time_steps=None,
-        block=0,
-        point_data=True,
-    ):
+        field_name: str,
+        file_name_identifier: str | None = None,
+        file_options_dict: dict | None = None,
+        files_to_be_deleted_regex_lst: list[str] | None = None,
+        time_steps: list[int] | None = None,
+        block: int = 0,
+        point_data: bool = True,
+    ) -> None:
         """Instantiate data processor class for pvd data extraction.
 
         Args:
-            field_name (str): Name of the field to extract data from
-            file_name_identifier (str): Identifier of file name.
-                                        The file prefix can contain regex expression
-                                        and subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for the file
-            files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                                 The paths can contain regex expressions.
-            time_steps (lst, optional): Considered time steps (last time step by default)
-            block (int, optional): Considered block of MultiBlock data set (first block by default)
-            point_data (bool, optional): Whether to extract point data (True) or cell data (False).
-                                         Defaults to point data.
+            field_name: Name of the field to extract data from
+            file_name_identifier: Identifier of file name. The file prefix can contain regex
+                expression and subdirectories.
+            file_options_dict: Dictionary with read-in options for the file
+            files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
+                paths can contain regex expressions.
+            time_steps: Considered time steps (last time step by default)
+            block: Considered block of MultiBlock data set (first block by default)
+            point_data: Whether to extract point data (True) or cell data (False). Defaults to
+                point data.
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
@@ -75,33 +75,33 @@ class PvdFile(DataProcessor):
         if not point_data:
             self.data_attribute = "cell_data"
 
-    def get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path: str | Path) -> pv.PVDReader:
         """Get the raw data from the files of interest.
 
         Args:
-            file_path (str): Actual path to the file of interest.
+            file_path: Actual path to the file of interest.
 
         Returns:
-            raw_data (pv.PVDReader): PVDReader object.
+            PVDReader object.
         """
         raw_data = pv.get_reader(file_path)
         return raw_data
 
-    def filter_and_manipulate_raw_data(self, raw_data):
+    def filter_and_manipulate_raw_data(self, raw_data: pv.PVDReader) -> np.ndarray:
         """Filter and manipulate the raw data.
 
         Args:
-            raw_data (pv.PVDReader): PVDReader object.
+            raw_data: PVDReader object.
 
         Returns:
-            processed_data (np.array): Cleaned, filtered or manipulated *data_processor* data.
+            Cleaned, filtered or manipulated *data_processor* data.
         """
-        processed_data = []
+        field_data = []
         for time_step in self.time_steps:
             raw_data.set_active_time_value(raw_data.time_values[time_step])
-            processed_data.append(
+            field_data.append(
                 getattr(raw_data.read()[self.block], self.data_attribute)[self.field_name]
             )
-        processed_data = np.vstack(processed_data)
+        processed_data = np.vstack(field_data)
 
         return processed_data

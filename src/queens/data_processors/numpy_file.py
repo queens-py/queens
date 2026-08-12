@@ -15,6 +15,7 @@
 """Data processor class for numpy data extraction."""
 
 import logging
+from pathlib import Path
 
 import numpy as np
 
@@ -30,19 +31,18 @@ class NumpyFile(DataProcessor):
     @log_init_args
     def __init__(
         self,
-        file_name_identifier=None,
-        file_options_dict=None,
-        files_to_be_deleted_regex_lst=None,
-    ):
+        file_name_identifier: str | None = None,
+        file_options_dict: dict | None = None,
+        files_to_be_deleted_regex_lst: list[str] | None = None,
+    ) -> None:
         """Instantiate data processor class for numpy binary data.
 
         Args:
-            file_name_identifier (str): Identifier of file name.
-                                        The file prefix can contain regex expression
-                                        and subdirectories.
-            file_options_dict (dict): Dictionary with read-in options for the file
-            files_to_be_deleted_regex_lst (lst): List with paths to files that should be deleted.
-                                                 The paths can contain regex expressions.
+            file_name_identifier: Identifier of file name. The file prefix can contain regex
+                expression and subdirectories.
+            file_options_dict: Dictionary with read-in options for the file
+            files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
+                paths can contain regex expressions.
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
@@ -50,16 +50,16 @@ class NumpyFile(DataProcessor):
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
-    def get_raw_data_from_file(self, file_path):
+    def get_raw_data_from_file(self, file_path: str | Path) -> np.ndarray | None:
         """Get the raw data from the files of interest.
 
         This method loads the numpy binary data from the file.
 
         Args:
-            file_path (str): Actual path to the file of interest.
+            file_path: Actual path to the file of interest.
 
         Returns:
-            raw_data (np.array): Raw data from file.
+            Raw data from file, or *None* if the file could not be read.
         """
         try:
             raw_data = np.load(file_path)
