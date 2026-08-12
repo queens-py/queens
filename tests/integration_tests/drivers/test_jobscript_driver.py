@@ -27,18 +27,21 @@ from queens.schedulers import Pool
 from queens.utils.io import load_result
 
 
+@pytest.mark.parametrize("rerun_dataprocessor_on_existing_jobs", [True, False])
 @pytest.mark.parametrize("reuse_existing_jobs", [True, False])
-def test_resusing_existing_results(
+def test_reusing_existing_results(
     tmp_path,
     global_settings,
     current_time_jobscript_template,
     time_data_processor,
     reuse_existing_jobs,
+    rerun_dataprocessor_on_existing_jobs,
 ):
-    """Test that jobscript results are reused or overwritten in a second QUEENS run.
+    """Test that jobscript results are reused/overwritten in a 2nd QUEENS run.
 
-    The results will be different if the jobscript is executed again because they capture the
-    current time at execution (see current_time_jobscript_template and time_data_processor).
+    The results depend on the time at which the jobscript was executed
+    (see current_time_jobscript_template and time_data_processor), so
+    they only change if the jobscript is executed again.
     """
     input_template = tmp_path / "input_template.txt"
     input_template.write_text("{{ x1 }}")
@@ -88,6 +91,7 @@ def test_resusing_existing_results(
             executable="",
             data_processor=time_data_processor,
             reuse_existing_jobs=reuse_existing_jobs,
+            rerun_dataprocessor_on_existing_jobs=rerun_dataprocessor_on_existing_jobs,
         )
         model = Simulation(scheduler=scheduler, driver=driver)
         iterator = MonteCarlo(
@@ -104,13 +108,22 @@ def test_resusing_existing_results(
 
     np.testing.assert_array_equal(first_results["input_data"], second_results["input_data"])
 
+    first_outputs = first_results["raw_output_data"]["result"]
+    second_outputs = second_results["raw_output_data"]["result"]
+
     if reuse_existing_jobs:
-        np.testing.assert_array_equal(
-            first_results["raw_output_data"]["result"],
-            second_results["raw_output_data"]["result"],
-        )
+        # Assert the jobscript was not executed again
+        np.testing.assert_array_equal(first_outputs, second_outputs)
+
+        if rerun_dataprocessor_on_existing_jobs:
+            # Assert the data processor was called twice per sample
+            assert time_data_processor.number_of_calls == 2 * num_samples
+        else:
+            # Assert the data processor was called only once per sample
+            assert time_data_processor.number_of_calls == 1 * num_samples
     else:
-        assert not np.array_equal(
-            first_results["raw_output_data"]["result"],
-            second_results["raw_output_data"]["result"],
-        )
+        # Assert the jobscript was executed again
+        assert not np.array_equal(first_outputs, second_outputs)
+
+        # Assert the data processor was called twice per sample
+        assert time_data_processor.number_of_calls == 2 * num_samples

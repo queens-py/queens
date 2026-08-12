@@ -330,18 +330,36 @@ def fixture_current_time_jobscript_template(time_file):
     return f"echo $(date +%s%N) > {{{{ output_dir }}}}/{time_file}"
 
 
-class TxtAsInt(TxtFile):
-    """Data processor for extracting an integer from a .txt file."""
+class TxtToNpArray(TxtFile):
+    """Data processor for extracting an integer from a .txt file.
+
+    The integer is converted to a numpy array of shape (1, 2) with the
+    integer repeated twice.
+    """
+
+    def __init__(self, *args, **kwargs):
+        """Initialize the TxtToNpArray data processor."""
+        super().__init__(*args, **kwargs)
+        self.number_of_calls = 0
 
     def filter_and_manipulate_raw_data(self, raw_data):
-        """Convert the raw data (list of strings) to an integer."""
-        return int(raw_data[0].strip())
+        """Convert the raw data (list of strings) to an integer.
+
+        The integer is then converted to a numpy array of shape (1, 2)
+        with the integer repeated twice.
+        """
+        self.number_of_calls += 1
+        return int(raw_data[0].strip()) * np.ones((1, 2))
 
 
 @pytest.fixture(name="time_data_processor")
 def fixture_time_data_processor(time_file):
-    """Data processor for extracting an integer from a .txt file containing the current time."""
-    return TxtAsInt(
+    """Data processor for extracting an integer from a .txt file.
+
+    The integer is converted to a numpy array of shape (1, 2) with the
+    integer repeated twice.
+    """
+    return TxtToNpArray(
         file_name_identifier=time_file,
         file_options_dict={},
         remove_logger_prefix_from_raw_data=False,

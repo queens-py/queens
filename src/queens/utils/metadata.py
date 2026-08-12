@@ -16,7 +16,10 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
@@ -39,12 +42,16 @@ class SimulationMetadata:
 
     This objects holds metadata, times code sections, and exports them to yaml.
 
+    The inputs and outputs of a job are not part of the metadata, but are stored in a separate
+    file. Instead, a hash of the inputs is kept here, which allows to verify whether the inputs
+    changed when an existing job is reused.
+
     Attributes:
         job_id: Id of the job
-        inputs: Parameters for this job
+        job_successful: Whether the job was successful
+        inputs_hash: Hash of the parameters for this job
         file_path (pathlib.Path): Path to export the metadata
         timestamp (str): Timestamp of the object creation
-        outputs (tuple): Results obtain by the simulation
         times (dict): Wall times of code sections
     """
 
@@ -53,19 +60,19 @@ class SimulationMetadata:
 
         Args:
             job_id: Id of the job
-            inputs: Parameters for this job
+            inputs: Input parameters for this job, only used to compute the hash of the inputs
             job_dir: Directory in which to write the metadata
         """
         self.job_id = job_id
         self.timestamp = self._get_timestamp()
-        self.inputs = inputs
+        self.job_successful = True
+        self.inputs_hash = hash_inputs(inputs)
         self.file_path = get_metadata_path(job_dir)
-        self.outputs = None
         self.times: dict = {}
 
     @classmethod
     def init_from_file(cls, job_dir: Path) -> SimulationMetadata:
-        """Initialize a SimulationMetadata object from an existing metadata file.
+        """Initialize a SimulationMetadata object from a metadata file.
 
         Args:
             job_dir: Job directory in which the metadata file is located.
@@ -73,7 +80,7 @@ class SimulationMetadata:
         Returns:
             SimulationMetadata object.
         """
-        simulation_metadata = cls(-1, {}, job_dir)
+        simulation_metadata = cls(job_id=-1, inputs={}, job_dir=job_dir)
         metadata_dict = yaml.safe_load(simulation_metadata.file_path.read_text(encoding="utf-8"))
         for key, value in metadata_dict.items():
             setattr(simulation_metadata, key, value)
@@ -112,7 +119,11 @@ class SimulationMetadata:
         """
         # Start timer
         start = perf_counter()
-        self.times[code_section_name] = {"status": "running"}
+        # Add the current timestamp when starting the code section
+        self.times[code_section_name] = {
+            "timestamp_start": self._get_timestamp(),
+            "status": "running",
+        }
 
         # Export metadata
         self.export()
@@ -120,13 +131,14 @@ class SimulationMetadata:
             # Call the code within the context
             yield
 
-            # If we are here the job was successful
+            # If we are here the timed code section was successful
             self.times[code_section_name]["status"] = "successful"
 
         # Something goes wrong
         except Exception as exception:
             # Set the status to failed
             self.times[code_section_name]["status"] = "failed"
+            self.job_successful = False
 
             # Raise the original exception
             raise exception
@@ -135,9 +147,6 @@ class SimulationMetadata:
             run_time = perf_counter() - start
             # Add the runtime of this code section
             self.times[code_section_name]["time"] = run_time
-            # Add the timestamp when re-using existing job data
-            if code_section_name == "process_data_again":
-                self.times[code_section_name]["timestamp"] = self._get_timestamp()
             # Export since the job is either finished or failed
             self.export()
 
@@ -149,6 +158,24 @@ class SimulationMetadata:
             Table of the metdata object
         """
         return get_str_table("Simulation Metadata", self.to_dict())
+
+
+def hash_inputs(inputs: dict) -> str:
+    """Hash the inputs of a job.
+
+    The hash is stored in the metadata instead of the inputs themselves. It allows to verify
+    whether the inputs changed when an existing job is reused.
+
+    Args:
+        inputs: Parameters for this job
+
+    Returns:
+        Hexadecimal hash of the inputs
+    """
+    # Deep copy the inputs since the conversion to standard types is done in place
+    standard_type_inputs = to_dict_with_standard_types(deepcopy(inputs))
+    serialized_inputs = json.dumps(standard_type_inputs, sort_keys=True)
+    return hashlib.sha256(serialized_inputs.encode("utf-8")).hexdigest()
 
 
 def get_metadata_path(job_dir: str | Path) -> Path:
