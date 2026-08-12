@@ -334,18 +334,6 @@ class Jobscript(Driver):
         """
         write_pickle(outputs, cls.get_job_outputs_path(job_dir))
 
-    @classmethod
-    def load_job_outputs(cls, job_dir: Path) -> dict:
-        """Load the outputs of an existing job.
-
-        Args:
-            job_dir: Path to job directory.
-
-        Returns:
-            Results of the job.
-        """
-        return load_pickle(cls.get_job_outputs_path(job_dir))
-
     @staticmethod
     def job_successful(existing_metadata: dict) -> bool:
         """Check if the existing job was successful.
@@ -451,8 +439,9 @@ class Jobscript(Driver):
         Returns:
             Results.
         """
-        if not self.rerun_dataprocessor_on_existing_jobs:
-            return self.load_job_outputs(job_dir)
+        outputs_path = self.get_job_outputs_path(job_dir)
+        if not self.rerun_dataprocessor_on_existing_jobs and outputs_path.is_file():
+            return load_pickle(outputs_path)
 
         metadata = SimulationMetadata.init_from_file(job_dir)
         output_dir = self.get_output_dir(job_dir)

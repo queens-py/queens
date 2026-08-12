@@ -165,7 +165,7 @@ def fixture_jobscript_driver(parameters, input_templates, executable):
 
 
 def run_jobscript_driver(
-    jobscript_driver: Jobscript, sample: np.ndarray, job_options: dict
+    jobscript_driver: Jobscript, sample: np.ndarray, job_options: JobOptions
 ) -> dict:
     """Run the jobscript driver.
 
@@ -305,7 +305,7 @@ def test_inputs_and_outputs_are_stored_in_pickle_files(
 
     # Assert that the inputs and outputs are saved correctly in the pickle files
     stored_inputs = load_pickle(Jobscript.get_job_inputs_path(job_options.job_dir))
-    stored_outputs = Jobscript.load_job_outputs(job_options.job_dir)
+    stored_outputs = load_pickle(Jobscript.get_job_outputs_path(job_options.job_dir))
     assert stored_inputs == jobscript_driver.parameters.sample_as_dict(inputs)
     np.testing.assert_array_equal(stored_outputs["result"], result["result"])
 
@@ -483,7 +483,7 @@ def test_successfully_reusing_existing_jobs(
     first_output_dir_file_times = get_file_times(output_dir)
     first_job_dir_file_times = get_file_times(job_options.job_dir)
     first_metadata = get_metadata_from_job_dir(job_options.job_dir)
-    first_outputs = Jobscript.load_job_outputs(job_options.job_dir)
+    first_outputs = load_pickle(Jobscript.get_job_outputs_path(job_options.job_dir))
 
     # Assert that the data processor was called once during the first run
     assert time_data_processor.number_of_calls == 1
@@ -495,7 +495,7 @@ def test_successfully_reusing_existing_jobs(
     second_output_dir_file_times = get_file_times(output_dir)
     second_job_dir_file_times = get_file_times(job_options.job_dir)
     second_metadata = get_metadata_from_job_dir(job_options.job_dir)
-    second_outputs = Jobscript.load_job_outputs(job_options.job_dir)
+    second_outputs = load_pickle(Jobscript.get_job_outputs_path(job_options.job_dir))
 
     # Assert that jobscript output files were not modified
     assert first_output_dir_file_times == second_output_dir_file_times
@@ -574,10 +574,10 @@ def test_running_jobscript_again_when_reuse_disabled(
     inputs = np.array([1, 2])
 
     first_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
-    first_outputs = Jobscript.load_job_outputs(job_options.job_dir)
+    first_outputs = load_pickle(Jobscript.get_job_outputs_path(job_options.job_dir))
 
     second_result = run_jobscript_driver(jobscript_driver, inputs, job_options)
-    second_outputs = Jobscript.load_job_outputs(job_options.job_dir)
+    second_outputs = load_pickle(Jobscript.get_job_outputs_path(job_options.job_dir))
 
     # Assert that the outputs were saved correctly in the pickle files
     np.testing.assert_array_equal(first_result["result"], first_outputs["result"])
