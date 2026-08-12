@@ -36,7 +36,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        file_name_identifier: str | None = None,
+        file_name_identifier: str,
         file_options_dict: dict | None = None,
         files_to_be_deleted_regex_lst: list[str] | None = None,
     ) -> None:
@@ -52,8 +52,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         """
         if not file_name_identifier:
             raise ValueError(
-                f"No option 'file_name_identifier' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! Abort..."
+                f"Provided 'file_name_identifier' was empty in '{self.__class__.__name__}'!"
             )
         if not isinstance(file_name_identifier, str):
             raise TypeError(
@@ -62,10 +61,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
             )
 
         if file_options_dict is None:
-            raise ValueError(
-                f"No option 'file_options_dict' was provided in '{self.__class__.__name__}'! "
-                "DataProcessor object cannot be instantiated! Abort..."
-            )
+            file_options_dict = {}
         if not isinstance(file_options_dict, dict):
             raise TypeError(
                 "The option 'file_options_dict' must be of type 'dict' "

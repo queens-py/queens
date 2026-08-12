@@ -19,7 +19,6 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from pandas.core.frame import DataFrame
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
@@ -66,8 +65,8 @@ class CsvFile(DataProcessor):
     @log_init_args
     def __init__(
         self,
-        file_name_identifier: str | None = None,
-        file_options_dict: dict | None = None,
+        file_name_identifier: str,
+        file_options_dict: dict,
         files_to_be_deleted_regex_lst: list[str] | None = None,
     ) -> None:
         """Instantiate data processor class for csv data.
@@ -249,7 +248,7 @@ class CsvFile(DataProcessor):
         else:
             raise TypeError("You provided an invalid 'filter_type'!")
 
-    def get_raw_data_from_file(self, file_path: str | Path) -> DataFrame | None:
+    def get_raw_data_from_file(self, file_path: str | Path) -> pd.DataFrame | None:
         """Get the raw data from the files of interest.
 
         This method loads the desired parts of the csv file as a pandas
@@ -283,7 +282,7 @@ class CsvFile(DataProcessor):
             )
             return None
 
-    def filter_and_manipulate_raw_data(self, raw_data: DataFrame) -> np.ndarray:
+    def filter_and_manipulate_raw_data(self, raw_data: pd.DataFrame) -> np.ndarray | dict:
         """Filter the pandas data-frame based on filter type.
 
         Args:
@@ -304,6 +303,10 @@ class CsvFile(DataProcessor):
             valid_filter_types, self.filter_type, error_message=error_message
         )
         filtered_data = filter_method(raw_data)
+        if filtered_data is None:
+            raise RuntimeError(
+                "The filtered data was empty! Adjust your filter tolerance or filter range!"
+            )
         filter_formats_dict = {
             "numpy": filtered_data.to_numpy(),
             "dict": filtered_data.to_dict("list"),
@@ -321,7 +324,7 @@ class CsvFile(DataProcessor):
             )
         return processed_data
 
-    def _filter_entire_file(self, raw_data: DataFrame) -> DataFrame:
+    def _filter_entire_file(self, raw_data: pd.DataFrame) -> pd.DataFrame:
         """Keep entire csv file data.
 
         Args:
@@ -332,7 +335,7 @@ class CsvFile(DataProcessor):
         """
         return raw_data
 
-    def _filter_by_row_index(self, raw_data: DataFrame) -> DataFrame | None:
+    def _filter_by_row_index(self, raw_data: pd.DataFrame) -> pd.DataFrame | None:
         """Filter the csv file based on given data rows.
 
         Args:
@@ -341,7 +344,7 @@ class CsvFile(DataProcessor):
         Returns:
             Filtered data.
         """
-        if any(raw_data):
+        if not raw_data.empty:
             try:
                 return raw_data.iloc[self.use_rows_lst]
             except IndexError as exception:
@@ -350,7 +353,7 @@ class CsvFile(DataProcessor):
                 ) from exception
         return None
 
-    def _filter_by_target_values(self, raw_data: DataFrame) -> DataFrame | None:
+    def _filter_by_target_values(self, raw_data: pd.DataFrame) -> pd.DataFrame | None:
         """Filter the pandas data frame based on target values.
 
         Args:
@@ -376,7 +379,7 @@ class CsvFile(DataProcessor):
             return raw_data.iloc[target_indices]
         return None
 
-    def _filter_by_range(self, raw_data: DataFrame) -> DataFrame | None:
+    def _filter_by_range(self, raw_data: pd.DataFrame) -> pd.DataFrame | None:
         """Filter the pandas data frame based on values in a data column.
 
         Args:

@@ -40,7 +40,7 @@ class PvdFile(DataProcessor):
     def __init__(
         self,
         field_name: str,
-        file_name_identifier: str | None = None,
+        file_name_identifier: str,
         file_options_dict: dict | None = None,
         files_to_be_deleted_regex_lst: list[str] | None = None,
         time_steps: list[int] | None = None,

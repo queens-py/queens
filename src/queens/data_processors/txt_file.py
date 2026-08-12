@@ -48,7 +48,7 @@ class TxtFile(DataProcessor):
     @log_init_args
     def __init__(
         self,
-        file_name_identifier: str | None = None,
+        file_name_identifier: str,
         file_options_dict: dict | None = None,
         files_to_be_deleted_regex_lst: list[str] | None = None,
         remove_logger_prefix_from_raw_data: bool = True,
