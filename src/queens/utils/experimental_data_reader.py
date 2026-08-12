@@ -39,11 +39,11 @@ class ExperimentalDataReader:
     @log_init_args
     def __init__(
         self,
+        file_name_identifier: str,
         data_processor: DataProcessor | None = None,
         output_label: str | None = None,
         coordinate_labels: list[str] | None = None,
         time_label: str | None = None,
-        file_name_identifier: str | None = None,
         csv_data_base_dir: str | Path = "",
     ) -> None:
         """Initialize ExperimentalDataReader.
