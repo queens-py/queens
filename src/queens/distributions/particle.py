@@ -16,6 +16,7 @@
 
 import itertools
 import logging
+from typing import override
 
 import numpy as np
 
@@ -44,13 +45,8 @@ class Particle(Discrete):
         sample_space: Samples, i.e. possible outcomes of sampling the distribution
     """
 
+    @override
     def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
-        """Compute the mean value and covariance of the mixture model.
-
-        Returns:
-            mean: Mean value of the distribution
-            covariance: Covariance of the distribution
-        """
         mean = np.sum(
             self.sample_space
             * np.tile(self.probabilities.reshape(-1, 1), len(self.sample_space[0])),
@@ -61,28 +57,14 @@ class Particle(Discrete):
         )
         return mean, covariance
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF value of the distribution
-        """
         self.check_1d()
         closest_sample_event = np.searchsorted(self.sample_space.flatten(), x.flatten())
         return np.array([np.sum(self.probabilities[: (idx + 1)]) for idx in closest_sample_event])
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples
-        """
         samples_per_event = np.random.multinomial(num_draws, self.probabilities)
         samples_tuple = (
             [
@@ -97,26 +79,12 @@ class Particle(Discrete):
         np.random.shuffle(samples)
         return samples.reshape(-1, 1)
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability mass function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         return np.log(self.pdf(x))
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability mass function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         index = np.array([(self.sample_space == xi).all(axis=1).nonzero()[0] for xi in x]).flatten()
 
         if len(index) != len(x):
@@ -126,15 +94,8 @@ class Particle(Discrete):
 
         return self.probabilities[index]
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF-quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Event samples corresponding to the quantiles
-        """
         self.check_1d()
         indices = np.searchsorted(np.cumsum(self.probabilities), quantiles, side="left")
         indices = np.clip(indices, 0, len(self.probabilities))

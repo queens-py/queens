@@ -14,6 +14,8 @@
 #
 """Mean-field normal distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 from numpy.typing import ArrayLike
@@ -67,44 +69,23 @@ class MeanFieldNormal(Continuous):
         mean = MeanFieldNormal.get_check_array_dimension_and_reshape(mean, self.dimension)
         self.mean = mean
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         z = (x - self.mean) / self.standard_deviation
         cdf = 0.5 * (1 + erf(z / np.sqrt(2)))
         cdf = np.prod(cdf, axis=1).reshape(x.shape[0], -1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         samples = np.random.randn(num_draws, self.dimension) * self.standard_deviation.reshape(
             1, -1
         ) + self.mean.reshape(1, -1)
 
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         dist = x - self.mean
         logpdf = (
             -0.5 * self.dimension * np.log(2 * np.pi)
@@ -114,15 +95,8 @@ class MeanFieldNormal(Continuous):
 
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to x.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         gradients_batch = -(x - self.mean) / self.covariance
         gradients_batch = gradients_batch.reshape(x.shape[0], -1)
 
@@ -147,12 +121,8 @@ class MeanFieldNormal(Continuous):
 
         return grad_logpdf_var
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of cdf — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-        """
         self.check_1d()  # pylint: disable=duplicate-code
         ppf = scipy.stats.norm.ppf(
             quantiles, loc=self.mean, scale=self.covariance ** (1 / 2)

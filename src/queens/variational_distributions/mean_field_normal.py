@@ -14,7 +14,7 @@
 #
 """Mean-Field Normal Variational Distribution."""
 
-from typing import cast
+from typing import cast, override
 
 import numpy as np
 
@@ -60,6 +60,7 @@ class MeanFieldNormal(Variational):
         """
         super().__init__(dimension, n_parameters=2 * dimension)
 
+    @override
     def initialize_variational_parameters(self, random: bool = False) -> ArrayNParams:
         r"""Initialize variational parameters.
 
@@ -87,6 +88,7 @@ class MeanFieldNormal(Variational):
 
         return variational_parameters
 
+    @override
     def construct_variational_parameters(  # pylint: disable=arguments-differ
         self, mean: ArrayNDimsX1 | ArrayNDims, covariance: ArrayNDimsXNDims
     ) -> ArrayNParams:
@@ -108,6 +110,7 @@ class MeanFieldNormal(Variational):
             )
         return variational_parameters
 
+    @override
     def reconstruct_distribution_parameters(
         self, variational_parameters: ArrayNParams
     ) -> tuple[ArrayNDimsX1, ArrayNDimsXNDims]:
@@ -140,32 +143,16 @@ class MeanFieldNormal(Variational):
         grad_reconstruct_params = np.hstack((grad_mean, grad_std))
         return grad_reconstruct_params
 
+    @override
     def draw(self, variational_parameters: ArrayNParams, n_draws: NSamples) -> ArrayNSamplesXNDims:
-        """Draw *n_draw* samples from the variational distribution.
-
-        Args:
-            variational_parameters: Variational parameters
-            n_draws: Number of samples to draw
-
-        Returns:
-            Samples
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         samples = np.random.randn(n_draws, self.dimension) * np.sqrt(np.diag(cov)).reshape(
             1, -1
         ) + mean.reshape(1, -1)
         return samples
 
+    @override
     def logpdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """Log-PDF evaluated using the variational parameters at samples `x`.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the Log-PDF values
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         mean_flat = mean.flatten()
         cov = np.diag(cov)
@@ -177,35 +164,17 @@ class MeanFieldNormal(Variational):
         )
         return logpdf.flatten()
 
+    @override
     def pdf(self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims) -> ArrayNSamples:
-        """PDF of the variational distribution evaluated at samples *x*.
-
-        First computes the log-PDF, which is numerically more stable for exponential distributions.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Row vector of the PDF values
-        """
+        # First computes the log-PDF, which is numerically more stable
+        # for exponential distributions.
         pdf = np.exp(self.logpdf(variational_parameters, x))
         return pdf
 
+    @override
     def grad_params_logpdf(
         self, variational_parameters: ArrayNParams, x: ArrayNSamplesXNDims
     ) -> ArrayNParamsXNSamples:
-        """Log-PDF gradient w.r.t. the variational parameters.
-
-        Evaluated at samples *x*. Also known as the score function.
-
-        Args:
-            variational_parameters: Variational parameters
-            x: Row-wise samples
-
-        Returns:
-            Column-wise scores
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         mean_flat = mean.flatten()
         cov = np.diag(cov)
@@ -242,16 +211,16 @@ class MeanFieldNormal(Variational):
     def grad_sample_logpdf(
         self, variational_parameters: ArrayNParams, sample_batch: ArrayNSamplesXNDims
     ) -> ArrayNSamplesXNDims:
-        """Computes the gradient of the log-PDF w.r.t. to the sample *x*.
+        """Compute the gradient of the log-PDF with respect to the sample *x*.
 
         Args:
             variational_parameters: Variational parameters
             sample_batch: Row-wise samples
 
         Returns:
-            Gradients of the log-PDF w.r.t. the sample *x*. The first dimension of the array
-                corresponds to the different samples. The second dimension to different dimensions
-                within one sample.
+            Gradients of the log-PDF with respect to the sample *x*. The first dimension of the
+                array corresponds to the different samples. The second dimension to different
+                dimensions within one sample.
         """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         gradients_batch = -(sample_batch - mean.reshape(1, self.dimension)) / np.diag(cov).reshape(
@@ -259,6 +228,7 @@ class MeanFieldNormal(Variational):
         )
         return gradients_batch
 
+    @override
     def fisher_information_matrix(
         self, variational_parameters: ArrayNParams
     ) -> ArrayNParamsXNParams:
@@ -274,15 +244,8 @@ class MeanFieldNormal(Variational):
         fisher_diag = np.hstack((fisher_diag, 2 * np.ones(self.dimension)))
         return np.diag(fisher_diag)
 
+    @override
     def export_dict(self, variational_parameters: ArrayNParams) -> dict:
-        """Create a dict of the distribution based on the given parameters.
-
-        Args:
-            variational_parameters: Variational parameters
-
-        Returns:
-            Dictionary containing distribution information
-        """
         mean, cov = self.reconstruct_distribution_parameters(variational_parameters)
         sd = cov**0.5
         export_dict = {

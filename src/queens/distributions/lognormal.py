@@ -14,6 +14,8 @@
 #
 """LogNormal Distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.linalg
 import scipy.stats
@@ -56,15 +58,8 @@ class LogNormal(Continuous):
             mean=mean, covariance=covariance, dimension=self.normal_distribution.dimension
         )
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         x = np.asarray(x, dtype=float).reshape(-1, self.dimension)
         cdf = np.zeros(x.shape[0])
         positive_support = np.all(x > 0, axis=1)
@@ -74,26 +69,12 @@ class LogNormal(Continuous):
 
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         return np.exp(self.normal_distribution.draw(num_draws=num_draws))
 
+    @override
     def logpdf(self, x: ArrayLike) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         log_x = np.log(x).reshape(-1, self.dimension)
         dist = log_x - self.normal_distribution.mean
         logpdf = (
@@ -103,15 +84,8 @@ class LogNormal(Continuous):
         )
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of log-PDF is evaluated
-
-        Returns:
-            Gradient of the log-PDF evaluated at positions
-        """
         x = x.reshape(-1, self.dimension)
         x[x == 0] = np.nan
         grad_logpdf = (
@@ -127,26 +101,12 @@ class LogNormal(Continuous):
         )
         return grad_logpdf
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         return np.exp(self.logpdf(x))
 
+    @override
     def ppf(self, quantiles: ArrayLike) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         self.check_1d()
         ppf = scipy.stats.lognorm.ppf(
             quantiles,

@@ -18,7 +18,7 @@ from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Iterator
+from typing import Any, Iterator, override
 
 import pandas as pd
 import yaml
@@ -120,6 +120,7 @@ class SimulationMetadata:
             # Export since the job is either finished or failed
             self.export()
 
+    @override
     def __str__(self) -> str:
         """Create function string.
 

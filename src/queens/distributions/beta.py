@@ -14,6 +14,8 @@
 #
 """Beta Distribution."""
 
+from typing import override
+
 import numpy as np
 import scipy.stats
 
@@ -65,72 +67,33 @@ class Beta(Continuous):
 
         super().__init__(mean=mean, covariance=covariance, dimension=1)
 
+    @override
     def cdf(self, x: np.ndarray) -> np.ndarray:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-
-        Returns:
-            CDF at positions
-        """
         cdf = self.scipy_beta.cdf(x).reshape(-1)
         return cdf
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples from the distribution
-        """
         samples = self.scipy_beta.rvs(size=num_draws).reshape(-1, 1)
         return samples
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability density function.
-
-        Args:
-            x: Positions at which the log-PDF is evaluated
-
-        Returns:
-            Log-PDF at positions
-        """
         logpdf = self.scipy_beta.logpdf(x).reshape(-1)
         return logpdf
 
+    @override
     def grad_logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Gradient of the log-PDF with respect to *x*.
-
-        Args:
-            x: Positions at which the gradient of the log-PDF is evaluated
-        """
         raise NotImplementedError(
             "This method is currently not implemented for the beta distribution."
         )
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability density function.
-
-        Args:
-            x: Positions at which the PDF is evaluated
-
-        Returns:
-            PDF at positions
-        """
         pdf = self.scipy_beta.pdf(x).reshape(-1)
         return pdf
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> np.ndarray:
-        """Percent point function (inverse of CDF — quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-
-        Returns:
-            Positions which correspond to given quantiles
-        """
         ppf = self.scipy_beta.ppf(quantiles).reshape(-1)
         return ppf

@@ -14,6 +14,8 @@
 #
 """Multinomial distribution."""
 
+from typing import override
+
 import numpy as np
 from numpy.typing import ArrayLike
 from scipy.stats import multinomial
@@ -45,13 +47,8 @@ class Multinomial(Discrete):
         super().__init__(probabilities_array, sample_space, dimension=len(probabilities_array))
         self.scipy_multinomial = multinomial(self.n_trials, self.probabilities)
 
+    @override
     def _compute_mean_and_covariance(self) -> tuple[np.ndarray, np.ndarray]:
-        """Compute the mean value and covariance of the mixture model.
-
-        Returns:
-            Mean value of the distribution
-            Covariance of the distribution
-        """
         n_trials = self.sample_space[0]
         mean = n_trials * self.probabilities
         covariance = n_trials * (
@@ -59,51 +56,22 @@ class Multinomial(Discrete):
         )
         return mean, covariance
 
+    @override
     def draw(self, num_draws: int = 1) -> np.ndarray:
-        """Draw samples.
-
-        Args:
-            num_draws: Number of draws
-
-        Returns:
-            Drawn samples
-        """
         return np.random.multinomial(self.n_trials, self.probabilities, size=num_draws)
 
+    @override
     def logpdf(self, x: np.ndarray) -> np.ndarray:
-        """Log of the probability mass function.
-
-        Args:
-            x: Positions at which the log-PMF is evaluated
-
-        Returns:
-            Log-PMF at positions
-        """
         return self.scipy_multinomial.logpmf(x)
 
+    @override
     def pdf(self, x: np.ndarray) -> np.ndarray:
-        """Probability mass function.
-
-        Args:
-            x: Positions at which the PMF is evaluated
-
-        Returns:
-            PMF at positions
-        """
         return self.scipy_multinomial.pmf(x)
 
+    @override
     def cdf(self, x: np.ndarray) -> None:
-        """Cumulative distribution function.
-
-        Args:
-            x: Positions at which the CDF is evaluated
-        """
         super().check_1d()
 
+    @override
     def ppf(self, quantiles: np.ndarray) -> None:
-        """Percent point function (inverse of CDF - quantiles).
-
-        Args:
-            quantiles: Quantiles at which the PPF is evaluated
-        """
         super().check_1d()

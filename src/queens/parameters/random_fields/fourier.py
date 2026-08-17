@@ -14,7 +14,7 @@
 #
 """Fourier Random fields class."""
 
-from typing import TypeAlias
+from typing import TypeAlias, override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -127,38 +127,17 @@ class Fourier(RandomField):
             self.latent_index,
         )
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
-        """Draw samples from the latent representation of the random field.
-
-        Args:
-            num_samples: Number of draws of latent random samples
-
-        Returns:
-            Drawn samples
-        """
         return self.distribution.draw(num_samples)
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get joint log-PDF of latent space.
-
-        Args:
-            samples: Samples for evaluating the log-PDF
-
-        Returns:
-            Log-PDF of the samples
-        """
         logpdf = self.distribution.logpdf(samples)
         return logpdf
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get gradient of joint log-PDF of latent space.
-
-        Args:
-            samples: Samples for evaluating the gradient of the log-PDF
-
-        Returns:
-            Gradient of the log-PDF
-        """
         if not isinstance(self.distribution, HasGradLogPDF):
             raise TypeError(
                 f"The distribution {self.distribution} does not have a grad_logpdf function."
@@ -166,28 +145,13 @@ class Fourier(RandomField):
 
         return self.distribution.grad_logpdf(samples)
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
-        """Expand latent representation of samples.
-
-        Args:
-            samples: Latent representation of samples
-
-        Returns:
-            Expanded representation of samples
-        """
         sample_expanded = self.mean + self.std * np.matmul(samples, self.basis.T)
         return sample_expanded
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
-        """Gradient with respect to the latent parameters.
-
-        Args:
-            upstream_gradient: Gradient with respect to all coords of the field
-
-        Returns:
-            Gradient of the realization of the random field with respect to the latent space
-                variables
-        """
         latent_grad = self.std * np.matmul(upstream_gradient, self.basis)
         return latent_grad
 

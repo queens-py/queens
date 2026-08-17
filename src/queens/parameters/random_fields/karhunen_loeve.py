@@ -15,6 +15,7 @@
 """Karhunen-Loève Random fields class."""
 
 import logging
+from typing import override
 
 import numpy as np
 from numpy.typing import ArrayLike
@@ -93,37 +94,16 @@ class KarhunenLoeve(RandomField):
 
         super().__init__(coords, distribution, dimension=dimension)
 
+    @override
     def draw(self, num_samples: int) -> np.ndarray:
-        """Draw samples from the latent representation of the random field.
-
-        Args:
-            num_samples: Number of draws of latent random samples
-
-        Returns:
-            Drawn samples
-        """
         return self.distribution.draw(num_samples)
 
+    @override
     def logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get joint log-PDF of latent space.
-
-        Args:
-            samples: Samples for evaluating the log-PDF
-
-        Returns:
-            Log-PDF of the samples
-        """
         return self.distribution.logpdf(samples)
 
+    @override
     def grad_logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Get gradient of joint log-PDF of latent space.
-
-        Args:
-            samples: Samples for evaluating the gradient of the log-PDF
-
-        Returns:
-            Gradient of the log-PDF
-        """
         if not isinstance(self.distribution, HasGradLogPDF):
             raise TypeError(
                 f"The distribution {self.distribution} does not have a grad_logpdf function."
@@ -131,30 +111,16 @@ class KarhunenLoeve(RandomField):
 
         return self.distribution.grad_logpdf(samples)
 
+    @override
     def expanded_representation(self, samples: np.ndarray) -> np.ndarray:
-        """Expand latent representation of samples.
-
-        Args:
-            samples: Latent representation of samples
-
-        Returns:
-            Expanded representation of samples
-        """
         if self.eigenbasis is None:
             raise ValueError("Eigenbasis has not been computed yet.")
 
         samples_expanded = self.mean + np.matmul(samples, self.eigenbasis.T)
         return samples_expanded
 
+    @override
     def latent_gradient(self, upstream_gradient: np.ndarray) -> np.ndarray:
-        """Gradient of the field with respect to the latent parameters.
-
-        Args:
-            upstream_gradient: Gradient with respect to all coords of the field
-
-        Returns:
-            Gradient of the field with respect to the latent parameters
-        """
         if self.eigenbasis is None:
             raise ValueError("Eigenbasis has not been computed yet.")
 
