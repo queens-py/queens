@@ -84,8 +84,8 @@ class PvdFile(DataProcessor):
         Returns:
             PVDReader object.
         """
-        raw_data = pv.get_reader(file_path)
-        return raw_data
+        raw_data_reader = pv.get_reader(file_path)
+        return raw_data_reader
 
     def filter_and_manipulate_raw_data(self, raw_data: pv.PVDReader) -> np.ndarray:
         """Filter and manipulate the raw data.

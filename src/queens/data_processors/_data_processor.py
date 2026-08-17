@@ -139,7 +139,6 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 f"The files are: {file_list}."
                 "The file prefix must lead to a unique file. Abort..."
             )
-        file_path: Path | None
         if len(file_list) == 1:
             file_path = file_list[0]
         else:
