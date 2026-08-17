@@ -16,6 +16,7 @@
 
 import logging
 from pathlib import Path
+from typing import override
 
 import numpy as np
 import pyvista as pv
@@ -75,26 +76,20 @@ class PvdFile(DataProcessor):
         if not point_data:
             self.data_attribute = "cell_data"
 
+    @override
     def get_raw_data_from_file(self, file_path: str | Path) -> pv.PVDReader:
-        """Get the raw data from the files of interest.
-
-        Args:
-            file_path: Actual path to the file of interest.
-
-        Returns:
-            PVDReader object.
-        """
         raw_data_reader = pv.get_reader(file_path)
         return raw_data_reader
 
+    @override
     def filter_and_manipulate_raw_data(self, raw_data: pv.PVDReader) -> np.ndarray:
-        """Filter and manipulate the raw data.
+        """Extract the field data for all time steps of interest.
 
         Args:
-            raw_data: PVDReader object.
+            raw_data: PVD reader pointing to the file of interest.
 
         Returns:
-            Cleaned, filtered or manipulated *data_processor* data.
+            Stacked field values.
         """
         field_data = []
         for time_step in self.time_steps:

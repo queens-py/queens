@@ -17,7 +17,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Any
+from typing import Any, override
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
@@ -80,6 +80,7 @@ class TxtFile(DataProcessor):
         self.logger_prefix = logger_prefix
         self.max_file_size_in_mega_byte = max_file_size_in_mega_byte
 
+    @override
     def get_raw_data_from_file(self, file_path: str | Path) -> list[str] | None:
         """Load the text file into memory.
 

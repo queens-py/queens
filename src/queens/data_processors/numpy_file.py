@@ -16,6 +16,7 @@
 
 import logging
 from pathlib import Path
+from typing import override
 
 import numpy as np
 
@@ -50,6 +51,7 @@ class NumpyFile(DataProcessor):
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 
+    @override
     def get_raw_data_from_file(self, file_path: str | Path) -> np.ndarray | None:
         """Get the raw data from the files of interest.
 

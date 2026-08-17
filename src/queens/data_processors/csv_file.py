@@ -16,6 +16,7 @@
 
 import logging
 from pathlib import Path
+from typing import override
 
 import numpy as np
 import pandas as pd
@@ -248,6 +249,7 @@ class CsvFile(DataProcessor):
         else:
             raise TypeError("You provided an invalid 'filter_type'!")
 
+    @override
     def get_raw_data_from_file(self, file_path: str | Path) -> pd.DataFrame | None:
         """Get the raw data from the files of interest.
 
@@ -282,6 +284,7 @@ class CsvFile(DataProcessor):
             )
             return None
 
+    @override
     def filter_and_manipulate_raw_data(self, raw_data: pd.DataFrame) -> np.ndarray | dict:
         """Filter the pandas data-frame based on filter type.
 
@@ -289,7 +292,8 @@ class CsvFile(DataProcessor):
             raw_data: Raw data from file.
 
         Returns:
-            Cleaned, filtered or manipulated *data_processor* data.
+            Filtered data. The returned data type is determined by
+                file_options_dict['returned_filter_format'].
         """
         valid_filter_types = {
             "entire_file": self._filter_entire_file,
