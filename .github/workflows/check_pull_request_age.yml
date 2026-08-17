@@ -12,6 +12,7 @@ permissions:
 
 jobs:
   check_pull_request_age:
+    name: Check pull request is at least 24 hours old
     runs-on: ubuntu-latest
     steps:
       - name: Check pull request age

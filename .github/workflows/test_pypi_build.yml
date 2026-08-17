@@ -14,11 +14,8 @@ permissions:
 
 jobs:
   test_pypi_build:
-    name: >-
-      PyPI build test
-      (${{ matrix.os }}, ${{ matrix.install_target }}, ${{ matrix.requiredness }})
+    name: Test PyPI build (${{ matrix.os }}, ${{ matrix.install_target }})
     runs-on: ${{ matrix.os }}
-    continue-on-error: ${{ matrix.allow_failure }}
     strategy:
       fail-fast: false
       matrix:
@@ -26,23 +23,15 @@ jobs:
           - os: ubuntu-latest
             install_target: base
             extra_selector: ""
-            allow_failure: false
-            requiredness: required
           - os: ubuntu-latest
             install_target: all
             extra_selector: "[all]"
-            allow_failure: false
-            requiredness: required
           - os: macos-latest
             install_target: base
             extra_selector: ""
-            allow_failure: true
-            requiredness: optional
           - os: macos-latest
             install_target: all
             extra_selector: "[all]"
-            allow_failure: true
-            requiredness: optional
     defaults:
       run:
         shell: bash
@@ -68,3 +57,14 @@ jobs:
           source .venv-pypi-smoke/bin/activate
           python -c "import queens"
           pytest -v -m "unit_tests" tests/unit_tests/
+
+  ensure_all_pypi_builds_pass:
+    name: Ensure all PyPI builds pass
+    needs: test_pypi_build
+    runs-on: ubuntu-latest
+    if: always() && github.ref != 'refs/heads/main'
+    steps:
+      - name: Check for successful PyPI builds
+        uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
