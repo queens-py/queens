@@ -79,7 +79,7 @@ class PvdFile(DataProcessor):
     @override
     def get_raw_data_from_file(self, file_path: str | Path) -> pv.PVDReader:
         raw_data_reader = pv.get_reader(file_path)
-        return raw_data_reader
+        return pv.PVDReader(raw_data_reader)
 
     @override
     def filter_and_manipulate_raw_data(self, raw_data: pv.PVDReader) -> np.ndarray:
