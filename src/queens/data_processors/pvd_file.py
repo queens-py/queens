@@ -78,11 +78,7 @@ class PvdFile(DataProcessor):
 
     @override
     def get_raw_data_from_file(self, file_path: str | Path) -> pv.PVDReader:
-        raw_data_reader = pv.get_reader(file_path)
-
-        if not isinstance(raw_data_reader, pv.PVDReader):
-            raise TypeError(f"File '{file_path}' is not a valid pvd file.")
-
+        raw_data_reader = pv.PVDReader(file_path)
         return raw_data_reader
 
     @override
