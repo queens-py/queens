@@ -134,7 +134,6 @@ def test_write_random_elementwise_material(
     data_processor = PvdFile(
         field_name="displacement",
         file_name_identifier="output-structure.pvd",
-        file_options_dict={},
     )
 
     scheduler = Local(num_procs=1, num_jobs=1, experiment_name=global_settings.experiment_name)

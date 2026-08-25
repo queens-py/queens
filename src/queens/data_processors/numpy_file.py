@@ -33,7 +33,6 @@ class NumpyFile(DataProcessor):
     def __init__(
         self,
         file_name_identifier: str,
-        file_options_dict: dict | None = None,
         files_to_be_deleted_regex_lst: list[str] | None = None,
     ) -> None:
         """Instantiate data processor class for numpy binary data.
@@ -41,13 +40,11 @@ class NumpyFile(DataProcessor):
         Args:
             file_name_identifier: Identifier of file name. The file prefix can contain regex
                 expression and subdirectories.
-            file_options_dict: Dictionary with read-in options for the file
             files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
                 paths can contain regex expressions.
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
-            file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
 

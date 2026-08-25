@@ -42,7 +42,6 @@ class PvdFile(DataProcessor):
         self,
         field_name: str,
         file_name_identifier: str,
-        file_options_dict: dict | None = None,
         files_to_be_deleted_regex_lst: list[str] | None = None,
         time_steps: list[int] | None = None,
         block: int = 0,
@@ -54,7 +53,6 @@ class PvdFile(DataProcessor):
             field_name: Name of the field to extract data from
             file_name_identifier: Identifier of file name. The file prefix can contain regex
                 expression and subdirectories.
-            file_options_dict: Dictionary with read-in options for the file
             files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
                 paths can contain regex expressions.
             time_steps: Considered time steps (last time step by default)
@@ -64,7 +62,6 @@ class PvdFile(DataProcessor):
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
-            file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
         self.field_name = field_name
