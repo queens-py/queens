@@ -22,7 +22,7 @@ import pytest
 import yaml
 
 from queens.utils.exceptions import FileTypeError
-from queens.utils.io import load_input_file, write_to_csv
+from queens.utils.io import load_input_file, load_pickle, write_pickle, write_to_csv
 
 
 @pytest.fixture(name="input_dict")
@@ -64,6 +64,32 @@ def test_load_input_file(input_file, input_dict):
     """Test *load_input_file*."""
     loaded_dict = load_input_file(input_file)
     assert loaded_dict == input_dict
+
+
+def test_write_and_load_pickle(tmp_path):
+    """Test that pickled data is loaded without any type conversion."""
+    data = {"inputs": {"parameter_1": np.float64(1.5)}, "outputs": {"result": np.array([1.0, 2.0])}}
+    file_path = tmp_path / "data.pickle"
+
+    write_pickle(data, file_path)
+    loaded_data = load_pickle(file_path)
+
+    assert isinstance(loaded_data["inputs"]["parameter_1"], np.float64)
+    assert loaded_data["inputs"] == data["inputs"]
+    np.testing.assert_array_equal(loaded_data["outputs"]["result"], data["outputs"]["result"])
+
+
+def test_write_pickle_overwrites_existing_file(tmp_path):
+    """Test that writing to an existing pickle file replaces its content."""
+    file_path = tmp_path / "data.pickle"
+    first_result = {"result": 1}
+    second_result = {"result": 2}
+
+    write_pickle(first_result, file_path)
+
+    write_pickle(second_result, file_path)
+
+    assert load_pickle(file_path) == second_result
 
 
 def test_write_to_csv(tmp_path):

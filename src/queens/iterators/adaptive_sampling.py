@@ -15,7 +15,6 @@
 """Adaptive sampling iterator."""
 
 import logging
-import pickle
 import types
 
 import jax
@@ -25,7 +24,7 @@ from jax import jit
 
 from queens.iterators._iterator import Iterator
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
-from queens.utils.io import load_result
+from queens.utils.io import load_result, write_pickle
 
 _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)
@@ -297,8 +296,7 @@ class AdaptiveSampling(Iterator):
         results["log_posterior"].append(log_posterior)
         results["cs_div"].append(cs_div)
 
-        with open(result_file, "wb") as handle:
-            pickle.dump(results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+        write_pickle(results, result_file)
 
         return cs_div
 
