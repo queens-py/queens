@@ -507,7 +507,7 @@ def test_successfully_reusing_existing_jobs(
     np.testing.assert_array_equal(first_result["result"], second_result["result"])
 
     # Assert the inputs file was not written again
-    assert first_job_dir_file_times["inputs.pickle"] == second_job_dir_file_times["inputs.pickle"]
+    assert first_job_dir_file_times["input.pickle"] == second_job_dir_file_times["input.pickle"]
 
     # Assert the job was successful for both runs
     assert first_metadata["job_successful"] is True
@@ -521,8 +521,7 @@ def test_successfully_reusing_existing_jobs(
         assert time_data_processor.number_of_calls == 2
         # Assert the outputs file was written again
         assert (
-            first_job_dir_file_times["outputs.pickle"]
-            != second_job_dir_file_times["outputs.pickle"]
+            first_job_dir_file_times["output.pickle"] != second_job_dir_file_times["output.pickle"]
         )
         # Assert metadata entries remain the same, except for
         # metadata["times"]["process_data_again"]
@@ -537,8 +536,7 @@ def test_successfully_reusing_existing_jobs(
         assert time_data_processor.number_of_calls == 1
         # Assert the outputs file was not written again
         assert (
-            first_job_dir_file_times["outputs.pickle"]
-            == second_job_dir_file_times["outputs.pickle"]
+            first_job_dir_file_times["output.pickle"] == second_job_dir_file_times["output.pickle"]
         )
         # Assert metadata entries remain the same
         assert first_metadata == second_metadata
