@@ -39,8 +39,8 @@ from queens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 JOBSCRIPT_LOG_TAIL_LINES = 25
-JOB_INPUTS_FILE_NAME = "inputs.pickle"
-JOB_OUTPUTS_FILE_NAME = "outputs.pickle"
+JOB_INPUTS_FILE_NAME = "input.pickle"
+JOB_OUTPUTS_FILE_NAME = "output.pickle"
 
 
 @dataclass
@@ -120,7 +120,7 @@ class Jobscript(Driver):
             the same and the job was successful.
         rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor when
             reusing existing jobs. If false, the outputs of the previous run are loaded from the
-            outputs.pickle file.
+            output.pickle file.
     """
 
     @log_init_args
@@ -159,7 +159,7 @@ class Jobscript(Driver):
                 are the same and the job was successful.
             rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor
                 when reusing existing jobs. If false, the outputs of the previous run are loaded
-                from the outputs.pickle file.
+                from the output.pickle file.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
         self.input_templates = self.create_input_templates_dict(input_templates)
