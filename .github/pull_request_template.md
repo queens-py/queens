@@ -11,6 +11,14 @@ If applicable: how is this pull request related to other open issues or pull req
 * Closes
 * Related to
 
+## Disclosure of AI assistance
+<!--
+If AI tools were used for this contribution, please describe how (e.g., which tool, for which parts of the change).
+For example: "This code was created with Claude Opus 5."
+-->
+
+> Note: See the [*AI-assisted contributions*](../CONTRIBUTING.md#ai-assisted-contributions) section in the [CONTRIBUTING.md](../CONTRIBUTING.md) file.
+
 ## Interested Parties
 <!--
 If there's anyone you think should be looped in on this pull request,
