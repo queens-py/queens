@@ -48,7 +48,7 @@ runs:
         pixi_version="$(tr -d '[:space:]' < "${GITHUB_WORKSPACE}/.pixi-version")"
         echo "version=${pixi_version}" >> "$GITHUB_OUTPUT"
 
-    - uses: prefix-dev/setup-pixi@v0.10.0
+    - uses: prefix-dev/setup-pixi@v0.10.1
       with:
         pixi-version: ${{ steps.pixi-version.outputs.version }}
         cache: ${{ inputs.cache }}
