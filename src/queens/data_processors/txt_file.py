@@ -17,6 +17,7 @@
 import logging
 import re
 from pathlib import Path
+from typing import Any, override
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
@@ -47,49 +48,44 @@ class TxtFile(DataProcessor):
     @log_init_args
     def __init__(
         self,
-        file_name_identifier=None,
-        file_options_dict=None,
-        files_to_be_deleted_regex_lst=None,
-        remove_logger_prefix_from_raw_data=True,
-        logger_prefix=r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
+        file_name_identifier: str,
+        files_to_be_deleted_regex_lst: list[str] | None = None,
+        remove_logger_prefix_from_raw_data: bool = True,
+        logger_prefix: str = r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2},\d{3} - "
         r"queens\.drivers\.driver_\d* - INFO -",
-        max_file_size_in_mega_byte=200,
-    ):
+        max_file_size_in_mega_byte: int = 200,
+    ) -> None:
         """Instantiate data processor class for txt data.
 
         Args:
-            file_name_identifier (str):             Identifier of file name.
-                                                    The file prefix can contain a regex expression
-                                                    and subdirectories.
-            file_options_dict (dict):               Dictionary with read-in options for the file:
-            files_to_be_deleted_regex_lst (lst):    List with paths to files that should be deleted.
-                                                    The paths can contain regex expressions.
-            remove_logger_prefix_from_raw_data(bool):   Defaults to True. Removes the logger_prefix
-                                                        from the raw_data during the reading of
-                                                        the file.
-            logger_prefix (str):                    A string or regular expressions that precedes
-                                                    each line of the queens log file.
-            max_file_size_in_mega_byte (int):       Upper limit of the file size to be read into
-                                                    memory in megabyte (MB). See comment above on
-                                                    Potential Improvement.
+            file_name_identifier: Identifier of file name. The file prefix can contain a regex
+                expression and subdirectories.
+            files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
+                paths can contain regex expressions.
+            remove_logger_prefix_from_raw_data: Defaults to True. Removes the logger_prefix from
+                the raw_data during the reading of the file.
+            logger_prefix: A string or regular expressions that precedes each line of the queens
+                log file.
+            max_file_size_in_mega_byte: Upper limit of the file size to be read into memory in
+                megabyte (MB). See comment above on Potential Improvement.
         """
         super().__init__(
             file_name_identifier=file_name_identifier,
-            file_options_dict=file_options_dict,
             files_to_be_deleted_regex_lst=files_to_be_deleted_regex_lst,
         )
         self.remove_logger_prefix_from_raw_data = remove_logger_prefix_from_raw_data
         self.logger_prefix = logger_prefix
         self.max_file_size_in_mega_byte = max_file_size_in_mega_byte
 
-    def get_raw_data_from_file(self, file_path):
+    @override
+    def get_raw_data_from_file(self, file_path: str | Path) -> list[str] | None:
         """Load the text file into memory.
 
         Args:
-            file_path (str): Actual path to the file of interest.
+            file_path: Actual path to the file of interest.
 
         Returns:
-            raw_data (lst): A list of strings read in from file_path.
+            A list of strings read in from *file_path*, or *None* if the file could not be read.
         """
         raw_data = []
         try:
@@ -98,7 +94,7 @@ class TxtFile(DataProcessor):
                 if self.remove_logger_prefix_from_raw_data:
                     for line in file:
                         match = re.search(self.logger_prefix, line)
-                        extracted_part = line[match.end() :]
+                        extracted_part = line[match.end() :] if match else line
                         extracted_part = extracted_part.lstrip().rstrip()
                         raw_data.append(extracted_part)
                 else:
@@ -114,11 +110,11 @@ class TxtFile(DataProcessor):
             )
             return None
 
-    def _check_file_size(self, file_path):
+    def _check_file_size(self, file_path: str | Path) -> None:
         """Check the file size of the input file.
 
         Args:
-            file_path (str): Path to the input file.
+            file_path: Path to the input file.
 
         Throws:
             Memory error if the file size is larger than max_file_size_in_mega_byte.
@@ -133,7 +129,13 @@ class TxtFile(DataProcessor):
                 file_path,
             )
 
-    def _extract_section_from_raw_data(self, raw_data, marker_type, regex_start="", regex_end=""):
+    def _extract_section_from_raw_data(
+        self,
+        raw_data: list[str],
+        marker_type: str,
+        regex_start: str = "",
+        regex_end: str = "",
+    ) -> list[list[str]]:
         """Divide the raw data into sections.
 
         Extracts a section of text from the given raw data based on regular
@@ -141,22 +143,15 @@ class TxtFile(DataProcessor):
         marker_type.
 
         Args:
-            raw_data (str):                 The raw data from which a section is
-                                            to be extracted.
-            marker_type (str):              The type of marker indicating how the
-                                            section should be extracted.
-            regex_start (str, optional):    The regular expression pattern
-                                            indicating the start of the section.
-                                            Required when marker_type is 'start'
-                                            or 'start_end'.
-            regex_end (str, optional):      The regular expression pattern indicating
-                                            the end of the section.
-                                            Required when marker_type is 'end' or 'start_end'.
+            raw_data: The raw data from which a section is to be extracted.
+            marker_type: The type of marker indicating how the section should be extracted.
+            regex_start: The regular expression pattern indicating the start of the section.
+                Required when marker_type is 'start' or 'start_end'.
+            regex_end: The regular expression pattern indicating the end of the section.
+                Required when marker_type is 'end' or 'start_end'.
 
         Returns:
-            raw_section_data (lst):        A dictionary where the key is an incremental
-                                            counter and the corresponding value is the
-                                            extracted section of text (str).
+            A list where each element is the extracted section of text (list of strings).
         """
         if marker_type == "start":
             if regex_start == "":
@@ -182,21 +177,20 @@ class TxtFile(DataProcessor):
         return raw_section_data
 
     @staticmethod
-    def _extract_section_with_start_marker(raw_data, regex):
+    def _extract_section_with_start_marker(raw_data: list[str], regex: str) -> list[list[str]]:
         """Subroutine for a marked start of the section.
 
         Extracts a section of text, where the start of the section is marked by a regex.
 
         Args:
-            raw_data (str): The raw data from which a section is to be extracted.
-            regex (str):    The regular expression pattern indicating the start of the section.
+            raw_data: The raw data from which a section is to be extracted.
+            regex: The regular expression pattern indicating the start of the section.
 
         Returns:
-            raw_section_data (lst):    A list where each element is the extracted section
-                                        of text (list of strings).
+            A list where each element is the extracted section of text (list of strings).
         """
         raw_section_data = []
-        current_section = []
+        current_section: list[str] = []
         initial = True
         for line in raw_data:
             if re.search(regex, line):
@@ -212,22 +206,20 @@ class TxtFile(DataProcessor):
         return raw_section_data
 
     @staticmethod
-    def _extract_section_with_end_marker(raw_data, regex):
+    def _extract_section_with_end_marker(raw_data: list[str], regex: str) -> list[list[str]]:
         """Subroutine for a marked end of the section.
 
         Extracts a section of text, where the end of the section is marked by a regex.
 
         Args:
-            raw_data (str): The raw data from which a section is to be extracted.
-            regex (str):    The regular expression pattern indicating the end of the section.
-
+            raw_data: The raw data from which a section is to be extracted.
+            regex: The regular expression pattern indicating the end of the section.
 
         Returns:
-            raw_section_data (lst):    A list where each element is the extracted section
-                                        of text (list of strings).
+            A list where each element is the extracted section of text (list of strings).
         """
         raw_section_data = []
-        current_section = []
+        current_section: list[str] = []
 
         for line in raw_data:
             current_section.append(line)
@@ -241,26 +233,24 @@ class TxtFile(DataProcessor):
         return raw_section_data
 
     @staticmethod
-    def _extract_section_with_start_and_end_marker(raw_data, regex_start, regex_end):
+    def _extract_section_with_start_and_end_marker(
+        raw_data: list[str], regex_start: str, regex_end: str
+    ) -> list[list[str]]:
         """Subroutine for a marked start and end of the section.
 
         Extracts a section of text, where the start and the end of the section is marked
         by a regex each.
 
         Args:
-            raw_data (str):     The raw data from which a section is to be extracted.
-            regex_start (str):  The regular expression pattern indicating the
-                                start of the section.
-            regex_end (str):    The regular expression pattern indicating the end
-                                of the section.
-
+            raw_data: The raw data from which a section is to be extracted.
+            regex_start: The regular expression pattern indicating the start of the section.
+            regex_end: The regular expression pattern indicating the end of the section.
 
         Returns:
-            raw_section_data (lst):    A list where each element is the extracted section
-                                        of text (list of strings).
+            A list where each element is the extracted section of text (list of strings).
         """
         raw_section_data = []
-        current_section = []
+        current_section: list[str] = []
         for line in raw_data:
             if re.search(regex_start, line):
                 current_section = [line]
@@ -273,19 +263,18 @@ class TxtFile(DataProcessor):
         return raw_section_data
 
     @staticmethod
-    def _extract_lines_with_regex(section, regex):
+    def _extract_lines_with_regex(section: list[str], regex: str) -> list[tuple[int, str]]:
         """Extracts lines from a section.
 
         Find and extract lines in the given section that match the specified
         regular expression.
 
         Args:
-            section (lst):     List of lines (str) to search through.
-            regex (str):        Regular expression pattern to match lines.
+            section: List of lines (str) to search through.
+            regex: Regular expression pattern to match lines.
 
         Returns:
-            matches (lst):     A list containing tuples of matches
-                                (line number, line content).
+            A list containing tuples of matches (line number, line content).
         """
         matches = []
 
@@ -299,16 +288,15 @@ class TxtFile(DataProcessor):
         return matches
 
     @staticmethod
-    def _extract_quantities_from_line(line, regexp):
+    def _extract_quantities_from_line(line: str, regexp: str) -> list[Any]:
         """Extract quantities from a given line using a regular expression.
 
         Args:
-            line (str):     The input string from which quantities are to be extracted.
-            regexp (str):   The regular expression pattern used to identify
-                            quantities in the line.
+            line: The input string from which quantities are to be extracted.
+            regexp: The regular expression pattern used to identify quantities in the line.
 
         Returns:
-            matches(lst):   A list containing matched quantities found in the line.
+            A list containing matched quantities found in the line.
         """
         matches = re.findall(regexp, line)
         return matches

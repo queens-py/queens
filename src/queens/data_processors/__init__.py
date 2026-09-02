@@ -17,11 +17,14 @@
 Modules for extracting and processing data from simulation output files.
 """
 
+from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from queens.utils.imports import extract_type_checking_imports, import_class_from_class_module_map
 
 if TYPE_CHECKING:
+    from queens.data_processors._data_processor import DataProcessor
     from queens.data_processors.csv_file import CsvFile
     from queens.data_processors.numpy_file import NumpyFile
     from queens.data_processors.pvd_file import PvdFile
@@ -31,7 +34,7 @@ if TYPE_CHECKING:
 class_module_map = extract_type_checking_imports(__file__)
 
 
-def __getattr__(name):
+def __getattr__(name: str) -> type[DataProcessor]:
     """Lazily import a data processor class on first attribute access.
 
     Args:
