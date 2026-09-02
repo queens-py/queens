@@ -18,7 +18,6 @@ from typing import Generic, Iterator, TypeAlias, TypeVar, override
 
 import numpy as np
 import scipy
-from numpy.typing import ArrayLike
 
 from queens.variational_distributions._variational_distribution import (
     ArrayNParams,
@@ -256,7 +255,7 @@ class Joint(Variational, Generic[V]):
         ) in self._zip_variational_parameters_distributions_samples(variational_parameters, x):
             score.append(distribution.grad_params_logpdf(parameters, samples))
 
-        return np.row_stack(score)
+        return np.vstack(score)
 
     @override
     def fisher_information_matrix(
@@ -294,7 +293,7 @@ class Joint(Variational, Generic[V]):
         return export_dict
 
 
-def split_array_by_chunk_sizes(array: np.ndarray, chunk_sizes: ArrayLike) -> list:
+def split_array_by_chunk_sizes(array: np.ndarray, chunk_sizes: np.ndarray) -> list:
     """Split up array by a list of chunk sizes.
 
     Args:

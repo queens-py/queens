@@ -205,7 +205,7 @@ class Classification(Iterator):
             np.array: model output
         """
         output = self.model.evaluate(samples)["result"]
-        self.samples = np.row_stack((self.samples, samples))
+        self.samples = np.vstack((self.samples, samples))
         return output
 
     def binarize(self, samples):
@@ -218,5 +218,5 @@ class Classification(Iterator):
             np.array: classified output
         """
         output = self.classification_function(self._evaluate_model(samples))
-        self.classified_outputs = np.row_stack((self.classified_outputs, output)).astype(int)
+        self.classified_outputs = np.vstack((self.classified_outputs, output)).astype(int)
         return output
