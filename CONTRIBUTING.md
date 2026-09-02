@@ -137,6 +137,14 @@ New code must be tested. Please also make sure that all existing tests pass by r
 your source directory. For further information, see our [testing README.md](tests/README.md).
 
 #### 5. Submit a pull request
-Please use the available pull request template and fill out all sections of the template.
+Please use the available pull request template and fill out all sections of the template. If AI tools assisted your contribution, please see the [AI-assisted contributions](#ai-assisted-contributions) section.
 When you have submitted a pull request and the CI pipeline passes, it will be reviewed.
 At least two approving reviews by QUEENS developers are required to merge a pull request. Additionally, we enforce that a pull request must have been open for at least 24 hours before it can be merged.
+
+## AI-assisted contributions
+Any AI-assisted code must be reviewed, understood, and validated by the contributing author, who takes full responsibility for the contribution.
+Specifically, contributors must ensure that AI-assisted code:
+- does not introduce third-party code incompatible with the project's [LGPL-3.0-or-later license](LICENSE)
+- adheres to our [code of conduct](CODE_OF_CONDUCT.md) and this contributing guide.
+
+We recommend declaring AI usage in the pull request description to ensure transparency and assist review.
