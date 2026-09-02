@@ -63,7 +63,7 @@ class ExperimentalDataReader:
         self.base_dir = Path(csv_data_base_dir)
 
         if data_processor is None:
-            self.data_processor = CsvFile(
+            data_processor = CsvFile(
                 file_name_identifier=self.file_name,
                 file_options_dict={
                     "header_row": 0,
@@ -72,6 +72,7 @@ class ExperimentalDataReader:
                     "filter": {"type": "entire_file"},
                 },
             )
+        self.data_processor = data_processor
 
     def get_experimental_data(self) -> tuple[
         np.ndarray,
