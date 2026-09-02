@@ -179,7 +179,7 @@ def fixture_fullrank_reference_data():
 def fixture_joint_reference_data(mean_field_reference_data, fullrank_reference_data):
     """Reference data for the joint field distribution."""
     # join mean values
-    mean = np.row_stack(
+    mean = np.vstack(
         (
             mean_field_reference_data.distribution_parameters[0],
             fullrank_reference_data.distribution_parameters[0],
@@ -218,7 +218,7 @@ def fixture_joint_reference_data(mean_field_reference_data, fullrank_reference_d
     )
 
     # stack score functions
-    score_function = np.row_stack(
+    score_function = np.vstack(
         (
             mean_field_reference_data.grad_params_logpdf,
             fullrank_reference_data.grad_params_logpdf,

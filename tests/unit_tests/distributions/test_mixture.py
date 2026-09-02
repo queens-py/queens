@@ -81,7 +81,7 @@ def test_draw(mocker, mixture_model):
         return_value=2 * np.ones((3, mixture_model.dimension)),
     )
     np.testing.assert_equal(
-        np.row_stack(
+        np.vstack(
             (np.ones((2, mixture_model.dimension)), 2 * np.ones((3, mixture_model.dimension)))
         ),
         mixture_model.draw(5),
@@ -129,7 +129,7 @@ def test_grad_logpdf(mixture_model, reference_mixture_model_data):
     pdf_ref = weights_ref[0] * normal0_ref.pdf(sample_location) + weights_ref[1] * normal1_ref.pdf(
         sample_location
     )
-    responsibilities_ref = np.row_stack(
+    responsibilities_ref = np.vstack(
         (pdf_component_0_ref / pdf_ref, pdf_component_1_ref / pdf_ref)
     ).T
 
@@ -156,7 +156,7 @@ def test_responsibilities(mixture_model, reference_mixture_model_data):
     pdf_ref = weights_ref[0] * normal0_ref.pdf(sample_location) + weights_ref[1] * normal1_ref.pdf(
         sample_location
     )
-    responsibilities_ref = np.row_stack(
+    responsibilities_ref = np.vstack(
         (pdf_component_0_ref / pdf_ref, pdf_component_1_ref / pdf_ref)
     ).T
 
