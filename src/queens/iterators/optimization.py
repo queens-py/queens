@@ -249,7 +249,7 @@ class Optimization(Iterator):
             f0 = self.eval_model(x0)
 
         parameter_list = self.parameters.parameters_keys
-        _logger.info("The intermediate, iterated parameters %s are:\n\t%s", parameter_list, x0)
+        _logger.info("The intermediate, iterated parameters %s are:\n\t%s\nwith intermediate result\n\t%s", parameter_list, x0, f0)
 
         return f0
 
