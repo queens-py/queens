@@ -44,7 +44,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          WORKFLOW_FILE: pull_request_age_check.yml
+          WORKFLOW_FILE: check_pull_request_age.yml
         run: |
           gh pr list \
             --json number,headRefOid \
