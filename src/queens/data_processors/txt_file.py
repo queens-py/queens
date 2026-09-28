@@ -27,6 +27,8 @@ _logger = logging.getLogger(__name__)
 class TxtFile(DataProcessor):
     """Class for extracting data from txt files.
 
+    This is a dummy change.
+
     Provides basic functionality for extracting data from txt files,
     however the final implementation is up to the user.
 
