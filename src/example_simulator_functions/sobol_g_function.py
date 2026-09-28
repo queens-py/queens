@@ -59,7 +59,9 @@ def sobol_g_function(a=A, alpha=ALPHA, delta=DELTA, **kwargs):
     # From kwargs get the x_i
     x = []
     for key, value in kwargs.items():
-        if key.find("x") > -1:
+        if key.startswith("x"):
+            if not 0 <= value <= 1:
+                raise ValueError(f"{key} not in [0,1], got {value}")
             x.append(value)
     x = np.array(x)
 
