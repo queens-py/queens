@@ -58,11 +58,24 @@ class Function(Driver):
             # Try to load external simulator functions
             my_function = get_module_attribute(external_python_module_function, function)
 
-        # if keywords or job_id in the function's signature pass the job_id
-        self.function_requires_job_id = bool(
-            inspect.getfullargspec(my_function).varkw
-            or "job_id" in inspect.getfullargspec(my_function).args
-        )
+        def _function_signature_contains(argument: str) -> bool:
+            """Check if the function signature contains a specific argument.
+
+            Args:
+                argument: Argument to check for in the function signature.
+
+            Returns:
+                True if the argument is in the function signature or if the function
+                has a **kwargs parameter, False otherwise.
+            """
+            spec = inspect.getfullargspec(my_function)
+            return bool(spec.varkw or argument in spec.args or argument in spec.kwonlyargs)
+
+        # check which arguments we need to pass to the function
+        self.function_requires_job_id = _function_signature_contains("job_id")
+        self.function_requires_num_procs = _function_signature_contains("num_procs")
+        self.function_requires_experiment_dir = _function_signature_contains("experiment_dir")
+        self.function_requires_experiment_name = _function_signature_contains("experiment_name")
 
         # Wrap function to clean the output
         self.function = self.function_wrapper(my_function)
@@ -134,5 +147,11 @@ class Function(Driver):
         sample_dict = self.parameters.sample_as_dict(sample)
         if self.function_requires_job_id:
             sample_dict["job_id"] = job_id
+        if self.function_requires_num_procs:
+            sample_dict["num_procs"] = num_procs
+        if self.function_requires_experiment_dir:
+            sample_dict["experiment_dir"] = experiment_dir
+        if self.function_requires_experiment_name:
+            sample_dict["experiment_name"] = experiment_name
         results = self.function(sample_dict)
         return results
