@@ -42,31 +42,31 @@ class SimulationMetadata:
 
     This objects holds metadata, times code sections, and exports them to yaml.
 
-    The inputs and outputs of a job are not part of the metadata, but are stored in a separate
-    file. Instead, a hash of the inputs is kept here, which allows to verify whether the inputs
+    The input and output of a job are not part of the metadata, but are stored in a separate
+    file. Instead, a hash of the input is kept here, which allows to verify whether the input
     changed when an existing job is reused.
 
     Attributes:
         job_id: Id of the job
         job_successful: Whether the job was successful
-        inputs_hash: Hash of the parameters for this job
+        input_hash: Hash of the parameters for this job
         file_path (pathlib.Path): Path to export the metadata
         timestamp (str): Timestamp of the object creation
         times (dict): Wall times of code sections
     """
 
-    def __init__(self, job_id: int, inputs: dict, job_dir: Path) -> None:
+    def __init__(self, job_id: int, job_input: dict, job_dir: Path) -> None:
         """Init simulation metadata object.
 
         Args:
             job_id: Id of the job
-            inputs: Input parameters for this job, only used to compute the hash of the inputs
+            job_input: Input parameters for this job, only used to compute the hash of the input
             job_dir: Directory in which to write the metadata
         """
         self.job_id = job_id
         self.timestamp = self._get_timestamp()
         self.job_successful = True
-        self.inputs_hash = hash_inputs(inputs)
+        self.input_hash = hash_input(job_input)
         self.file_path = get_metadata_path(job_dir)
         self.times: dict = {}
 
@@ -80,7 +80,7 @@ class SimulationMetadata:
         Returns:
             SimulationMetadata object.
         """
-        simulation_metadata = cls(job_id=-1, inputs={}, job_dir=job_dir)
+        simulation_metadata = cls(job_id=-1, job_input={}, job_dir=job_dir)
         metadata_dict = yaml.safe_load(simulation_metadata.file_path.read_text(encoding="utf-8"))
         for key, value in metadata_dict.items():
             setattr(simulation_metadata, key, value)
@@ -160,22 +160,22 @@ class SimulationMetadata:
         return get_str_table("Simulation Metadata", self.to_dict())
 
 
-def hash_inputs(inputs: dict) -> str:
-    """Hash the inputs of a job.
+def hash_input(job_input: dict) -> str:
+    """Hash the input of a job.
 
-    The hash is stored in the metadata instead of the inputs themselves. It allows to verify
-    whether the inputs changed when an existing job is reused.
+    Instead of the input itself, its hash is stored in the metadata. The hash allows to verify
+    whether the input changed when an existing job is reused.
 
     Args:
-        inputs: Parameters for this job
+        job_input: Parameters for this job
 
     Returns:
-        Hexadecimal hash of the inputs
+        Hexadecimal hash of the input
     """
-    # Deep copy the inputs since the conversion to standard types is done in place
-    standard_type_inputs = to_dict_with_standard_types(deepcopy(inputs))
-    serialized_inputs = json.dumps(standard_type_inputs, sort_keys=True)
-    return hashlib.sha256(serialized_inputs.encode("utf-8")).hexdigest()
+    # Deep copy the input since the conversion to standard types is done in place
+    standard_type_input = to_dict_with_standard_types(deepcopy(job_input))
+    serialized_input = json.dumps(standard_type_input, sort_keys=True)
+    return hashlib.sha256(serialized_input.encode("utf-8")).hexdigest()
 
 
 def get_metadata_path(job_dir: str | Path) -> Path:
