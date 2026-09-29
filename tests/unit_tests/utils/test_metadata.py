@@ -18,89 +18,92 @@ import numpy as np
 import pytest
 import yaml
 
-from queens.utils.metadata import SimulationMetadata, get_metadata_path, hash_inputs
+from queens.utils.metadata import SimulationMetadata, get_metadata_path, hash_input
 
-INPUTS = np.array([1.5, -2.0])
-
-
-@pytest.fixture(name="inputs")
-def fixture_inputs(parameters):
-    """Inputs of a job as created by *Parameters.sample_as_dict*."""
-    return parameters.sample_as_dict(INPUTS)
+INPUT = np.array([1.5, -2.0])
 
 
-def test_hash_inputs_is_deterministic(inputs):
-    """Test that hashing the same inputs twice yields the same hash."""
-    assert hash_inputs(inputs) == hash_inputs(inputs)
+@pytest.fixture(name="job_input")
+def fixture_input(parameters):
+    """Input of a job as created by *Parameters.sample_as_dict*."""
+    return parameters.sample_as_dict(INPUT)
 
 
-def test_hash_inputs_is_independent_of_key_order(inputs):
+def test_hash_input_is_deterministic(job_input):
+    """Test that hashing the same input twice yields the same hash."""
+    assert hash_input(job_input) == hash_input(job_input)
+
+
+def test_hash_input_is_independent_of_key_order(job_input):
     """Test that the hash does not depend on the order of the parameters."""
-    reordered_inputs = dict(reversed(list(inputs.items())))
+    reordered_input = dict(reversed(list(job_input.items())))
 
-    assert list(reordered_inputs) != list(inputs)
-    assert hash_inputs(reordered_inputs) == hash_inputs(inputs)
+    assert list(reordered_input) != list(job_input)
+    assert hash_input(reordered_input) == hash_input(job_input)
 
 
-def test_hash_inputs_is_independent_of_numeric_type(inputs):
+def test_hash_input_is_independent_of_numeric_type(job_input):
     """Test that numpy and python numbers of equal value hash equally."""
-    standard_type_inputs = {key: float(value) for key, value in inputs.items()}
+    standard_type_input = {key: float(value) for key, value in job_input.items()}
 
-    assert all(type(standard_type_inputs[key]) is not type(v) for key, v in inputs.items())
-    assert hash_inputs(standard_type_inputs) == hash_inputs(inputs)
+    assert all(type(standard_type_input[key]) is not type(v) for key, v in job_input.items())
+    assert hash_input(standard_type_input) == hash_input(job_input)
 
 
-def test_hash_inputs_differs_for_different_values(parameters, inputs):
+def test_hash_input_differs_for_different_values(parameters, job_input):
     """Test that a changed parameter value changes the hash."""
-    changed_inputs = parameters.sample_as_dict(INPUTS + np.array([0.0, 1.0e-12]))
+    changed_input = parameters.sample_as_dict(INPUT + np.array([0.0, 1.0e-12]))
 
-    assert hash_inputs(changed_inputs) != hash_inputs(inputs)
+    assert hash_input(changed_input) != hash_input(job_input)
 
 
-def test_hash_inputs_differs_for_different_parameter_names(inputs):
+def test_hash_input_differs_for_different_parameter_names(job_input):
     """Test that renaming a parameter changes the hash."""
-    renamed_inputs = {"parameter_1": inputs["parameter_1"], "parameter_3": inputs["parameter_2"]}
+    renamed_input = {
+        "parameter_1": job_input["parameter_1"],
+        "parameter_3": job_input["parameter_2"],
+    }
 
-    assert hash_inputs(renamed_inputs) != hash_inputs(inputs)
+    assert hash_input(renamed_input) != hash_input(job_input)
 
 
-def test_hash_inputs_for_array_valued_parameters():
+def test_hash_input_for_array_valued_parameters():
     """Test that array valued parameters, e.g. random fields, are hashed."""
-    inputs = {"random_field": np.array([1.0, 2.0, 3.0])}
-    changed_inputs = {"random_field": np.array([1.0, 2.0, 4.0])}
+    job_input = {"random_field": np.array([1.0, 2.0, 3.0])}
+    changed_input = {"random_field": np.array([1.0, 2.0, 4.0])}
 
-    assert hash_inputs(inputs) == hash_inputs({"random_field": np.array([1.0, 2.0, 3.0])})
-    assert hash_inputs(inputs) != hash_inputs(changed_inputs)
+    assert hash_input(job_input) == hash_input({"random_field": np.array([1.0, 2.0, 3.0])})
+    assert hash_input(job_input) != hash_input(changed_input)
 
 
-def test_hash_inputs_does_not_modify_inputs():
-    """Test that hashing leaves the inputs untouched.
+def test_hash_input_does_not_modify_input():
+    """Test that hashing leaves the input untouched.
 
-    The conversion to standard types is done in place, so the inputs
-    have to be copied before hashing them.
+    The conversion to standard types is done in place, so the input has
+    to be copied before hashing it.
     """
     array = np.array([1.0, 2.0, 3.0])
-    inputs = {"random_field": array}
+    job_input = {"random_field": array}
 
-    hash_inputs(inputs)
+    hash_input(job_input)
 
-    assert isinstance(inputs["random_field"], np.ndarray)
-    np.testing.assert_array_equal(inputs["random_field"], array)
+    assert isinstance(job_input["random_field"], np.ndarray)
+    np.testing.assert_array_equal(job_input["random_field"], array)
 
 
-def test_metadata_holds_hash_instead_of_inputs(tmp_path, inputs):
-    """Test that the exported metadata holds the hash of the inputs."""
-    metadata = SimulationMetadata(job_id=1, inputs=inputs, job_dir=tmp_path)
+def test_metadata_holds_input_hash(tmp_path, job_input):
+    """Test that the exported metadata holds the hash of the input."""
+    metadata = SimulationMetadata(job_id=1, job_input=job_input, job_dir=tmp_path)
 
     metadata.export()
 
     exported_metadata = yaml.safe_load(get_metadata_path(tmp_path).read_text(encoding="utf-8"))
-    assert exported_metadata["inputs_hash"] == hash_inputs(inputs)
+    assert exported_metadata["input_hash"] == hash_input(job_input)
 
 
 def test_metadata_of_successful_section(tmp_path):
     """Test the timing of a code section that does not raise."""
-    metadata = SimulationMetadata(job_id=1, inputs={"parameter_1": 1.0}, job_dir=tmp_path)
+    metadata = SimulationMetadata(job_id=1, job_input={"parameter_1": 1.0}, job_dir=tmp_path)
 
     with metadata.time_code("dummy_section"):
         pass
@@ -115,7 +118,7 @@ def test_metadata_of_successful_section(tmp_path):
 
 def test_metadata_of_failed_section(tmp_path):
     """Test that a failing code section marks the job as unsuccessful."""
-    metadata = SimulationMetadata(job_id=1, inputs={"parameter_1": 1.0}, job_dir=tmp_path)
+    metadata = SimulationMetadata(job_id=1, job_input={"parameter_1": 1.0}, job_dir=tmp_path)
 
     with pytest.raises(ValueError, match="dummy error"):
         with metadata.time_code("dummy_section"):
@@ -128,9 +131,9 @@ def test_metadata_of_failed_section(tmp_path):
     assert exported_metadata["times"]["dummy_section"]["status"] == "failed"
 
 
-def test_metadata_init_from_file(tmp_path, inputs):
+def test_metadata_init_from_file(tmp_path, job_input):
     """Test that an exported metadata file is read in correctly."""
-    metadata = SimulationMetadata(job_id=1, inputs=inputs, job_dir=tmp_path)
+    metadata = SimulationMetadata(job_id=1, job_input=job_input, job_dir=tmp_path)
     with metadata.time_code("dummy_section"):
         pass
 

@@ -31,7 +31,7 @@ from queens.utils.metadata import (
     SimulationMetadata,
     get_metadata_from_job_dir,
     get_metadata_path,
-    hash_inputs,
+    hash_input,
 )
 from queens.utils.path import create_folder_if_not_existent
 from queens.utils.run_subprocess import run_subprocess
@@ -39,8 +39,8 @@ from queens.utils.run_subprocess import run_subprocess
 _logger = logging.getLogger(__name__)
 
 JOBSCRIPT_LOG_TAIL_LINES = 25
-JOB_INPUTS_FILE_NAME = "input.pickle"
-JOB_OUTPUTS_FILE_NAME = "output.pickle"
+JOB_INPUT_FILE_NAME = "input.pickle"
+JOB_OUTPUT_FILE_NAME = "output.pickle"
 
 
 @dataclass
@@ -117,9 +117,11 @@ class Jobscript(Driver):
         raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
             exit code.
         reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters are
-            the same and the job was successful.
+            the same and the job was successful. Note that it will not be checked whether the
+            executable or the input templates have changed. If they have, the results of the
+            previous run will still be reused, which may lead to unexpected results.
         rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor when
-            reusing existing jobs. If false, the outputs of the previous run are loaded from the
+            reusing existing jobs. If false, the output of the previous run is loaded from the
             output.pickle file.
     """
 
@@ -136,7 +138,7 @@ class Jobscript(Driver):
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
-        reuse_existing_jobs=True,
+        reuse_existing_jobs=False,
         rerun_dataprocessor_on_existing_jobs=False,
     ):
         """Initialize Jobscript object.
@@ -156,9 +158,11 @@ class Jobscript(Driver):
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                 jobscript exit code.
             reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters
-                are the same and the job was successful.
+                are the same and the job was successful. Note that it will not be checked whether
+                the executable or the input templates have changed. If they have, the results of
+                the previous run will still be reused, which may lead to unexpected results.
             rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor
-                when reusing existing jobs. If false, the outputs of the previous run are loaded
+                when reusing existing jobs. If false, the output of the previous run is loaded
                 from the output.pickle file.
         """
         super().__init__(parameters=parameters, files_to_copy=files_to_copy)
@@ -262,8 +266,14 @@ class Jobscript(Driver):
 
         if self.reuse_existing_jobs and self.metadata_exists(job_dir):
             existing_metadata = get_metadata_from_job_dir(job_dir)
-            if not self.equal_inputs(existing_metadata, sample):
-                raise RuntimeError("Input parameters differ from existing job metadata.")
+            if not self.equal_input(existing_metadata, sample):
+                raise RuntimeError(
+                    "Input parameters differ from existing job metadata.\n"
+                    "Reusing existing job runs is currently enabled. If the intention was to run a "
+                    "new experiment, consider changing the `experiment_name` or set the flag "
+                    "`reuse_existing_jobs` to False to overwrite any existing job data in the "
+                    f"current experiment directory {experiment_dir}."
+                )
 
             if self.job_successful(existing_metadata):
                 return self.get_existing_results(job_dir)
@@ -284,55 +294,55 @@ class Jobscript(Driver):
         return metadata_path.is_file()
 
     @staticmethod
-    def get_job_inputs_path(job_dir: Path) -> Path:
-        """Get path of the file holding the inputs of a job.
+    def get_job_input_path(job_dir: Path) -> Path:
+        """Get path of the file holding the input of a job.
 
         Args:
             job_dir: Path to job directory.
 
         Returns:
-            Path to the job inputs file.
+            Path to the job input file.
         """
-        return job_dir / JOB_INPUTS_FILE_NAME
+        return job_dir / JOB_INPUT_FILE_NAME
 
     @staticmethod
-    def get_job_outputs_path(job_dir: Path) -> Path:
-        """Get path of the file holding the outputs of a job.
+    def get_job_output_path(job_dir: Path) -> Path:
+        """Get path of the file holding the output of a job.
 
         Args:
             job_dir: Path to job directory.
 
         Returns:
-            Path to the job outputs file.
+            Path to the job output file.
         """
-        return job_dir / JOB_OUTPUTS_FILE_NAME
+        return job_dir / JOB_OUTPUT_FILE_NAME
 
     @classmethod
-    def write_job_inputs(cls, job_dir: Path, inputs: dict) -> None:
-        """Write the inputs of a job to file.
+    def write_job_input(cls, job_dir: Path, job_input: dict) -> None:
+        """Write the input of a job to file.
 
-        The outputs of a previous run of this job are removed, such that the outputs file always
-        belongs to the inputs file.
+        The output of a previous run of this job is removed, such that the output file always
+        belongs to the input file.
 
         Args:
             job_dir: Path to job directory.
-            inputs: Input parameters of the job.
+            job_input: Input parameters of the job.
         """
-        write_pickle(inputs, cls.get_job_inputs_path(job_dir))
-        cls.get_job_outputs_path(job_dir).unlink(missing_ok=True)
+        write_pickle(job_input, cls.get_job_input_path(job_dir))
+        cls.get_job_output_path(job_dir).unlink(missing_ok=True)
 
     @classmethod
-    def write_job_outputs(cls, job_dir: Path, outputs: dict) -> None:
-        """Write the outputs of a job to file.
+    def write_job_output(cls, job_dir: Path, job_output: dict) -> None:
+        """Write the output of a job to file.
 
-        The outputs are kept in a separate file, so that they can be overwritten, e.g. when
-        rerunning the data processor, without writing the potentially large inputs again.
+        The output is kept in a separate file, so that it can be overwritten, e.g. when
+        rerunning the data processor, without writing the potentially large input again.
 
         Args:
             job_dir: Path to job directory.
-            outputs: Results of the job.
+            job_output: Results of the job.
         """
-        write_pickle(outputs, cls.get_job_outputs_path(job_dir))
+        write_pickle(job_output, cls.get_job_output_path(job_dir))
 
     @staticmethod
     def job_successful(existing_metadata: dict) -> bool:
@@ -346,21 +356,21 @@ class Jobscript(Driver):
         """
         return existing_metadata.get("job_successful", False)
 
-    def equal_inputs(self, existing_metadata: dict, new_inputs: np.ndarray) -> bool:
-        """Check if the input parameters are equal.
+    def equal_input(self, existing_metadata: dict, new_input: np.ndarray) -> bool:
+        """Check if the new and the previous input parameters are equal.
 
-        The inputs of the existing job are compared based on their hash stored in the metadata.
+        The input parameters are compared based on the input hash stored in the existing metadata.
 
         Args:
             existing_metadata: Metadata from existing job.
-            new_inputs: New input parameters.
+            new_input: New input parameters.
 
         Returns:
             True if the input parameters are equal, False otherwise.
         """
-        existing_inputs_hash = existing_metadata.get("inputs_hash")
-        new_inputs_hash = hash_inputs(self.parameters.sample_as_dict(new_inputs))
-        return existing_inputs_hash == new_inputs_hash
+        existing_input_hash = existing_metadata.get("input_hash")
+        new_input_hash = hash_input(self.parameters.sample_as_dict(new_input))
+        return existing_input_hash == new_input_hash
 
     def run_jobscript(
         self,
@@ -388,8 +398,8 @@ class Jobscript(Driver):
 
         sample_dict = self.parameters.sample_as_dict(sample)
 
-        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
-        self.write_job_inputs(job_dir, sample_dict)
+        metadata = SimulationMetadata(job_id=job_id, job_input=sample_dict, job_dir=job_dir)
+        self.write_job_input(job_dir, sample_dict)
 
         with metadata.time_code("prepare_input_files"):
             job_options = JobOptions(
@@ -423,15 +433,15 @@ class Jobscript(Driver):
 
         with metadata.time_code("process_data"):
             results = self._get_results(output_dir)
-            self.write_job_outputs(job_dir, results)
+            self.write_job_output(job_dir, results)
 
         return results
 
     def get_existing_results(self, job_dir: Path) -> dict:
         """Get existing results from a previous jobscript driver run.
 
-        Either load the outputs from the pickle file or rerun the data processor on the existing
-        jobscript outputs.
+        Either load the output from the pickle file or rerun the data processor on the existing
+        jobscript output.
 
         Args:
             job_dir: Path to job directory.
@@ -439,16 +449,18 @@ class Jobscript(Driver):
         Returns:
             Results.
         """
-        outputs_path = self.get_job_outputs_path(job_dir)
-        if not self.rerun_dataprocessor_on_existing_jobs and outputs_path.is_file():
-            return load_pickle(outputs_path)
+        output_path = self.get_job_output_path(job_dir)
+        if not self.rerun_dataprocessor_on_existing_jobs and output_path.is_file():
+            # Load the results from the output pickle file
+            return load_pickle(output_path)
 
         metadata = SimulationMetadata.init_from_file(job_dir)
         output_dir = self.get_output_dir(job_dir)
 
+        # Run the data processor again on the existing jobscript output
         with metadata.time_code("process_data_again"):
             results = self._get_results(output_dir)
-            self.write_job_outputs(job_dir, results)
+            self.write_job_output(job_dir, results)
 
         return results
 

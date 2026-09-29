@@ -68,15 +68,15 @@ def test_load_input_file(input_file, input_dict):
 
 def test_write_and_load_pickle(tmp_path):
     """Test that pickled data is loaded without any type conversion."""
-    data = {"inputs": {"parameter_1": np.float64(1.5)}, "outputs": {"result": np.array([1.0, 2.0])}}
+    data = {"input": {"parameter_1": np.float64(1.5)}, "output": {"result": np.array([1.0, 2.0])}}
     file_path = tmp_path / "data.pickle"
 
     write_pickle(data, file_path)
     loaded_data = load_pickle(file_path)
 
-    assert isinstance(loaded_data["inputs"]["parameter_1"], np.float64)
-    assert loaded_data["inputs"] == data["inputs"]
-    np.testing.assert_array_equal(loaded_data["outputs"]["result"], data["outputs"]["result"])
+    assert isinstance(loaded_data["input"]["parameter_1"], np.float64)
+    assert loaded_data["input"] == data["input"]
+    np.testing.assert_array_equal(loaded_data["output"]["result"], data["output"]["result"])
 
 
 def test_write_pickle_overwrites_existing_file(tmp_path):
