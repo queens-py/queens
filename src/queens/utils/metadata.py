@@ -65,7 +65,8 @@ class SimulationMetadata:
         """
         self.job_id = job_id
         self.timestamp = self._get_timestamp()
-        self.job_successful = True
+        # Set job_successful to False initially to avoid reusing a job that was not fully executed
+        self.job_successful = False
         self.input_hash = hash_input(job_input)
         self.file_path = get_metadata_path(job_dir)
         self.times: dict = {}
@@ -124,6 +125,8 @@ class SimulationMetadata:
             "timestamp_start": self._get_timestamp(),
             "status": "running",
         }
+        # Set job_successful to False to avoid reusing a job that was interrupted
+        self.job_successful = False
 
         # Export metadata
         self.export()
@@ -133,7 +136,7 @@ class SimulationMetadata:
 
             # If we are here the timed code section was successful
             self.times[code_section_name]["status"] = "successful"
-
+            self.job_successful = True
         # Something goes wrong
         except Exception as exception:
             # Set the status to failed
