@@ -27,9 +27,56 @@ from queens.schedulers import Pool
 from queens.utils.io import load_result
 
 
+def run_monte_carlo(
+    global_settings,
+    input_template,
+    jobscript_template,
+    data_processor,
+    num_samples,
+    reuse_existing_jobs,
+    rerun_dataprocessor_on_existing_jobs,
+):
+    """Run a Monte Carlo analysis.
+
+    Returns:
+        dict: Results of the QUEENS run.
+    """
+    with global_settings as gs:
+        x1 = Uniform(lower_bound=0.0, upper_bound=1.0)
+        parameters = Parameters(x1=x1)
+        scheduler = Pool(
+            experiment_name=gs.experiment_name,
+            num_jobs=1,
+            overwrite_existing_experiment=True,
+        )
+        driver = Jobscript(
+            parameters=parameters,
+            input_templates=input_template,
+            jobscript_template=jobscript_template,
+            executable="",
+            data_processor=data_processor,
+            reuse_existing_jobs=reuse_existing_jobs,
+            rerun_dataprocessor_on_existing_jobs=rerun_dataprocessor_on_existing_jobs,
+        )
+        model = Simulation(scheduler=scheduler, driver=driver)
+        iterator = MonteCarlo(
+            model=model,
+            parameters=parameters,
+            global_settings=gs,
+            seed=123,
+            num_samples=num_samples,
+            result_description={"write_results": True, "plot_results": False},
+        )
+
+        run_iterator(iterator, global_settings=gs)
+        results = load_result(gs.result_file(".pickle"))
+
+    return results
+
+
 @pytest.mark.parametrize("rerun_dataprocessor_on_existing_jobs", [True, False])
 @pytest.mark.parametrize("reuse_existing_jobs", [True, False])
-def test_reusing_existing_results(
+def test_reusing_existing_simulation_results(
     tmp_path,
     global_settings,
     current_time_jobscript_template,
@@ -47,64 +94,24 @@ def test_reusing_existing_results(
     input_template.write_text("{{ x1 }}")
     num_samples = 3
 
-    # First iterator run
-    with global_settings as gs:
-        x1 = Uniform(lower_bound=0.0, upper_bound=1.0)
-        parameters = Parameters(x1=x1)
-        scheduler = Pool(
-            experiment_name=gs.experiment_name,
-            num_jobs=1,
-        )
-        driver = Jobscript(
-            parameters=parameters,
-            input_templates=input_template,
-            jobscript_template=current_time_jobscript_template,
-            executable="",
-            data_processor=time_data_processor,
-        )
-        model = Simulation(scheduler=scheduler, driver=driver)
-        iterator = MonteCarlo(
-            model=model,
-            parameters=parameters,
-            global_settings=gs,
-            seed=123,
-            num_samples=num_samples,
-            result_description={"write_results": True, "plot_results": False},
-        )
+    run_kwargs = {
+        "global_settings": global_settings,
+        "input_template": input_template,
+        "jobscript_template": current_time_jobscript_template,
+        "data_processor": time_data_processor,
+        "num_samples": num_samples,
+    }
 
-        run_iterator(iterator, global_settings=gs)
-        first_results = load_result(gs.result_file(".pickle"))
-
-    # Second iterator run with the same experiment name and inputs
-    with global_settings as gs:
-        x1 = Uniform(lower_bound=0.0, upper_bound=1.0)
-        parameters = Parameters(x1=x1)
-        scheduler = Pool(
-            experiment_name=gs.experiment_name,
-            num_jobs=1,
-            overwrite_existing_experiment=True,
-        )
-        driver = Jobscript(
-            parameters=parameters,
-            input_templates=input_template,
-            jobscript_template=current_time_jobscript_template,
-            executable="",
-            data_processor=time_data_processor,
-            reuse_existing_jobs=reuse_existing_jobs,
-            rerun_dataprocessor_on_existing_jobs=rerun_dataprocessor_on_existing_jobs,
-        )
-        model = Simulation(scheduler=scheduler, driver=driver)
-        iterator = MonteCarlo(
-            model=model,
-            parameters=parameters,
-            global_settings=gs,
-            seed=123,
-            num_samples=num_samples,
-            result_description={"write_results": True, "plot_results": False},
-        )
-
-        run_iterator(iterator, global_settings=gs)
-        second_results = load_result(gs.result_file(".pickle"))
+    # First QUEENS run
+    first_results = run_monte_carlo(
+        **run_kwargs, reuse_existing_jobs=False, rerun_dataprocessor_on_existing_jobs=False
+    )
+    # Second QUEENS run with the same experiment name and setup
+    second_results = run_monte_carlo(
+        **run_kwargs,
+        reuse_existing_jobs=reuse_existing_jobs,
+        rerun_dataprocessor_on_existing_jobs=rerun_dataprocessor_on_existing_jobs,
+    )
 
     np.testing.assert_array_equal(first_results["input_data"], second_results["input_data"])
 
