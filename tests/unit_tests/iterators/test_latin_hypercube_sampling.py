@@ -21,16 +21,12 @@ from queens.iterators.latin_hypercube_sampling import LatinHypercubeSampling
 
 
 @pytest.fixture(name="default_lhs_iterator")
-def fixture_default_lhs_iterator(
-    global_settings, default_simulation_model, default_parameters_mixed
-):
+def fixture_default_lhs_iterator(global_settings, ishigami_90_mixed, default_parameters_mixed):
     """Default latin hypercube sampling iterator."""
-    default_simulation_model.driver.parameters = default_parameters_mixed
-
     # create LHS iterator
     # pylint: disable=duplicate-code
     my_iterator = LatinHypercubeSampling(
-        model=default_simulation_model,
+        model=ishigami_90_mixed,
         parameters=default_parameters_mixed,
         global_settings=global_settings,
         seed=42,

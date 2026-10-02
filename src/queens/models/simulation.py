@@ -16,30 +16,31 @@
 
 import numpy as np
 
+from queens.drivers._driver import Driver
 from queens.models._model import Model
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
 from queens.utils.logger_settings import log_init_args
 
 
 class Simulation(Model):
-    """Simulation model class.
-
-    Attributes:
-        scheduler (Scheduler): Scheduler for the simulations
-        driver (Driver): Driver for the simulations
-    """
+    """Simulation model class."""
 
     @log_init_args
-    def __init__(self, scheduler, driver):
+    def __init__(self, scheduler: Scheduler, driver: Driver | SchedulerCallableSignature):
         """Initialize simulation model.
 
         Args:
-            scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver): Driver for the simulations
+            scheduler: Scheduler for the simulations
+            driver: Driver for the simulations
         """
         super().__init__()
         self.scheduler = scheduler
-        self.driver = driver
-        self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
+        self.function: SchedulerCallableSignature
+        if isinstance(driver, Driver):
+            self.function = driver.run_from_parameters
+            self.scheduler.copy_files_to_experiment_dir(driver.files_to_copy)
+        else:
+            self.function = driver
 
     def _evaluate(self, samples: np.ndarray) -> dict:
         """Evaluate model with current set of input samples.
@@ -51,7 +52,7 @@ class Simulation(Model):
             response (dict): Response of the underlying model at input samples
         """
         self.response = self.create_result_dict_from_scheduler_output(
-            self.scheduler.evaluate(samples, self.driver)
+            self.scheduler.evaluate(samples, self.function)
         )
         return self.response
 

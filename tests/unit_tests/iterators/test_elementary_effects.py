@@ -22,13 +22,11 @@ from queens.iterators.elementary_effects import ElementaryEffects
 
 @pytest.fixture(name="default_elementary_effects_iterator")
 def fixture_default_elementary_effects_iterator(
-    global_settings, default_simulation_model, default_parameters_uniform_3d
+    global_settings, ishigami_90_uniform, default_parameters_uniform_3d
 ):
     """Default elementary effects iterator."""
-    default_simulation_model.driver.parameters = default_parameters_uniform_3d
-
     my_iterator = ElementaryEffects(
-        model=default_simulation_model,
+        model=ishigami_90_uniform,
         parameters=default_parameters_uniform_3d,
         global_settings=global_settings,
         num_trajectories=20,

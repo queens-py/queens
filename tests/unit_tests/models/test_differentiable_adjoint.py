@@ -53,7 +53,7 @@ def test_init():
         adjoint_file=adjoint_file,
     )
     assert model_obj.scheduler == scheduler
-    assert model_obj.driver == driver
+    assert model_obj.function == driver
     assert model_obj.gradient_driver == gradient_driver
     assert model_obj.adjoint_file == adjoint_file
 
