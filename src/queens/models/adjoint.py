@@ -16,6 +16,7 @@
 
 import logging
 
+from queens.drivers.jobscript import Jobscript
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io import write_to_csv
@@ -50,6 +51,11 @@ class Adjoint(Simulation):
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """
+        if isinstance(gradient_driver, Jobscript) and gradient_driver.reuse_existing_jobs:
+            raise NotImplementedError(
+                "Reusing existing jobs is not supported for the gradient driver of the adjoint "
+                "model. Set `reuse_existing_jobs` to False for both the gradient drivers."
+            )
         super().__init__(scheduler=scheduler, driver=driver)
         self.gradient_driver = gradient_driver
         self.adjoint_file = adjoint_file
