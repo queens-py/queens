@@ -16,6 +16,7 @@
 
 import logging
 
+from queens.drivers.jobscript import Jobscript
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io import write_to_csv
@@ -50,6 +51,11 @@ class Adjoint(Simulation):
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """
+        if isinstance(gradient_driver, Jobscript) and gradient_driver.reuse_existing_jobs:
+            raise NotImplementedError(
+                "Reusing existing jobs is not supported for the gradient driver of the adjoint "
+                "model. Set `reuse_existing_jobs` to False for both the gradient drivers."
+            )
         super().__init__(scheduler=scheduler, driver=driver)
         self.gradient_driver = gradient_driver
         self.adjoint_file = adjoint_file
@@ -71,18 +77,18 @@ class Adjoint(Simulation):
                                  :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         num_samples = samples.shape[0]
-        # get last job_ids
-        last_job_ids = [self.scheduler.next_job_id - num_samples + i for i in range(num_samples)]
+        next_job_ids = self.scheduler.get_job_ids(num_samples)
         experiment_dir = self.scheduler.experiment_dir
 
-        # write adjoint data for each sample to adjoint files in old job directories
-        for job_id, grad_objective in zip(last_job_ids, upstream_gradient):
+        # write adjoint data for each sample to adjoint files in new job directories
+        for job_id, grad_objective in zip(next_job_ids, upstream_gradient):
             job_dir = current_job_directory(experiment_dir, job_id)
+            job_dir.mkdir(exist_ok=True)
             adjoint_file_path = job_dir.joinpath(self.adjoint_file)
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 
         # evaluate the adjoint model
         gradient = self.create_result_dict_from_scheduler_output(
-            self.scheduler.evaluate(samples, self.gradient_driver, job_ids=last_job_ids)
+            self.scheduler.evaluate(samples, self.gradient_driver, job_ids=next_job_ids)
         )["result"]
         return gradient

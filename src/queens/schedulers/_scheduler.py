@@ -129,16 +129,20 @@ class Scheduler(metaclass=abc.ABCMeta):
         Args:
             experiment_dir (Path): Directory where experiments are stored.
         """
-        input_timeout = 15  # seconds
+        input_timeout = 30  # seconds
         _logger.warning(
+            "(You can skip this confirmation step in the future by setting "
+            "the 'overwrite_existing_experiment' parameter to True.)\n\n"
             "The experiment directory '%s' already exists.\n"
             "This indicates that an experiment with the same name has been run previously, and its "
             "data might still be present.\n"
             "You have two options:\n"
             "1) Start a new QUEENS run with a different experiment name: Press enter or wait to "
             "abort the current run.\n"
-            "2) Continue and overwrite the existing directory and all its data: Enter 'y' or 'yes' "
-            "within %d seconds.\n",
+            "2) Continue and allow QUEENS to overwrite the existing data in the experiment "
+            "directory: Enter 'y' or 'yes' within %d seconds.\n"
+            "The permission to overwrite is also necessary if you would like to reuse existing "
+            "data from a previous run.",
             experiment_dir,
             input_timeout,
         )

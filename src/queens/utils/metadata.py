@@ -14,7 +14,12 @@
 #
 """Metadata objects."""
 
+from __future__ import annotations
+
+import hashlib
+import json
 from contextlib import contextmanager
+from copy import deepcopy
 from datetime import datetime
 from pathlib import Path
 from time import perf_counter
@@ -35,36 +40,56 @@ METADATA_FILETYPE = ".yaml"
 class SimulationMetadata:
     """Simulation metadata object.
 
-    This objects holds metadata, times code sections and exports them to yaml.
+    This objects holds metadata, times code sections, and exports them to yaml.
+
+    The input and output of a job are not part of the metadata, but are stored in a separate
+    file. Instead, a hash of the input is kept here, which allows to verify whether the input
+    changed when an existing job is reused.
 
     Attributes:
         job_id: Id of the job
-        inputs: Parameters for this job
+        job_successful: Whether the job was successful
+        input_hash: Hash of the parameters for this job
         file_path (pathlib.Path): Path to export the metadata
         timestamp (str): Timestamp of the object creation
-        outputs (tuple): Results obtain by the simulation
         times (dict): Wall times of code sections
     """
 
-    def __init__(self, job_id: int, inputs: dict, job_dir: Path) -> None:
+    def __init__(self, job_id: int, job_input: dict, job_dir: Path) -> None:
         """Init simulation metadata object.
 
         Args:
             job_id: Id of the job
-            inputs: Parameters for this job
+            job_input: Input parameters for this job, only used to compute the hash of the input
             job_dir: Directory in which to write the metadata
         """
         self.job_id = job_id
-        self.timestamp: str | None = None
-        self.inputs = inputs
-        self.file_path = (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
-        self.outputs = None
+        self.timestamp = self._get_timestamp()
+        self.job_successful = True
+        self.input_hash = hash_input(job_input)
+        self.file_path = get_metadata_path(job_dir)
         self.times: dict = {}
-        self._create_timestamp()
 
-    def _create_timestamp(self) -> None:
-        """Create timestamp in a nice format."""
-        self.timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+    @classmethod
+    def init_from_file(cls, job_dir: Path) -> SimulationMetadata:
+        """Initialize a SimulationMetadata object from a metadata file.
+
+        Args:
+            job_dir: Job directory in which the metadata file is located.
+
+        Returns:
+            SimulationMetadata object.
+        """
+        simulation_metadata = cls(job_id=-1, job_input={}, job_dir=job_dir)
+        metadata_dict = yaml.safe_load(simulation_metadata.file_path.read_text(encoding="utf-8"))
+        for key, value in metadata_dict.items():
+            setattr(simulation_metadata, key, value)
+        return simulation_metadata
+
+    def _get_timestamp(self) -> str:
+        """Get timestamp in a nice format."""
+        timestamp = datetime.now().strftime("%d-%m-%Y, %H:%M:%S")
+        return timestamp
 
     def to_dict(self) -> dict[str, Any]:
         """Create dictionary from object.
@@ -94,7 +119,12 @@ class SimulationMetadata:
         """
         # Start timer
         start = perf_counter()
-        self.times[code_section_name] = {"status": "running"}
+        # Add the current timestamp when starting the code section
+        self.times[code_section_name] = {
+            "timestamp_start": self._get_timestamp(),
+            "status": "running",
+        }
+        self.job_successful = False  # Set to False until the code section is finished successfully
 
         # Export metadata
         self.export()
@@ -102,13 +132,14 @@ class SimulationMetadata:
             # Call the code within the context
             yield
 
-            # If we are here the job was successful
+            # If we are here the timed code section was successful
             self.times[code_section_name]["status"] = "successful"
-
+            self.job_successful = True
         # Something goes wrong
         except Exception as exception:
             # Set the status to failed
             self.times[code_section_name]["status"] = "failed"
+            self.job_successful = False
 
             # Raise the original exception
             raise exception
@@ -130,6 +161,52 @@ class SimulationMetadata:
         return get_str_table("Simulation Metadata", self.to_dict())
 
 
+def hash_input(job_input: dict) -> str:
+    """Hash the input of a job.
+
+    Instead of the input itself, its hash is stored in the metadata. The hash allows to verify
+    whether the input changed when an existing job is reused.
+
+    Args:
+        job_input: Parameters for this job
+
+    Returns:
+        Hexadecimal hash of the input
+    """
+    # Deep copy the input since the conversion to standard types is done in place
+    standard_type_input = to_dict_with_standard_types(deepcopy(job_input))
+    serialized_input = json.dumps(standard_type_input, sort_keys=True)
+    return hashlib.sha256(serialized_input.encode("utf-8")).hexdigest()
+
+
+def get_metadata_path(job_dir: str | Path) -> Path:
+    """Get metadata file path from a job directory.
+
+    Args:
+        job_dir: Job directory
+
+    Returns:
+        metadata_path: Path to the metadata file
+    """
+    return (Path(job_dir) / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+
+
+def get_metadata_from_job_dir(job_dir: Path) -> dict:
+    """Get metadata from a job directory.
+
+    Args:
+        job_dir: Job directory
+
+    Returns:
+        metadata (dict): metadata of a job
+    """
+    metadata_path = get_metadata_path(job_dir)
+    metadata = yaml.safe_load(metadata_path.read_text())
+    if metadata is None:
+        metadata = {}
+    return metadata
+
+
 def get_metadata_from_experiment_dir(experiment_dir: Path | str) -> Iterator[Any]:
     """Get metadata from experiment_dir.
 
@@ -142,7 +219,7 @@ def get_metadata_from_experiment_dir(experiment_dir: Path | str) -> Iterator[Any
         Metadata of a job
     """
     for job_dir in job_dirs_in_experiment_dir(experiment_dir):
-        metadata_path = (job_dir / METADATA_FILENAME).with_suffix(METADATA_FILETYPE)
+        metadata_path = get_metadata_path(job_dir)
         yield yaml.safe_load(metadata_path.read_text())
 
 

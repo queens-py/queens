@@ -31,8 +31,10 @@ from queens.models import Adjoint, FiniteDifference, Gaussian, Simulation
 from queens.parameters import Parameters
 from queens.schedulers import Local, Pool
 from queens.stochastic_optimizers import Adam
+from queens.utils.config_directories import experiment_directory
 from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
+from queens.utils.metadata import get_metadata_from_experiment_dir
 from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 
 
@@ -87,7 +89,6 @@ def test_rpvi_park91a_hifi(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -163,7 +164,6 @@ def test_rpvi_park91a_hifi_provided_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -255,7 +255,6 @@ def test_rpvi_gaussian(tmp_path, _create_experimental_data, forward_model, globa
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         verbose_every_n_iter=1000,
         result_description={
             "write_results": True,
@@ -414,7 +413,6 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -520,7 +518,6 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -548,6 +545,143 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
     assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.15
     assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+def run_rpvi_exe_park91a_hifi_adjoint_gradient(
+    tmp_path,
+    example_simulator_fun_dir,
+    python_path,
+    rpvi_jobscript_template,
+    global_settings,
+    reuse_existing_jobs=False,
+):
+    """Run the *rpvi* iterator with an adjoint *park91a_hifi* model.
+
+    Args:
+        tmp_path (Path): Directory containing the input file and the experimental data
+        example_simulator_fun_dir (Path): Directory of the example simulator functions
+        python_path (str): Current python path
+        rpvi_jobscript_template (str): Jobscript template for the Jobscript drivers
+        global_settings (GlobalSettings): Settings of the QUEENS experiment
+        reuse_existing_jobs (bool): Whether the (forward) driver reuses existing jobs
+
+    Returns:
+        dict: Results of the QUEENS run
+    """
+    with global_settings:
+        # generate json input file from template
+        third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
+        experimental_data_path = tmp_path
+        executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
+        executable = f"{python_path} {executable} s"
+        # adjoint executable (here we actually use the same executable but call it with
+        # a different flag "a" for adjoint)
+        adjoint_executable = (
+            example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
+        )
+        adjoint_executable = f"{python_path} {adjoint_executable} a"
+        plot_dir = tmp_path
+        # Parameters
+        x1 = Normal(mean=0.6, covariance=0.2)
+        x2 = Normal(mean=0.3, covariance=0.1)
+        parameters = Parameters(x1=x1, x2=x2)
+
+        # Setup iterator
+        variational_distribution = FullRankNormal(dimension=2)
+        stochastic_optimizer = Adam(
+            optimization_type="max",
+            learning_rate=0.02,
+            rel_l1_change_threshold=-1,
+            rel_l2_change_threshold=-1,
+            max_iteration=10000000,
+        )
+        experimental_data_reader = ExperimentalDataReader(
+            file_name_identifier="experimental_data.csv",
+            csv_data_base_dir=experimental_data_path,
+            output_label="y_obs",
+            coordinate_labels=["x3", "x4"],
+        )
+        scheduler = Local(
+            num_procs=1,
+            num_jobs=1,
+            experiment_name=global_settings.experiment_name,
+            overwrite_existing_experiment=reuse_existing_jobs,
+        )
+        data_processor = CsvFile(
+            file_name_identifier="*_output.csv",
+            file_options_dict={
+                "delete_field_data": False,
+                "filter": {"type": "entire_file"},
+            },
+        )
+        driver = Jobscript(
+            parameters=parameters,
+            input_templates=third_party_input_file,
+            executable=executable,
+            data_processor=data_processor,
+            jobscript_template=rpvi_jobscript_template,
+            reuse_existing_jobs=reuse_existing_jobs,
+        )
+        gradient_data_processor = CsvFile(
+            file_name_identifier="*_gradient.csv",
+            file_options_dict={
+                "delete_field_data": False,
+                "filter": {"type": "entire_file"},
+            },
+        )
+        adjoint_driver = Jobscript(
+            parameters=parameters,
+            input_templates=third_party_input_file,
+            executable=adjoint_executable,
+            data_processor=gradient_data_processor,
+            jobscript_template=rpvi_jobscript_template,
+        )
+        forward_model = Adjoint(
+            adjoint_file="grad_objective.csv",
+            scheduler=scheduler,
+            driver=driver,
+            gradient_driver=adjoint_driver,
+        )
+        model = Gaussian(
+            noise_type="MAP_jeffrey_variance",
+            nugget_noise_variance=1e-08,
+            experimental_data_reader=experimental_data_reader,
+            forward_model=forward_model,
+        )
+        iterator = RPVI(
+            max_feval=10,
+            n_samples_per_iter=3,
+            score_function_bool=True,
+            natural_gradient=True,
+            FIM_dampening=True,
+            decay_start_iteration=50,
+            dampening_coefficient=0.01,
+            FIM_dampening_lower_bound=1e-08,
+            variational_transformation=None,
+            variational_parameter_initialization="prior",
+            result_description={
+                "write_results": True,
+                "plotting_options": {
+                    "plot_boolean": False,
+                    "plotting_dir": plot_dir,
+                    "plot_name": "variational_params_convergence.eps",
+                    "save_bool": False,
+                },
+            },
+            variational_distribution=variational_distribution,
+            stochastic_optimizer=stochastic_optimizer,
+            model=model,
+            parameters=parameters,
+            global_settings=global_settings,
+        )
+
+        # Actual analysis
+        run_iterator(iterator, global_settings=global_settings)
+
+        # Load results
+        results = load_result(global_settings.result_file(".pickle"))
+
+    return results
 
 
 def test_rpvi_exe_park91a_hifi_adjoint_gradient(
@@ -560,122 +694,70 @@ def test_rpvi_exe_park91a_hifi_adjoint_gradient(
     global_settings,
 ):
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
-    # generate json input file from template
-    third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
-    experimental_data_path = tmp_path
-    executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
-    executable = f"{python_path} {executable} s"
-    # adjoint executable (here we actually use the same executable but call it with
-    # a different flag "a" for adjoint)
-    adjoint_executable = (
-        example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
+    results = run_rpvi_exe_park91a_hifi_adjoint_gradient(
+        tmp_path, example_simulator_fun_dir, python_path, rpvi_jobscript_template, global_settings
     )
-    adjoint_executable = f"{python_path} {adjoint_executable} a"
-    plot_dir = tmp_path
-    # Parameters
-    x1 = Normal(mean=0.6, covariance=0.2)
-    x2 = Normal(mean=0.3, covariance=0.1)
-    parameters = Parameters(x1=x1, x2=x2)
-
-    # Setup iterator
-    variational_distribution = FullRankNormal(dimension=2)
-    stochastic_optimizer = Adam(
-        optimization_type="max",
-        learning_rate=0.02,
-        rel_l1_change_threshold=-1,
-        rel_l2_change_threshold=-1,
-        max_iteration=10000000,
-    )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="experimental_data.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
-    scheduler = Local(
-        num_procs=1,
-        num_jobs=1,
-        experiment_name=global_settings.experiment_name,
-    )
-    data_processor = CsvFile(
-        file_name_identifier="*_output.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
-    )
-    driver = Jobscript(
-        parameters=parameters,
-        input_templates=third_party_input_file,
-        executable=executable,
-        data_processor=data_processor,
-        jobscript_template=rpvi_jobscript_template,
-    )
-    gradient_data_processor = CsvFile(
-        file_name_identifier="*_gradient.csv",
-        file_options_dict={
-            "delete_field_data": False,
-            "filter": {"type": "entire_file"},
-        },
-    )
-    adjoint_driver = Jobscript(
-        parameters=parameters,
-        input_templates=third_party_input_file,
-        executable=adjoint_executable,
-        data_processor=gradient_data_processor,
-        jobscript_template=rpvi_jobscript_template,
-    )
-    forward_model = Adjoint(
-        adjoint_file="grad_objective.csv",
-        scheduler=scheduler,
-        driver=driver,
-        gradient_driver=adjoint_driver,
-    )
-    model = Gaussian(
-        noise_type="MAP_jeffrey_variance",
-        nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
-        forward_model=forward_model,
-    )
-    iterator = RPVI(
-        max_feval=10,
-        n_samples_per_iter=3,
-        score_function_bool=True,
-        natural_gradient=True,
-        FIM_dampening=True,
-        decay_start_iteration=50,
-        dampening_coefficient=0.01,
-        FIM_dampening_lower_bound=1e-08,
-        variational_transformation=None,
-        variational_parameter_initialization="prior",
-        random_seed=1,
-        result_description={
-            "write_results": True,
-            "plotting_options": {
-                "plot_boolean": False,
-                "plotting_dir": plot_dir,
-                "plot_name": "variational_params_convergence.eps",
-                "save_bool": False,
-            },
-        },
-        variational_distribution=variational_distribution,
-        stochastic_optimizer=stochastic_optimizer,
-        model=model,
-        parameters=parameters,
-        global_settings=global_settings,
-    )
-
-    # Actual analysis
-    run_iterator(iterator, global_settings=global_settings)
-
-    # Load results
-    results = load_result(global_settings.result_file(".pickle"))
 
     # Actual tests
     assert np.abs(results["variational_distribution"]["mean"][0] - 0.5) < 0.25
     assert np.abs(results["variational_distribution"]["mean"][1] - 0.2) < 0.15
     assert results["variational_distribution"]["covariance"][0, 0] ** 0.5 < 0.5
     assert results["variational_distribution"]["covariance"][1, 1] ** 0.5 < 0.5
+
+
+@pytest.mark.max_time_for_test(30)
+def test_rpvi_exe_park91a_hifi_adjoint_gradient_reusing_existing_jobs(
+    tmp_path,
+    _create_experimental_data_park91a_hifi_on_grid,
+    example_simulator_fun_dir,
+    _create_input_file_executable_park91a_hifi_on_grid,
+    python_path,
+    rpvi_jobscript_template,
+    global_settings,
+):
+    """Test that a 2nd *rpvi* run reuses the existing jobs of the driver.
+
+    Only the jobs of the gradient driver are executed again, which is
+    checked via the metadata of the jobs.
+    """
+    run_args = (
+        tmp_path,
+        example_simulator_fun_dir,
+        python_path,
+        rpvi_jobscript_template,
+        global_settings,
+    )
+    experiment_dir, _ = experiment_directory(global_settings.experiment_name)
+
+    # Seed the random state to draw the same samples again in the 2nd run
+    seed = 1
+    np.random.seed(seed)
+
+    # First QUEENS run
+    first_results = run_rpvi_exe_park91a_hifi_adjoint_gradient(*run_args)
+    first_metadata = list(get_metadata_from_experiment_dir(experiment_dir))
+    # Second QUEENS run with the same experiment name and inputs reusing existing jobs
+    np.random.seed(seed)
+    second_results = run_rpvi_exe_park91a_hifi_adjoint_gradient(*run_args, reuse_existing_jobs=True)
+    second_metadata = list(get_metadata_from_experiment_dir(experiment_dir))
+
+    # Assert reusing jobs does not change the results
+    for key in ["mean", "covariance"]:
+        np.testing.assert_array_equal(
+            second_results["variational_distribution"][key],
+            first_results["variational_distribution"][key],
+        )
+
+    # Assert only the jobs of the gradient driver were executed again
+    assert len(first_metadata) == len(second_metadata)
+    for first_job_metadata, second_job_metadata in zip(first_metadata, second_metadata):
+        job_dir = experiment_dir / str(second_job_metadata["job_id"])
+        is_gradient_job = (job_dir / "grad_objective.csv").is_file()
+        jobscript_executed_again = (
+            first_job_metadata["times"]["run_jobscript"]
+            != second_job_metadata["times"]["run_jobscript"]
+        )
+        assert jobscript_executed_again == is_gradient_job
 
 
 @pytest.fixture(name="_create_input_file_executable_park91a_hifi_on_grid")

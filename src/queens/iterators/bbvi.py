@@ -54,7 +54,6 @@ class BBVI(VariationalInference):
         control_variates_scaling_type (str): Flag to decide how to compute control variate scaling.
         loo_cv_bool (boolean): *True* if leave-one-out procedure is used for the control variate
                                scaling estimations. Is quite slow!
-        random_seed (int): Seed for the random number generators.
         max_feval (int): Maximum number of simulation runs for this analysis.
         memory (int): Number of previous iterations that should be included in the MC ELBO
                       gradient estimations. For *memory=0* the algorithm reduces to standard the
@@ -89,7 +88,6 @@ class BBVI(VariationalInference):
         result_description,
         variational_distribution,
         n_samples_per_iter,
-        random_seed,
         max_feval,
         control_variates_scaling_type,
         loo_control_variates_scaling,
@@ -117,7 +115,6 @@ class BBVI(VariationalInference):
             variational_distribution (Variational): variational distribution object
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
-            random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
             control_variates_scaling_type (str): Flag to decide how to compute control variate
                                                 scaling
@@ -161,7 +158,6 @@ class BBVI(VariationalInference):
             variational_params_initialization=variational_parameter_initialization,
             n_samples_per_iter=n_samples_per_iter,
             variational_transformation=variational_transformation,
-            random_seed=random_seed,
             max_feval=max_feval,
             natural_gradient=natural_gradient,
             FIM_dampening=FIM_dampening,
@@ -178,7 +174,6 @@ class BBVI(VariationalInference):
 
         self.control_variates_scaling_type = control_variates_scaling_type
         self.loo_cv_bool = loo_control_variates_scaling
-        self.random_seed = random_seed
         self.max_feval = max_feval
         self.memory = memory
         self.model_eval_iteration_period = model_eval_iteration_period
