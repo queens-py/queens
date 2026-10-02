@@ -35,11 +35,8 @@ def fixture_default_data_processor():
     file_name_identifier = "queens_example_log.txt"
     files_to_be_deleted_regex_lst = []
 
-    file_options_dict = {}
-
     txt_instance = TxtFile(
         file_name_identifier,
-        file_options_dict,
         files_to_be_deleted_regex_lst,
         remove_logger_prefix_from_raw_data=True,
     )

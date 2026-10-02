@@ -62,12 +62,10 @@ def fixture_write_wrong_dummy_data(wrong_data_path, dummy_data):
 def fixture_default_data_processor_npy():
     """Dummy data processor npy."""
     file_name_identifier = "dummy"
-    file_options_dict = {}
     files_to_be_deleted_regex_lst = []
 
     data_processor = NumpyFile(
         file_name_identifier,
-        file_options_dict,
         files_to_be_deleted_regex_lst,
     )
 
@@ -78,17 +76,14 @@ def fixture_default_data_processor_npy():
 def test_init():
     """Test initialization of npy data processor."""
     file_name_identifier = "dummy"
-    file_options_dict = {"dummy": "dummy"}
     files_to_be_deleted_regex_lst = ["abc"]
 
     data_processor = NumpyFile(
         file_name_identifier,
-        file_options_dict,
         files_to_be_deleted_regex_lst,
     )
 
     assert data_processor.files_to_be_deleted_regex_lst == files_to_be_deleted_regex_lst
-    assert data_processor.file_options_dict == file_options_dict
     assert data_processor.file_name_identifier == file_name_identifier
 
 
