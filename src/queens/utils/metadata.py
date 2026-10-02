@@ -124,6 +124,7 @@ class SimulationMetadata:
             "timestamp_start": self._get_timestamp(),
             "status": "running",
         }
+        self.job_successful = False  # Set to False until the code section is finished successfully
 
         # Export metadata
         self.export()
@@ -133,7 +134,7 @@ class SimulationMetadata:
 
             # If we are here the timed code section was successful
             self.times[code_section_name]["status"] = "successful"
-
+            self.job_successful = True
         # Something goes wrong
         except Exception as exception:
             # Set the status to failed
