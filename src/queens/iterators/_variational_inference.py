@@ -64,7 +64,6 @@ class VariationalInference(Iterator):
         fim_dampening_coefficient (float): Initial nugget term value for the FIM dampening.
         fim_dampening_lower_bound (float): Lower bound on the FIM dampening coefficient.
         fim_dampening_bool (boolean): *True* if FIM dampening should be used.
-        random_seed (int): Seed for the random number generators.
         max_feval (int): Maximum number of simulation runs for this analysis.
         num_parameters (int): Actual number of model input parameters that should be calibrated.
         stochastic_optimizer (obj): QUEENS stochastic optimizer object.
@@ -87,7 +86,6 @@ class VariationalInference(Iterator):
         variational_params_initialization,
         n_samples_per_iter,
         variational_transformation,
-        random_seed,
         max_feval,
         natural_gradient,
         FIM_dampening,
@@ -113,7 +111,6 @@ class VariationalInference(Iterator):
                                                 to estimate the involved expectations)
             variational_transformation (str): String encoding the transformation that will be
                                               applied to the variational density
-            random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
             natural_gradient (boolean): True if natural gradient should be used
             FIM_dampening (boolean): True if FIM dampening should be used
@@ -137,7 +134,6 @@ class VariationalInference(Iterator):
         self.fim_dampening_coefficient = dampening_coefficient
         self.fim_dampening_lower_bound = FIM_dampening_lower_bound
         self.fim_dampening_bool = FIM_dampening
-        self.random_seed = random_seed
         self.max_feval = max_feval
         self.num_parameters = self.parameters.num_parameters
         self.stochastic_optimizer = stochastic_optimizer
