@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Cluster scheduler for QUEENS runs."""
+"""Remote cluster scheduler for QUEENS runs."""
 
 import logging
 import time
@@ -21,7 +21,7 @@ from typing import Sequence
 
 from dask.distributed import Client
 
-from queens.schedulers._cluster_base import _BaseCluster
+from queens.schedulers._cluster import Cluster
 from queens.utils.config_directories import experiment_directory  # Do not change this import!
 from queens.utils.config_directories import create_directory
 from queens.utils.logger_settings import log_init_args
@@ -29,8 +29,8 @@ from queens.utils.logger_settings import log_init_args
 _logger = logging.getLogger(__name__)
 
 
-class Cluster(_BaseCluster):
-    """Cluster (remote) scheduler for QUEENS."""
+class ClusterRemote(Cluster):
+    """ClusterRemote scheduler for QUEENS."""
 
     @log_init_args
     def __init__(

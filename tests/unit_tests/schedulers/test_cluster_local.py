@@ -18,8 +18,8 @@ import itertools
 
 import pytest
 
-from queens.schedulers import _cluster_base, cluster_local
-from queens.schedulers._cluster_base import VALID_WORKLOAD_MANAGERS
+from queens.schedulers import _cluster, cluster_local
+from queens.schedulers._cluster import VALID_WORKLOAD_MANAGERS
 from queens.schedulers.cluster_local import ClusterLocal
 
 
@@ -77,7 +77,7 @@ def fixture_mock_dask_layer(monkeypatch):
         }
         for name, options in VALID_WORKLOAD_MANAGERS.items()
     }
-    monkeypatch.setattr(_cluster_base, "VALID_WORKLOAD_MANAGERS", mock_managers)
+    monkeypatch.setattr(_cluster, "VALID_WORKLOAD_MANAGERS", mock_managers)
     monkeypatch.setattr(cluster_local, "VALID_WORKLOAD_MANAGERS", mock_managers)
 
     return created

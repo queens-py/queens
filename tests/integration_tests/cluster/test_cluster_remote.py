@@ -12,7 +12,7 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Test remote 4C simulations with ensight data-processor."""
+"""Integration tests for the ClusterRemote scheduler."""
 
 import json
 import logging
@@ -32,7 +32,7 @@ from queens.iterators.monte_carlo import MonteCarlo
 from queens.main import run_iterator
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
-from queens.schedulers.cluster import Cluster
+from queens.schedulers.cluster_remote import ClusterRemote
 from queens.utils.config_directories import experiment_directory
 from queens.utils.io import load_result
 from queens.utils.remote_operations import RemoteConnection
@@ -58,7 +58,7 @@ PYTEST_BASE_DIR_CLUSTER = "~/queens-tests"
     ],
     indirect=True,
 )
-class TestCluster:
+class TestClusterRemote:
     """Test class collecting all test with Dask jobqueue clusters and 4C.
 
     NOTE: we use a class here to parametrize each tests with the different clusters.
@@ -70,7 +70,7 @@ class TestCluster:
         experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
         assert not experiment_dir_exists
 
-        Cluster(**cluster_kwargs)
+        ClusterRemote(**cluster_kwargs)
 
         experiment_dir_exists = remote_connection.run_function(experiment_dir.exists)
         assert experiment_dir_exists
@@ -78,7 +78,7 @@ class TestCluster:
     @staticmethod
     def test_overwriting_existing_experiment_dir(cluster_kwargs, _create_experiment_dir):
         """Test cluster init when overwriting experiment dir via flag."""
-        Cluster(**cluster_kwargs, overwrite_existing_experiment=True)
+        ClusterRemote(**cluster_kwargs, overwrite_existing_experiment=True)
 
     @staticmethod
     def test_no_prompt_input_for_existing_experiment_dir(
@@ -92,7 +92,7 @@ class TestCluster:
         """
         mocker.patch("select.select", return_value=(None, None, None))
         with pytest.raises(SystemExit) as exit_info:
-            Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+            ClusterRemote(**cluster_kwargs, overwrite_existing_experiment=False)
         assert exit_info.value.code == 1
 
     @staticmethod
@@ -108,7 +108,7 @@ class TestCluster:
         mocker.patch("select.select", return_value=(True, None, None))
         mocker.patch("sys.stdin.readline", return_value="")
         with pytest.raises(SystemExit) as exit_info:
-            Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+            ClusterRemote(**cluster_kwargs, overwrite_existing_experiment=False)
         assert exit_info.value.code == 1
 
     @staticmethod
@@ -124,7 +124,7 @@ class TestCluster:
         """
         mocker.patch("select.select", return_value=(True, None, None))
         mocker.patch("sys.stdin.readline", return_value=user_input)
-        Cluster(**cluster_kwargs, overwrite_existing_experiment=False)
+        ClusterRemote(**cluster_kwargs, overwrite_existing_experiment=False)
 
     def test_deletion_of_experiment_dir_with_files(
         self, global_settings, cluster_kwargs, remote_connection, experiment_dir
@@ -145,7 +145,7 @@ class TestCluster:
             return experiment_dir_exists, experiment_dir_contents
 
         with global_settings:
-            Cluster(**cluster_kwargs)
+            ClusterRemote(**cluster_kwargs)
 
             # Check that remote experiment directory is not empty
             experiment_dir_exists, experiment_dir_contents_before = remote_connection.run_function(
@@ -205,7 +205,7 @@ class TestCluster:
             file_options_dict={},
         )
 
-        scheduler = Cluster(**cluster_kwargs)
+        scheduler = ClusterRemote(**cluster_kwargs)
 
         driver = Jobscript(
             parameters=parameters,
@@ -434,7 +434,7 @@ def fixture_cluster(request):
 def fixture_cluster_config(cluster):
     """The cluster configuration for the given cluster."""
     config = CLUSTER_CONFIGS.get(cluster).dict()
-    _logger.debug("Cluster config: %s", config)
+    _logger.debug("ClusterRemote config: %s", config)
     return config
 
 

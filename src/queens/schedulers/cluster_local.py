@@ -19,9 +19,9 @@ import time
 
 from dask.distributed import Client
 
-from queens.schedulers._cluster_base import (
+from queens.schedulers._cluster import (
     VALID_WORKLOAD_MANAGERS,
-    _BaseCluster,
+    Cluster,
     _initialize_dask_cluster,
 )
 from queens.schedulers._scheduler import Scheduler
@@ -31,7 +31,7 @@ from queens.utils.valid_options import get_option
 _logger = logging.getLogger(__name__)
 
 
-class ClusterLocal(_BaseCluster):
+class ClusterLocal(Cluster):
     """Cluster scheduler with local access (no network connection)."""
 
     def _get_experiment_dir(

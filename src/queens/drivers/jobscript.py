@@ -133,7 +133,7 @@ class Jobscript(Driver):
             jobscript_template (str, Path): (Local) path to jobscript template or read-in jobscript
                 template.
             executable (str, Path): Path to main executable of respective software. Is a remote
-                path when using the Cluster scheduler.
+                path when using the ClusterRemote scheduler.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.

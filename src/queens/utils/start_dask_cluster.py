@@ -22,7 +22,7 @@ import sys
 from pathlib import Path
 from typing import Sequence
 
-from queens.schedulers._cluster_base import VALID_WORKLOAD_MANAGERS, _initialize_dask_cluster
+from queens.schedulers._cluster import VALID_WORKLOAD_MANAGERS, _initialize_dask_cluster
 from queens.utils.logger_settings import setup_basic_logging
 from queens.utils.valid_options import get_option
 
