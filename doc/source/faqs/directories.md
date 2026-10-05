@@ -10,7 +10,7 @@ The output directory, commonly referred to as `output_dir`, is a designated spac
 
 ## Where Are My Simulations?
 
-If you utilize a simulation model with a `Cluster` or `Local` scheduler, you need to set the `experiment_base_dir`. If an experiment directory isn't specified, it defaults to `~/queens-experiments/`. This location is where all simulation outputs are stored:
+If you utilize a simulation model with a `ClusterRemote` or `Local` scheduler, you need to set the `experiment_base_dir`. If an experiment directory isn't specified, it defaults to `~/queens-experiments/`. This location is where all simulation outputs are stored:
 
 ```bash
 └── <experiment_base_dir>/

@@ -77,7 +77,7 @@ def _initialize_dask_cluster(
     return cluster
 
 
-class _BaseCluster(Dask):
+class Cluster(Dask):
     """Abstract base class for QUEENS cluster schedulers."""
 
     @log_init_args
