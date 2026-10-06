@@ -65,7 +65,7 @@ def fixture_default_mf_likelihood(
     forward_model = dummy_simulation_model
     coords_mat = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 2, 3, 4])
-    observations = np.array([[1, 2], [3, 4]])
+    observations = np.array([1, 2])
     mf_interface = default_interface
     bmfia_subiterator = default_bmfia_iterator
     noise_var = np.array([0.1])
@@ -139,7 +139,7 @@ def test_init(mocker, dummy_simulation_model, default_interface, default_bmfia_i
     forward_model = dummy_simulation_model
     coords_mat = np.array([[1, 2], [3, 4]])
     time_vec = np.array([1, 2, 3, 4])
-    observations = np.array([[1], [3]])
+    observations = np.array([1, 3])
     mf_interface = default_interface
     bmfia_subiterator = default_bmfia_iterator
     noise_var = 1.0
@@ -224,6 +224,40 @@ def test_init_with_one_dimensional_coordinates(
     np.testing.assert_array_equal(
         model.coords_mat, np.array(observation_coordinates).reshape(-1, 1)
     )
+
+
+@pytest.mark.parametrize(
+    "observation_coordinates, error_message",
+    [
+        (np.zeros((2, 2)), "one row per observation"),
+        (np.zeros((4, 2)), "one row per observation"),
+        ([0.1, 0.2], "one row per observation"),
+        (np.zeros((3, 2, 1)), "one- or two-dimensional"),
+    ],
+    ids=["too_few_rows", "too_many_rows", "one_dimensional_too_few_rows", "three_dimensional"],
+)
+def test_init_with_invalid_coordinates(
+    mocker,
+    dummy_simulation_model,
+    default_interface,
+    default_bmfia_iterator,
+    observation_coordinates,
+    error_message,
+):
+    """Test that coordinates with a wrong shape are rejected."""
+    observations = np.array([1.0, 3.0, 5.0])
+
+    mocker.patch("queens.models.likelihoods.bmf_gaussian.BMFGaussian.build_approximation")
+    mocker.patch("queens.models.likelihoods.bmf_gaussian.MeanFieldNormal")
+    with pytest.raises(ValueError, match=error_message):
+        BMFGaussian(
+            forward_model=dummy_simulation_model,
+            mf_interface=default_interface,
+            mf_subiterator=default_bmfia_iterator,
+            observations=observations,
+            observation_coordinates=observation_coordinates,
+            mf_approx=Mock(),
+        )
 
 
 def test_evaluate(default_mf_likelihood, mocker):
@@ -449,16 +483,13 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
     """Test the initialization of the mf likelihood model."""
     coords_mat = np.array([[1, 2, 3], [2, 2, 2]])
     time_vec = np.linspace(1, 10, 3)
-    observations = np.array([[5, 5, 5], [6, 6, 6]])
 
     mo_1 = mocker.patch(
         "queens.models.likelihoods.bmf_gaussian.print_bmfia_acceleration",
         return_value=None,
     )
 
-    BMFGaussian.initialize_bmfia_iterator(
-        coords_mat, time_vec, observations, default_bmfia_iterator
-    )
+    BMFGaussian.initialize_bmfia_iterator(coords_mat, time_vec, default_bmfia_iterator)
 
     # actual tests / asserts
     mo_1.assert_called_once()
@@ -466,7 +497,6 @@ def test_initialize_bmfia_iterator(default_bmfia_iterator, mocker):
         default_bmfia_iterator.coords_experimental_data, coords_mat, decimal=4
     )
     np.testing.assert_array_almost_equal(default_bmfia_iterator.time_vec, time_vec, decimal=4)
-    np.testing.assert_array_almost_equal(default_bmfia_iterator.y_obs, observations, decimal=4)
 
 
 def test_build_approximation(default_bmfia_iterator, default_interface, mocker):

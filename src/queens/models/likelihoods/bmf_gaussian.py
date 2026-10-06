@@ -40,19 +40,18 @@ class BMFGaussian(Likelihood):
 
     Attributes:
         coords_mat (np.array): Row-wise coordinates at which the observations were recorded. Has
-                               zero columns if no observation coordinates were provided.
+            one row per observation and zero columns if no observation coordinates were provided.
         time_vec (np.array): Vector of observation times
         mf_interface (obj): QUEENS multi-fidelity interface
-        mf_subiterator (obj): Subiterator to select the training data of the
-                                probabilistic regression model
+        mf_subiterator (obj): Subiterator to select the training data of the probabilistic
+            regression model
         normal_distribution (obj): Mean field normal distribution object
         noise_var (np.array): Noise variance of the observations
         likelihood_counter (int): Internal counter for the likelihood evaluation
         num_refinement_samples (int): Number of additional samples to train the multi-fidelity
-                                      dependency in refinement step
+            dependency in refinement step
         likelihood_evals_for_refinement (lst):  List with necessary number of likelihood
-                                                evaluations before the refinement step is
-                                                conducted
+            evaluations before the refinement step is conducted
 
     Returns:
         Instance of BMFGaussian. This is a multi-fidelity version of the
@@ -89,21 +88,21 @@ class BMFGaussian(Likelihood):
             forward_model (obj): Forward model to iterate; here: the low fidelity model
             mf_interface (obj): QUEENS multi-fidelity interface
             mf_subiterator (obj): Subiterator to select the training data of the probabilistic
-                                  regression model
-            observations (array_like): Vector with observations
+                regression model
+            observations (array_like): Vector with observations. Will be flattened if necessary.
             mf_approx (Model): Probabilistic mapping
             noise_value (array_like): Noise variance of the observations
             num_refinement_samples (int): Number of additional samples to train the multi-fidelity
-                                          dependency in refinement step
+                dependency in refinement step
             likelihood_evals_for_refinement (lst): List with necessary number of likelihood
-                                                   evaluations before the refinement step is
-                                                   conducted
+                evaluations before the refinement step is conducted
             observation_coordinates (array_like, opt): Row-wise coordinates at which the
-                                                       observations were recorded. One row
-                                                       corresponds to one observation.
+                observations were recorded. One row corresponds to one observation, i.e., for
+                time-indexed observations the spatial coordinates are repeated for every
+                observation time.
             observation_times (array_like, opt): Unique vector of observation times
         """
-        super().__init__(forward_model, observations)
+        super().__init__(forward_model, observations.reshape(-1))
         self.coords_mat = self._get_coordinates_matrix(
             observation_coordinates, self.observations.size
         )
@@ -122,9 +121,7 @@ class BMFGaussian(Likelihood):
         )
 
         # ---------------------- initialize some model settings/train surrogates -----------------
-        self.initialize_bmfia_iterator(
-            self.coords_mat, self.time_vec, self.observations, mf_subiterator
-        )
+        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, mf_subiterator)
         self.build_approximation(
             mf_subiterator,
             mf_interface,
@@ -147,12 +144,13 @@ class BMFGaussian(Likelihood):
         """Get the matrix of observation coordinates.
 
         Args:
-            observation_coordinates (array_like, None): Row-wise coordinates of the observations
+            observation_coordinates (array_like, None): Row-wise coordinates of the observations.
+                A one-dimensional array is interpreted as one coordinate per observation.
             num_observations (int): Number of observations
 
         Returns:
             coords_mat (np.array): Matrix with one row per observation. Has zero columns if no
-                                   observation coordinates were provided.
+                observation coordinates were provided.
         """
         if observation_coordinates is None:
             return np.empty((num_observations, 0))
@@ -160,13 +158,23 @@ class BMFGaussian(Likelihood):
         coords_mat = np.asarray(observation_coordinates)
         if coords_mat.ndim == 1:
             coords_mat = coords_mat.reshape(-1, 1)
+        if coords_mat.ndim != 2:
+            raise ValueError(
+                "'observation_coordinates' must be a one- or two-dimensional array, but it has "
+                f"{coords_mat.ndim} dimensions."
+            )
+        if coords_mat.shape[0] != num_observations:
+            raise ValueError(
+                "'observation_coordinates' must have one row per observation, but it has "
+                f"{coords_mat.shape[0]} rows for {num_observations} observations."
+            )
         return coords_mat
 
     def _evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
-        Evaluation with current set of variables
-        which are an attribute of the underlying low-fidelity simulation model.
+        Evaluation with current set of variables which are an attribute of the underlying
+        low-fidelity simulation model.
 
         Args:
             samples (np.ndarray): Evaluated samples
@@ -202,11 +210,11 @@ class BMFGaussian(Likelihood):
         Args:
             samples (np.array): Input samples
             upstream_gradient (np.array): Upstream gradient function evaluated at input samples
-                                          :math:`\frac{\partial g}{\partial f}`
+                :math:`\frac{\partial g}{\partial f}`
 
         Returns:
             gradient (np.array): Gradient w.r.t. current set of input samples
-                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+                :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         partial_grad = self.partial_grad_evaluate(samples, self.response["forward_model_output"])
         upstream_gradient = upstream_gradient * partial_grad
@@ -240,12 +248,12 @@ class BMFGaussian(Likelihood):
 
         Args:
             forward_model_input (np.array): Sample inputs of the model run (here not required).
-            forward_model_output (np.array): Output of the underlying sub- or forward model
-                                             for the current batch of sample inputs.
+            forward_model_output (np.array): Output of the underlying sub- or forward model for the
+                current batch of sample inputs.
 
         Returns:
-            grad_out (np.array): Evaluated partial derivative of the evaluation function
-                                 w.r.t. the output of the underlying sub-model.
+            grad_out (np.array): Evaluated partial derivative of the evaluation function w.r.t. the
+                output of the underlying sub-model.
         """
         # construct LF feature matrix
         z_mat = self.mf_subiterator.set_feature_strategy(
@@ -305,8 +313,8 @@ class BMFGaussian(Likelihood):
 
         Args:
             additional_x_train (np.array): New input training points.
-            additional_y_lf_train (np.array, optional): New output training points.
-                                                        Defaults to None.
+            additional_y_lf_train (np.array, optional): New output training points. Defaults to
+                None.
         """
         z_train, y_hf_train = self.mf_subiterator.expand_training_data(
             additional_x_train, additional_y_lf_train=additional_y_lf_train
@@ -322,16 +330,15 @@ class BMFGaussian(Likelihood):
 
         Args:
             x_batch (np.array): Input batch matrix; rows correspond to one input vector;
-                                different dimensions along columns
+                different dimensions along columns
 
             y_lf_mat (np.array): Response matrix of the low-fidelity model; Row-wise corresponding
-                                 to rows in x_batch input batch matrix. Different coordinate
-                                 locations along the columns
+                to rows in x_batch input batch matrix. Different coordinate locations along the
+                columns
 
         Returns:
-            log_lik_mf_output (tuple): Tuple with vector of log-likelihood values
-                                       per model input and potentially the gradient
-                                       of the model w.r.t. its inputs
+            log_lik_mf_output (tuple): Tuple with vector of log-likelihood values per model input
+                and potentially the gradient of the model w.r.t. its inputs
 
 
         References:
@@ -368,16 +375,16 @@ class BMFGaussian(Likelihood):
     def grad_log_pdf_d_ylf(self, m_f_vec, grad_m_f_dy, grad_var_y_dy):
         """Calculate the gradient of the logpdf w.r.t. to the LF model output.
 
-        The gradient is calculated from the individual partial derivatives
-        and then composed in this method.
+        The gradient is calculated from the individual partial derivatives and then composed in
+        this method.
 
         Args:
             m_f_vec (np.array): mean vector of the probabilistic surrogate evaluated at sample
-                                points
+                points
             grad_m_f_dy (np.array): gradient of the mean function/vector of the probabilistic
-                                 regression model w.r.t. the regression model's input
+                regression model w.r.t. the regression model's input
             grad_var_y_dy (np.array): gradient of the variance function/vector of the probabilistic
-                                   regression model w.r.t. the regression model's input
+                regression model w.r.t. the regression model's input
 
         Returns:
             d_log_lik_d_z (np.array): gradient of the logpdf w.r.t. y_lf
@@ -392,13 +399,12 @@ class BMFGaussian(Likelihood):
         return d_log_lik_d_y
 
     @staticmethod
-    def initialize_bmfia_iterator(coords_mat, time_vec, observations, bmfia_subiterator):
+    def initialize_bmfia_iterator(coords_mat, time_vec, bmfia_subiterator):
         """Initialize the bmfia iterator.
 
         Args:
             coords_mat (np.array): Coordinates of the experimental data.
             time_vec (np.array): Time vector of the experimental data.
-            observations (np.array): Experimental data observations at coordinates
             bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
         """
         _logger.info("---------------------------------------------------------------------")
@@ -408,7 +414,6 @@ class BMFGaussian(Likelihood):
 
         bmfia_subiterator.coords_experimental_data = coords_mat
         bmfia_subiterator.time_vec = time_vec
-        bmfia_subiterator.y_obs = observations
 
     @staticmethod
     def build_approximation(
@@ -420,9 +425,8 @@ class BMFGaussian(Likelihood):
     ):
         """Construct the probabilistic surrogate / mapping.
 
-        Surrogate is calculated based on the provided training-data and
-        optimize the hyper-parameters by maximizing the data's evidence
-        or its lower bound (ELBO).
+        Surrogate is calculated based on the provided training-data and optimize the
+        hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
 
         Args:
             bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
