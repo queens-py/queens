@@ -93,8 +93,8 @@ class AdaptiveSampling(Iterator):
         self.x_train = np.empty((0, self.parameters.num_parameters))
         self.x_train_failed = np.empty((0, self.parameters.num_parameters))
         self.y_train = np.empty((0, 1))
-        self.model_outputs = np.empty((0, self.likelihood_model.y_obs.size))
-        self.model_outputs_failed = np.empty((0, self.likelihood_model.y_obs.size))
+        self.model_outputs = np.empty((0, self.likelihood_model.observations.size))
+        self.model_outputs_failed = np.empty((0, self.likelihood_model.observations.size))
 
     def pre_run(self):
         """Pre run."""
@@ -114,7 +114,9 @@ class AdaptiveSampling(Iterator):
             self.x_train = np.concatenate([self.x_train, self.x_train_new], axis=0)
             self.y_train = self.eval_log_likelihood().reshape(-1, 1)
             _logger.info("Total number of successful solver evaluations: %i", self.x_train.shape[0])
-            self.model.initialize(self.x_train, self.y_train, self.likelihood_model.y_obs.size)
+            self.model.initialize(
+                self.x_train, self.y_train, self.likelihood_model.observations.size
+            )
 
             random_state = np.random.get_state()
             self.solving_iterator.pre_run()  # We don't want that the random seed is set here.
