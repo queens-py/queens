@@ -75,14 +75,14 @@ def fixture_my_lik_model():
     noise_value = 1e-3
     forward_model = forward_model_dummy(lambda x: {"result": x + 1})
     noise_type = "fixed_variance"
-    y_obs = np.array([[3.0]])
+    observations = np.array([[3.0]])
 
     gauss_lik_obj = Gaussian(
         forward_model=forward_model,
         noise_type=noise_type,
         noise_value=noise_value,
         nugget_noise_variance=nugget_noise_variance,
-        y_obs=y_obs,
+        observations=observations,
     )
     gauss_lik_obj.normal_distribution = distr_dummy
     return gauss_lik_obj
@@ -96,7 +96,7 @@ def test_init():
     noise_type = "fixed_variance"
     noise_value = 0.1
     noise_var_iterative_averaging = None
-    y_obs = np.array([[3.0]])
+    observations = np.array([[3.0]])
 
     gauss_lik_obj = Gaussian(
         forward_model=forward_model,
@@ -104,17 +104,17 @@ def test_init():
         noise_value=noise_value,
         nugget_noise_variance=nugget_noise_variance,
         noise_var_iterative_averaging=noise_var_iterative_averaging,
-        y_obs=y_obs,
+        observations=observations,
     )
     assert gauss_lik_obj.nugget_noise_variance == nugget_noise_variance
     assert gauss_lik_obj.forward_model == forward_model
     assert gauss_lik_obj.noise_type == noise_type
     assert gauss_lik_obj.noise_var_iterative_averaging == noise_var_iterative_averaging
     assert isinstance(gauss_lik_obj.normal_distribution, Normal)
-    assert gauss_lik_obj.normal_distribution.mean == y_obs
-    assert gauss_lik_obj.normal_distribution.covariance == np.eye(y_obs.size) * noise_value
+    assert gauss_lik_obj.normal_distribution.mean == observations
+    assert gauss_lik_obj.normal_distribution.covariance == np.eye(observations.size) * noise_value
 
-    assert gauss_lik_obj.y_obs == y_obs
+    assert gauss_lik_obj.observations == observations
 
 
 def test_evaluate(mocker, my_lik_model):
