@@ -15,7 +15,6 @@
 """Fixtures for the integration tests of iterators."""
 
 import numpy as np
-import pandas as pd
 import pytest
 
 from example_simulator_functions.gaussian_logpdf import (
@@ -26,9 +25,9 @@ from example_simulator_functions.gaussian_logpdf import (
 from example_simulator_functions.park91a import X3, X4, park91a_hifi_on_grid
 
 
-@pytest.fixture(name="_create_experimental_data_park91a_hifi_on_grid")
-def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
-    """Create a csv file with experimental data."""
+@pytest.fixture(name="experimental_data_park91a_hifi_on_grid")
+def fixture_experimental_data_park91a_hifi_on_grid():
+    """Experimental observations and coordinates of park91a."""
     # Fix random seed
     np.random.seed(seed=1)
 
@@ -45,20 +44,15 @@ def fixture_create_experimental_data_park91a_hifi_on_grid(tmp_path):
     # Inverse crime: Add artificial noise to model output for the true value
     y_fake = y_vec + noise_vec
 
-    # write fake data to csv
-    data_dict = {
-        "x3": X3,
-        "x4": X4,
-        "y_obs": y_fake,
+    return {
+        "observations": y_fake,
+        "observation_coordinates": np.column_stack([X3, X4]),
     }
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    dataframe = pd.DataFrame.from_dict(data_dict)
-    dataframe.to_csv(experimental_data_path, index=False)
 
 
-@pytest.fixture(name="_create_experimental_data_gaussian_1d")
-def fixture_create_experimental_data_gaussian_1d(tmp_path):
-    """Create a csv file with experimental data from a 1D Gaussian."""
+@pytest.fixture(name="experimental_data_gaussian_1d")
+def fixture_experimental_data_gaussian_1d():
+    """Experimental data from a 1D Gaussian."""
     # generate 10 samples from the same gaussian
     samples = STANDARD_NORMAL.draw(10).flatten()
 
@@ -68,24 +62,13 @@ def fixture_create_experimental_data_gaussian_1d(tmp_path):
         pdf.append(gaussian_1d_logpdf(sample))
 
     pdf = np.array(pdf).flatten()
-
-    # write the data to a csv file in tmp_path
-    data_dict = {"y_obs": pdf}
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    dataframe = pd.DataFrame.from_dict(data_dict)
-    dataframe.to_csv(experimental_data_path, index=False)
+    return pdf
 
 
-@pytest.fixture(name="_create_experimental_data_zero")
-def fixture_create_experimental_data_zero(tmp_path):
-    """Create a csv file with experimental data equal to zero."""
-    samples = np.array([0, 0]).flatten()
-
-    # write the data to a csv file in tmp_path
-    data_dict = {"y_obs": samples}
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    dataframe = pd.DataFrame.from_dict(data_dict)
-    dataframe.to_csv(experimental_data_path, index=False)
+@pytest.fixture(name="experimental_data_zero")
+def fixture_experimental_data_zero():
+    """Experimental data equal to zero."""
+    return np.array([0.0, 0.0])
 
 
 @pytest.fixture(name="target_density_gaussian_1d")

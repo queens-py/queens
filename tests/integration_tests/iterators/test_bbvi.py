@@ -31,7 +31,6 @@ from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 from queens.utils.iterative_averaging import MovingAveraging
 from queens.variational_distributions import FullRankNormal, MeanFieldNormal
@@ -83,11 +82,8 @@ def test_bbvi_density_match(
     assert np.mean(elbo[-3:]) > np.mean(elbo[:3])
 
 
-def test_bbvi_park91a_hifi(
-    tmp_path, _create_experimental_data_park91a_hifi_on_grid, global_settings
-):
+def test_bbvi_park91a_hifi(tmp_path, experimental_data_park91a_hifi_on_grid, global_settings):
     """Test for the bbvi iterator based on the *park91a_hifi* function."""
-    experimental_data_path = tmp_path
     plot_dir = tmp_path
     # This seed is fixed so that the variational distribution is initialized so that the park
     # function can be evaluated correctly
@@ -108,12 +104,6 @@ def test_bbvi_park91a_hifi(
         max_iteration=10000000,
     )
     noise_var_iterative_averaging = MovingAveraging(num_iter_for_avg=10)
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
@@ -121,7 +111,7 @@ def test_bbvi_park91a_hifi(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
         noise_var_iterative_averaging=noise_var_iterative_averaging,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = BBVI(

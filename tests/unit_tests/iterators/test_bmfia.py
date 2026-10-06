@@ -89,7 +89,6 @@ def test_init(
     assert iterator.lf_model == lf_model
     assert iterator.coords_experimental_data is None
     assert iterator.time_vec is None
-    assert iterator.y_obs_vec is None
     assert iterator.x_cols == x_cols
     assert iterator.num_features == num_features
     assert iterator.coord_cols == coord_cols
@@ -366,6 +365,18 @@ def test_get_coord_features(default_bmfia_iterator):
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
 
 
+def test_get_coord_features_without_coordinates(default_bmfia_iterator):
+    """Test that coordinate features require observation coordinates."""
+    y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
+    coords_mat = np.empty((3, 0))
+
+    default_bmfia_iterator.features_config = "coord_features"
+    default_bmfia_iterator.coord_cols = [0]
+    with pytest.raises(ValueError, match="requires observation coordinates"):
+        default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
+
+
 def test_get_no_features(default_bmfia_iterator):
     """Test output without additional features."""
     y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
@@ -389,6 +400,18 @@ def test_get_time_features(default_bmfia_iterator):
     default_bmfia_iterator.time_vec = np.linspace(0, 10, y_lf_mat.shape[1])
     z_mat = default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
     np.testing.assert_array_almost_equal(z_mat, expected_z_mat, decimal=4)
+
+
+def test_get_time_features_without_times(default_bmfia_iterator):
+    """Test that time features require observation times."""
+    y_lf_mat = np.array([[1, 2, 3], [1, 2, 3], [1, 2, 3]])
+    x_mat = np.array([[4, 5, 6], [4, 5, 6], [4, 5, 6]])
+    coords_mat = np.array([[7, 8, 9], [10, 11, 12], [13, 14, 15]])
+
+    default_bmfia_iterator.features_config = "time_features"
+    default_bmfia_iterator.time_vec = None
+    with pytest.raises(ValueError, match="requires observation times"):
+        default_bmfia_iterator.set_feature_strategy(y_lf_mat, x_mat, coords_mat)
 
 
 def test_update_probabilistic_mapping_with_features(default_bmfia_iterator):

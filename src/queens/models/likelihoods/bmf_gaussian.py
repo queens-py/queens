@@ -39,21 +39,19 @@ class BMFGaussian(Likelihood):
     analysis scheme [1, 2].
 
     Attributes:
-        coords_mat (np.array): Row-wise coordinates at which the observations were recorded
+        coords_mat (np.array): Row-wise coordinates at which the observations were recorded. Has
+            one row per observation and zero columns if no observation coordinates were provided.
         time_vec (np.array): Vector of observation times
-        output_label (str): Name of the experimental outputs (column label in csv-file)
-        coord_labels (lst): List with coordinate labels for (column labels in csv-file)
         mf_interface (obj): QUEENS multi-fidelity interface
-        mf_subiterator (obj): Subiterator to select the training data of the
-                                probabilistic regression model
+        mf_subiterator (obj): Subiterator to select the training data of the probabilistic
+            regression model
         normal_distribution (obj): Mean field normal distribution object
         noise_var (np.array): Noise variance of the observations
         likelihood_counter (int): Internal counter for the likelihood evaluation
         num_refinement_samples (int): Number of additional samples to train the multi-fidelity
-                                      dependency in refinement step
+            dependency in refinement step
         likelihood_evals_for_refinement (lst):  List with necessary number of likelihood
-                                                evaluations before the refinement step is
-                                                conducted
+            evaluations before the refinement step is conducted
 
     Returns:
         Instance of BMFGaussian. This is a multi-fidelity version of the
@@ -76,11 +74,13 @@ class BMFGaussian(Likelihood):
         forward_model,
         mf_interface,
         mf_subiterator,
-        experimental_data_reader,
+        observations,
         mf_approx,
         noise_value=None,
         num_refinement_samples=None,
         likelihood_evals_for_refinement=None,
+        observation_coordinates=None,
+        observation_times=None,
     ):
         """Instantiate the multi-fidelity likelihood class.
 
@@ -88,47 +88,44 @@ class BMFGaussian(Likelihood):
             forward_model (obj): Forward model to iterate; here: the low fidelity model
             mf_interface (obj): QUEENS multi-fidelity interface
             mf_subiterator (obj): Subiterator to select the training data of the probabilistic
-                                  regression model
-            experimental_data_reader (obj): Experimental data reader object
+                regression model
+            observations (array_like): Vector with observations. Will be flattened if necessary.
             mf_approx (Model): Probabilistic mapping
             noise_value (array_like): Noise variance of the observations
             num_refinement_samples (int): Number of additional samples to train the multi-fidelity
-                                          dependency in refinement step
+                dependency in refinement step
             likelihood_evals_for_refinement (lst): List with necessary number of likelihood
-                                                   evaluations before the refinement step is
-                                                   conducted
-            plotting_options (dict): Options for plotting
+                evaluations before the refinement step is conducted
+            observation_coordinates (array_like, opt): Row-wise coordinates at which the
+                observations were recorded. One row corresponds to one observation, i.e., for
+                time-indexed observations the spatial coordinates are repeated for every
+                observation time.
+            observation_times (array_like, opt): Unique vector of observation times
         """
-        (
-            y_obs,
-            self.coords_mat,
-            self.time_vec,
-            _,
-            _,
-            self.coord_labels,
-            self.output_label,
-        ) = experimental_data_reader.get_experimental_data()
-        super().__init__(forward_model, y_obs)
+        super().__init__(forward_model, observations.reshape(-1))
+        self.coords_mat = self._get_coordinates_matrix(
+            observation_coordinates, self.observations.size
+        )
+        self.time_vec = None if observation_times is None else np.asarray(observation_times)
 
         if not isinstance(mf_interface, BmfiaInterface):
             raise ValueError("The interface type must be 'bmfia_interface' for BMFGaussian!")
 
         # ----------------------- initialize the mean field normal distribution ------------------
         noise_variance = np.array(noise_value)
-        dimension = y_obs.size
+        dimension = self.observations.size
 
         # build distribution with dummy values; parameters might change during runtime
         mean_field_normal = MeanFieldNormal(
-            mean=y_obs, variance=noise_variance, dimension=dimension
+            mean=self.observations, variance=noise_variance, dimension=dimension
         )
 
         # ---------------------- initialize some model settings/train surrogates -----------------
-        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, y_obs, mf_subiterator)
+        self.initialize_bmfia_iterator(self.coords_mat, self.time_vec, mf_subiterator)
         self.build_approximation(
             mf_subiterator,
             mf_interface,
             mf_approx,
-            self.coord_labels,
             self.time_vec,
             self.coords_mat,
         )
@@ -142,11 +139,42 @@ class BMFGaussian(Likelihood):
         self.num_refinement_samples = num_refinement_samples
         self.likelihood_evals_for_refinement = likelihood_evals_for_refinement
 
+    @staticmethod
+    def _get_coordinates_matrix(observation_coordinates, num_observations):
+        """Get the matrix of observation coordinates.
+
+        Args:
+            observation_coordinates (array_like, None): Row-wise coordinates of the observations.
+                A one-dimensional array is interpreted as one coordinate per observation.
+            num_observations (int): Number of observations
+
+        Returns:
+            coords_mat (np.array): Matrix with one row per observation. Has zero columns if no
+                observation coordinates were provided.
+        """
+        if observation_coordinates is None:
+            return np.empty((num_observations, 0))
+
+        coords_mat = np.asarray(observation_coordinates)
+        if coords_mat.ndim == 1:
+            coords_mat = coords_mat.reshape(-1, 1)
+        if coords_mat.ndim != 2:
+            raise ValueError(
+                "'observation_coordinates' must be a one- or two-dimensional array, but it has "
+                f"{coords_mat.ndim} dimensions."
+            )
+        if coords_mat.shape[0] != num_observations:
+            raise ValueError(
+                "'observation_coordinates' must have one row per observation, but it has "
+                f"{coords_mat.shape[0]} rows for {num_observations} observations."
+            )
+        return coords_mat
+
     def _evaluate(self, samples):
         """Evaluate multi-fidelity likelihood.
 
-        Evaluation with current set of variables
-        which are an attribute of the underlying low-fidelity simulation model.
+        Evaluation with current set of variables which are an attribute of the underlying
+        low-fidelity simulation model.
 
         Args:
             samples (np.ndarray): Evaluated samples
@@ -182,11 +210,11 @@ class BMFGaussian(Likelihood):
         Args:
             samples (np.array): Input samples
             upstream_gradient (np.array): Upstream gradient function evaluated at input samples
-                                          :math:`\frac{\partial g}{\partial f}`
+                :math:`\frac{\partial g}{\partial f}`
 
         Returns:
             gradient (np.array): Gradient w.r.t. current set of input samples
-                                 :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
+                :math:`\frac{\partial g}{\partial f} \frac{df}{dx}`
         """
         partial_grad = self.partial_grad_evaluate(samples, self.response["forward_model_output"])
         upstream_gradient = upstream_gradient * partial_grad
@@ -220,12 +248,12 @@ class BMFGaussian(Likelihood):
 
         Args:
             forward_model_input (np.array): Sample inputs of the model run (here not required).
-            forward_model_output (np.array): Output of the underlying sub- or forward model
-                                             for the current batch of sample inputs.
+            forward_model_output (np.array): Output of the underlying sub- or forward model for the
+                current batch of sample inputs.
 
         Returns:
-            grad_out (np.array): Evaluated partial derivative of the evaluation function
-                                 w.r.t. the output of the underlying sub-model.
+            grad_out (np.array): Evaluated partial derivative of the evaluation function w.r.t. the
+                output of the underlying sub-model.
         """
         # construct LF feature matrix
         z_mat = self.mf_subiterator.set_feature_strategy(
@@ -244,8 +272,8 @@ class BMFGaussian(Likelihood):
             grad_var_y_mat = grad_var_y_mat[:, :, 0]  # extract only derivative w.r.t. to LF output
 
         assert np.array_equal(
-            m_f_mat.shape[1], np.atleast_2d(self.y_obs).shape[1]
-        ), "Column dimension of the probab. regression output and y_obs do not agree!"
+            m_f_mat.shape[1], np.atleast_2d(self.observations).shape[1]
+        ), "Column dimension of the probab. regression output and observations do not agree!"
 
         # here we iterate over samples meaning we
         # iterate here over all surrogates simultaneously such that
@@ -285,8 +313,8 @@ class BMFGaussian(Likelihood):
 
         Args:
             additional_x_train (np.array): New input training points.
-            additional_y_lf_train (np.array, optional): New output training points.
-                                                        Defaults to None.
+            additional_y_lf_train (np.array, optional): New output training points. Defaults to
+                None.
         """
         z_train, y_hf_train = self.mf_subiterator.expand_training_data(
             additional_x_train, additional_y_lf_train=additional_y_lf_train
@@ -302,16 +330,15 @@ class BMFGaussian(Likelihood):
 
         Args:
             x_batch (np.array): Input batch matrix; rows correspond to one input vector;
-                                different dimensions along columns
+                different dimensions along columns
 
             y_lf_mat (np.array): Response matrix of the low-fidelity model; Row-wise corresponding
-                                 to rows in x_batch input batch matrix. Different coordinate
-                                 locations along the columns
+                to rows in x_batch input batch matrix. Different coordinate locations along the
+                columns
 
         Returns:
-            log_lik_mf_output (tuple): Tuple with vector of log-likelihood values
-                                       per model input and potentially the gradient
-                                       of the model w.r.t. its inputs
+            log_lik_mf_output (tuple): Tuple with vector of log-likelihood values per model input
+                and potentially the gradient of the model w.r.t. its inputs
 
 
         References:
@@ -325,9 +352,10 @@ class BMFGaussian(Likelihood):
         )
         # Get the response matrices of the multi-fidelity mapping
         m_f_mat, var_y_mat = self.mf_interface.evaluate(z_mat)
-        assert np.array_equal(
-            m_f_mat.shape[1], np.atleast_2d(self.y_obs).shape[1]
-        ), "Column dimension of the probab. regression output and y_obs do not agree! Abort..."
+        assert np.array_equal(m_f_mat.shape[1], np.atleast_2d(self.observations).shape[1]), (
+            "Column dimension of the probab. regression output and observations do not agree! "
+            "Abort..."
+        )
 
         # iterate here over all surrogates simultaneously such that the
         # new m is a vector of all, e.g., first entries in all surrogates
@@ -347,16 +375,16 @@ class BMFGaussian(Likelihood):
     def grad_log_pdf_d_ylf(self, m_f_vec, grad_m_f_dy, grad_var_y_dy):
         """Calculate the gradient of the logpdf w.r.t. to the LF model output.
 
-        The gradient is calculated from the individual partial derivatives
-        and then composed in this method.
+        The gradient is calculated from the individual partial derivatives and then composed in
+        this method.
 
         Args:
             m_f_vec (np.array): mean vector of the probabilistic surrogate evaluated at sample
-                                points
+                points
             grad_m_f_dy (np.array): gradient of the mean function/vector of the probabilistic
-                                 regression model w.r.t. the regression model's input
+                regression model w.r.t. the regression model's input
             grad_var_y_dy (np.array): gradient of the variance function/vector of the probabilistic
-                                   regression model w.r.t. the regression model's input
+                regression model w.r.t. the regression model's input
 
         Returns:
             d_log_lik_d_z (np.array): gradient of the logpdf w.r.t. y_lf
@@ -371,13 +399,12 @@ class BMFGaussian(Likelihood):
         return d_log_lik_d_y
 
     @staticmethod
-    def initialize_bmfia_iterator(coords_mat, time_vec, y_obs, bmfia_subiterator):
+    def initialize_bmfia_iterator(coords_mat, time_vec, bmfia_subiterator):
         """Initialize the bmfia iterator.
 
         Args:
             coords_mat (np.array): Coordinates of the experimental data.
             time_vec (np.array): Time vector of the experimental data.
-            y_obs (np.array): Experimental data observations at coordinates
             bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
         """
         _logger.info("---------------------------------------------------------------------")
@@ -387,37 +414,31 @@ class BMFGaussian(Likelihood):
 
         bmfia_subiterator.coords_experimental_data = coords_mat
         bmfia_subiterator.time_vec = time_vec
-        bmfia_subiterator.y_obs = y_obs
 
     @staticmethod
     def build_approximation(
         bmfia_subiterator,
         bmfia_interface,
         approx,
-        coord_labels,
         time_vec,
         coords_mat,
     ):
         """Construct the probabilistic surrogate / mapping.
 
-        Surrogate is calculated based on the provided training-data and
-        optimize the hyper-parameters by maximizing the data's evidence
-        or its lower bound (ELBO).
+        Surrogate is calculated based on the provided training-data and optimize the
+        hyper-parameters by maximizing the data's evidence or its lower bound (ELBO).
 
         Args:
             bmfia_subiterator (bmfia_subiterator): BMFIA subiterator object.
             bmfia_interface (bmfia_interface): BMFIA interface object.
             approx (Model): Approximation for probabilistic mapping.
-            coord_labels (list): List of coordinate labels.
             time_vec (np.array): Time vector of the experimental data.
             coords_mat (np.array): (Spatial) Coordinates of the experimental data.
         """
         # Start the bmfia (sub)iterator to create the training data for the probabilistic mapping
         z_train, y_hf_train = bmfia_subiterator.core_run()
         # ----- train regression model on the data ----------------------------------------
-        bmfia_interface.build_approximation(
-            z_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
-        )
+        bmfia_interface.build_approximation(z_train, y_hf_train, approx, time_vec, coords_mat)
         _logger.info("---------------------------------------------------------------------")
         _logger.info("Probabilistic model was built successfully!")
         _logger.info("---------------------------------------------------------------------")
@@ -450,7 +471,6 @@ class BmfiaInterface:
                                              :math:`y_{lf} \times y_{hf} \times \gamma_i`
                                              individually.
         update_mappings_method (method): Configured method to update the probabilistic mapping
-        coord_labels (str): Labels / names of the coordinates in the experimental data file
         time_vec (np.array): Vector with time-stamps of observations
         coords_mat (np.array): Matrix with coordinate values for observations
 
@@ -931,7 +951,6 @@ class BmfiaInterface:
         self.evaluate_method = evaluate_method
         self.evaluate_and_gradient_method = evaluate_and_gradient_method
         self.update_mappings_method = update_mappings_method
-        self.coord_labels = None
         self.time_vec = None
         self.coords_mat = None
 
@@ -1025,9 +1044,7 @@ class BmfiaInterface:
         )
         return mean, variance, grad_mean, grad_variance
 
-    def build_approximation(
-        self, z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
-    ):
+    def build_approximation(self, z_lf_train, y_hf_train, approx, time_vec, coords_mat):
         r"""Build the probabilistic regression models.
 
         Build and train the probabilistic mapping objects based on the
@@ -1046,12 +1063,10 @@ class BmfiaInterface:
                 *  Columns: Coordinates
 
             approx (Model): Probabilistic mapping in configuration dictionary.
-            coord_labels (list): List of coordinate labels.
             time_vec (np.array): Time vector of the experimental data.
             coords_mat (np.array): (Spatial) Coordinates of the experimental data.
         """
         # initialize further attributes
-        self.coord_labels = coord_labels
         self.time_vec = time_vec
         self.coords_mat = coords_mat
 

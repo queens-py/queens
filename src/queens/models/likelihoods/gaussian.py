@@ -14,8 +14,6 @@
 #
 """Gaussian likelihood."""
 
-import warnings
-
 import numpy as np
 
 from queens.distributions.normal import Normal
@@ -53,47 +51,32 @@ class Gaussian(Likelihood):
     def __init__(
         self,
         forward_model,
+        observations,
         noise_type,
         noise_value=None,
         nugget_noise_variance=0,
         noise_var_iterative_averaging=None,
-        y_obs=None,
-        experimental_data_reader=None,
     ):
         """Initialize likelihood model.
 
         Args:
             forward_model (obj): Forward model on which the likelihood model is based
+            observations (array_like): Vector with observations
             noise_type (str): String encoding the type of likelihood noise model:
                                 Fixed or MAP estimate with Jeffreys prior
             noise_value (array_like): Likelihood (co)variance value
             nugget_noise_variance (float): Lower bound for the likelihood noise parameter
             noise_var_iterative_averaging (obj): Iterative averaging object
-            y_obs (array_like): Vector with observations
-            experimental_data_reader (obj): Experimental data reader
         """
-        if y_obs is not None and experimental_data_reader is not None:
-            warnings.warn(
-                "You provided 'y_obs' and 'experimental_data_reader' to Gaussian. "
-                "Only provided 'y_obs' is used."
-            )
-        if y_obs is None:
-            if experimental_data_reader is None:
-                raise InvalidOptionError(
-                    "You must either provide 'y_obs' or an "
-                    "'experimental_data_reader' for Gaussian."
-                )
-            y_obs = experimental_data_reader.get_experimental_data()[0]
+        super().__init__(forward_model, observations)
 
-        super().__init__(forward_model, y_obs)
-
-        y_obs_dim = y_obs.size
+        observations_dim = self.observations.size
 
         if noise_value is None and noise_type.startswith("fixed"):
             raise InvalidOptionError(f"You have to provide a 'noise_value' for {noise_type}.")
 
         if noise_type == "fixed_variance":
-            covariance = noise_value * np.eye(y_obs_dim)
+            covariance = noise_value * np.eye(observations_dim)
         elif noise_type == "fixed_variance_vector":
             covariance = np.diag(noise_value)
         elif noise_type == "fixed_covariance_matrix":
@@ -103,11 +86,11 @@ class Gaussian(Likelihood):
             "MAP_jeffrey_variance_vector",
             "MAP_jeffrey_covariance_matrix",
         ]:
-            covariance = np.eye(y_obs_dim)
+            covariance = np.eye(observations_dim)
         else:
             raise NotImplementedError
 
-        normal_distribution = Normal(self.y_obs, covariance)
+        normal_distribution = Normal(self.observations, covariance)
 
         self.nugget_noise_variance = nugget_noise_variance
         self.noise_type = noise_type
@@ -158,7 +141,7 @@ class Gaussian(Likelihood):
         Args:
             y_model (np.ndarray): Forward model output with shape (samples, outputs)
         """
-        dist = y_model - self.y_obs.reshape(1, -1)
+        dist = y_model - self.observations.reshape(1, -1)
         num_samples, dim_y = y_model.shape
         if self.noise_type == "MAP_jeffrey_variance":
             covariance = np.eye(dim_y) / (dim_y * (num_samples + dim_y + 2)) * np.sum(dist**2)

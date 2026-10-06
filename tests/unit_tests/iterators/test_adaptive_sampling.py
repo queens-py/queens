@@ -33,9 +33,9 @@ def fixture_adaptive_sampling_iterator(global_settings, default_parameters_unifo
     # Mock model
     model = Mock()
 
-    # Mock likelihood model with y_obs
+    # Mock likelihood model with observations
     likelihood_model = Mock()
-    likelihood_model.y_obs = np.array([1.0, 2.0, 3.0])
+    likelihood_model.observations = np.array([1.0, 2.0, 3.0])
 
     # Mock solving iterator
     solving_iterator = Mock()
