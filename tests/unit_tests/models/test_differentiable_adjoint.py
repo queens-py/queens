@@ -14,8 +14,6 @@
 #
 """Unit tests for the adjoint model."""
 
-from pathlib import Path
-
 import numpy as np
 import pytest
 from mock import Mock
@@ -79,11 +77,12 @@ def test_evaluate(default_adjoint_model, scheduler_response):
     assert default_adjoint_model.response == expected_response
 
 
-def test_grad(default_adjoint_model, scheduler_response):
+def test_grad(tmp_path, default_adjoint_model, scheduler_response):
     """Test grad method."""
-    experiment_dir = Path("path_to_experiment_dir")
     adjoint.write_to_csv = Mock()
+    experiment_dir = tmp_path
     default_adjoint_model.scheduler.next_job_id = 7
+    default_adjoint_model.scheduler.get_job_ids = Mock(return_value=[5, 6])
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
     default_adjoint_model.scheduler.evaluate = scheduler_response
 

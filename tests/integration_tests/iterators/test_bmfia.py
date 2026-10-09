@@ -206,7 +206,6 @@ def test_bmfia_rpvi_jitted_gaussian_process_park91a(
     iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
-        random_seed=1,
         result_description={
             "iterative_field_names": ["variational_parameters", "elbo"],
             "plotting_options": {
@@ -316,7 +315,6 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
     iterator = RPVI(
         max_feval=100,
         n_samples_per_iter=3,
-        random_seed=1,
         result_description={
             "iterative_field_names": ["variational_parameters", "elbo"],
             "plotting_options": {
