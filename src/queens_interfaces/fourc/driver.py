@@ -14,6 +14,8 @@
 #
 """Driver to run 4C."""
 
+import logging
+
 from queens.drivers.jobscript import Jobscript
 from queens.utils.logger_settings import log_init_args
 
@@ -41,6 +43,7 @@ class Fourc(Jobscript):
         post_processor="",
         post_options="",
         mpi_cmd="/usr/bin/mpirun --bind-to none",
+        worker_log_level=logging.INFO,
     ):
         """Initialize Fourc object.
 
@@ -54,6 +57,9 @@ class Fourc(Jobscript):
             post_processor (path, opt): path to post_processor
             post_options (str, opt): options for post-processing
             mpi_cmd (str, opt): mpi command
+            worker_log_level (int | str | None): Logging level of the job log files
+                                                 (default: logging.INFO). None switches
+                                                 them off.
         """
         # pylint: disable=duplicate-code
         extra_options = {
@@ -70,4 +76,5 @@ class Fourc(Jobscript):
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             extra_options=extra_options,
+            worker_log_level=worker_log_level,
         )

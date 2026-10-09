@@ -124,6 +124,7 @@ class Jobscript(Driver):
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
+        worker_log_level=logging.INFO,
     ):
         """Initialize Jobscript object.
 
@@ -141,8 +142,15 @@ class Jobscript(Driver):
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                 jobscript exit code.
+            worker_log_level (int | str | None): Logging level of the job log files
+                                                 (default: logging.INFO). None switches
+                                                 them off.
         """
-        super().__init__(parameters=parameters, files_to_copy=files_to_copy)
+        super().__init__(
+            parameters=parameters,
+            files_to_copy=files_to_copy,
+            worker_log_level=worker_log_level,
+        )
         self.input_templates = self.create_input_templates_dict(input_templates)
         self.jobscript_template = self.get_read_in_jobscript_template(jobscript_template)
         self.files_to_copy.extend(self.input_templates.values())
@@ -355,12 +363,12 @@ class Jobscript(Driver):
         if self.data_processor:
             result = self.data_processor(output_dir)
             results["result"] = result
-            _logger.debug("Got result: %s", result)
+            self.logger_on_worker.debug("Got result: %s", result)
 
         if self.gradient_data_processor:
             gradient = self.gradient_data_processor(output_dir)
             results["gradient"] = gradient
-            _logger.debug("Got gradient: %s", gradient)
+            self.logger_on_worker.debug("Got gradient: %s", gradient)
         return results
 
     def prepare_input_files(self, sample_dict, experiment_dir, input_files):

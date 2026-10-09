@@ -14,7 +14,6 @@
 #
 """Data processor class for csv data extraction."""
 
-import logging
 from pathlib import Path
 from typing import override
 
@@ -24,8 +23,6 @@ import pandas as pd
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
 from queens.utils.valid_options import get_option
-
-_logger = logging.getLogger(__name__)
 
 
 class CsvFile(DataProcessor):
@@ -272,11 +269,11 @@ class CsvFile(DataProcessor):
                 engine="python",
                 index_col=self.index_column,
             )
-            _logger.info("Successfully read-in data from %s.", file_path)
+            self.logger_on_worker.info("Successfully read-in data from %s.", file_path)
             return raw_data
         except IOError as error:
             # pylint: disable=duplicate-code
-            _logger.warning(
+            self.logger_on_worker.warning(
                 "Could not read the file: %s. The following IOError was raised: %s. "
                 "Skipping the file and continuing.",
                 file_path,

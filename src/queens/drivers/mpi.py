@@ -14,6 +14,8 @@
 #
 """Convenience wrapper around Jobscript Driver."""
 
+import logging
+
 from queens.drivers.jobscript import Jobscript
 from queens.utils.logger_settings import log_init_args
 
@@ -35,6 +37,7 @@ class Mpi(Jobscript):
         data_processor=None,
         gradient_data_processor=None,
         mpi_cmd="/usr/bin/mpirun --bind-to none",
+        worker_log_level=logging.INFO,
     ):
         """Initialize MPI object.
 
@@ -46,6 +49,9 @@ class Mpi(Jobscript):
             data_processor (Callable, opt): data processor
             gradient_data_processor (Callable, opt): data processor class for gradient data
             mpi_cmd (str, opt): mpi command
+            worker_log_level (int | str | None): Logging level of the job log files
+                                                 (default: logging.INFO). None switches
+                                                 them off.
         """
         # pylint: disable=duplicate-code
         extra_options = {
@@ -60,4 +66,5 @@ class Mpi(Jobscript):
             data_processor=data_processor,
             gradient_data_processor=gradient_data_processor,
             extra_options=extra_options,
+            worker_log_level=worker_log_level,
         )

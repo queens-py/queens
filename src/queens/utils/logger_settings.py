@@ -24,6 +24,10 @@ from typing import Any, Callable, ParamSpec, override
 from queens.utils.printing import get_str_table
 
 LIBRARY_LOGGER_NAME = "queens"
+WORKER_LOGGER_NAME = f"{LIBRARY_LOGGER_NAME}.worker"
+WORKER_LOG_FILE_NAME = "worker.log"
+FILE_LOG_FORMAT = "%(asctime)s %(name)-12s %(levelname)-8s %(message)s"
+FILE_LOG_DATE_FORMAT = "%m-%d %H:%M"
 
 
 class LogFilter(logging.Filter):
@@ -146,9 +150,7 @@ def setup_file_handler(logger: logging.Logger, log_file_path: Path) -> None:
         log_file_path: Path of the logging file
     """
     file_handler = logging.FileHandler(log_file_path, mode="w")
-    file_formatter = NewLineFormatter(
-        "%(asctime)s %(name)-12s %(levelname)-8s %(message)s", datefmt="%m-%d %H:%M"
-    )
+    file_formatter = NewLineFormatter(FILE_LOG_FORMAT, datefmt=FILE_LOG_DATE_FORMAT)
     file_handler.setFormatter(file_formatter)
     file_handler.setLevel(logger.level)
     logger.addHandler(file_handler)
@@ -281,3 +283,76 @@ def log_init_args(method: Callable[P, None]) -> Callable[P, None]:
         method(*args, **kwargs)
 
     return wrapper
+
+
+def get_worker_logger(name: str | None = None) -> logging.Logger:
+    """Get a logger used on a scheduler's worker.
+
+    All worker loggers are children of one parent logger. The log file of the current job is
+    attached to this parent, such that all worker loggers write to it.
+
+    Args:
+        name: Name of the child logger. If None, the parent of all worker loggers is returned.
+
+    Returns:
+        logger: Logger instance.
+    """
+    if name is None:
+        return logging.getLogger(WORKER_LOGGER_NAME)
+    return logging.getLogger(f"{WORKER_LOGGER_NAME}.{name}")
+
+
+def get_logging_level(level: int | str) -> int:
+    """Get the numeric value of a logging level.
+
+    Args:
+        level: Logging level as number or as case-insensitive name, e.g., "INFO".
+
+    Returns:
+        Numeric logging level.
+    """
+    if isinstance(level, str):
+        level_names = logging.getLevelNamesMapping()
+        if level.upper() not in level_names:
+            raise ValueError(
+                f"Unknown logging level {level!r}. Valid levels are {list(level_names)}."
+            )
+        return level_names[level.upper()]
+    return level
+
+
+def reset_logger_on_worker() -> None:
+    """Close the handlers of a job, e.g., its log file, and reset the level."""
+    logger = get_worker_logger()
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
+        handler.close()
+    logger.setLevel(logging.NOTSET)
+
+
+def setup_logger_on_worker(log_dir: Path | None, level: int | str | None) -> None:
+    """Set up the log file of one job on a scheduler's worker.
+
+    Args:
+        log_dir: Directory of the log file of the job.
+        level: Logging level of the log file. If log_dir or level is None, no file is written and
+               the worker loggers behave like all other loggers.
+    """
+    logger = get_worker_logger()
+    reset_logger_on_worker()
+
+    if log_dir is None or level is None:
+        return
+
+    level = get_logging_level(level)
+    parent = logger.parent or logging.getLogger()
+    if parent.hasHandlers():
+        # Do not hide messages from the handlers of this process, e.g., in debug mode
+        logger.setLevel(min(level, parent.getEffectiveLevel()))
+    else:
+        logger.setLevel(level)
+
+    file_handler = logging.FileHandler(log_dir / WORKER_LOG_FILE_NAME, mode="w")
+    file_handler.setLevel(level)
+    file_handler.setFormatter(NewLineFormatter(FILE_LOG_FORMAT, datefmt=FILE_LOG_DATE_FORMAT))
+    logger.addHandler(file_handler)
