@@ -15,11 +15,10 @@
 """Module for data processing of simulation results."""
 
 import abc
-import logging
 from pathlib import Path
 from typing import Any
 
-_logger = logging.getLogger(__name__)
+from queens.utils.logger_settings import get_worker_logger
 
 
 class DataProcessor(metaclass=abc.ABCMeta):
@@ -32,6 +31,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_options_dict: Dictionary with read-in options for the file.
         file_name_identifier: Identifier for files. The file prefix can contain BASIC regex
             expression and subdirectories. Examples are wildcards `*` or expressions like `[ab]`.
+        logger_on_worker: Logger that writes to the worker log of the job
     """
 
     def __init__(
@@ -79,6 +79,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         self.files_to_be_deleted_regex_lst = files_to_be_deleted_regex_lst
         self.file_options_dict = file_options_dict
         self.file_name_identifier = file_name_identifier
+        self.logger_on_worker = get_worker_logger(type(self).__name__)
 
     def get_data_from_file(self, base_dir_file: Path) -> Any:
         """Get data of interest from file.
@@ -103,6 +104,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         file_path = self._check_file_exist_and_is_unique(base_dir_file)
         processed_data = None
         if file_path:
+            self.logger_on_worker.debug("Processing the file %s", file_path)
             raw_data = self.get_raw_data_from_file(file_path)
             filtered_data = self.filter_and_manipulate_raw_data(raw_data)
             processed_data = self._subsequent_data_manipulation(filtered_data)
@@ -142,7 +144,7 @@ class DataProcessor(metaclass=abc.ABCMeta):
         if len(file_list) == 1:
             file_path = file_list[0]
         else:
-            _logger.warning(
+            self.logger_on_worker.warning(
                 "The file '%s' does not exist!", base_dir_file / self.file_name_identifier
             )
             file_path = None

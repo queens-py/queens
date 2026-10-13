@@ -43,6 +43,7 @@ class Function(Driver):
         parameters,
         function,
         external_python_module_function=None,
+        worker_log_level=None,
     ):
         """Initialize Function object.
 
@@ -54,8 +55,13 @@ class Function(Driver):
                 method. If the function contains a `**kwargs` parameter, all the arguments will
                 be passed. Thus, these argument names should be avoided for non-related arguments.
             external_python_module_function (Path | str): Path to external module with function
+            worker_log_level (int | str | None): Logging level of the job log files (default:
+                                                 None, i.e., no log files are written)
         """
-        super().__init__(parameters=parameters)
+        super().__init__(
+            parameters=parameters,
+            worker_log_level=worker_log_level,
+        )
         if external_python_module_function is None:
             if isinstance(function, str):
                 # Try to load existing simulator functions
@@ -146,8 +152,8 @@ class Function(Driver):
             sample (np.ndarray): Input sample
             job_id (int): Job ID
             num_procs (int): number of processors
-            experiment_name (str): name of QUEENS experiment.
             experiment_dir (Path): Path to QUEENS experiment directory.
+            experiment_name (str): name of QUEENS experiment.
 
         Returns:
             Result and potentially the gradient

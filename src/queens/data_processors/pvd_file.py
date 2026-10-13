@@ -14,7 +14,6 @@
 #
 """Data processor class for pvd data extraction."""
 
-import logging
 from pathlib import Path
 from typing import override
 
@@ -23,8 +22,6 @@ import pyvista as pv
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class PvdFile(DataProcessor):

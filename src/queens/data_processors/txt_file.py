@@ -14,15 +14,12 @@
 #
 """Data processor class for txt data extraction."""
 
-import logging
 import re
 from pathlib import Path
 from typing import Any, override
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class TxtFile(DataProcessor):
@@ -102,7 +99,7 @@ class TxtFile(DataProcessor):
                 return raw_data
         except IOError as error:
             # pylint: disable=duplicate-code
-            _logger.warning(
+            self.logger_on_worker.warning(
                 "Could not read the file: %s. The following IOError was raised: %s. "
                 "Skipping the file and continuing.",
                 file_path,

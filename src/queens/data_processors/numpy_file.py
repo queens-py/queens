@@ -14,7 +14,6 @@
 #
 """Data processor class for numpy data extraction."""
 
-import logging
 from pathlib import Path
 from typing import override
 
@@ -22,8 +21,6 @@ import numpy as np
 
 from queens.data_processors._data_processor import DataProcessor
 from queens.utils.logger_settings import log_init_args
-
-_logger = logging.getLogger(__name__)
 
 
 class NumpyFile(DataProcessor):
@@ -62,17 +59,17 @@ class NumpyFile(DataProcessor):
         """
         try:
             raw_data = np.load(file_path)
-            _logger.info("Successfully read-in data from %s.", file_path)
+            self.logger_on_worker.info("Successfully read-in data from %s.", file_path)
             return raw_data
         except FileNotFoundError as error:
-            _logger.warning(
+            self.logger_on_worker.warning(
                 "Could not find the file: %s. The following FileNotFoundError was raised: %s. "
                 "Skipping the file and continuing.",
                 file_path,
                 error,
             )
         except ValueError as error:
-            _logger.warning(
+            self.logger_on_worker.warning(
                 "Could not read the file: %s. The following ValueError was raised: %s. "
                 "Skipping the file and continuing.",
                 file_path,
