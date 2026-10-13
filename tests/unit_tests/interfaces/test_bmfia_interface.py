@@ -139,7 +139,6 @@ def test_init():
         bmfia_interface.update_mappings_method.__func__
         is BmfiaInterface.update_mappings_per_coordinate
     )
-    assert bmfia_interface.coord_labels is None
     assert bmfia_interface.time_vec is None
     assert bmfia_interface.coords_mat is None
 
@@ -165,7 +164,6 @@ def test_init():
         bmfia_interface.update_mappings_method.__func__
         is BmfiaInterface.update_mappings_per_time_step
     )
-    assert bmfia_interface.coord_labels is None
     assert bmfia_interface.time_vec is None
     assert bmfia_interface.coords_mat is None
 
@@ -200,7 +198,6 @@ def test__init__():
     assert interface.evaluate_method.__name__ == evaluate_method.__name__
     assert interface.evaluate_and_gradient_method.__name__ == evaluate_and_gradient_method.__name__
     assert interface.update_mappings_method.__name__ == update_mappings_method.__name__
-    assert interface.coord_labels is None
     assert interface.time_vec is None
     assert interface.coords_mat is None
 
@@ -210,7 +207,6 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     z_lf_train = np.zeros((2, 30))
     y_hf_train = np.zeros((2, 25))
     dummy_lst = [1, 2, 3]
-    coord_labels = ["x1", "x2"]
     time_vec = None
     coords_mat = np.array([[0, 1], [0, 1]])
     approx = "dummy_approx"
@@ -230,14 +226,14 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
     # Test with wrong input dimensions (2D Tensor) --> ValueError
     with pytest.raises(IndexError):
         default_bmfia_interface.build_approximation(
-            z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
+            z_lf_train, y_hf_train, approx, time_vec, coords_mat
         )
 
     # Test with wrong input dimensions --> AssertionError
     z_lf_train = np.zeros((1, 2, 30))
     with pytest.raises(IndexError):
         default_bmfia_interface.build_approximation(
-            z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
+            z_lf_train, y_hf_train, approx, time_vec, coords_mat
         )
 
     # Test with correct input dimensions for Z_LF_train and Y_HF_train
@@ -248,7 +244,7 @@ def test_build_approximation(default_bmfia_interface, mocker, default_probabilis
 
     num_coords = z_lf_train.T.shape[2]
     default_bmfia_interface.build_approximation(
-        z_lf_train, y_hf_train, approx, coord_labels, time_vec, coords_mat
+        z_lf_train, y_hf_train, approx, time_vec, coords_mat
     )
 
     # -- Actual assert / tests ---

@@ -18,7 +18,6 @@ import shlex
 import sys
 
 import numpy as np
-import pandas as pd
 import pytest
 from mock import patch
 
@@ -31,14 +30,13 @@ from queens.models import Adjoint, FiniteDifference, Gaussian, Simulation
 from queens.parameters import Parameters
 from queens.schedulers import Local, Pool
 from queens.stochastic_optimizers import Adam
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 from queens.variational_distributions import FullRankNormal, MeanFieldNormal
 
 
 def test_rpvi_park91a_hifi(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     global_settings,
 ):
     """Integration test for the rpvi iterator.
@@ -59,12 +57,6 @@ def test_rpvi_park91a_hifi(
         rel_l2_change_threshold=-1,
         max_iteration=500,
     )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = FiniteDifference(
@@ -73,7 +65,7 @@ def test_rpvi_park91a_hifi(
     model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = RPVI(
@@ -119,7 +111,7 @@ def test_rpvi_park91a_hifi(
 
 def test_rpvi_park91a_hifi_provided_gradient(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     global_settings,
 ):
     """Test rpvi on *park91a_hifi* function with analytical gradients."""
@@ -137,19 +129,13 @@ def test_rpvi_park91a_hifi_provided_gradient(
         rel_l2_change_threshold=-1,
         max_iteration=500,
     )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     driver = Function(parameters=parameters, function="park91a_hifi_on_grid_with_gradients")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = RPVI(
@@ -214,7 +200,7 @@ def fixture_forward_model(request):
 
 
 @pytest.mark.max_time_for_test(20)
-def test_rpvi_gaussian(tmp_path, _create_experimental_data, forward_model, global_settings):
+def test_rpvi_gaussian(tmp_path, experimental_data, forward_model, global_settings):
     """Test RPVI with univariate Gaussian."""
     # Parameters
     x1 = Normal(mean=0.0, covariance=1.0)
@@ -230,18 +216,13 @@ def test_rpvi_gaussian(tmp_path, _create_experimental_data, forward_model, globa
         rel_l2_change_threshold=-1,
         max_iteration=10000000,
     )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data,
         forward_model=forward_model,
     )
     iterator = RPVI(
@@ -292,13 +273,10 @@ def test_rpvi_gaussian(tmp_path, _create_experimental_data, forward_model, globa
     )
 
 
-@pytest.fixture(name="_create_experimental_data")
-def fixture_create_experimental_data(tmp_path):
-    """Create a csv file with experimental data."""
-    data_dict = {"y_obs": np.zeros(1)}
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    dataframe = pd.DataFrame.from_dict(data_dict)
-    dataframe.to_csv(experimental_data_path, index=False)
+@pytest.fixture(name="experimental_data")
+def fixture_experimental_data():
+    """Experimental data equal to zero."""
+    return np.zeros(1)
 
 
 @pytest.fixture(name="module_path")
@@ -335,7 +313,7 @@ def fixture_rpvi_jobscript_template():
 
 def test_rpvi_exe_park91a_hifi_provided_gradient(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
@@ -345,7 +323,6 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
-    experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} p"
     plot_dir = tmp_path
@@ -362,12 +339,6 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
         max_iteration=10000000,
-    )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="experimental_data.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
     )
     scheduler = Local(
         num_procs=1,
@@ -400,7 +371,7 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
     model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = RPVI(
@@ -447,7 +418,7 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
 @pytest.mark.max_time_for_test(20)
 def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
@@ -457,7 +428,6 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
     """Test for the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
-    experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} s"
     plot_dir = tmp_path
@@ -474,12 +444,6 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
         max_iteration=10000000,
-    )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="experimental_data.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
     )
     scheduler = Local(
         num_procs=1,
@@ -506,7 +470,7 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
     model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = RPVI(
@@ -552,7 +516,7 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
 
 def test_rpvi_exe_park91a_hifi_adjoint_gradient(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     example_simulator_fun_dir,
     _create_input_file_executable_park91a_hifi_on_grid,
     python_path,
@@ -562,7 +526,6 @@ def test_rpvi_exe_park91a_hifi_adjoint_gradient(
     """Test the *rpvi* iterator based on the *park91a_hifi* function."""
     # generate json input file from template
     third_party_input_file = tmp_path / "input_file_executable_park91a_hifi_on_grid.csv"
-    experimental_data_path = tmp_path
     executable = example_simulator_fun_dir / "executable_park91a_hifi_on_grid_with_gradients.py"
     executable = f"{python_path} {executable} s"
     # adjoint executable (here we actually use the same executable but call it with
@@ -585,12 +548,6 @@ def test_rpvi_exe_park91a_hifi_adjoint_gradient(
         rel_l1_change_threshold=-1,
         rel_l2_change_threshold=-1,
         max_iteration=10000000,
-    )
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="experimental_data.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
     )
     scheduler = Local(
         num_procs=1,
@@ -634,7 +591,7 @@ def test_rpvi_exe_park91a_hifi_adjoint_gradient(
     model = Gaussian(
         noise_type="MAP_jeffrey_variance",
         nugget_noise_variance=1e-08,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_park91a_hifi_on_grid["observations"],
         forward_model=forward_model,
     )
     iterator = RPVI(

@@ -28,14 +28,12 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 
 def test_sequential_monte_carlo_chopin_gaussian_adaptive_tempering(
-    tmp_path,
     target_density_gaussian_1d,
-    _create_experimental_data_gaussian_1d,
+    experimental_data_gaussian_1d,
     global_settings,
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
@@ -44,18 +42,13 @@ def test_sequential_monte_carlo_chopin_gaussian_adaptive_tempering(
     parameters = Parameters(x=x)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_gaussian_1d,
         forward_model=forward_model,
     )
     iterator = SequentialMonteCarloChopin(

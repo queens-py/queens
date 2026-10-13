@@ -47,7 +47,6 @@ class BMFIA(Iterator):
         lf_model (obj): Low-fidelity model object.
         coords_experimental_data (np.array): Coordinates of the experimental data.
         time_vec (np.array): Time vector of experimental observations.
-        y_obs_vec (np.array): Output data of experimental observations.
         x_cols (list): List of columns for features taken from input variables.
         num_features (int): Number of features to be selected.
         coord_cols (list): List of columns for coordinates taken from input variables.
@@ -94,7 +93,6 @@ class BMFIA(Iterator):
         self.lf_model = lf_model
         self.coords_experimental_data = None
         self.time_vec = None
-        self.y_obs_vec = None
         self.x_cols = X_cols
         self.num_features = num_features
         self.coord_cols = coord_cols
@@ -401,6 +399,11 @@ class BMFIA(Iterator):
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
         """
+        if coords_mat.shape[1] == 0:
+            raise ValueError(
+                "The feature configuration 'coord_features' requires observation coordinates, "
+                "but none were provided to the likelihood model."
+            )
         try:
             idx_lst = self.coord_cols
             # Catch wrong data type
@@ -461,6 +464,11 @@ class BMFIA(Iterator):
                               informative feature dimensions. Every row is one data point with
                               dimensions per column.
         """
+        if self.time_vec is None:
+            raise ValueError(
+                "The feature configuration 'time_features' requires observation times, "
+                "but none were provided to the likelihood model."
+            )
         time_repeat = int(y_lf_mat.shape[0] / self.time_vec.size)
         time_vec = np.repeat(self.time_vec.reshape(-1, 1), repeats=time_repeat, axis=0)
 

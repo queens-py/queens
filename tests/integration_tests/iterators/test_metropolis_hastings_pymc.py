@@ -26,16 +26,13 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 SAMPLER_STAT_RTOL = 1e-5
 SAMPLER_STAT_ATOL = 1e-8
 
 
-def test_metropolis_hastings_pymc_gaussian(
-    tmp_path, _create_experimental_data_zero, global_settings
-):
+def test_metropolis_hastings_pymc_gaussian(experimental_data_zero, global_settings):
     """Test MH sampling for a Gaussian-Gaussian Bayesian inference problem.
 
     The test samples from a two-dimensional posterior with Gaussian prior and Gaussian
@@ -78,18 +75,13 @@ def test_metropolis_hastings_pymc_gaussian(
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_zero,
         forward_model=forward_model,
     )
     iterator = MetropolisHastingsPyMC(

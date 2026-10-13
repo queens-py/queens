@@ -15,8 +15,6 @@
 """Integration test for the NUTS Iterator."""
 
 import numpy as np
-import pandas as pd
-import pytest
 from mock import patch
 
 from queens.distributions.normal import Normal
@@ -27,7 +25,6 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 SAMPLER_STAT_RTOL = 1e-5
@@ -35,9 +32,8 @@ SAMPLER_STAT_ATOL = 1e-8
 
 
 def test_nuts_gaussian(
-    tmp_path,
     target_density_gaussian_2d_with_grad,
-    _create_experimental_data,
+    experimental_data_zero,
     global_settings,
 ):
     """Test NUTS sampling for a Gaussian-Gaussian Bayesian inference problem.
@@ -82,18 +78,13 @@ def test_nuts_gaussian(
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_zero,
         forward_model=forward_model,
     )
     iterator = NUTS(
@@ -128,15 +119,3 @@ def test_nuts_gaussian(
         rtol=SAMPLER_STAT_RTOL,
         atol=SAMPLER_STAT_ATOL,
     )
-
-
-@pytest.fixture(name="_create_experimental_data")
-def fixture_create_experimental_data(tmp_path):
-    """Create a csv file with experimental data."""
-    samples = np.array([0, 0]).flatten()
-
-    # write the data to a csv file in tmp_path
-    data_dict = {"y_obs": samples}
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    df = pd.DataFrame.from_dict(data_dict)
-    df.to_csv(experimental_data_path, index=False)
