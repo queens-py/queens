@@ -61,7 +61,10 @@ class Gaussian(Likelihood):
 
         Args:
             forward_model (obj): Forward model on which the likelihood model is based
-            observations (array_like): Vector with observations
+            observations (array_like): Vector with observations. Its flattened entries must
+                correspond one-to-one, and in the same order, to the outputs of a single forward
+                model evaluation, i.e., the forward model has to return an array of shape
+                (num_samples, observations.size)
             noise_type (str): String encoding the type of likelihood noise model:
                                 Fixed or MAP estimate with Jeffreys prior
             noise_value (array_like): Likelihood (co)variance value

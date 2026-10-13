@@ -90,8 +90,12 @@ class BMFGaussian(Likelihood):
             mf_subiterator (obj): Subiterator to select the training data of the probabilistic
                 regression model
             observations (array_like): Vector with observations. Will be flattened if necessary.
+                Its flattened entries must correspond one-to-one, and in the same order, to the
+                mean of a multi-fidelity interface evaluation, i.e., the multi-fidelity interface
+                has to return a mean of length observations.size per sample.
             mf_approx (Model): Probabilistic mapping
-            noise_value (array_like): Noise variance of the observations
+            noise_value (array_like): Noise variance of the observations. Either a scalar or a
+                vector of length observations.size.
             num_refinement_samples (int): Number of additional samples to train the multi-fidelity
                 dependency in refinement step
             likelihood_evals_for_refinement (lst): List with necessary number of likelihood
@@ -102,7 +106,7 @@ class BMFGaussian(Likelihood):
                 observation time.
             observation_times (array_like, opt): Unique vector of observation times
         """
-        super().__init__(forward_model, observations.reshape(-1))
+        super().__init__(forward_model, np.asarray(observations).reshape(-1))
         self.coords_mat = self._get_coordinates_matrix(
             observation_coordinates, self.observations.size
         )

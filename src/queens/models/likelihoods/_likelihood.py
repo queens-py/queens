@@ -26,7 +26,8 @@ class Likelihood(Model):
 
     Attributes:
         forward_model (obj): Forward model on which the likelihood model is based
-        observations (np.array): Observation data
+        observations (np.array): Observation data. Its flattened entries correspond one-to-one
+            to the outputs of a single forward model evaluation.
     """
 
     def __init__(self, forward_model, observations):
@@ -34,7 +35,10 @@ class Likelihood(Model):
 
         Args:
             forward_model (obj): Forward model that is evaluated during the likelihood evaluation
-            observations (array_like): Observation data
+            observations (array_like): Observation data. Its flattened entries must
+                correspond one-to-one, and in the same order, to the outputs of a single forward
+                model evaluation, i.e., the forward model has to return an array of shape
+                (num_samples, observations.size)
         """
         super().__init__()
         self.forward_model = forward_model
