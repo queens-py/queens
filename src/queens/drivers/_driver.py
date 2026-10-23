@@ -33,7 +33,7 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
-        parameters (Parameters): Parameters object
+        parameters (Parameters | None): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
         worker_log_level (int | None): Logging level of the job log files, None switches them off
         logger_on_worker (logging.Logger): Logger instance used on the worker
@@ -41,14 +41,15 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        parameters,
+        parameters=None,
         files_to_copy=None,
         worker_log_level=logging.INFO,
     ):
         """Initialize Driver object.
 
         Args:
-            parameters (Parameters): Parameters object
+            parameters (Parameters, opt): Parameters object, needed to translate the sample in
+                                          __call__. Not needed if run is called with the inputs.
             files_to_copy (list): files or directories to copy to experiment_dir
             worker_log_level (int | str | None): Logging level of the log file written for each
                                                  job (default: logging.INFO). None switches the
@@ -114,6 +115,11 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Results
         """
+        if self.parameters is None:
+            raise ValueError(
+                "The driver has no parameters to translate the sample. Pass parameters to the "
+                "driver or call run with the inputs dict directly."
+            )
         worker_log_dir = None
         if self.worker_log_level is not None:
             worker_log_dir = current_job_directory(experiment_dir, job_id)

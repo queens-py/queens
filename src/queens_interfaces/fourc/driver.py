@@ -34,9 +34,9 @@ class Fourc(Jobscript):
     @log_init_args
     def __init__(
         self,
-        parameters,
         input_templates,
         executable,
+        parameters=None,
         files_to_copy=None,
         data_processor=None,
         gradient_data_processor=None,
@@ -48,9 +48,10 @@ class Fourc(Jobscript):
         """Initialize Fourc object.
 
         Args:
-            parameters (Parameters): Parameters object
             input_templates (str, Path, dict): path to simulation input template
             executable (str, Path): path to main executable of respective software
+            parameters (Parameters, opt): Parameters object, needed to translate the sample in
+                                          __call__. Not needed if run is called with the inputs.
             files_to_copy (list, opt): files or directories to copy to experiment_dir
             data_processor (Callable, opt): data processor
             gradient_data_processor (Callable, opt): data processor class for gradient data

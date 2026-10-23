@@ -17,6 +17,7 @@
 from pathlib import Path
 from unittest.mock import Mock
 
+import numpy as np
 import pytest
 
 from queens.drivers.function import Function
@@ -108,3 +109,15 @@ def test_run_does_not_modify_inputs():
         )
         assert result["result"] == 1.5 + job_id
     assert inputs == {"parameter": 1.5}
+
+
+def test_call_without_parameters_raises(tmp_path):
+    """Test that a driver without parameters cannot translate a sample."""
+
+    def function(parameter):
+        return parameter
+
+    driver = Function(function=function)
+
+    with pytest.raises(ValueError, match="no parameters"):
+        driver(np.array([1.5]), 0, 1, tmp_path, "function_test")
