@@ -246,6 +246,8 @@ class Jobscript(Driver):
             job_id, experiment_dir
         )
 
+        # Copy, so that the metadata export does not convert the values in the caller's dict
+        inputs = dict(inputs)
         metadata = SimulationMetadata(job_id=job_id, inputs=inputs, job_dir=job_dir)
 
         with metadata.time_code("prepare_input_files"):

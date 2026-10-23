@@ -51,7 +51,7 @@ class FiniteDifference(Simulation):
 
         Args:
             scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver): Driver for the simulations
+            driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
             finite_difference_method (str): Method to calculate a finite-difference-based
                 approximation of the Jacobian matrix:
 
@@ -93,7 +93,7 @@ class FiniteDifference(Simulation):
         return self.response
 
     def grad(self, samples, upstream_gradient):
-        r"""Evaluate gradient of model w.r.t. current set of input samples.
+        r"""Evaluate the model gradient for the current input samples.
 
         Consider current model f(x) with input samples x, and upstream function g(f). The provided
         upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns

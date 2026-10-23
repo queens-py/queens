@@ -31,7 +31,8 @@ class Adjoint(Simulation):
     Attributes:
         adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of the
                             functional w.r.t. to the simulation output.
-        gradient_driver (Driver): Driver object for the adjoint simulation run.
+        gradient_driver (Driver | SchedulerCallableSignature): Driver or callable for the
+                                                               adjoint simulation run.
     """
 
     @log_init_args
@@ -46,8 +47,9 @@ class Adjoint(Simulation):
 
         Args:
             scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver): Driver for the simulations
-            gradient_driver (Driver): Driver object for the adjoint simulation run.
+            driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
+            gradient_driver (Driver | SchedulerCallableSignature): Driver or callable for the
+                                                                   adjoint simulation run.
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """

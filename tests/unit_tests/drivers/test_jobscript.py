@@ -284,6 +284,19 @@ def test_run_without_parameters(input_templates, executable, job_options, inject
             assert value == str(injectable_options[key])
 
 
+def test_run_does_not_modify_inputs(jobscript_driver, job_options):
+    """Test that run does not convert the values of the caller's dict."""
+    inputs = {"parameter_1": np.float64(1), "parameter_2": np.float64(2)}
+    jobscript_driver.run(
+        inputs=inputs,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+    assert all(isinstance(value, np.float64) for value in inputs.values())
+
+
 @pytest.mark.parametrize(
     "raise_error_on_jobscript_failure, expectation",
     [
