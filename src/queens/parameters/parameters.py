@@ -158,7 +158,7 @@ class Parameters:
         return logpdf
 
     def grad_joint_logpdf(self, samples: np.ndarray) -> np.ndarray:
-        """Evaluate the gradient of the joint log-PDF w.r.t. the samples.
+        """Gradient of the joint log-PDF with respect to the samples.
 
         Args:
             samples: Samples for which to evaluate the gradient of the joint log-PDF. Each row
@@ -183,7 +183,7 @@ class Parameters:
         return grad_logpdf
 
     def latent_grad(self, upstream_gradient: np.ndarray) -> np.ndarray:
-        """Gradient of the rvs and rfs w.r.t. latent variables.
+        """Gradient of the rvs and rfs with respect to latent variables.
 
         Args:
             upstream_gradient: Upstream gradient
@@ -253,18 +253,6 @@ class Parameters:
         for j, key in enumerate(self.parameters_keys):
             sample_dict[key] = sample[j]
         return sample_dict
-
-    def dict_as_sample(self, sample_dict: dict) -> np.ndarray:
-        """Opposite of `sample_as_dict`: Convert sample_dict to sample array.
-
-        Args:
-            sample_dict: dict containing the sample.
-                The keys must correspond to parameter keys. The order of the keys does not matter.
-
-        Returns:
-            sample: sample array in correct order
-        """
-        return np.array([sample_dict[key] for key in self.parameters_keys])
 
     def expand_random_field_realization(self, truncated_sample: np.ndarray) -> np.ndarray:
         """Expand truncated representation of random fields.

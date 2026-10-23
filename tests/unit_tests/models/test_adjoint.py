@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
+from queens.drivers._driver import Driver
 from queens.drivers.jobscript import Jobscript
 from queens.models import adjoint
 from queens.models.adjoint import Adjoint
@@ -70,6 +71,20 @@ def test_init_with_reuse_existing_jobs(reuse_forward_jobs, reuse_gradient_jobs):
 
     with pytest.raises(NotImplementedError, match="Reusing existing jobs is not supported"):
         Adjoint(scheduler=Mock(), driver=driver, gradient_driver=gradient_driver)
+
+
+def test_init_copies_files_of_both_drivers():
+    """Test that the files of the driver and the gradient driver are copied."""
+    scheduler = Mock()
+    driver = Mock(spec=Driver)
+    driver.files_to_copy = ["forward.yaml"]
+    gradient_driver = Mock(spec=Driver)
+    gradient_driver.files_to_copy = ["adjoint.yaml"]
+
+    Adjoint(scheduler=scheduler, driver=driver, gradient_driver=gradient_driver)
+
+    scheduler.copy_files_to_experiment_dir.assert_any_call(["forward.yaml"])
+    scheduler.copy_files_to_experiment_dir.assert_any_call(["adjoint.yaml"])
 
 
 @pytest.fixture(name="scheduler_response")

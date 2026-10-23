@@ -16,6 +16,7 @@
 
 import logging
 
+from queens.drivers._driver import Driver
 from queens.drivers.jobscript import Jobscript
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
@@ -60,6 +61,8 @@ class Adjoint(Simulation):
                 )
         super().__init__(scheduler=scheduler, driver=driver)
         self.gradient_driver = gradient_driver
+        if isinstance(gradient_driver, Driver):
+            self.scheduler.copy_files_to_experiment_dir(gradient_driver.files_to_copy)
         self.adjoint_file = adjoint_file
 
     def grad(self, samples, upstream_gradient):
