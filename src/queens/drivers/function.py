@@ -140,7 +140,7 @@ class Function(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -149,7 +149,7 @@ class Function(Driver):
         """Run the driver.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample as dict of parameter names and values
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -168,7 +168,8 @@ class Function(Driver):
                 raise KeyError(f"The key {name} is already in the sample dictionary.")
             sample_dict[name] = value
 
-        sample_dict = self.parameters.sample_as_dict(sample)
+        # Copy, so that the run arguments are not written into the caller's dict
+        sample_dict = dict(inputs)
         if self.function_requires_job_id:
             _pass_run_arguments(sample_dict, "job_id", job_id)
         if self.function_requires_num_procs:

@@ -188,7 +188,7 @@ def run_jobscript_driver(
         Results from the jobscript run.
     """
     return jobscript_driver.run(
-        sample=sample,
+        inputs=jobscript_driver.parameters.sample_as_dict(sample),
         job_id=job_options.job_id,
         num_procs=job_options.num_procs,
         experiment_dir=job_options.experiment_dir,
@@ -280,11 +280,10 @@ def test_multiple_input_files(jobscript_driver, job_options, injected_input_file
     """Test if multiple input files are correctly generated."""
     # Samples to be injected
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     # Run the driver
     jobscript_driver.run(
-        sample=sample,
+        inputs=sample_dict,
         job_id=job_options.job_id,
         num_procs=job_options.num_procs,
         experiment_dir=job_options.experiment_dir,
@@ -344,11 +343,10 @@ def test_error_in_jobscript_template(
         raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with expectation:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -390,11 +388,10 @@ def test_nonzero_exit_code(
         raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with expectation:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -415,11 +412,10 @@ def test_nonzero_exit_code_includes_jobscript_log(parameters, input_template, jo
         raise_error_on_jobscript_failure=True,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with pytest.raises(SubprocessError, match="jobscript failed"):
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -440,11 +436,10 @@ def test_nonzero_exit_code_includes_only_jobscript_log_tail(
         raise_error_on_jobscript_failure=True,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with pytest.raises(SubprocessError) as error:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,

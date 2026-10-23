@@ -72,7 +72,7 @@ class Driver(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -80,10 +80,11 @@ class Driver(metaclass=abc.ABCMeta):
     ) -> dict:
         """Abstract method for driver run.
 
-        The log file of the job is set up by __call__, i.e., when a scheduler runs the driver.
+        The log file of the job and the translation of the sample array into the inputs dict are
+        handled by __call__, i.e., when a scheduler runs the driver.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample as dict of parameter names and values
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -101,7 +102,7 @@ class Driver(metaclass=abc.ABCMeta):
         experiment_dir: Path,
         experiment_name: str,
     ) -> dict:
-        """Run the driver with the log file of the job.
+        """Translate the sample into inputs and run the job with its log file.
 
         Args:
             sample (np.ndarray): Input sample
@@ -120,7 +121,8 @@ class Driver(metaclass=abc.ABCMeta):
         setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)
 
         try:
-            return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
+            inputs = self.parameters.sample_as_dict(sample)
+            return self.run(inputs, job_id, num_procs, experiment_dir, experiment_name)
         except Exception:
             self.logger_on_worker.exception("Job %s failed.", job_id)
             raise

@@ -16,7 +16,9 @@
 
 import numpy as np
 
+from queens.drivers._driver import Driver
 from queens.models._model import Model
+from queens.schedulers._scheduler import Scheduler, SchedulerCallableSignature
 from queens.utils.logger_settings import log_init_args
 
 
@@ -25,21 +27,23 @@ class Simulation(Model):
 
     Attributes:
         scheduler (Scheduler): Scheduler for the simulations
-        driver (Driver): Driver for the simulations
+        driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
     """
 
     @log_init_args
-    def __init__(self, scheduler, driver):
+    def __init__(self, scheduler: Scheduler, driver: Driver | SchedulerCallableSignature):
         """Initialize simulation model.
 
         Args:
-            scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver): Driver for the simulations
+            scheduler: Scheduler for the simulations
+            driver: Driver or callable for the simulations. A callable must follow the
+                    SchedulerCallableSignature.
         """
         super().__init__()
         self.scheduler = scheduler
         self.driver = driver
-        self.scheduler.copy_files_to_experiment_dir(self.driver.files_to_copy)
+        if isinstance(driver, Driver):
+            self.scheduler.copy_files_to_experiment_dir(driver.files_to_copy)
 
     def _evaluate(self, samples: np.ndarray) -> dict:
         """Evaluate model with current set of input samples.
@@ -87,7 +91,7 @@ class Simulation(Model):
         }
 
     def grad(self, samples, upstream_gradient):
-        r"""Evaluate gradient of model w.r.t. current set of input samples.
+        r"""Evaluate the model gradient for the current input samples.
 
         Consider current model f(x) with input samples x, and upstream function g(f). The provided
         upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
