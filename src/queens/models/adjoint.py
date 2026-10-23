@@ -16,6 +16,7 @@
 
 import logging
 
+from queens.drivers._driver import Driver
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io import write_to_csv
@@ -52,10 +53,12 @@ class Adjoint(Simulation):
         """
         super().__init__(scheduler=scheduler, driver=driver)
         self.gradient_driver = gradient_driver
+        if isinstance(gradient_driver, Driver):
+            self.scheduler.copy_files_to_experiment_dir(gradient_driver.files_to_copy)
         self.adjoint_file = adjoint_file
 
     def grad(self, samples, upstream_gradient):
-        r"""Evaluate gradient of model w.r.t. current set of input samples.
+        r"""Evaluate the model gradient for the current input samples.
 
         Consider current model f(x) with input samples x, and upstream function g(f). The provided
         upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
