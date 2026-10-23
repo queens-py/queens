@@ -259,6 +259,31 @@ def test_multiple_input_files(jobscript_driver, job_options, injected_input_file
             assert value == str(injectable_options[key])
 
 
+def test_run_without_parameters(input_templates, executable, job_options, injected_input_files):
+    """Test that a driver without parameters runs with the inputs dict."""
+    input_template_1, input_template_2 = input_templates
+    jobscript_driver = Jobscript(
+        jobscript_template="",
+        executable=executable,
+        input_templates={"input_1": input_template_1, "input_2": input_template_2},
+    )
+    assert jobscript_driver.parameters is None
+
+    inputs = {"parameter_1": 1, "parameter_2": 2}
+    jobscript_driver.run(
+        inputs=inputs,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+
+    injectable_options = job_options.add_data_and_to_dict(inputs)
+    for input_file in injected_input_files.values():
+        for key, value in yaml.safe_load(input_file.read_text()).items():
+            assert value == str(injectable_options[key])
+
+
 @pytest.mark.parametrize(
     "raise_error_on_jobscript_failure, expectation",
     [

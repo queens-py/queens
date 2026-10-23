@@ -112,10 +112,10 @@ class Jobscript(Driver):
     @log_init_args
     def __init__(
         self,
-        parameters,
         input_templates,
         jobscript_template,
         executable,
+        parameters=None,
         files_to_copy=None,
         data_processor: Callable = None,
         gradient_data_processor: Callable = None,
@@ -127,12 +127,13 @@ class Jobscript(Driver):
         """Initialize Jobscript object.
 
         Args:
-            parameters (Parameters): Parameters object.
             input_templates (str, Path, dict): (Local) path(s) to simulation input template.
             jobscript_template (str, Path): (Local) path to jobscript template or read-in jobscript
                 template.
             executable (str, Path): Path to main executable of respective software. Is a remote
                 path when using the Cluster scheduler.
+            parameters (Parameters, opt): Parameters object, needed to translate the sample in
+                                          __call__. Not needed if run is called with the inputs.
             files_to_copy (list, opt): Files or directories to copy to experiment_dir.
             data_processor (obj, opt): Instance of data processor class.
             gradient_data_processor (obj, opt): Instance of data processor class for gradient data.
