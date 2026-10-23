@@ -17,7 +17,6 @@
 from pathlib import Path
 from unittest.mock import Mock
 
-import numpy as np
 import pytest
 
 from queens.drivers.function import Function
@@ -55,12 +54,10 @@ def test_pass_run_arguments(function_type):
     else:
         raise ValueError(f"Unknown function type: {function_type}")
 
-    parameters = Mock()
-    parameters.sample_as_dict.return_value = {"parameter": reference_parameter}
-    driver = Function(parameters=parameters, function=function)
+    driver = Function(parameters=Mock(), function=function)
 
     result = driver.run(
-        sample=np.array([reference_parameter]),
+        inputs={"parameter": reference_parameter},
         job_id=reference_job_id,
         num_procs=reference_num_procs,
         experiment_dir=reference_experiment_dir,
@@ -80,15 +77,34 @@ def test_pass_run_arguments_overwrite_parameter():
     def function(num_procs):
         return num_procs
 
-    parameters = Mock()
-    parameters.sample_as_dict.return_value = {"num_procs": reference_parameter}
-    driver = Function(parameters=parameters, function=function)
+    driver = Function(parameters=Mock(), function=function)
 
     with pytest.raises(KeyError):
         driver.run(
-            sample=np.array([reference_parameter]),
+            inputs={"num_procs": reference_parameter},
             job_id=reference_job_id,
             num_procs=reference_num_procs,
             experiment_dir=reference_experiment_dir,
             experiment_name=reference_experiment_name,
         )
+
+
+def test_run_does_not_modify_inputs():
+    """Test that run arguments do not leak into the inputs."""
+
+    def function(parameter, job_id):
+        return parameter + job_id
+
+    driver = Function(parameters=Mock(), function=function)
+    inputs = {"parameter": 1.5}
+
+    for job_id in [2, 3]:
+        result = driver.run(
+            inputs=inputs,
+            job_id=job_id,
+            num_procs=1,
+            experiment_dir=Path("/function_test"),
+            experiment_name="function_test",
+        )
+        assert result["result"] == 1.5 + job_id
+    assert inputs == {"parameter": 1.5}
