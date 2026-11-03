@@ -33,7 +33,7 @@ class Driver(metaclass=abc.ABCMeta):
     """Abstract base class for drivers in QUEENS.
 
     Attributes:
-        parameters (Parameters | None): Parameters object
+        parameters (Parameters): Parameters object
         files_to_copy (list): files or directories to copy to experiment_dir
         worker_log_level (int | None): Logging level of the job log files, None switches them off
         logger_on_worker (logging.Logger): Logger instance used on the worker
@@ -41,15 +41,15 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __init__(
         self,
-        parameters=None,
+        parameters,
         files_to_copy=None,
         worker_log_level=logging.INFO,
     ):
         """Initialize Driver object.
 
         Args:
-            parameters (Parameters, opt): Parameters object, needed to translate the sample in
-                                          __call__. Not needed if run is called with the inputs.
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             files_to_copy (list): files or directories to copy to experiment_dir
             worker_log_level (int | str | None): Logging level of the log file written for each
                                                  job (default: logging.INFO). None switches the
@@ -81,7 +81,7 @@ class Driver(metaclass=abc.ABCMeta):
     ) -> dict:
         """Abstract method for driver run.
 
-        The log file of the job and the translation of the sample array into the inputs dict are
+        The log file of the job and the conversion of the sample array into the inputs dict are
         handled by __call__, i.e., when a scheduler runs the driver.
 
         Args:
@@ -97,16 +97,18 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __call__(
         self,
-        sample: np.ndarray,
+        sample: np.ndarray | dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,
     ) -> dict:
-        """Translate the sample into inputs and run the job with its log file.
+        """Run the job with its log file.
 
         Args:
-            sample (np.ndarray): Input sample
+            sample (np.ndarray | dict): Input sample as array or as dict of parameter names and
+                                        values. An array is converted with ``parameters``, a dict
+                                        is passed to ``run`` as is.
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -115,11 +117,6 @@ class Driver(metaclass=abc.ABCMeta):
         Returns:
             Results
         """
-        if self.parameters is None:
-            raise ValueError(
-                "The driver has no parameters to translate the sample. Pass parameters to the "
-                "driver or call run with the inputs dict directly."
-            )
         worker_log_dir = None
         if self.worker_log_level is not None:
             worker_log_dir = current_job_directory(experiment_dir, job_id)
@@ -127,7 +124,10 @@ class Driver(metaclass=abc.ABCMeta):
         setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)
 
         try:
-            inputs = self.parameters.sample_as_dict(sample)
+            if isinstance(sample, dict):
+                inputs = sample
+            else:
+                inputs = self.parameters.sample_as_dict(sample)
             return self.run(inputs, job_id, num_procs, experiment_dir, experiment_name)
         except Exception:
             self.logger_on_worker.exception("Job %s failed.", job_id)
