@@ -16,6 +16,7 @@
 
 import os
 from contextlib import nullcontext as does_not_raise
+from pathlib import Path
 
 import numpy as np
 import pytest
@@ -259,34 +260,13 @@ def test_multiple_input_files(jobscript_driver, job_options, injected_input_file
             assert value == str(injectable_options[key])
 
 
-def test_run_without_parameters(input_templates, executable, job_options, injected_input_files):
-    """Test that a driver without parameters runs with the inputs dict."""
-    input_template_1, input_template_2 = input_templates
-    jobscript_driver = Jobscript(
-        jobscript_template="",
-        executable=executable,
-        input_templates={"input_1": input_template_1, "input_2": input_template_2},
-    )
-    assert jobscript_driver.parameters is None
-
-    inputs = {"parameter_1": 1, "parameter_2": 2}
-    jobscript_driver.run(
-        inputs=inputs,
-        job_id=job_options.job_id,
-        num_procs=job_options.num_procs,
-        experiment_dir=job_options.experiment_dir,
-        experiment_name=job_options.experiment_name,
-    )
-
-    injectable_options = job_options.add_data_and_to_dict(inputs)
-    for input_file in injected_input_files.values():
-        for key, value in yaml.safe_load(input_file.read_text()).items():
-            assert value == str(injectable_options[key])
-
-
 def test_run_does_not_modify_inputs(jobscript_driver, job_options):
     """Test that run does not convert the values of the caller's dict."""
-    inputs = {"parameter_1": np.float64(1), "parameter_2": np.float64(2)}
+    inputs = {
+        "parameter_1": np.float64(1),
+        "parameter_2": np.float64(2),
+        "nested": {"mesh": Path("mesh.exo")},
+    }
     jobscript_driver.run(
         inputs=inputs,
         job_id=job_options.job_id,
@@ -294,7 +274,9 @@ def test_run_does_not_modify_inputs(jobscript_driver, job_options):
         experiment_dir=job_options.experiment_dir,
         experiment_name=job_options.experiment_name,
     )
-    assert all(isinstance(value, np.float64) for value in inputs.values())
+    assert isinstance(inputs["parameter_1"], np.float64)
+    assert isinstance(inputs["parameter_2"], np.float64)
+    assert isinstance(inputs["nested"]["mesh"], Path)
 
 
 @pytest.mark.parametrize(

@@ -16,6 +16,7 @@
 
 import numpy as np
 
+from example_simulator_functions.rosenbrock60 import rosenbrock60
 from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.models.simulation import Simulation
@@ -23,15 +24,10 @@ from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 
 
-def rosenbrock(x1, x2):
-    """Rosenbrock function."""
-    return (1 - x1) ** 2 + 100 * (x2 - x1**2) ** 2
-
-
 def rosenbrock_job(sample, job_id, num_procs, experiment_dir, experiment_name):
     """Rosenbrock function with the signature required by the schedulers."""
     # pylint: disable=unused-argument
-    return {"result": np.atleast_1d(rosenbrock(*sample))}
+    return {"result": np.atleast_1d(rosenbrock60(*sample))}
 
 
 def test_simulation_with_callable(global_settings, tmp_path):
@@ -41,7 +37,7 @@ def test_simulation_with_callable(global_settings, tmp_path):
 
     scheduler = Pool(experiment_name=global_settings.experiment_name, experiment_base_dir=tmp_path)
     model_with_driver = Simulation(
-        scheduler=scheduler, driver=Function(parameters=parameters, function=rosenbrock)
+        scheduler=scheduler, driver=Function(parameters=parameters, function=rosenbrock60)
     )
     model_with_callable = Simulation(scheduler=scheduler, driver=rosenbrock_job)
 
@@ -49,4 +45,4 @@ def test_simulation_with_callable(global_settings, tmp_path):
     result_callable = model_with_callable.evaluate(samples)["result"]
 
     np.testing.assert_allclose(result_callable, result_driver)
-    np.testing.assert_allclose(result_callable[:, 0], [rosenbrock(*s) for s in samples])
+    np.testing.assert_allclose(result_callable[:, 0], [rosenbrock60(*s) for s in samples])

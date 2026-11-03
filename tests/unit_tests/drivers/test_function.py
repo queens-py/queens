@@ -111,13 +111,32 @@ def test_run_does_not_modify_inputs():
     assert inputs == {"parameter": 1.5}
 
 
-def test_call_without_parameters_raises(tmp_path):
-    """Test that a driver without parameters cannot translate a sample."""
+def test_run_with_gradient_and_python_scalars():
+    """Test that a gradient return works with Python scalars in the inputs."""
+
+    def function(x):
+        return x**2, [2 * x]
+
+    driver = Function(parameters=Mock(), function=function)
+    result = driver.run(
+        inputs={"x": 2.0},
+        job_id=0,
+        num_procs=1,
+        experiment_dir=Path("/function_test"),
+        experiment_name="function_test",
+    )
+    np.testing.assert_equal(result["result"], np.array([4.0]))
+    np.testing.assert_equal(result["gradient"], np.array([[4.0]]))
+
+
+def test_call_with_dict(tmp_path):
+    """Test that __call__ accepts an inputs dict and passes it to run."""
 
     def function(parameter):
-        return parameter
+        return 2 * parameter
 
-    driver = Function(function=function)
+    driver = Function(parameters=Mock(), function=function)
+    result = driver({"parameter": 1.5}, 0, 1, tmp_path, "function_test")
 
-    with pytest.raises(ValueError, match="no parameters"):
-        driver(np.array([1.5]), 0, 1, tmp_path, "function_test")
+    assert result["result"] == 3.0
+    driver.parameters.sample_as_dict.assert_not_called()

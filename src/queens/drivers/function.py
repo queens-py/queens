@@ -40,21 +40,21 @@ class Function(Driver):
     @log_init_args
     def __init__(
         self,
+        parameters,
         function,
-        parameters=None,
         external_python_module_function=None,
         worker_log_level=None,
     ):
         """Initialize Function object.
 
         Args:
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             function (callable, str): Function or name of example function provided by QUEENS.
                 If the function contains the arguments `job_id`, `num_procs`, `experiment_dir`,
                 or `experiment_name`, they will be passed to the function when calling the `run`
                 method. If the function contains a `**kwargs` parameter, all the arguments will
                 be passed. Thus, these argument names should be avoided for non-related arguments.
-            parameters (Parameters, opt): Parameters object, needed to translate the sample in
-                                          __call__. Not needed if run is called with the inputs.
             external_python_module_function (Path | str): Path to external module with function
             worker_log_level (int | str | None): Logging level of the job log files (default:
                                                  None, i.e., no log files are written)
@@ -121,7 +121,7 @@ class Function(Driver):
             result_array = function(**sample_dict)
             if isinstance(result_array, tuple):
                 # here we expect a gradient return
-                result = result_array[0]
+                result = np.asarray(result_array[0])
                 gradient = np.array(result_array[1])
                 if not result.shape:
                     result = np.expand_dims(result, axis=0)
