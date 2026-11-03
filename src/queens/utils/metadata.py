@@ -48,7 +48,6 @@ class SimulationMetadata:
 
     Attributes:
         job_id: Id of the job
-        job_successful: Whether the job was successful
         input_hash: Hash of the parameters for this job
         file_path (pathlib.Path): Path to export the metadata
         timestamp (str): Timestamp of the object creation
@@ -65,11 +64,9 @@ class SimulationMetadata:
         """
         self.job_id = job_id
         self.timestamp = self._get_timestamp()
-        # Set job_successful to False initially to avoid reusing a job that was not fully executed
-        self.job_successful = False
         self.input_hash = hash_input(job_input)
         self.file_path = get_metadata_path(job_dir)
-        self.times: dict = {}
+        self.steps: dict = {}
 
     @classmethod
     def init_from_file(cls, job_dir: Path) -> SimulationMetadata:
@@ -110,23 +107,22 @@ class SimulationMetadata:
         self.file_path.write_text(yaml_string, encoding="utf-8")
 
     @contextmanager
-    def time_code(self, code_section_name: str) -> Iterator[None]:
-        """Timer some code section.
+    def track_step(self, step_name: str) -> Iterator[None]:
+        """Time and track the success of a code section.
 
-        This method allows us to time not only the runtime of the simulation, but also subparts.
+        This method allows us to track the time of individual code sections. It also tracks whether
+        the code section was successful or failed.
 
         Args:
-            code_section_name: Name for this code section
+            step_name: Name of the step to be monitored.
         """
         # Start timer
         start = perf_counter()
         # Add the current timestamp when starting the code section
-        self.times[code_section_name] = {
+        self.steps[step_name] = {
             "timestamp_start": self._get_timestamp(),
             "status": "running",
         }
-        # Set job_successful to False to avoid reusing a job that was interrupted
-        self.job_successful = False
 
         # Export metadata
         self.export()
@@ -135,21 +131,19 @@ class SimulationMetadata:
             yield
 
             # If we are here the timed code section was successful
-            self.times[code_section_name]["status"] = "successful"
-            self.job_successful = True
+            self.steps[step_name]["status"] = "successful"
         # Something goes wrong
         except Exception as exception:
             # Set the status to failed
-            self.times[code_section_name]["status"] = "failed"
-            self.job_successful = False
+            self.steps[step_name]["status"] = "failed"
 
             # Raise the original exception
             raise exception
         # Call this no matter if job was successful or failed
         finally:
-            run_time = perf_counter() - start
+            runtime = perf_counter() - start
             # Add the runtime of this code section
-            self.times[code_section_name]["time"] = run_time
+            self.steps[step_name]["runtime"] = runtime
             # Export since the job is either finished or failed
             self.export()
 

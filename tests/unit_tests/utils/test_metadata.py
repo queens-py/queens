@@ -105,14 +105,13 @@ def test_metadata_of_successful_section(tmp_path):
     """Test the timing of a code section that does not raise."""
     metadata = SimulationMetadata(job_id=1, job_input={"parameter_1": 1.0}, job_dir=tmp_path)
 
-    with metadata.time_code("dummy_section"):
+    with metadata.track_step("dummy_section"):
         pass
 
     exported_metadata = yaml.safe_load(get_metadata_path(tmp_path).read_text(encoding="utf-8"))
-    assert exported_metadata["job_successful"] is True
-    dummy_section = exported_metadata["times"]["dummy_section"]
+    dummy_section = exported_metadata["steps"]["dummy_section"]
     assert dummy_section["status"] == "successful"
-    assert dummy_section["time"] >= 0
+    assert dummy_section["runtime"] >= 0
     assert dummy_section["timestamp_start"]
 
 
@@ -121,20 +120,19 @@ def test_metadata_of_failed_section(tmp_path):
     metadata = SimulationMetadata(job_id=1, job_input={"parameter_1": 1.0}, job_dir=tmp_path)
 
     with pytest.raises(ValueError, match="dummy error"):
-        with metadata.time_code("dummy_section"):
+        with metadata.track_step("dummy_section"):
             raise ValueError("dummy error")
 
-    assert metadata.job_successful is False
+    assert metadata.steps["dummy_section"]["status"] == "failed"
 
     exported_metadata = yaml.safe_load(get_metadata_path(tmp_path).read_text(encoding="utf-8"))
-    assert exported_metadata["job_successful"] is False
-    assert exported_metadata["times"]["dummy_section"]["status"] == "failed"
+    assert exported_metadata["steps"]["dummy_section"]["status"] == "failed"
 
 
 def test_metadata_init_from_file(tmp_path, job_input):
     """Test that an exported metadata file is read in correctly."""
     metadata = SimulationMetadata(job_id=1, job_input=job_input, job_dir=tmp_path)
-    with metadata.time_code("dummy_section"):
+    with metadata.track_step("dummy_section"):
         pass
 
     read_in_metadata = SimulationMetadata.init_from_file(tmp_path)

@@ -14,10 +14,13 @@
 #
 """Unit tests for the adjoint model."""
 
+from pathlib import Path
+
 import numpy as np
 import pytest
 from mock import Mock
 
+from queens.drivers.jobscript import Jobscript
 from queens.models import adjoint
 from queens.models.adjoint import Adjoint
 
@@ -56,6 +59,19 @@ def test_init():
     assert model_obj.adjoint_file == adjoint_file
 
 
+@pytest.mark.parametrize(
+    "reuse_forward_jobs, reuse_gradient_jobs",
+    [(True, False), (False, True), (True, True)],
+)
+def test_init_with_reuse_existing_jobs(reuse_forward_jobs, reuse_gradient_jobs):
+    """Test that the adjoint model does not allow reusing existing jobs."""
+    driver = Mock(spec=Jobscript, reuse_existing_jobs=reuse_forward_jobs)
+    gradient_driver = Mock(spec=Jobscript, reuse_existing_jobs=reuse_gradient_jobs)
+
+    with pytest.raises(NotImplementedError, match="Reusing existing jobs is not supported"):
+        Adjoint(scheduler=Mock(), driver=driver, gradient_driver=gradient_driver)
+
+
 @pytest.fixture(name="scheduler_response")
 def fixture_scheduler_response():
     """Scheduler fixture."""
@@ -77,12 +93,11 @@ def test_evaluate(default_adjoint_model, scheduler_response):
     assert default_adjoint_model.response == expected_response
 
 
-def test_grad(tmp_path, default_adjoint_model, scheduler_response):
+def test_grad(default_adjoint_model, scheduler_response):
     """Test grad method."""
+    experiment_dir = Path("path_to_experiment_dir")
     adjoint.write_to_csv = Mock()
-    experiment_dir = tmp_path
     default_adjoint_model.scheduler.next_job_id = 7
-    default_adjoint_model.scheduler.get_job_ids = Mock(return_value=[5, 6])
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
     default_adjoint_model.scheduler.evaluate = scheduler_response
 

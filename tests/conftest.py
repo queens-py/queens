@@ -361,6 +361,5 @@ def fixture_time_data_processor(time_file):
     """
     return TxtToNpArray(
         file_name_identifier=time_file,
-        file_options_dict={},
         remove_logger_prefix_from_raw_data=False,
     )

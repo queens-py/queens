@@ -283,8 +283,8 @@ class Jobscript(Driver):
                     f"current experiment directory {experiment_dir}."
                 )
 
-            if self.job_successful(existing_metadata):
-                return self.get_existing_results(job_dir)
+            if self.jobscript_successful(existing_metadata):
+                return self.get_existing_results(job_dir, existing_metadata)
 
         return self.run_jobscript(sample, job_id, num_procs, experiment_dir, experiment_name)
 
@@ -352,17 +352,35 @@ class Jobscript(Driver):
         """
         write_pickle(job_output, cls.get_job_output_path(job_dir))
 
-    @staticmethod
-    def job_successful(existing_metadata: dict) -> bool:
-        """Check if the existing job was successful.
+    def jobscript_successful(self, existing_metadata: dict) -> bool:
+        """Check if the jobscript of an existing job was successful.
 
         Args:
             existing_metadata: Metadata from existing job.
 
         Returns:
-            True if the job was successful, False otherwise.
+            True if the jobscript was successful, False otherwise.
         """
-        return existing_metadata.get("job_successful", False)
+        successful_prepare_input_files = self.step_successful(
+            existing_metadata, "prepare_input_files"
+        )
+        successful_run_jobscript = self.step_successful(existing_metadata, "run_jobscript")
+
+        return successful_prepare_input_files and successful_run_jobscript
+
+    @staticmethod
+    def step_successful(existing_metadata: dict, step_name: str) -> bool:
+        """Check if a specific step of an existing job was successful.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+            step_name: Name of the step to be checked.
+
+        Returns:
+            True if the step was successful, False otherwise.
+        """
+        steps = existing_metadata.get("steps", {})
+        return steps.get(step_name, {}).get("status", "") == "successful"
 
     def equal_input(self, existing_metadata: dict, new_input: np.ndarray) -> bool:
         """Check if the new and the previous input parameters are equal.
@@ -376,7 +394,14 @@ class Jobscript(Driver):
         Returns:
             True if the input parameters are equal, False otherwise.
         """
-        existing_input_hash = existing_metadata.get("input_hash")
+        if "input_hash" not in existing_metadata:
+            raise KeyError(
+                "The existing metadata does not contain an input hash, most likely because it was "
+                "created with an older version of QUEENS. Therefore, reusing this job is not "
+                "possible. Please set the flag `reuse_existing_jobs` to False to rerun the "
+                "jobscript."
+            )
+        existing_input_hash = existing_metadata["input_hash"]
         new_input_hash = hash_input(self.parameters.sample_as_dict(new_input))
         return existing_input_hash == new_input_hash
 
@@ -409,7 +434,7 @@ class Jobscript(Driver):
         metadata = SimulationMetadata(job_id=job_id, job_input=sample_dict, job_dir=job_dir)
         self.write_job_input(job_dir, sample_dict)
 
-        with metadata.time_code("prepare_input_files"):
+        with metadata.track_step("prepare_input_files"):
             job_options = JobOptions(
                 job_dir=job_dir,
                 output_dir=output_dir,
@@ -435,30 +460,37 @@ class Jobscript(Driver):
                 str(jobscript_file),
             )
 
-        with metadata.time_code("run_jobscript"):
+        with metadata.track_step("run_jobscript"):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd, log_file)
 
-        with metadata.time_code("process_data"):
+        with metadata.track_step("process_data"):
             results = self._get_results(output_dir)
             self.write_job_output(job_dir, results)
 
         return results
 
-    def get_existing_results(self, job_dir: Path) -> dict:
+    def get_existing_results(self, job_dir: Path, existing_metadata: dict) -> dict:
         """Get existing results from a previous jobscript driver run.
 
         Either load the output from the pickle file or rerun the data processor on the existing
         jobscript output.
+        The data processor is rerun if the flag `rerun_dataprocessor_on_existing_jobs` is set to
+        True or if the previous data processor run was unsuccessful.
 
         Args:
             job_dir: Path to job directory.
+            existing_metadata: Metadata from existing job.
 
         Returns:
             Results.
         """
         output_path = self.get_job_output_path(job_dir)
-        if not self.rerun_dataprocessor_on_existing_jobs and output_path.is_file():
+        if (
+            not self.rerun_dataprocessor_on_existing_jobs
+            and self.step_successful(existing_metadata, "process_data")
+            and output_path.is_file()
+        ):
             # Load the results from the output pickle file
             return load_pickle(output_path)
 
@@ -466,7 +498,7 @@ class Jobscript(Driver):
         output_dir = self.get_output_dir(job_dir)
 
         # Run the data processor again on the existing jobscript output
-        with metadata.time_code("process_data_again"):
+        with metadata.track_step("process_data_again"):
             results = self._get_results(output_dir)
             self.write_job_output(job_dir, results)
 

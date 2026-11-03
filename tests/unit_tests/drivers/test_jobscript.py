@@ -510,11 +510,13 @@ def test_successfully_reusing_existing_jobs(
     assert first_job_dir_file_times["input.pickle"] == second_job_dir_file_times["input.pickle"]
 
     # Assert the job was successful for both runs
-    assert first_metadata["job_successful"] is True
-    assert second_metadata["job_successful"] is True
+    assert first_metadata["steps"]["run_jobscript"]["status"] == "successful"
+    assert first_metadata["steps"]["process_data"]["status"] == "successful"
+    assert second_metadata["steps"]["run_jobscript"]["status"] == "successful"
+    assert second_metadata["steps"]["process_data"]["status"] == "successful"
 
     # Assert that the first run's metadata does not contain the "process_data_again" entry
-    assert "process_data_again" not in first_metadata["times"]
+    assert "process_data_again" not in first_metadata["steps"]
 
     if rerun_dataprocessor_on_existing_jobs:
         # Assert the data processor was called again
@@ -524,10 +526,10 @@ def test_successfully_reusing_existing_jobs(
             first_job_dir_file_times["output.pickle"] != second_job_dir_file_times["output.pickle"]
         )
         # Assert metadata entries remain the same, except for
-        # metadata["times"]["process_data_again"]
-        assert "process_data_again" in second_metadata["times"]
-        assert second_metadata["times"]["process_data_again"]["status"] == "successful"
-        first_metadata["times"]["process_data_again"] = second_metadata["times"][
+        # metadata["steps"]["process_data_again"]
+        assert "process_data_again" in second_metadata["steps"]
+        assert second_metadata["steps"]["process_data_again"]["status"] == "successful"
+        first_metadata["steps"]["process_data_again"] = second_metadata["steps"][
             "process_data_again"
         ]
         assert first_metadata == second_metadata
@@ -556,7 +558,7 @@ def test_error_on_reuse_with_different_input(args_init, job_options):
 
 
 @pytest.mark.parametrize("rerun_dataprocessor_on_existing_jobs", [True, False])
-def test_running_jobscript_again_when_reuse_disabled(
+def test_rerunning_jobscript_when_reuse_disabled(
     args_init,
     job_options,
     current_time_jobscript_template,
@@ -588,7 +590,7 @@ def test_running_jobscript_again_when_reuse_disabled(
     assert time_data_processor.number_of_calls == 2
 
 
-def test_running_jobscript_again_after_failed_run(
+def test_rerunning_jobscript_after_failed_jobscript(
     args_init,
     job_options,
     current_time_jobscript_template,
@@ -606,8 +608,8 @@ def test_running_jobscript_again_after_failed_run(
         run_jobscript_driver(jobscript_driver, sample, job_options)
 
     failed_metadata = get_metadata_from_job_dir(job_options.job_dir)
-    assert failed_metadata["job_successful"] is False
-    assert failed_metadata["times"]["run_jobscript"]["status"] == "failed"
+    assert failed_metadata["steps"]["prepare_input_files"]["status"] == "successful"
+    assert failed_metadata["steps"]["run_jobscript"]["status"] == "failed"
 
     jobscript_driver.jobscript_template = current_time_jobscript_template
 
@@ -616,5 +618,69 @@ def test_running_jobscript_again_after_failed_run(
     assert results["result"] is not None
 
     success_metadata = get_metadata_from_job_dir(job_options.job_dir)
-    assert success_metadata["job_successful"] is True
-    assert success_metadata["times"]["run_jobscript"]["status"] == "successful"
+    assert success_metadata["steps"]["prepare_input_files"]["status"] == "successful"
+    assert success_metadata["steps"]["run_jobscript"]["status"] == "successful"
+    assert success_metadata["steps"]["process_data"]["status"] == "successful"
+
+
+def test_rerunning_data_processor_after_failed_data_processor(
+    args_init,
+    job_options,
+    current_time_jobscript_template,
+    time_data_processor,
+    monkeypatch,
+):
+    """Test that a failed data processor run triggers a rerun on the next call.
+
+    The jobscript itself must not be rerun since it was successful.
+    """
+    args_init["jobscript_template"] = current_time_jobscript_template
+    args_init["data_processor"] = time_data_processor
+    # If `rerun_dataprocessor_on_existing_jobs` is set to True, the data processor will be rerun
+    # even if it was successful
+    args_init["rerun_dataprocessor_on_existing_jobs"] = False
+    jobscript_driver = Jobscript(**args_init)
+    sample = np.array([1, 2])
+    output_dir = job_options.output_dir
+
+    def failing_filter_and_manipulate_raw_data(raw_data):
+        raise ValueError("Data processor failed.")
+
+    monkeypatch.setattr(
+        time_data_processor,
+        "filter_and_manipulate_raw_data",
+        failing_filter_and_manipulate_raw_data,
+    )
+
+    with pytest.raises(ValueError, match="Data processor failed."):
+        run_jobscript_driver(jobscript_driver, sample, job_options)
+
+    failed_output_dir_file_times = get_file_times(output_dir)
+    failed_job_dir_file_times = get_file_times(job_options.job_dir)
+    failed_metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert failed_metadata["steps"]["prepare_input_files"]["status"] == "successful"
+    assert failed_metadata["steps"]["run_jobscript"]["status"] == "successful"
+    assert failed_metadata["steps"]["process_data"]["status"] == "failed"
+    assert not Jobscript.get_job_output_path(job_options.job_dir).is_file()
+
+    # Restore the working data processor
+    monkeypatch.undo()
+
+    results = run_jobscript_driver(jobscript_driver, sample, job_options)
+
+    # Assert that the data processor was rerun
+    assert time_data_processor.number_of_calls == 1
+    output = load_pickle(Jobscript.get_job_output_path(job_options.job_dir))
+    np.testing.assert_array_equal(results["result"], output["result"])
+
+    # Assert that the jobscript was not rerun and the input file was not written again
+    assert get_file_times(output_dir) == failed_output_dir_file_times
+    assert (
+        get_file_times(job_options.job_dir)["input.pickle"]
+        == failed_job_dir_file_times["input.pickle"]
+    )
+
+    success_metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert success_metadata["steps"]["run_jobscript"]["status"] == "successful"
+    assert success_metadata["steps"]["process_data"]["status"] == "failed"
+    assert success_metadata["steps"]["process_data_again"]["status"] == "successful"
