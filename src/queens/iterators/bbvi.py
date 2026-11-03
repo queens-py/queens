@@ -406,7 +406,7 @@ class BBVI(VariationalInference):
 
         # Use IS sampling (if enabled)
         selfnormalized_weights_is, normalizing_constant_is = self._prepare_importance_sampling()
-        if self.stochastic_optimizer.iteration > self.memory and self.memory > 0 and self.resample:
+        if 0 < self.memory < self.stochastic_optimizer.iteration and self.resample:
             # Number of samples to resample
             n_samples = int(self.n_samples_per_iter * self.memory)
             # Resample
