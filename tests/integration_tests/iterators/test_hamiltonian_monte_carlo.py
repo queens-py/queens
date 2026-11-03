@@ -25,7 +25,6 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 SAMPLER_STAT_RTOL = 1e-5
@@ -33,9 +32,8 @@ SAMPLER_STAT_ATOL = 1e-8
 
 
 def test_hamiltonian_monte_carlo_gaussian(
-    tmp_path,
     target_density_gaussian_2d_with_grad,
-    _create_experimental_data_zero,
+    experimental_data_zero,
     global_settings,
 ):
     """Test HMC sampling for a Gaussian-Gaussian Bayesian inference problem.
@@ -86,18 +84,13 @@ def test_hamiltonian_monte_carlo_gaussian(
     parameters = Parameters(x1=x1)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
     forward_model = Simulation(scheduler=scheduler, driver=driver)
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_zero,
         forward_model=forward_model,
     )
     iterator = HamiltonianMonteCarlo(

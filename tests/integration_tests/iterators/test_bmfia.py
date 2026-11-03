@@ -31,15 +31,13 @@ from queens.models.surrogates.jitted_gaussian_process import JittedGaussianProce
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.stochastic_optimizers import Adam
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 from queens.variational_distributions import MeanFieldNormal
 
 
 @pytest.mark.max_time_for_test(30)
 def test_bmfia_sequential_monte_carlo_park91a(
-    tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     expected_samples,
     expected_weights,
     global_settings,
@@ -49,20 +47,12 @@ def test_bmfia_sequential_monte_carlo_park91a(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    experimental_data_path = tmp_path
-
     # Parameters
     x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
     x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     mf_interface = BmfiaInterface(
         num_processors_multi_processing=2,
         probabilistic_mapping_type="per_coordinate",
@@ -101,7 +91,7 @@ def test_bmfia_sequential_monte_carlo_park91a(
     )
     model = BMFGaussian(
         noise_value=0.001,
-        experimental_data_reader=experimental_data_reader,
+        **experimental_data_park91a_hifi_on_grid,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
         forward_model=lf_model,
@@ -136,8 +126,7 @@ def test_bmfia_sequential_monte_carlo_park91a(
 
 @pytest.mark.max_time_for_test(20)
 def test_bmfia_rpvi_jitted_gaussian_process_park91a(
-    tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     expected_variational_mean,
     expected_variational_cov,
     global_settings,
@@ -147,8 +136,6 @@ def test_bmfia_rpvi_jitted_gaussian_process_park91a(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    experimental_data_path = tmp_path
-
     # Parameters
     x1 = Uniform(lower_bound=0.01, upper_bound=0.99)
     x2 = Uniform(lower_bound=0.01, upper_bound=0.99)
@@ -156,12 +143,6 @@ def test_bmfia_rpvi_jitted_gaussian_process_park91a(
 
     # Setup iterator
     variational_distribution = MeanFieldNormal(dimension=2)
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     mf_interface = BmfiaInterface(
         num_processors_multi_processing=2,
         probabilistic_mapping_type="per_coordinate",
@@ -197,7 +178,7 @@ def test_bmfia_rpvi_jitted_gaussian_process_park91a(
     )
     model = BMFGaussian(
         noise_value=0.0001,
-        experimental_data_reader=experimental_data_reader,
+        **experimental_data_park91a_hifi_on_grid,
         mf_interface=mf_interface,
         mf_approx=mf_approx,
         forward_model=lf_model,
@@ -244,7 +225,7 @@ def test_bmfia_rpvi_jitted_gaussian_process_park91a(
 
 def test_bmfia_rpvi_gaussian_neural_network_park91a(
     tmp_path,
-    _create_experimental_data_park91a_hifi_on_grid,
+    experimental_data_park91a_hifi_on_grid,
     expected_variational_mean_nn,
     expected_variational_cov_nn,
     global_settings,
@@ -254,7 +235,6 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
     Integration test for bayesian multi-fidelity inverse analysis
     (bmfia) using the park91 function.
     """
-    experimental_data_path = tmp_path
     plot_dir = tmp_path
 
     # Parameters
@@ -264,12 +244,6 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
 
     # Setup iterator
     variational_distribution = MeanFieldNormal(dimension=2)
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=experimental_data_path,
-        output_label="y_obs",
-        coordinate_labels=["x3", "x4"],
-    )
     mf_approx = GaussianNeuralNetwork(
         activation_per_hidden_layer_lst=["elu", "elu"],
         adams_training_rate=0.001,
@@ -300,7 +274,7 @@ def test_bmfia_rpvi_gaussian_neural_network_park91a(
     )
     model = BMFGaussian(
         noise_value=0.0001,
-        experimental_data_reader=experimental_data_reader,
+        **experimental_data_park91a_hifi_on_grid,
         mf_approx=mf_approx,
         mf_interface=mf_interface,
         forward_model=lf_model,

@@ -15,7 +15,6 @@
 """Integration tests for the Metropolis Hastings iterator."""
 
 import numpy as np
-import pandas as pd
 import pytest
 from mock import patch
 
@@ -29,14 +28,12 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 
 def test_metropolis_hastings_univariate_gaussian(
-    tmp_path,
     target_density_gaussian_1d,
-    _create_experimental_data_gaussian_1d,
+    experimental_data_gaussian_1d,
     global_settings,
 ):
     """Test case for Metropolis Hastings iterator.
@@ -48,11 +45,6 @@ def test_metropolis_hastings_univariate_gaussian(
     parameters = Parameters(x=x)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     proposal_distribution = Normal(mean=0.0, covariance=1.0)
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
@@ -61,7 +53,7 @@ def test_metropolis_hastings_univariate_gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
         nugget_noise_variance=1e-05,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_gaussian_1d,
         forward_model=forward_model,
     )
     iterator = MetropolisHastings(
@@ -93,9 +85,8 @@ def test_metropolis_hastings_univariate_gaussian(
 
 
 def test_metropolis_hastings_multivariate_gaussian(
-    tmp_path,
     target_density_gaussian_2d,
-    _create_experimental_data_gaussian_2d,
+    experimental_data_gaussian_2d,
     global_settings,
 ):
     """Test case for Metropolis Hastings iterator.
@@ -108,11 +99,6 @@ def test_metropolis_hastings_multivariate_gaussian(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
@@ -120,7 +106,7 @@ def test_metropolis_hastings_multivariate_gaussian(
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_gaussian_2d,
         forward_model=forward_model,
     )
     iterator = MetropolisHastings(
@@ -164,9 +150,8 @@ def test_metropolis_hastings_multivariate_gaussian(
 
 
 def test_metropolis_hastings_multivariate_gaussian_multiple_chains(
-    tmp_path,
     target_density_gaussian_2d,
-    _create_experimental_data_gaussian_2d,
+    experimental_data_gaussian_2d,
     global_settings,
 ):
     """Test case for Metropolis Hastings iterator.
@@ -180,11 +165,6 @@ def test_metropolis_hastings_multivariate_gaussian_multiple_chains(
     parameters = Parameters(x1=x1, x2=x2)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     proposal_distribution = Normal(mean=[0.0, 0.0], covariance=[[1.0, 0.0], [0.0, 0.1]])
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
@@ -193,7 +173,7 @@ def test_metropolis_hastings_multivariate_gaussian_multiple_chains(
         noise_type="fixed_variance",
         noise_value=1.0,
         nugget_noise_variance=1e-05,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_gaussian_2d,
         forward_model=forward_model,
     )
     iterator = MetropolisHastings(
@@ -254,17 +234,11 @@ def test_metropolis_hastings_multivariate_gaussian_multiple_chains(
     )
 
 
-@pytest.fixture(name="_create_experimental_data_gaussian_2d")
-def fixture_create_experimental_data_gaussian_2d(tmp_path):
-    """Create a csv file with experimental data from a 2D Gaussian."""
+@pytest.fixture(name="experimental_data_gaussian_2d")
+def fixture_experimental_data_gaussian_2d():
+    """Experimental data from a 2D Gaussian."""
     # generate 10 samples from the same gaussian
     samples = GAUSSIAN_2D.draw(10)
     pdf = gaussian_2d_logpdf(samples)
 
-    pdf = np.array(pdf)
-
-    # write the data to a csv file in tmp_path
-    data_dict = {"y_obs": pdf}
-    experimental_data_path = tmp_path / "experimental_data.csv"
-    df = pd.DataFrame.from_dict(data_dict)
-    df.to_csv(experimental_data_path, index=False)
+    return np.array(pdf).flatten()

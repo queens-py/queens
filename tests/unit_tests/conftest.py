@@ -65,7 +65,6 @@ def fixture_get_patched_bmfia_iterator(global_settings):
         iterator.Z_train = np.array([[4], [5]])
         iterator.coords_experimental_data = np.array([[1, 2], [3, 4]])
         iterator.time_vec = np.array([1, 3])
-        iterator.y_obs_vec = np.array([[2.1], [3.1]])
 
         return iterator
 

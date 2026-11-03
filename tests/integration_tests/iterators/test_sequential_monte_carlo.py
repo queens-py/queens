@@ -15,7 +15,6 @@
 """Integration tests for the Sequential Monte Carlo iterator."""
 
 import numpy as np
-import pandas as pd
 import pytest
 from mock import patch
 
@@ -33,14 +32,12 @@ from queens.models.likelihoods.gaussian import Gaussian
 from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
-from queens.utils.experimental_data_reader import ExperimentalDataReader
 from queens.utils.io import load_result
 
 
 def test_sequential_monte_carlo_gaussian(
-    tmp_path,
     target_density_gaussian_1d,
-    _create_experimental_data_gaussian_1d,
+    experimental_data_gaussian_1d,
     global_settings,
 ):
     """Test Sequential Monte Carlo with univariate Gaussian."""
@@ -49,11 +46,6 @@ def test_sequential_monte_carlo_gaussian(
     parameters = Parameters(x=x)
 
     # Setup iterator
-    experimental_data_reader = ExperimentalDataReader(
-        file_name_identifier="*.csv",
-        csv_data_base_dir=tmp_path,
-        output_label="y_obs",
-    )
     mcmc_proposal_distribution = Normal(mean=0.0, covariance=1.0)
     driver = Function(parameters=parameters, function="patch_for_likelihood")
     scheduler = Pool(experiment_name=global_settings.experiment_name)
@@ -61,7 +53,7 @@ def test_sequential_monte_carlo_gaussian(
     model = Gaussian(
         noise_type="fixed_variance",
         noise_value=1.0,
-        experimental_data_reader=experimental_data_reader,
+        observations=experimental_data_gaussian_1d,
         forward_model=forward_model,
     )
     iterator = SequentialMonteCarlo(
@@ -97,9 +89,7 @@ def test_sequential_monte_carlo_gaussian(
 class TestSequentialMonteCarloGenericTemperMultivariateGaussian:
     """Test SMC iterator with a multivariate Gaussian and generic tempering."""
 
-    def test_smc_generic_temper_multivariate_gaussian(
-        self, tmp_path, _create_experimental_data, global_settings
-    ):
+    def test_smc_generic_temper_multivariate_gaussian(self, experimental_data, global_settings):
         """Test SMC with a multivariate Gaussian and generic tempering."""
         # Parameters
         x1 = Normal(mean=1.0, covariance=5.0)
@@ -109,11 +99,6 @@ class TestSequentialMonteCarloGenericTemperMultivariateGaussian:
         parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
         # Setup iterator
-        experimental_data_reader = ExperimentalDataReader(
-            file_name_identifier="*.csv",
-            csv_data_base_dir=tmp_path,
-            output_label="y_obs",
-        )
         mcmc_proposal_distribution = Normal(
             mean=[0.0, 0.0, 0.0, 0.0],
             covariance=[
@@ -130,7 +115,7 @@ class TestSequentialMonteCarloGenericTemperMultivariateGaussian:
             noise_type="fixed_variance",
             noise_value=1.0,
             nugget_noise_variance=1e-05,
-            experimental_data_reader=experimental_data_reader,
+            observations=experimental_data,
             forward_model=forward_model,
         )
         iterator = SequentialMonteCarlo(
@@ -186,18 +171,14 @@ class TestSequentialMonteCarloGenericTemperMultivariateGaussian:
 
         return log_likelihood
 
-    @pytest.fixture(name="_create_experimental_data")
-    def fixture_create_experimental_data(self, tmp_path):
-        """Create a csv file with experimental data."""
+    @pytest.fixture(name="experimental_data")
+    def fixture_experimental_data(self):
+        """Experimental data from a 4D Gaussian."""
         # generate 10 samples from the same gaussian
         samples = GAUSSIAN_4D.draw(10)
         pdf = gaussian_4d_logpdf(samples)
 
-        # write the data to a csv file in tmp_path
-        data_dict = {"y_obs": pdf}
-        experimental_data_path = tmp_path / "experimental_data.csv"
-        df = pd.DataFrame.from_dict(data_dict)
-        df.to_csv(experimental_data_path, index=False)
+        return np.array(pdf).flatten()
 
 
 class TestSequentialMonteCarloBayesTemperMultivariateGaussianMixture:
@@ -207,7 +188,7 @@ class TestSequentialMonteCarloBayesTemperMultivariateGaussianMixture:
     """
 
     def test_sequential_monte_carlo_bayes_temper_multivariate_gaussian_mixture(
-        self, tmp_path, _create_experimental_data, global_settings
+        self, experimental_data, global_settings
     ):
         """Test SMC iterator with a multivariate Gaussian mixture.
 
@@ -221,11 +202,6 @@ class TestSequentialMonteCarloBayesTemperMultivariateGaussianMixture:
         parameters = Parameters(x1=x1, x2=x2, x3=x3, x4=x4)
 
         # Setup iterator
-        experimental_data_reader = ExperimentalDataReader(
-            file_name_identifier="*.csv",
-            csv_data_base_dir=tmp_path,
-            output_label="y_obs",
-        )
         mcmc_proposal_distribution = Normal(
             mean=[0.0, 0.0, 0.0, 0.0],
             covariance=[
@@ -242,7 +218,7 @@ class TestSequentialMonteCarloBayesTemperMultivariateGaussianMixture:
             noise_type="fixed_variance",
             noise_value=1.0,
             nugget_noise_variance=1e-05,
-            experimental_data_reader=experimental_data_reader,
+            observations=experimental_data,
             forward_model=forward_model,
         )
         iterator = SequentialMonteCarlo(
@@ -301,17 +277,11 @@ class TestSequentialMonteCarloBayesTemperMultivariateGaussianMixture:
 
         return log_likelihood
 
-    @pytest.fixture(name="_create_experimental_data")
-    def fixture_create_experimental_data(self, tmp_path):
-        """Create a csv file with experimental data."""
+    @pytest.fixture(name="experimental_data")
+    def fixture_experimental_data(self):
+        """Experimental data from a 4D Gaussian mixture."""
         # generate 10 samples from the same gaussian
         samples = GAUSSIAN_COMPONENT_1.draw(10)
         pdf = gaussian_mixture_4d_logpdf(samples)
 
-        pdf = np.array(pdf)
-
-        # write the data to a csv file in tmp_path
-        data_dict = {"y_obs": pdf}
-        experimental_data_path = tmp_path / "experimental_data.csv"
-        dataframe = pd.DataFrame.from_dict(data_dict)
-        dataframe.to_csv(experimental_data_path, index=False)
+        return np.array(pdf).flatten()
