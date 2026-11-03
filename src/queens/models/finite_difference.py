@@ -51,7 +51,7 @@ class FiniteDifference(Simulation):
 
         Args:
             scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
+            driver (SchedulerCallableSignature): Driver or callable for the simulations
             finite_difference_method (str): Method to calculate a finite-difference-based
                 approximation of the Jacobian matrix:
 

@@ -27,17 +27,17 @@ class Simulation(Model):
 
     Attributes:
         scheduler (Scheduler): Scheduler for the simulations
-        driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
+        driver (SchedulerCallableSignature): Driver or callable for the simulations
     """
 
     @log_init_args
-    def __init__(self, scheduler: Scheduler, driver: Driver | SchedulerCallableSignature):
+    def __init__(self, scheduler: Scheduler, driver: SchedulerCallableSignature):
         """Initialize simulation model.
 
         Args:
             scheduler: Scheduler for the simulations
             driver: Driver or callable for the simulations. A callable must follow the
-                    SchedulerCallableSignature.
+                    SchedulerCallableSignature, which a Driver does by construction.
         """
         super().__init__()
         self.scheduler = scheduler
