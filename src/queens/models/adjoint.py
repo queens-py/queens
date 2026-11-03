@@ -32,7 +32,7 @@ class Adjoint(Simulation):
     Attributes:
         adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of the
                             functional w.r.t. to the simulation output.
-        gradient_driver (Driver | SchedulerCallableSignature): Driver or callable for the
+        gradient_driver (SchedulerCallableSignature): Driver or callable for the
                                                                adjoint simulation run.
     """
 
@@ -48,8 +48,8 @@ class Adjoint(Simulation):
 
         Args:
             scheduler (Scheduler): Scheduler for the simulations
-            driver (Driver | SchedulerCallableSignature): Driver or callable for the simulations
-            gradient_driver (Driver | SchedulerCallableSignature): Driver or callable for the
+            driver (SchedulerCallableSignature): Driver or callable for the simulations
+            gradient_driver (SchedulerCallableSignature): Driver or callable for the
                                                                    adjoint simulation run.
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
@@ -91,6 +91,7 @@ class Adjoint(Simulation):
         # write adjoint data for each sample to adjoint files in old job directories
         for job_id, grad_objective in zip(last_job_ids, upstream_gradient):
             job_dir = current_job_directory(experiment_dir, job_id)
+            job_dir.mkdir(parents=True, exist_ok=True)
             adjoint_file_path = job_dir.joinpath(self.adjoint_file)
             write_to_csv(adjoint_file_path, grad_objective.reshape(1, -1))
 

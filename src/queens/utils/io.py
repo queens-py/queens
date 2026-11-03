@@ -190,6 +190,8 @@ def read_file(file_path: Path | str) -> str:
 def to_dict_with_standard_types(obj: Any) -> Any:
     """Convert dictionaries to dictionaries with python standard types only.
 
+    The input is not modified, nested dictionaries and lists are rebuilt.
+
     Args:
         obj: Dictionary to convert
 
@@ -204,9 +206,7 @@ def to_dict_with_standard_types(obj: Any) -> Any:
         case list():
             return [to_dict_with_standard_types(value) for value in obj]
         case dict():
-            for key, value in obj.items():
-                obj[key] = to_dict_with_standard_types(value)
-            return obj
+            return {key: to_dict_with_standard_types(value) for key, value in obj.items()}
         case _ if hasattr(obj, "tolist"):
             return obj.tolist()
         case _:

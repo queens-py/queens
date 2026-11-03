@@ -22,7 +22,13 @@ import pytest
 import yaml
 
 from queens.utils.exceptions import FileTypeError
-from queens.utils.io import load_input_file, load_pickle, write_pickle, write_to_csv
+from queens.utils.io import (
+    load_input_file,
+    load_pickle,
+    to_dict_with_standard_types,
+    write_pickle,
+    write_to_csv,
+)
 
 
 @pytest.fixture(name="input_dict")
@@ -109,3 +115,25 @@ def test_write_to_csv(tmp_path):
 
     # read the data in again and compare to original data
     np.testing.assert_array_equal(data, read_in_data)
+
+
+def test_to_dict_with_standard_types_does_not_modify_input():
+    """Test that the conversion to standard types keeps the input unchanged."""
+    obj = {
+        "number": np.float64(1.5),
+        "nested": {"path": Path("mesh.exo"), "array": np.array([1, 2])},
+        "paths": (Path("a"), Path("b")),
+    }
+
+    converted = to_dict_with_standard_types(obj)
+
+    assert converted == {
+        "number": 1.5,
+        "nested": {"path": "mesh.exo", "array": [1, 2]},
+        "paths": ["a", "b"],
+    }
+    assert isinstance(obj["number"], np.float64)
+    assert isinstance(obj["nested"]["path"], Path)
+    assert isinstance(obj["nested"]["array"], np.ndarray)
+    assert isinstance(obj["paths"], tuple)
+    assert converted["nested"] is not obj["nested"]
