@@ -274,7 +274,7 @@ class Jobscript(Driver):
 
         if self.reuse_existing_jobs and self.metadata_exists(job_dir):
             existing_metadata = get_metadata_from_job_dir(job_dir)
-            if not self.equal_input(existing_metadata, sample):
+            if not self.equal_input(existing_metadata, sample, job_id):
                 raise RuntimeError(
                     "Input parameters differ from existing job metadata.\n"
                     "Reusing existing job runs is currently enabled. If the intention was to run a "
@@ -382,7 +382,7 @@ class Jobscript(Driver):
         steps = existing_metadata.get("steps", {})
         return steps.get(step_name, {}).get("status", "") == "successful"
 
-    def equal_input(self, existing_metadata: dict, new_input: np.ndarray) -> bool:
+    def equal_input(self, existing_metadata: dict, new_input: np.ndarray, job_id: int) -> bool:
         """Check if the new and the previous input parameters are equal.
 
         The input parameters are compared based on the input hash stored in the existing metadata.
@@ -390,16 +390,20 @@ class Jobscript(Driver):
         Args:
             existing_metadata: Metadata from existing job.
             new_input: New input parameters.
+            job_id: Job ID.
 
         Returns:
             True if the input parameters are equal, False otherwise.
         """
         if "input_hash" not in existing_metadata:
-            raise KeyError(
-                "The existing metadata does not contain an input hash, most likely because it was "
-                "created with an older version of QUEENS. Therefore, reusing this job is not "
-                "possible. Please set the flag `reuse_existing_jobs` to False to rerun the "
-                "jobscript."
+            raise RuntimeError(
+                f"The existing metadata of job {job_id} does not contain an input hash, most "
+                f"likely because it was created with an older version of QUEENS or because the "
+                f"metadata file is corrupted. "
+                f"Therefore, reusing this job is not possible. "
+                f"To rerun the jobscripts of all jobs of this experiment, set the flag "
+                f"`reuse_existing_jobs` to False. "
+                f"To rerun only this particular jobscript, delete the corrupted metadata file."
             )
         existing_input_hash = existing_metadata["input_hash"]
         new_input_hash = hash_input(self.parameters.sample_as_dict(new_input))

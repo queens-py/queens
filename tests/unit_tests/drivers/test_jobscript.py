@@ -26,7 +26,7 @@ from queens.data_processors import NumpyFile, TxtFile
 from queens.drivers.jobscript import JobOptions, Jobscript
 from queens.utils.exceptions import SubprocessError
 from queens.utils.io import load_pickle
-from queens.utils.metadata import get_metadata_from_job_dir, hash_input
+from queens.utils.metadata import get_metadata_from_job_dir, get_metadata_path, hash_input
 
 
 def create_template(list_of_keys, template_path):
@@ -562,6 +562,23 @@ def test_error_on_reuse_with_different_input(args_init, job_options):
 
     with pytest.raises(RuntimeError, match="Input parameters differ from existing job metadata."):
         run_jobscript_driver(jobscript_driver, different_input, job_options)
+
+
+def test_error_on_reuse_without_input_hash(args_init, job_options):
+    """Test that reusing a job without input hash raises an error."""
+    jobscript_driver = Jobscript(**args_init)
+    sample = np.array([1, 2])
+
+    run_jobscript_driver(jobscript_driver, sample, job_options)
+
+    # Remove the input hash from the existing metadata
+    metadata_path = get_metadata_path(job_options.job_dir)
+    metadata = yaml.safe_load(metadata_path.read_text(encoding="utf-8"))
+    metadata.pop("input_hash")
+    metadata_path.write_text(yaml.safe_dump(metadata, sort_keys=False), encoding="utf-8")
+
+    with pytest.raises(RuntimeError, match="does not contain an input hash"):
+        run_jobscript_driver(jobscript_driver, sample, job_options)
 
 
 @pytest.mark.parametrize("rerun_dataprocessor_on_existing_jobs", [True, False])
