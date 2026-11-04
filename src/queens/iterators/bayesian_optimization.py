@@ -22,7 +22,7 @@ import numpy as np
 from scipy.optimize import OptimizeResult, minimize
 
 from queens.distributions.uniform import Uniform
-from queens.iterators.optimization import OptimizationBase
+from queens.iterators._optimization import Optimization
 from queens.parameters.parameters import Parameters
 from queens.utils.logger_settings import log_init_args
 from queens.utils.sobol_sequence import sample_sobol_sequence
@@ -30,13 +30,17 @@ from queens.utils.sobol_sequence import sample_sobol_sequence
 _logger = logging.getLogger(__name__)
 
 
-class BayesianOptimization(OptimizationBase):
+class BayesianOptimization(Optimization):
     """Iterator for Gaussian-process Bayesian optimization.
 
     This iterator minimizes a bounded scalar objective returned by a QUEENS model. It delegates
     surrogate setup, training, scaling, hyperparameter optimization, and prediction to a QUEENS
     surrogate model. A user-given acquisition function is maximized to select one new expensive
-    model evaluation per iteration.
+    model evaluation per iteration. The implementation is loosely based on [1].
+
+    References:
+        [1]: Frazier, P. I. (2018). A Tutorial on Bayesian Optimization.
+             arXiv preprint arXiv:1807.02811.
 
     Attributes:
         surrogate_model (Surrogate): QUEENS probabilistic surrogate model.
@@ -64,6 +68,7 @@ class BayesianOptimization(OptimizationBase):
         max_evaluations,
         result_description,
         num_acquisition_restarts=10,
+        seed=42,
     ):
         """Initialize the Bayesian optimization iterator.
 
@@ -82,6 +87,7 @@ class BayesianOptimization(OptimizationBase):
             result_description (dict): Description of result processing.
             num_acquisition_restarts (int): Number of multi-start L-BFGS-B optimizations used to
                 maximize expected improvement.
+            seed (int): Seed for random number generation.
         """
         super().__init__(model, parameters, global_settings, result_description)
 
@@ -119,9 +125,11 @@ class BayesianOptimization(OptimizationBase):
         }
         self.sampling_parameters = Parameters(**distributions)
 
-        self.random_generator = np.random.default_rng(42)
+        self.seed = seed
+        self.random_generator = np.random.default_rng(self.seed)
         self.positions = None
         self.objective_values = None
+        self.solution = None
 
         gp_optimizer = getattr(self.surrogate_model, "stochastic_optimizer", None)
         self._gp_optimizer_template = deepcopy(gp_optimizer) if gp_optimizer is not None else None
@@ -160,7 +168,7 @@ class BayesianOptimization(OptimizationBase):
             number_of_samples=self.num_initial_samples,
             parameters=self.sampling_parameters,
             randomize=True,
-            seed=42,
+            seed=self.seed,
         )
         self.objective_values = np.atleast_1d(self.eval_model(self.positions)).astype(float)
 

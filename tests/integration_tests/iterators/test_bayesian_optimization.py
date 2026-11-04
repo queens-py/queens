@@ -32,7 +32,7 @@ from queens.utils.io import load_result
 
 
 def test_bayesian_optimization_branin78_hifi(global_settings):
-    """Test solution algorithm in bayesian optimization iterator."""
+    """Test bayesian optimization iterator on branin78_hifi function."""
     x1 = FreeVariable(dimension=1)
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
@@ -74,6 +74,7 @@ def test_bayesian_optimization_branin78_hifi(global_settings):
         num_initial_samples=8,
         max_evaluations=32,
         num_acquisition_restarts=16,
+        seed=42,
     )
 
     run_iterator(iterator, global_settings=global_settings)
@@ -85,7 +86,7 @@ def test_bayesian_optimization_branin78_hifi(global_settings):
 
 
 def test_bayesian_optimization_forrester(global_settings):
-    """Test solution algorithm in bayesian optimization iterator."""
+    """Test bayesian optimization iterator on forrester function with GP."""
     x1 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1)
 
@@ -111,6 +112,7 @@ def test_bayesian_optimization_forrester(global_settings):
         num_initial_samples=4,
         max_evaluations=12,
         num_acquisition_restarts=8,
+        seed=42,
     )
 
     run_iterator(iterator, global_settings=global_settings)
@@ -121,12 +123,14 @@ def test_bayesian_optimization_forrester(global_settings):
 
 
 def test_bayesian_optimization_goldstein_price(global_settings):
-    """Test solution algorithm in bayesian optimization iterator."""
+    """Test bayesian optimization iterator on goldstein price function."""
     x1 = FreeVariable(dimension=1)
     x2 = FreeVariable(dimension=1)
     parameters = Parameters(x1=x1, x2=x2)
 
     def log_goldstein_price(job_id=None, **parameters):
+        for key in ("job_id", "num_procs", "experiment_dir", "experiment_name"):
+            parameters.pop(key, None)
         del job_id
         return np.log(goldstein_price(**parameters))
 
@@ -167,6 +171,7 @@ def test_bayesian_optimization_goldstein_price(global_settings):
         num_initial_samples=8,
         max_evaluations=38,
         num_acquisition_restarts=8,
+        seed=42,
     )
 
     run_iterator(iterator, global_settings=global_settings)
