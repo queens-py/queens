@@ -24,7 +24,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # The latest Ubuntu 26.04 cannot load TensorFlow from conda-forge, see
+          # https://github.com/conda-forge/tensorflow-feedstock/issues/455 for TensorFlow 2.19 and
+          # https://github.com/conda-forge/tensorflow-feedstock/issues/505 for TensorFlow 2.21,
+          # so temporarily use Ubuntu 24.04 for the tutorial tests until the issue is resolved.
+          - os: ubuntu-24.04
           - os: macos-latest
     defaults:
       run:
@@ -50,7 +54,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # The latest Ubuntu 26.04 cannot load TensorFlow from conda-forge, see
+          # https://github.com/conda-forge/tensorflow-feedstock/issues/455 for TensorFlow 2.19 and
+          # https://github.com/conda-forge/tensorflow-feedstock/issues/505 for TensorFlow 2.21,
+          # so temporarily use Ubuntu 24.04 for the tutorial tests until the issue is resolved.
+          - os: ubuntu-24.04
           - os: macos-latest
     defaults:
       run:
