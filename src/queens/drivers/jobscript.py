@@ -460,7 +460,9 @@ class Jobscript(Driver):
                 str(jobscript_file),
             )
 
-        with metadata.track_step("run_jobscript"):
+        with metadata.track_step(
+            "run_jobscript", raise_on_failure=self.raise_error_on_jobscript_failure
+        ):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd, log_file)
 
@@ -576,7 +578,11 @@ class Jobscript(Driver):
             execute_cmd,
             raise_error_on_subprocess_failure=False,
         )
-        if self.raise_error_on_jobscript_failure and process_returncode:
+        # Raise an error here even if self.raise_error_on_jobscript_failure is False.
+        # This allows the metadata step "run_jobscript" to be marked as failed.
+        # The metadata step tracking context will not actually raise the exception if
+        # self.raise_error_on_jobscript_failure is False.
+        if process_returncode:
             if log_file.is_file():
                 log_tail, is_truncated = read_log_file_tail(log_file, JOBSCRIPT_LOG_TAIL_LINES)
                 stdout += f"\n\nContents of {log_file}:\n"

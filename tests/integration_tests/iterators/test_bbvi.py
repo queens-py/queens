@@ -41,6 +41,9 @@ def test_bbvi_density_match(
     dummy_bbvi_instance,
 ):
     """Matching a Gaussian distribution."""
+    # fix the random seed
+    np.random.seed(1)
+
     # mock all parts of the algorithm that has to do with initialization or an underlying model
     mocker.patch(
         "queens.iterators.bbvi.BBVI.pre_run",

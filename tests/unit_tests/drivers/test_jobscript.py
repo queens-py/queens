@@ -366,7 +366,11 @@ def test_error_in_jobscript_template(
 def test_nonzero_exit_code(
     parameters, input_template, job_options, raise_error_on_jobscript_failure, expectation
 ):
-    """Test for an error when the jobscript exits with a code other than 0."""
+    """Test for an error when the jobscript exits with a code other than 0.
+
+    The metadata step "run_jobscript" must be marked as failed
+    regardless of whether the error is raised.
+    """
     jobscript_driver = Jobscript(
         parameters=parameters,
         input_templates=input_template,
@@ -385,6 +389,9 @@ def test_nonzero_exit_code(
             experiment_dir=job_options.experiment_dir,
             experiment_name=job_options.experiment_name,
         )
+
+    metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert metadata["steps"]["run_jobscript"]["status"] == "failed"
 
 
 def test_nonzero_exit_code_includes_jobscript_log(parameters, input_template, job_options):

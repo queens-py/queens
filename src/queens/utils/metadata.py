@@ -107,7 +107,7 @@ class SimulationMetadata:
         self.file_path.write_text(yaml_string, encoding="utf-8")
 
     @contextmanager
-    def track_step(self, step_name: str) -> Iterator[None]:
+    def track_step(self, step_name: str, raise_on_failure: bool = True) -> Iterator[None]:
         """Time and track the success of a code section.
 
         This method allows us to track the time of individual code sections. It also tracks whether
@@ -115,6 +115,9 @@ class SimulationMetadata:
 
         Args:
             step_name: Name of the step to be monitored.
+            raise_on_failure: If True, the original exception is raised if the code section fails.
+                If False, the exception is suppressed. Either way, the status of the step is set
+                to "failed" in the metadata.
         """
         # Start timer
         start = perf_counter()
@@ -133,12 +136,13 @@ class SimulationMetadata:
             # If we are here the timed code section was successful
             self.steps[step_name]["status"] = "successful"
         # Something goes wrong
-        except Exception as exception:
+        except Exception as exception:  # pylint: disable=broad-except
             # Set the status to failed
             self.steps[step_name]["status"] = "failed"
 
             # Raise the original exception
-            raise exception
+            if raise_on_failure:
+                raise exception
         # Call this no matter if job was successful or failed
         finally:
             runtime = perf_counter() - start

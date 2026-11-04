@@ -129,6 +129,20 @@ def test_metadata_of_failed_section(tmp_path):
     assert exported_metadata["steps"]["dummy_section"]["status"] == "failed"
 
 
+def test_metadata_of_failed_section_without_raising(tmp_path):
+    """Test that a failing code section is tracked without re-raising."""
+    metadata = SimulationMetadata(job_id=1, job_input={"parameter_1": 1.0}, job_dir=tmp_path)
+
+    with metadata.track_step("dummy_section", raise_on_failure=False):
+        raise ValueError("dummy error")
+
+    assert metadata.steps["dummy_section"]["status"] == "failed"
+
+    exported_metadata = yaml.safe_load(get_metadata_path(tmp_path).read_text(encoding="utf-8"))
+    assert exported_metadata["steps"]["dummy_section"]["status"] == "failed"
+    assert exported_metadata["steps"]["dummy_section"]["runtime"] >= 0
+
+
 def test_metadata_init_from_file(tmp_path, job_input):
     """Test that an exported metadata file is read in correctly."""
     metadata = SimulationMetadata(job_id=1, job_input=job_input, job_dir=tmp_path)
