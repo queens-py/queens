@@ -488,9 +488,14 @@ class Jobscript(Driver):
             Results.
         """
         output_path = self.get_job_output_path(job_dir)
+        last_processing_step = (
+            "process_data_again"
+            if "process_data_again" in existing_metadata.get("steps", {})
+            else "process_data"
+        )
         if (
             not self.rerun_dataprocessor_on_existing_jobs
-            and self.step_successful(existing_metadata, "process_data")
+            and self.step_successful(existing_metadata, last_processing_step)
             and output_path.is_file()
         ):
             # Load the results from the output pickle file
