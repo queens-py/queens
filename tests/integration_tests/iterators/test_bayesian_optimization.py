@@ -17,7 +17,7 @@
 import numpy as np
 
 from example_simulator_functions import goldstein_price
-from queens.distributions.free_variable import FreeVariable
+from queens.distributions.uniform import Uniform
 from queens.drivers.function import Function
 from queens.iterators.bayesian_optimization import BayesianOptimization
 from queens.main import run_iterator
@@ -33,8 +33,8 @@ from queens.utils.io import load_result
 
 def test_bayesian_optimization_branin78_hifi(global_settings):
     """Test bayesian optimization iterator on branin78_hifi function."""
-    x1 = FreeVariable(dimension=1)
-    x2 = FreeVariable(dimension=1)
+    x1 = Uniform(lower_bound=-5.0, upper_bound=10.0)
+    x2 = Uniform(lower_bound=-0.0, upper_bound=15.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     driver = Function(parameters=parameters, function="branin78_hifi")
@@ -64,12 +64,6 @@ def test_bayesian_optimization_branin78_hifi(global_settings):
         global_settings=global_settings,
         surrogate_model=surrogate_model,
         acquisition_function=acquisition_function,
-        bounds=np.array(
-            [
-                [-5.0, 10.0],
-                [0.0, 15.0],
-            ]
-        ),
         result_description={"write_results": True},
         num_initial_samples=8,
         max_evaluations=32,
@@ -87,7 +81,7 @@ def test_bayesian_optimization_branin78_hifi(global_settings):
 
 def test_bayesian_optimization_forrester(global_settings):
     """Test bayesian optimization iterator on forrester function with GP."""
-    x1 = FreeVariable(dimension=1)
+    x1 = Uniform(lower_bound=-0.0, upper_bound=1.0)
     parameters = Parameters(x1=x1)
 
     driver = Function(parameters=parameters, function="forrester")
@@ -107,7 +101,6 @@ def test_bayesian_optimization_forrester(global_settings):
         global_settings=global_settings,
         surrogate_model=surrogate_model,
         acquisition_function=acquisition_function,
-        bounds=[[0.0, 1.0]],
         result_description={"write_results": True},
         num_initial_samples=4,
         max_evaluations=12,
@@ -124,8 +117,8 @@ def test_bayesian_optimization_forrester(global_settings):
 
 def test_bayesian_optimization_goldstein_price(global_settings):
     """Test bayesian optimization iterator on goldstein price function."""
-    x1 = FreeVariable(dimension=1)
-    x2 = FreeVariable(dimension=1)
+    x1 = Uniform(lower_bound=-2.0, upper_bound=2.0)
+    x2 = Uniform(lower_bound=-2.0, upper_bound=2.0)
     parameters = Parameters(x1=x1, x2=x2)
 
     def log_goldstein_price(job_id=None, **parameters):
@@ -161,12 +154,6 @@ def test_bayesian_optimization_goldstein_price(global_settings):
         global_settings=global_settings,
         surrogate_model=surrogate_model,
         acquisition_function=acquisition_function,
-        bounds=np.array(
-            [
-                [-2.0, 2.0],
-                [-2.0, 2.0],
-            ]
-        ),
         result_description={"write_results": True},
         num_initial_samples=8,
         max_evaluations=38,

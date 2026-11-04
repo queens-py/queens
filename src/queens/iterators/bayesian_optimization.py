@@ -23,7 +23,6 @@ from scipy.optimize import OptimizeResult, minimize
 
 from queens.distributions.uniform import Uniform
 from queens.iterators._optimization import Optimization
-from queens.parameters.parameters import Parameters
 from queens.utils.logger_settings import log_init_args
 from queens.utils.sobol_sequence import sample_sobol_sequence
 
@@ -63,7 +62,6 @@ class BayesianOptimization(Optimization):
         global_settings,
         surrogate_model,
         acquisition_function,
-        bounds,
         num_initial_samples,
         max_evaluations,
         result_description,
@@ -81,7 +79,6 @@ class BayesianOptimization(Optimization):
                 ``variance`` entries.
             acquisition_function (AcquisitionFunction): Acquisition function used to select new
                 evaluation points. It must provide an ``evaluate`` method.
-            bounds (array_like): Bounds with shape ``(num_parameters, 2)``.
             num_initial_samples (int): Number of samples in the initial design.
             max_evaluations (int): Total model-evaluation budget.
             result_description (dict): Description of result processing.
@@ -91,15 +88,24 @@ class BayesianOptimization(Optimization):
         """
         super().__init__(model, parameters, global_settings, result_description)
 
-        self.bounds = np.asarray(bounds, dtype=float)
-        expected_shape = (parameters.num_parameters, 2)
+        parameter_distributions = self.parameters.to_list()
 
-        if self.bounds.shape != expected_shape:
-            raise ValueError(f"Bounds must have shape {expected_shape}, got {self.bounds.shape}.")
-        if not np.all(np.isfinite(self.bounds)):
-            raise ValueError("All bounds must be finite.")
-        if np.any(self.bounds[:, 0] >= self.bounds[:, 1]):
-            raise ValueError("Each lower bound must be smaller than its upper bound.")
+        invalid_parameters = [
+            parameter_name
+            for parameter_name, distribution in zip(
+                self.parameters.parameters_keys,
+                parameter_distributions,
+                strict=True,
+            )
+            if not isinstance(distribution, Uniform)
+        ]
+
+        if invalid_parameters:
+            raise TypeError(
+                "BayesianOptimization requires all parameters to use Uniform distributions. "
+                f"Invalid parameters: {invalid_parameters}."
+            )
+
         if num_initial_samples < 2:
             raise ValueError("At least two initial samples are required.")
         if max_evaluations < num_initial_samples:
@@ -109,21 +115,28 @@ class BayesianOptimization(Optimization):
         if num_acquisition_restarts < 1:
             raise ValueError("At least one acquisition restart is required.")
 
+        lower_bounds = np.concatenate(
+            [
+                np.atleast_1d(distribution.lower_bound).astype(float)
+                for distribution in parameter_distributions
+            ]
+        )
+        upper_bounds = np.concatenate(
+            [
+                np.atleast_1d(distribution.upper_bound).astype(float)
+                for distribution in parameter_distributions
+            ]
+        )
+        self.bounds = np.column_stack((lower_bounds, upper_bounds))
+
+        if not np.all(np.isfinite(self.bounds)):
+            raise ValueError("BayesianOptimization requires finite parameter bounds.")
+
         self.surrogate_model = surrogate_model
         self.acquisition_function = acquisition_function
         self.num_initial_samples = int(num_initial_samples)
         self.max_evaluations = int(max_evaluations)
         self.num_acquisition_restarts = int(num_acquisition_restarts)
-
-        distributions = {
-            parameter_name: Uniform(lower_bound, upper_bound)
-            for parameter_name, (lower_bound, upper_bound) in zip(
-                self.parameters.parameters_keys,
-                self.bounds,
-                strict=True,
-            )
-        }
-        self.sampling_parameters = Parameters(**distributions)
 
         self.seed = seed
         self.random_generator = np.random.default_rng(self.seed)
@@ -166,7 +179,7 @@ class BayesianOptimization(Optimization):
         self.positions = sample_sobol_sequence(
             dimension=self.parameters.num_parameters,
             number_of_samples=self.num_initial_samples,
-            parameters=self.sampling_parameters,
+            parameters=self.parameters,
             randomize=True,
             seed=self.seed,
         )
@@ -238,7 +251,7 @@ class BayesianOptimization(Optimization):
         initial_positions = sample_sobol_sequence(
             dimension=self.parameters.num_parameters,
             number_of_samples=self.num_acquisition_restarts,
-            parameters=self.sampling_parameters,
+            parameters=self.parameters,
             randomize=True,
             seed=int(self.random_generator.integers(0, np.iinfo(np.int32).max)),
         )
