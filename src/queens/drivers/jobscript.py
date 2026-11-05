@@ -511,6 +511,7 @@ class Jobscript(Driver):
         # Run the data processor again on the existing jobscript output
         with metadata.track_step("process_data_again"):
             results = self._get_results(output_dir)
+            self.raise_error_if_results_changed_to_none(results, job_dir, metadata.job_id)
             self.write_job_output(job_dir, results)
 
         return results
@@ -616,8 +617,10 @@ class Jobscript(Driver):
             output_dir (Path): Path to output directory.
 
         Returns:
-            result (np.array): Result from the driver run.
-            gradient (np.array, None): Gradient from the driver run (potentially None).
+            dict: Results dictionary containing the entries:
+
+                * result (np.array): Result from the driver run.
+                * gradient (np.array, None): Gradient from the driver run (potentially None).
         """
         results = {}
         if self.data_processor:
@@ -645,3 +648,36 @@ class Jobscript(Driver):
                 experiment_dir / input_template_path.name,
                 input_files[input_template_name],
             )
+
+    def raise_error_if_results_changed_to_none(
+        self, results: dict, job_dir: Path, job_id: int
+    ) -> None:
+        """Raise an error if any of the results changed to None.
+
+        A result that is None is compared to the existing results in the output file of the job.
+        If the existing result was not None, an error is raised. If the output file does not
+        exist, no comparison is possible and no error is raised.
+
+        Args:
+            results: Dict containing the results.
+            job_dir: Path to job directory.
+            job_id: Job ID.
+        """
+        none_keys = [key for key, value in results.items() if value is None]
+        output_path = self.get_job_output_path(job_dir)
+        if not none_keys or not output_path.is_file():
+            return
+
+        existing_results = load_pickle(output_path)
+        changed_keys = [key for key in none_keys if existing_results.get(key) is not None]
+        if not changed_keys:
+            return
+
+        raise RuntimeError(
+            f"The results {changed_keys} of job {job_id} are None, although they were not None "
+            f"in a previous run. "
+            f"Please check that the output files of the job have not been deleted.\n"
+            f"To regenerate the output by rerunning the jobscript of all jobs of this "
+            f"experiment, set the flag `reuse_existing_jobs` to False. "
+            f"To rerun only this particular jobscript, delete its metadata file."
+        )

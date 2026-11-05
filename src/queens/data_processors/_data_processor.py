@@ -47,8 +47,12 @@ class DataProcessor(metaclass=abc.ABCMeta):
                 expression and subdirectories.
             file_options_dict: Dictionary with read-in options for the file. The respective child
                 class will implement valid options for this dictionary.
-            files_to_be_deleted_regex_lst: List with paths to files that should be deleted. The
-                paths can contain regex expressions.
+            files_to_be_deleted_regex_lst: List with paths to files that should be deleted after
+                processing. The paths can contain regex expressions and are relative to the output
+                directory of a job. If the deleted files are needed by the data processor,
+                rerunning it on existing jobs (e.g., via the Jobscript driver with
+                `reuse_existing_jobs=True` and `rerun_dataprocessor_on_existing_jobs=True`) will
+                raise an error.
         """
         if not file_name_identifier:
             raise ValueError(

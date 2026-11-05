@@ -15,6 +15,7 @@
 """Unit tests for the jobscript driver."""
 
 import os
+import re
 from contextlib import nullcontext as does_not_raise
 from pathlib import Path
 
@@ -94,10 +95,20 @@ def fixture_dummy_data_processor():
     )
 
 
-@pytest.fixture(name="gradient_data_processor")
-def fixture_gradient_data_processor():
+@pytest.fixture(name="dummy_gradient_data_processor")
+def fixture_dummy_gradient_data_processor():
     """Dummy gradient data processor."""
     return TxtFile(file_name_identifier="dummy.txt")
+
+
+@pytest.fixture(name="time_gradient_data_processor")
+def fixture_time_gradient_data_processor(time_file):
+    """Gradient data processor for the current time file.
+
+    Reads the current time from a txt file and returns it as a list of
+    strings.
+    """
+    return TxtFile(file_name_identifier=time_file, remove_logger_prefix_from_raw_data=False)
 
 
 @pytest.fixture(name="jobscript_file_name")
@@ -193,7 +204,7 @@ def fixture_args_init(
     input_template,
     files_to_copy,
     dummy_data_processor,
-    gradient_data_processor,
+    dummy_gradient_data_processor,
     jobscript_file_name,
     extra_options,
 ):
@@ -209,7 +220,7 @@ def fixture_args_init(
         "input_templates": input_template,
         "files_to_copy": files_to_copy,
         "data_processor": dummy_data_processor,
-        "gradient_data_processor": gradient_data_processor,
+        "gradient_data_processor": dummy_gradient_data_processor,
         "jobscript_file_name": jobscript_file_name,
         "extra_options": extra_options.copy(),
         "reuse_existing_jobs": True,
@@ -467,6 +478,7 @@ def test_successfully_reusing_existing_jobs(
     job_options,
     current_time_jobscript_template,
     time_data_processor,
+    time_gradient_data_processor,
     rerun_dataprocessor_on_existing_jobs,
 ):
     """Test that existing results are reused when the input matches.
@@ -477,6 +489,7 @@ def test_successfully_reusing_existing_jobs(
     """
     args_init["jobscript_template"] = current_time_jobscript_template
     args_init["data_processor"] = time_data_processor
+    args_init["gradient_data_processor"] = time_gradient_data_processor
     args_init["reuse_existing_jobs"] = True
     args_init["rerun_dataprocessor_on_existing_jobs"] = rerun_dataprocessor_on_existing_jobs
     jobscript_driver = Jobscript(**args_init)
@@ -652,6 +665,7 @@ def test_rerunning_data_processor_after_failed_data_processor(
     job_options,
     current_time_jobscript_template,
     time_data_processor,
+    time_gradient_data_processor,
     monkeypatch,
 ):
     """Test that a failed data processor run triggers a rerun on the next call.
@@ -660,6 +674,7 @@ def test_rerunning_data_processor_after_failed_data_processor(
     """
     args_init["jobscript_template"] = current_time_jobscript_template
     args_init["data_processor"] = time_data_processor
+    args_init["gradient_data_processor"] = time_gradient_data_processor
     # If `rerun_dataprocessor_on_existing_jobs` is set to True, the data processor will be rerun
     # even if it was successful
     args_init["rerun_dataprocessor_on_existing_jobs"] = False
@@ -708,3 +723,60 @@ def test_rerunning_data_processor_after_failed_data_processor(
     assert success_metadata["steps"]["run_jobscript"]["status"] == "successful"
     assert success_metadata["steps"]["process_data"]["status"] == "failed"
     assert success_metadata["steps"]["process_data_again"]["status"] == "successful"
+
+
+@pytest.mark.parametrize(
+    ("use_data_processor", "use_gradient_data_processor", "result_keys"),
+    [
+        (True, False, ["result"]),
+        (False, True, ["gradient"]),
+        (True, True, ["result", "gradient"]),
+    ],
+    ids=["data_processor", "gradient_data_processor", "both"],
+)
+def test_error_on_rerunning_data_processor_after_deleting_files(
+    args_init,
+    job_options,
+    current_time_jobscript_template,
+    time_data_processor,
+    time_gradient_data_processor,
+    time_file,
+    use_data_processor,
+    use_gradient_data_processor,
+    result_keys,
+):
+    """Test that rerunning any data processor on deleted files raises an error.
+
+    The existing results must not be overwritten.
+    """
+    args_init["jobscript_template"] = current_time_jobscript_template
+    args_init["data_processor"] = time_data_processor if use_data_processor else None
+    args_init["gradient_data_processor"] = (
+        time_gradient_data_processor if use_gradient_data_processor else None
+    )
+    args_init["rerun_dataprocessor_on_existing_jobs"] = True
+    jobscript_driver = Jobscript(**args_init)
+    sample = np.array([1, 2])
+    output_path = Jobscript.get_job_output_path(job_options.job_dir)
+
+    first_result = run_jobscript_driver(jobscript_driver, sample, job_options)
+    assert all(value is not None for value in first_result.values())
+
+    # Delete the file read by the data processors, e.g., as done by `files_to_be_deleted_regex_lst`
+    (job_options.output_dir / time_file).unlink()
+
+    with pytest.raises(
+        RuntimeError,
+        match=re.escape(f"The results {result_keys} of job {job_options.job_id} are None"),
+    ):
+        run_jobscript_driver(jobscript_driver, sample, job_options)
+
+    # Assert that the jobscript was not rerun and the existing results were not overwritten
+    assert not (job_options.output_dir / time_file).is_file()
+    existing_output = load_pickle(output_path)
+    for key in result_keys:
+        np.testing.assert_array_equal(existing_output[key], first_result[key])
+
+    metadata = get_metadata_from_job_dir(job_options.job_dir)
+    assert metadata["steps"]["process_data"]["status"] == "successful"
+    assert metadata["steps"]["process_data_again"]["status"] == "failed"
