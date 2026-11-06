@@ -40,7 +40,8 @@ jobs:
           # stay aligned with the pixi dependency sections.
           python3 tools/dependencies/check_pyproject_dependency_integrity.py \
             --path pyproject.toml \
-            --allow-version-mismatch gpflow
+            --allow-version-mismatch gpflow \
+            --allow-version-mismatch tensorflow
       - name: Check pixi environment integrity
         id: environment_integrity
         run: |

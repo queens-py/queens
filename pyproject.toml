@@ -33,10 +33,7 @@ dependencies = [
     "jinja2>=3.1.6",
     "arviz>=0.23.4,<1",
     "gpflow",
-    # TensorFlow 2.21 from conda-forge crashes on import (duplicate Abseil flag), see
-    # https://github.com/conda-forge/tensorflow-feedstock/issues/505 and
-    # https://github.com/queens-py/queens/issues/358, so temporarily stay below 2.21.
-    "tensorflow>=2.18.0,<2.21",
+    "tensorflow>=2.18.0",
     "tensorflow-probability>=0.25.0",
     "tf-keras>=2.18.0",
     "jax>=0.5.2",
