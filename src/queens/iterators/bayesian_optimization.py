@@ -52,6 +52,11 @@ class BayesianOptimization(Optimization):
             expected improvement.
         result_description (dict): Description of requested result processing.
         solution (OptimizeResult): Result of the optimization.
+        seed (int): Seed for random number generation.
+        random_generator (np.random.Generator): Random-number generator
+            initialized with ``seed`` to ensure reproducible sampling.
+        objective_values (np.ndarray): One-dimensional array containing the
+            objective-function value for each evaluated position.
     """
 
     @log_init_args
