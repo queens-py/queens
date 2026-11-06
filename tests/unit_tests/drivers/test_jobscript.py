@@ -324,6 +324,31 @@ def test_input_and_output_are_stored_in_pickle_files(
     assert metadata["input_hash"] == hash_input(stored_input)
 
 
+def test_run_without_parameters(input_templates, executable, job_options, injected_input_files):
+    """Test that run only uses the inputs dict and not the parameters."""
+    input_template_1, input_template_2 = input_templates
+    jobscript_driver = Jobscript(
+        parameters=None,
+        jobscript_template="",
+        executable=executable,
+        input_templates={"input_1": input_template_1, "input_2": input_template_2},
+    )
+
+    inputs = {"parameter_1": 1, "parameter_2": 2}
+    jobscript_driver.run(
+        inputs=inputs,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+
+    injectable_options = job_options.add_data_and_to_dict(inputs)
+    for input_file in injected_input_files.values():
+        for key, value in yaml.safe_load(input_file.read_text()).items():
+            assert value == str(injectable_options[key])
+
+
 def test_run_does_not_modify_inputs(jobscript_driver, job_options):
     """Test that run does not convert the values of the caller's dict."""
     inputs = {
