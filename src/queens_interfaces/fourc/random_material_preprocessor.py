@@ -90,7 +90,7 @@ def create_jinja_json_template(parameter_name, element_ids, keys, template_path)
         template_data += f'\n"{element_id}": {{{{ {key} }}}},'
     template_data = template_data[:-1]
     template_data += "}}"
-    Path(template_path).write_text(template_data)
+    Path(template_path).write_text(template_data, encoding="utf-8")
 
 
 def extract_by_material_id(material_id):

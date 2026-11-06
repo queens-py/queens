@@ -29,6 +29,7 @@ repos:
         entry: >
           python3 tools/dependencies/check_pyproject_dependency_integrity.py
           --allow-version-mismatch gpflow
+          --allow-version-mismatch tensorflow
           --path
         language: system
         files: '^pyproject\.toml$'
