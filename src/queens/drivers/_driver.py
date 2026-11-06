@@ -48,7 +48,8 @@ class Driver(metaclass=abc.ABCMeta):
         """Initialize Driver object.
 
         Args:
-            parameters (Parameters): Parameters object
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             files_to_copy (list): files or directories to copy to experiment_dir
             worker_log_level (int | str | None): Logging level of the log file written for each
                                                  job (default: logging.INFO). None switches the
@@ -72,7 +73,7 @@ class Driver(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -80,10 +81,11 @@ class Driver(metaclass=abc.ABCMeta):
     ) -> dict:
         """Abstract method for driver run.
 
-        The log file of the job is set up by __call__, i.e., when a scheduler runs the driver.
+        The log file of the job and the conversion of the sample array into the inputs dict are
+        handled by __call__, i.e., when a scheduler runs the driver.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample as dict of parameter names and values
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -95,16 +97,18 @@ class Driver(metaclass=abc.ABCMeta):
 
     def __call__(
         self,
-        sample: np.ndarray,
+        sample: np.ndarray | dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
         experiment_name: str,
     ) -> dict:
-        """Run the driver with the log file of the job.
+        """Run the job with its log file.
 
         Args:
-            sample (np.ndarray): Input sample
+            sample (np.ndarray | dict): Input sample as array or as dict of parameter names and
+                                        values. An array is converted with ``parameters``, a dict
+                                        is passed to ``run`` as is.
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -120,7 +124,11 @@ class Driver(metaclass=abc.ABCMeta):
         setup_logger_on_worker(log_dir=worker_log_dir, level=self.worker_log_level)
 
         try:
-            return self.run(sample, job_id, num_procs, experiment_dir, experiment_name)
+            if isinstance(sample, dict):
+                inputs = sample
+            else:
+                inputs = self.parameters.sample_as_dict(sample)
+            return self.run(inputs, job_id, num_procs, experiment_dir, experiment_name)
         except Exception:
             self.logger_on_worker.exception("Job %s failed.", job_id)
             raise
