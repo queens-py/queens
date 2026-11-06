@@ -122,7 +122,7 @@ class Function(Driver):
             if isinstance(result_array, tuple):
                 # here we expect a gradient return
                 result = np.asarray(result_array[0])
-                gradient = np.array(result_array[1])
+                gradient = np.asarray(result_array[1])
                 if not result.shape:
                     result = np.expand_dims(result, axis=0)
                     gradient = np.expand_dims(gradient, axis=0)
