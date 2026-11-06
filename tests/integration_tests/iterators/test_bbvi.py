@@ -126,7 +126,6 @@ def test_bbvi_park91a_hifi(tmp_path, experimental_data_park91a_hifi_on_grid, glo
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         control_variates_scaling_type="averaged",
         loo_control_variates_scaling=False,
         result_description={
@@ -205,7 +204,6 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
         num_evaluations=0,
     )
     global_settings = GlobalSettings(experiment_name, output_dir=tmp_path)
-    random_seed = 1
 
     with global_settings:
         parameters = Mock()
@@ -219,7 +217,6 @@ def fixture_dummy_bbvi_instance(tmp_path, my_variational_distribution):
             variational_parameter_initialization=variational_params_initialization_approach,
             n_samples_per_iter=n_samples_per_iter,
             variational_transformation=variational_transformation,
-            random_seed=random_seed,
             max_feval=max_feval,
             memory=memory,
             natural_gradient=natural_gradient_bool,

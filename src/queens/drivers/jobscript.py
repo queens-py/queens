@@ -25,15 +25,22 @@ import numpy as np
 from queens.drivers._driver import Driver
 from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
-from queens.utils.io import read_file
+from queens.utils.io import load_pickle, read_file, write_pickle
 from queens.utils.logger_settings import log_init_args
-from queens.utils.metadata import SimulationMetadata
+from queens.utils.metadata import (
+    SimulationMetadata,
+    get_metadata_from_job_dir,
+    get_metadata_path,
+    hash_input,
+)
 from queens.utils.path import create_folder_if_not_existent
 from queens.utils.run_subprocess import run_subprocess
 
 _logger = logging.getLogger(__name__)
 
 JOBSCRIPT_LOG_TAIL_LINES = 25
+JOB_INPUT_FILE_NAME = "input.pickle"
+JOB_OUTPUT_FILE_NAME = "output.pickle"
 
 
 @dataclass
@@ -108,7 +115,14 @@ class Jobscript(Driver):
         jobscript_options (dict): Dictionary containing jobscript options.
         jobscript_file_name (str): Jobscript file name (default: 'jobscript.sh').
         raise_error_on_jobscript_failure (bool): Whether to raise an error for a non-zero jobscript
-                                                 exit code.
+            exit code.
+        reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters are
+            the same and the job was successful. Note that it will not be checked whether the
+            executable or the input templates have changed. If they have, the results of the
+            previous run will still be reused, which may lead to unexpected results.
+        rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor when
+            reusing existing jobs. If false, the output of the previous run is loaded from the
+            output.pickle file.
     """
 
     @log_init_args
@@ -124,6 +138,8 @@ class Jobscript(Driver):
         jobscript_file_name="jobscript.sh",
         extra_options=None,
         raise_error_on_jobscript_failure=True,
+        reuse_existing_jobs=False,
+        rerun_dataprocessor_on_existing_jobs=False,
         worker_log_level=logging.INFO,
     ):
         """Initialize Jobscript object.
@@ -142,6 +158,13 @@ class Jobscript(Driver):
             extra_options (dict, opt): Extra options to inject into jobscript template.
             raise_error_on_jobscript_failure (bool, opt): Whether to raise an error for a non-zero
                 jobscript exit code.
+            reuse_existing_jobs (bool, opt): Whether to reuse existing jobs if the input parameters
+                are the same and the job was successful. Note that it will not be checked whether
+                the executable or the input templates have changed. If they have, the results of
+                the previous run will still be reused, which may lead to unexpected results.
+            rerun_dataprocessor_on_existing_jobs (bool, opt): Whether to rerun the data processor
+                when reusing existing jobs. If false, the output of the previous run is loaded
+                from the output.pickle file.
             worker_log_level (int | str | None): Logging level of the job log files
                                                  (default: logging.INFO). None switches
                                                  them off.
@@ -164,6 +187,8 @@ class Jobscript(Driver):
         self.jobscript_options["executable"] = executable
         self.jobscript_file_name = jobscript_file_name
         self.raise_error_on_jobscript_failure = raise_error_on_jobscript_failure
+        self.reuse_existing_jobs = reuse_existing_jobs
+        self.rerun_dataprocessor_on_existing_jobs = rerun_dataprocessor_on_existing_jobs
 
     @staticmethod
     def create_input_templates_dict(input_templates):
@@ -233,15 +258,176 @@ class Jobscript(Driver):
     ) -> dict:
         """Run the driver.
 
+        Either reuse existing results or run the jobscript.
+
         Args:
-            sample (np.array): Input sample.
-            job_id (int): Job ID.
-            num_procs (int): Number of processors.
-            experiment_dir (Path): Path to QUEENS experiment directory.
-            experiment_name (str): Name of QUEENS experiment.
+            sample: Input sample.
+            job_id: Job ID.
+            num_procs: Number of processors.
+            experiment_dir: Path to QUEENS experiment directory.
+            experiment_name: Name of QUEENS experiment.
 
         Returns:
-            Result and potentially the gradient.
+            Results.
+        """
+        job_dir = self.get_job_dir(job_id, experiment_dir)
+
+        if self.reuse_existing_jobs and self.metadata_exists(job_dir):
+            existing_metadata = get_metadata_from_job_dir(job_dir)
+            if not self.equal_input(existing_metadata, sample, job_id):
+                raise RuntimeError(
+                    "Input parameters differ from existing job metadata.\n"
+                    "Reusing existing job runs is currently enabled. If the intention was to run a "
+                    "new experiment, consider changing the `experiment_name` or set the flag "
+                    "`reuse_existing_jobs` to False to overwrite any existing job data in the "
+                    f"current experiment directory {experiment_dir}."
+                )
+
+            if self.jobscript_successful(existing_metadata):
+                return self.get_existing_results(job_dir, existing_metadata)
+
+        return self.run_jobscript(sample, job_id, num_procs, experiment_dir, experiment_name)
+
+    @staticmethod
+    def metadata_exists(job_dir: Path) -> bool:
+        """Check if metadata file exists in job directory.
+
+        Args:
+            job_dir: Path to job directory.
+
+        Returns:
+            True if metadata file exists, False otherwise.
+        """
+        metadata_path = get_metadata_path(job_dir)
+        return metadata_path.is_file()
+
+    @staticmethod
+    def get_job_input_path(job_dir: Path) -> Path:
+        """Get path of the file holding the input of a job.
+
+        Args:
+            job_dir: Path to job directory.
+
+        Returns:
+            Path to the job input file.
+        """
+        return job_dir / JOB_INPUT_FILE_NAME
+
+    @staticmethod
+    def get_job_output_path(job_dir: Path) -> Path:
+        """Get path of the file holding the output of a job.
+
+        Args:
+            job_dir: Path to job directory.
+
+        Returns:
+            Path to the job output file.
+        """
+        return job_dir / JOB_OUTPUT_FILE_NAME
+
+    @classmethod
+    def write_job_input(cls, job_dir: Path, job_input: dict) -> None:
+        """Write the input of a job to file.
+
+        The output of a previous run of this job is removed, such that the output file always
+        belongs to the input file.
+
+        Args:
+            job_dir: Path to job directory.
+            job_input: Input parameters of the job.
+        """
+        write_pickle(job_input, cls.get_job_input_path(job_dir))
+        cls.get_job_output_path(job_dir).unlink(missing_ok=True)
+
+    @classmethod
+    def write_job_output(cls, job_dir: Path, job_output: dict) -> None:
+        """Write the output of a job to file.
+
+        The output is kept in a separate file, so that it can be overwritten, e.g. when
+        rerunning the data processor, without writing the potentially large input again.
+
+        Args:
+            job_dir: Path to job directory.
+            job_output: Results of the job.
+        """
+        write_pickle(job_output, cls.get_job_output_path(job_dir))
+
+    def jobscript_successful(self, existing_metadata: dict) -> bool:
+        """Check if the jobscript of an existing job was successful.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+
+        Returns:
+            True if the jobscript was successful, False otherwise.
+        """
+        successful_prepare_input_files = self.step_successful(
+            existing_metadata, "prepare_input_files"
+        )
+        successful_run_jobscript = self.step_successful(existing_metadata, "run_jobscript")
+
+        return successful_prepare_input_files and successful_run_jobscript
+
+    @staticmethod
+    def step_successful(existing_metadata: dict, step_name: str) -> bool:
+        """Check if a specific step of an existing job was successful.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+            step_name: Name of the step to be checked.
+
+        Returns:
+            True if the step was successful, False otherwise.
+        """
+        steps = existing_metadata.get("steps", {})
+        return steps.get(step_name, {}).get("status", "") == "successful"
+
+    def equal_input(self, existing_metadata: dict, new_input: np.ndarray, job_id: int) -> bool:
+        """Check if the new and the previous input parameters are equal.
+
+        The input parameters are compared based on the input hash stored in the existing metadata.
+
+        Args:
+            existing_metadata: Metadata from existing job.
+            new_input: New input parameters.
+            job_id: Job ID.
+
+        Returns:
+            True if the input parameters are equal, False otherwise.
+        """
+        if "input_hash" not in existing_metadata:
+            raise RuntimeError(
+                f"The existing metadata of job {job_id} does not contain an input hash, most "
+                f"likely because it was created with an older version of QUEENS or because the "
+                f"metadata file is corrupted. "
+                f"Therefore, reusing this job is not possible. "
+                f"To rerun the jobscripts of all jobs of this experiment, set the flag "
+                f"`reuse_existing_jobs` to False. "
+                f"To rerun only this particular jobscript, delete the corrupted metadata file."
+            )
+        existing_input_hash = existing_metadata["input_hash"]
+        new_input_hash = hash_input(self.parameters.sample_as_dict(new_input))
+        return existing_input_hash == new_input_hash
+
+    def run_jobscript(
+        self,
+        sample: np.ndarray,
+        job_id: int,
+        num_procs: int,
+        experiment_dir: Path,
+        experiment_name: str,
+    ) -> dict:
+        """Run the jobscript.
+
+        Args:
+            sample: Input sample.
+            job_id: Job ID.
+            num_procs: Number of processors.
+            experiment_dir: Path to QUEENS experiment directory.
+            experiment_name: Name of QUEENS experiment.
+
+        Returns:
+            Jobscript results.
         """
         job_dir, output_dir, output_file, input_files, log_file = self._manage_paths(
             job_id, experiment_dir
@@ -249,9 +435,10 @@ class Jobscript(Driver):
 
         sample_dict = self.parameters.sample_as_dict(sample)
 
-        metadata = SimulationMetadata(job_id=job_id, inputs=sample_dict, job_dir=job_dir)
+        metadata = SimulationMetadata(job_id=job_id, job_input=sample_dict, job_dir=job_dir)
+        self.write_job_input(job_dir, sample_dict)
 
-        with metadata.time_code("prepare_input_files"):
+        with metadata.track_step("prepare_input_files"):
             job_options = JobOptions(
                 job_dir=job_dir,
                 output_dir=output_dir,
@@ -277,15 +464,86 @@ class Jobscript(Driver):
                 str(jobscript_file),
             )
 
-        with metadata.time_code("run_jobscript"):
+        with metadata.track_step(
+            "run_jobscript", raise_on_failure=self.raise_error_on_jobscript_failure
+        ):
             execute_cmd = f"bash {jobscript_file} >{log_file} 2>&1"
             self._run_executable(job_id, execute_cmd, log_file)
 
-        with metadata.time_code("data_processing"):
+        with metadata.track_step("process_data"):
             results = self._get_results(output_dir)
-            metadata.outputs = results
+            self.write_job_output(job_dir, results)
 
         return results
+
+    def get_existing_results(self, job_dir: Path, existing_metadata: dict) -> dict:
+        """Get existing results from a previous jobscript driver run.
+
+        Either load the output from the pickle file or rerun the data processor on the existing
+        jobscript output.
+        The data processor is rerun if the flag `rerun_dataprocessor_on_existing_jobs` is set to
+        True or if the previous data processor run was unsuccessful.
+
+        Args:
+            job_dir: Path to job directory.
+            existing_metadata: Metadata from existing job.
+
+        Returns:
+            Results.
+        """
+        output_path = self.get_job_output_path(job_dir)
+        last_processing_step = (
+            "process_data_again"
+            if "process_data_again" in existing_metadata.get("steps", {})
+            else "process_data"
+        )
+        if (
+            not self.rerun_dataprocessor_on_existing_jobs
+            and self.step_successful(existing_metadata, last_processing_step)
+            and output_path.is_file()
+        ):
+            # Load the results from the output pickle file
+            return load_pickle(output_path)
+
+        metadata = SimulationMetadata.init_from_file(job_dir)
+        output_dir = self.get_output_dir(job_dir)
+
+        # Run the data processor again on the existing jobscript output
+        with metadata.track_step("process_data_again"):
+            results = self._get_results(output_dir)
+            self.raise_error_if_results_changed_to_none(results, job_dir, metadata.job_id)
+            self.write_job_output(job_dir, results)
+
+        return results
+
+    @staticmethod
+    def get_job_dir(job_id: int, experiment_dir: Path) -> Path:
+        """Get job directory path.
+
+        Args:
+            job_id: Job ID.
+            experiment_dir: Path to QUEENS experiment directory.
+
+        Returns:
+            Path to job directory.
+        """
+        job_dir = experiment_dir / str(job_id)
+        return job_dir
+
+    @staticmethod
+    def get_output_dir(job_dir: Path, output_folder_name="output") -> Path:
+        """Get output directory path.
+
+        Args:
+            job_dir: Job directory path.
+            output_folder_name: Name of output folder.
+
+        Returns:
+            Path to output directory.
+        """
+        output_dir = job_dir / output_folder_name
+        create_folder_if_not_existent(output_dir)
+        return output_dir
 
     def _manage_paths(
         self, job_id, experiment_dir, output_folder_name="output", output_prefix="output"
@@ -305,9 +563,8 @@ class Jobscript(Driver):
             input_files (dict): Dict with name and path of the input file(s).
             log_file (Path): Path to log file.
         """
-        job_dir = experiment_dir / str(job_id)
-        output_dir = job_dir / output_folder_name
-        output_dir = create_folder_if_not_existent(output_dir)
+        job_dir = self.get_job_dir(job_id, experiment_dir)
+        output_dir = self.get_output_dir(job_dir, output_folder_name)
 
         output_file = output_dir / output_prefix
         log_file = output_dir / (output_prefix + ".log")
@@ -331,7 +588,11 @@ class Jobscript(Driver):
             execute_cmd,
             raise_error_on_subprocess_failure=False,
         )
-        if self.raise_error_on_jobscript_failure and process_returncode:
+        # Raise an error here even if self.raise_error_on_jobscript_failure is False.
+        # This allows the metadata step "run_jobscript" to be marked as failed.
+        # The metadata step tracking context will not actually raise the exception if
+        # self.raise_error_on_jobscript_failure is False.
+        if process_returncode:
             if log_file.is_file():
                 log_tail, is_truncated = read_log_file_tail(log_file, JOBSCRIPT_LOG_TAIL_LINES)
                 stdout += f"\n\nContents of {log_file}:\n"
@@ -356,8 +617,10 @@ class Jobscript(Driver):
             output_dir (Path): Path to output directory.
 
         Returns:
-            result (np.array): Result from the driver run.
-            gradient (np.array, None): Gradient from the driver run (potentially None).
+            dict: Results dictionary containing the entries:
+
+                * result (np.array): Result from the driver run.
+                * gradient (np.array, None): Gradient from the driver run (potentially None).
         """
         results = {}
         if self.data_processor:
@@ -385,3 +648,36 @@ class Jobscript(Driver):
                 experiment_dir / input_template_path.name,
                 input_files[input_template_name],
             )
+
+    def raise_error_if_results_changed_to_none(
+        self, results: dict, job_dir: Path, job_id: int
+    ) -> None:
+        """Raise an error if any of the results changed to None.
+
+        A result that is None is compared to the existing results in the output file of the job.
+        If the existing result was not None, an error is raised. If the output file does not
+        exist, no comparison is possible and no error is raised.
+
+        Args:
+            results: Dict containing the results.
+            job_dir: Path to job directory.
+            job_id: Job ID.
+        """
+        none_keys = [key for key, value in results.items() if value is None]
+        output_path = self.get_job_output_path(job_dir)
+        if not none_keys or not output_path.is_file():
+            return
+
+        existing_results = load_pickle(output_path)
+        changed_keys = [key for key in none_keys if existing_results.get(key) is not None]
+        if not changed_keys:
+            return
+
+        raise RuntimeError(
+            f"The results {changed_keys} of job {job_id} are None, although they were not None "
+            f"in a previous run. "
+            f"Please check that the output files of the job have not been deleted.\n"
+            f"To regenerate the output by rerunning the jobscript of all jobs of this "
+            f"experiment, set the flag `reuse_existing_jobs` to False. "
+            f"To rerun only this particular jobscript, delete its metadata file."
+        )

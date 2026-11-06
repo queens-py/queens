@@ -33,7 +33,7 @@ def load_pickle(file_path: Path) -> dict:
     """Load a pickle file directly from path.
 
     Args:
-        file_path: Path to pickle-file
+        file_path: Path to pickle file
 
     Returns:
         Data in the pickle file
@@ -48,6 +48,19 @@ def load_pickle(file_path: Path) -> dict:
         raise IOError(f"Could not open the pickle file {file_path}") from exception
 
 
+def write_pickle(data: Any, file_path: Path) -> None:
+    """Write data to a pickle file.
+
+    Overwrites the file if it already exists.
+
+    Args:
+        data: Data to pickle
+        file_path: Path to pickle file to write the data to
+    """
+    with open(file_path, "wb") as file:
+        pickle.dump(data, file, protocol=pickle.HIGHEST_PROTOCOL)
+
+
 def print_pickled_data(file_path: Path) -> None:
     """Print a table of the data within a pickle file.
 
@@ -55,7 +68,7 @@ def print_pickled_data(file_path: Path) -> None:
     it a single command and fancy prints.
 
     Args:
-        file_path: Path to pickle-file
+        file_path: Path to pickle file
     """
     data = load_pickle(file_path)
     _logger.info("\n\npickle file: %s", file_path)

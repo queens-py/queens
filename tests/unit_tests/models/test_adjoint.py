@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
+from queens.drivers.jobscript import Jobscript
 from queens.models import adjoint
 from queens.models.adjoint import Adjoint
 
@@ -56,6 +57,19 @@ def test_init():
     assert model_obj.driver == driver
     assert model_obj.gradient_driver == gradient_driver
     assert model_obj.adjoint_file == adjoint_file
+
+
+@pytest.mark.parametrize(
+    "reuse_forward_jobs, reuse_gradient_jobs",
+    [(True, False), (False, True), (True, True)],
+)
+def test_init_with_reuse_existing_jobs(reuse_forward_jobs, reuse_gradient_jobs):
+    """Test that the adjoint model does not allow reusing existing jobs."""
+    driver = Mock(spec=Jobscript, reuse_existing_jobs=reuse_forward_jobs)
+    gradient_driver = Mock(spec=Jobscript, reuse_existing_jobs=reuse_gradient_jobs)
+
+    with pytest.raises(NotImplementedError, match="Reusing existing jobs is not supported"):
+        Adjoint(scheduler=Mock(), driver=driver, gradient_driver=gradient_driver)
 
 
 @pytest.fixture(name="scheduler_response")

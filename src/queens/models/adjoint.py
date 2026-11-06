@@ -16,6 +16,7 @@
 
 import logging
 
+from queens.drivers.jobscript import Jobscript
 from queens.models.simulation import Simulation
 from queens.utils.config_directories import current_job_directory
 from queens.utils.io import write_to_csv
@@ -50,12 +51,19 @@ class Adjoint(Simulation):
             adjoint_file (str): Name of the adjoint file that contains the evaluated derivative of
                                 the functional w.r.t. to the simulation output.
         """
+        drivers = [driver, gradient_driver]
+        for driver_i in drivers:
+            if isinstance(driver_i, Jobscript) and driver_i.reuse_existing_jobs:
+                raise NotImplementedError(
+                    "Reusing existing jobs is not supported for the adjoint model. Set "
+                    "`reuse_existing_jobs` to False for both the forward and gradient drivers."
+                )
         super().__init__(scheduler=scheduler, driver=driver)
         self.gradient_driver = gradient_driver
         self.adjoint_file = adjoint_file
 
     def grad(self, samples, upstream_gradient):
-        r"""Evaluate gradient of model w.r.t. current set of input samples.
+        r"""Evaluate the model gradient at the current set of input samples.
 
         Consider current model f(x) with input samples x, and upstream function g(f). The provided
         upstream gradient is :math:`\frac{\partial g}{\partial f}` and the method returns
