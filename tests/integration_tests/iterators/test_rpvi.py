@@ -79,7 +79,6 @@ def test_rpvi_park91a_hifi(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -149,7 +148,6 @@ def test_rpvi_park91a_hifi_provided_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -236,7 +234,6 @@ def test_rpvi_gaussian(tmp_path, experimental_data, forward_model, global_settin
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         verbose_every_n_iter=1000,
         result_description={
             "write_results": True,
@@ -385,7 +382,6 @@ def test_rpvi_exe_park91a_hifi_provided_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -484,7 +480,6 @@ def test_rpvi_exe_park91a_hifi_finite_differences_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {
@@ -605,7 +600,6 @@ def test_rpvi_exe_park91a_hifi_adjoint_gradient(
         FIM_dampening_lower_bound=1e-08,
         variational_transformation=None,
         variational_parameter_initialization="prior",
-        random_seed=1,
         result_description={
             "write_results": True,
             "plotting_options": {

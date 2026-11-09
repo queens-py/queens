@@ -71,7 +71,6 @@ class RPVI(VariationalInference):
         result_description,
         variational_distribution,
         n_samples_per_iter,
-        random_seed,
         max_feval,
         stochastic_optimizer,
         variational_transformation=None,
@@ -95,7 +94,6 @@ class RPVI(VariationalInference):
             variational_distribution (Variational): variational distribution object
             n_samples_per_iter (int): Batch size per iteration (number of simulations per iteration
                                                 to estimate the involved expectations)
-            random_seed (int): Seed for the random number generators
             max_feval (int): Maximum number of simulation runs for this analysis
             stochastic_optimizer (obj): QUEENS stochastic optimizer object
             variational_transformation (str): String encoding the transformation that will be
@@ -126,7 +124,6 @@ class RPVI(VariationalInference):
             variational_params_initialization=variational_parameter_initialization,
             n_samples_per_iter=n_samples_per_iter,
             variational_transformation=variational_transformation,
-            random_seed=random_seed,
             max_feval=max_feval,
             natural_gradient=natural_gradient,
             FIM_dampening=FIM_dampening,

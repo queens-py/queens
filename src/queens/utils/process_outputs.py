@@ -15,7 +15,6 @@
 """Collection of utility functions for post-processing."""
 
 import logging
-import pickle
 import warnings
 from pathlib import Path
 from typing import Any
@@ -24,6 +23,7 @@ import numpy as np
 from sklearn.model_selection import GridSearchCV
 from sklearn.neighbors import KernelDensity
 
+from queens.utils.io import write_pickle
 from queens.utils.plot_outputs import plot_cdf, plot_icdf, plot_pdf
 
 _logger = logging.getLogger(__name__)
@@ -143,8 +143,7 @@ def write_results(processed_results: Any, file_path: Path) -> None:
         processed_results: Dictionary with results
         file_path: Path to pickle file to write results to
     """
-    with open(file_path, "wb") as handle:
-        pickle.dump(processed_results, handle, protocol=pickle.HIGHEST_PROTOCOL)
+    write_pickle(processed_results, file_path)
 
 
 def estimate_result_interval(output_data: dict) -> list:
