@@ -16,10 +16,12 @@
 
 import logging
 import re
+import types
 from collections import OrderedDict
 
 import numpy as np
 import particles
+from numpy.lib import recfunctions as rfn  # recfunctions is not auto-loaded in numpy.lib
 from particles import collectors as col
 from particles import distributions as dists
 from particles.smc_samplers import AdaptiveTempering
@@ -242,6 +244,44 @@ class SequentialMonteCarloChopin(Iterator):
             resampling=self.resampling_method,
             qmc=False,  # QMC can not be used in this static setting in particles (currently)
         )
+
+    def insert_sample_after_resampling(self, sample: np.ndarray) -> None:
+        """Add a hook to insert a missing sample after each resampling step.
+
+        If `sample` is absent, it replaces the first resampled particle.
+        The usual rejuvenation sequence then runs on the updated particle set.
+
+        Call this method once after `pre_run()` and before `core_run()`.
+
+        Args:
+            sample: Point to insert after resampling.
+        """
+        if not isinstance(self.smc_obj, particles.SMC) or not isinstance(
+            self.smc_obj.fk, AdaptiveTempering
+        ):
+            raise RuntimeError(
+                "SMC object or Feynman-Kac model was not initialized. Call pre_run() first."
+            )
+
+        # Define method to replace the Tempering._M method with a custom one that inserts
+        # the sample after resampling.
+        def insert_sample_and_run_rejuvenation(fk_model_self, _, xp, epn):
+            """Insert the sample, then run the usual rejuvenation sequence."""
+            target = fk_model_self.current_target(epn)
+
+            # Insert the sample if it is not already present in the particles.
+            structured_sample = rfn.unstructured_to_structured(sample, dtype=xp.theta.dtype)
+            if not np.any(xp.theta == structured_sample):
+                xp.theta[0] = structured_sample
+                # Recompute prior, likelihood, and target values for all particles.
+                target(xp)
+
+            # Run the usual rejuvenation sequence.
+            return fk_model_self.move(xp, target)
+
+        # Replace the Tempering._M method.
+        # pylint: disable-next=protected-access
+        self.smc_obj.fk._M = types.MethodType(insert_sample_and_run_rejuvenation, self.smc_obj.fk)
 
     def core_run(self):
         """Core run of Sequential Monte Carlo iterator.
