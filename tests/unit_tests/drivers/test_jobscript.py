@@ -188,7 +188,7 @@ def run_jobscript_driver(
         Results from the jobscript run.
     """
     return jobscript_driver.run(
-        sample=sample,
+        inputs=jobscript_driver.parameters.sample_as_dict(sample),
         job_id=job_options.job_id,
         num_procs=job_options.num_procs,
         experiment_dir=job_options.experiment_dir,
@@ -280,11 +280,10 @@ def test_multiple_input_files(jobscript_driver, job_options, injected_input_file
     """Test if multiple input files are correctly generated."""
     # Samples to be injected
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     # Run the driver
     jobscript_driver.run(
-        sample=sample,
+        inputs=sample_dict,
         job_id=job_options.job_id,
         num_procs=job_options.num_procs,
         experiment_dir=job_options.experiment_dir,
@@ -325,6 +324,50 @@ def test_input_and_output_are_stored_in_pickle_files(
     assert metadata["input_hash"] == hash_input(stored_input)
 
 
+def test_run_without_parameters(input_templates, executable, job_options, injected_input_files):
+    """Test that run only uses the inputs dict and not the parameters."""
+    input_template_1, input_template_2 = input_templates
+    jobscript_driver = Jobscript(
+        parameters=None,
+        jobscript_template="",
+        executable=executable,
+        input_templates={"input_1": input_template_1, "input_2": input_template_2},
+    )
+
+    inputs = {"parameter_1": 1, "parameter_2": 2}
+    jobscript_driver.run(
+        inputs=inputs,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+
+    injectable_options = job_options.add_data_and_to_dict(inputs)
+    for input_file in injected_input_files.values():
+        for key, value in yaml.safe_load(input_file.read_text()).items():
+            assert value == str(injectable_options[key])
+
+
+def test_run_does_not_modify_inputs(jobscript_driver, job_options):
+    """Test that run does not convert the values of the caller's dict."""
+    inputs = {
+        "parameter_1": np.float64(1),
+        "parameter_2": np.float64(2),
+        "nested": {"mesh": Path("mesh.exo")},
+    }
+    jobscript_driver.run(
+        inputs=inputs,
+        job_id=job_options.job_id,
+        num_procs=job_options.num_procs,
+        experiment_dir=job_options.experiment_dir,
+        experiment_name=job_options.experiment_name,
+    )
+    assert isinstance(inputs["parameter_1"], np.float64)
+    assert isinstance(inputs["parameter_2"], np.float64)
+    assert isinstance(inputs["nested"]["mesh"], Path)
+
+
 @pytest.mark.parametrize(
     "raise_error_on_jobscript_failure, expectation",
     [
@@ -344,11 +387,10 @@ def test_error_in_jobscript_template(
         raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with expectation:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -390,11 +432,10 @@ def test_nonzero_exit_code(
         raise_error_on_jobscript_failure=raise_error_on_jobscript_failure,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with expectation:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -415,11 +456,10 @@ def test_nonzero_exit_code_includes_jobscript_log(parameters, input_template, jo
         raise_error_on_jobscript_failure=True,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with pytest.raises(SubprocessError, match="jobscript failed"):
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,
@@ -440,11 +480,10 @@ def test_nonzero_exit_code_includes_only_jobscript_log_tail(
         raise_error_on_jobscript_failure=True,
     )
     sample_dict = parameters.sample_as_dict(np.array([1, 2]))
-    sample = np.array(list(sample_dict.values()))
 
     with pytest.raises(SubprocessError) as error:
         jobscript_driver.run(
-            sample=sample,
+            inputs=sample_dict,
             job_id=job_options.job_id,
             num_procs=job_options.num_procs,
             experiment_dir=job_options.experiment_dir,

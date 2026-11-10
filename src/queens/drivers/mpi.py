@@ -42,7 +42,8 @@ class Mpi(Jobscript):
         """Initialize MPI object.
 
         Args:
-            parameters (Parameters): Parameters object
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             input_templates (str, Path, dict): path to simulation input template
             executable (str, Path): path to main executable of respective software
             files_to_copy (list, opt): files or directories to copy to experiment_dir

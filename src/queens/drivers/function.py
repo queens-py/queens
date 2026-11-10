@@ -48,7 +48,8 @@ class Function(Driver):
         """Initialize Function object.
 
         Args:
-            parameters (Parameters): Parameters object
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             function (callable, str): Function or name of example function provided by QUEENS.
                 If the function contains the arguments `job_id`, `num_procs`, `experiment_dir`,
                 or `experiment_name`, they will be passed to the function when calling the `run`
@@ -120,8 +121,8 @@ class Function(Driver):
             result_array = function(**sample_dict)
             if isinstance(result_array, tuple):
                 # here we expect a gradient return
-                result = result_array[0]
-                gradient = np.array(result_array[1])
+                result = np.asarray(result_array[0])
+                gradient = np.asarray(result_array[1])
                 if not result.shape:
                     result = np.expand_dims(result, axis=0)
                     gradient = np.expand_dims(gradient, axis=0)
@@ -140,7 +141,7 @@ class Function(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -149,7 +150,7 @@ class Function(Driver):
         """Run the driver.
 
         Args:
-            sample (np.ndarray): Input sample
+            inputs (dict): Input sample as dict of parameter names and values
             job_id (int): Job ID
             num_procs (int): number of processors
             experiment_dir (Path): Path to QUEENS experiment directory.
@@ -168,7 +169,8 @@ class Function(Driver):
                 raise KeyError(f"The key {name} is already in the sample dictionary.")
             sample_dict[name] = value
 
-        sample_dict = self.parameters.sample_as_dict(sample)
+        # Copy, so that the run arguments are not written into the caller's dict
+        sample_dict = dict(inputs)
         if self.function_requires_job_id:
             _pass_run_arguments(sample_dict, "job_id", job_id)
         if self.function_requires_num_procs:

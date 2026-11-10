@@ -18,6 +18,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
+from queens.drivers._driver import Driver
 from queens.models.simulation import Simulation
 
 
@@ -29,6 +30,28 @@ def test_init():
     model_obj = Simulation(scheduler=scheduler, driver=driver)
     assert model_obj.scheduler == scheduler
     assert model_obj.driver == driver
+
+
+def test_init_with_driver_copies_files():
+    """Test that driver files are copied to the experiment dir."""
+    scheduler = Mock()
+    driver = Mock(spec=Driver)
+    driver.files_to_copy = ["mesh.vtu"]
+    Simulation(scheduler=scheduler, driver=driver)
+    scheduler.copy_files_to_experiment_dir.assert_called_once_with(["mesh.vtu"])
+
+
+def test_init_with_callable_copies_no_files():
+    """Test that a plain callable is accepted and no files are copied."""
+    scheduler = Mock()
+
+    def function(sample, job_id, num_procs, experiment_dir, experiment_name):
+        # pylint: disable=unused-argument
+        return {"result": sample}
+
+    model_obj = Simulation(scheduler=scheduler, driver=function)
+    assert model_obj.driver is function
+    scheduler.copy_files_to_experiment_dir.assert_not_called()
 
 
 @pytest.fixture(name="scheduler_response")

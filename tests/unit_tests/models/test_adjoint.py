@@ -20,6 +20,7 @@ import numpy as np
 import pytest
 from mock import Mock
 
+from queens.drivers._driver import Driver
 from queens.drivers.jobscript import Jobscript
 from queens.models import adjoint
 from queens.models.adjoint import Adjoint
@@ -72,6 +73,20 @@ def test_init_with_reuse_existing_jobs(reuse_forward_jobs, reuse_gradient_jobs):
         Adjoint(scheduler=Mock(), driver=driver, gradient_driver=gradient_driver)
 
 
+def test_init_copies_files_of_both_drivers():
+    """Test that the files of the driver and the gradient driver are copied."""
+    scheduler = Mock()
+    driver = Mock(spec=Driver)
+    driver.files_to_copy = ["forward.yaml"]
+    gradient_driver = Mock(spec=Driver)
+    gradient_driver.files_to_copy = ["adjoint.yaml"]
+
+    Adjoint(scheduler=scheduler, driver=driver, gradient_driver=gradient_driver)
+
+    scheduler.copy_files_to_experiment_dir.assert_any_call(["forward.yaml"])
+    scheduler.copy_files_to_experiment_dir.assert_any_call(["adjoint.yaml"])
+
+
 @pytest.fixture(name="scheduler_response")
 def fixture_scheduler_response():
     """Scheduler fixture."""
@@ -93,10 +108,10 @@ def test_evaluate(default_adjoint_model, scheduler_response):
     assert default_adjoint_model.response == expected_response
 
 
-def test_grad(default_adjoint_model, scheduler_response):
+def test_grad(default_adjoint_model, scheduler_response, mocker):
     """Test grad method."""
     experiment_dir = Path("path_to_experiment_dir")
-    adjoint.write_to_csv = Mock()
+    write_to_csv = mocker.patch.object(adjoint, "write_to_csv")
     default_adjoint_model.scheduler.next_job_id = 7
     default_adjoint_model.scheduler.experiment_dir = experiment_dir
     default_adjoint_model.scheduler.evaluate = scheduler_response
@@ -109,20 +124,35 @@ def test_grad(default_adjoint_model, scheduler_response):
     expected_grad = samples**2
     np.testing.assert_almost_equal(expected_grad, grad_out)
 
-    assert adjoint.write_to_csv.call_count == 2
+    assert write_to_csv.call_count == 2
     assert (
-        adjoint.write_to_csv.call_args_list[0].args[0]
+        write_to_csv.call_args_list[0].args[0]
         == experiment_dir / "5" / default_adjoint_model.adjoint_file
     )
     assert (
-        adjoint.write_to_csv.call_args_list[1].args[0]
+        write_to_csv.call_args_list[1].args[0]
         == experiment_dir / "6" / default_adjoint_model.adjoint_file
     )
     np.testing.assert_equal(
-        adjoint.write_to_csv.call_args_list[0].args[1],
+        write_to_csv.call_args_list[0].args[1],
         upstream_gradient[0].reshape(1, -1),
     )
     np.testing.assert_equal(
-        adjoint.write_to_csv.call_args_list[1].args[1],
+        write_to_csv.call_args_list[1].args[1],
         upstream_gradient[1].reshape(1, -1),
     )
+
+
+def test_grad_creates_job_directory(default_adjoint_model, scheduler_response, tmp_path):
+    """Test that grad creates the job directory for the adjoint file."""
+    default_adjoint_model.scheduler.next_job_id = 2
+    default_adjoint_model.scheduler.experiment_dir = tmp_path
+    default_adjoint_model.scheduler.evaluate = scheduler_response
+
+    samples = np.array([[1.0], [2.0]])
+    upstream_gradient = np.array([[0.5, 1.0], [1.5, 2.0]])
+    default_adjoint_model.grad(samples, upstream_gradient=upstream_gradient)
+
+    for job_id, expected in zip([0, 1], upstream_gradient):
+        adjoint_file = tmp_path / str(job_id) / default_adjoint_model.adjoint_file
+        np.testing.assert_equal(np.loadtxt(adjoint_file, delimiter=","), expected)

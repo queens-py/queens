@@ -20,8 +20,6 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 
-import numpy as np
-
 from queens.drivers._driver import Driver
 from queens.utils.exceptions import SubprocessError
 from queens.utils.injector import inject, inject_in_template
@@ -145,7 +143,8 @@ class Jobscript(Driver):
         """Initialize Jobscript object.
 
         Args:
-            parameters (Parameters): Parameters object.
+            parameters (Parameters): Parameters object, used to convert the ``sample`` numpy array
+                                     in ``__call__`` into the ``inputs`` dictionary.
             input_templates (str, Path, dict): (Local) path(s) to simulation input template.
             jobscript_template (str, Path): (Local) path to jobscript template or read-in jobscript
                 template.
@@ -250,7 +249,7 @@ class Jobscript(Driver):
 
     def run(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -261,7 +260,7 @@ class Jobscript(Driver):
         Either reuse existing results or run the jobscript.
 
         Args:
-            sample: Input sample.
+            inputs: Input sample as dict of parameter names and values.
             job_id: Job ID.
             num_procs: Number of processors.
             experiment_dir: Path to QUEENS experiment directory.
@@ -274,7 +273,7 @@ class Jobscript(Driver):
 
         if self.reuse_existing_jobs and self.metadata_exists(job_dir):
             existing_metadata = get_metadata_from_job_dir(job_dir)
-            if not self.equal_input(existing_metadata, sample, job_id):
+            if not self.equal_input(existing_metadata, inputs, job_id):
                 raise RuntimeError(
                     "Input parameters differ from existing job metadata.\n"
                     "Reusing existing job runs is currently enabled. If the intention was to run a "
@@ -286,7 +285,7 @@ class Jobscript(Driver):
             if self.jobscript_successful(existing_metadata):
                 return self.get_existing_results(job_dir, existing_metadata)
 
-        return self.run_jobscript(sample, job_id, num_procs, experiment_dir, experiment_name)
+        return self.run_jobscript(inputs, job_id, num_procs, experiment_dir, experiment_name)
 
     @staticmethod
     def metadata_exists(job_dir: Path) -> bool:
@@ -382,14 +381,14 @@ class Jobscript(Driver):
         steps = existing_metadata.get("steps", {})
         return steps.get(step_name, {}).get("status", "") == "successful"
 
-    def equal_input(self, existing_metadata: dict, new_input: np.ndarray, job_id: int) -> bool:
+    def equal_input(self, existing_metadata: dict, new_input: dict, job_id: int) -> bool:
         """Check if the new and the previous input parameters are equal.
 
         The input parameters are compared based on the input hash stored in the existing metadata.
 
         Args:
             existing_metadata: Metadata from existing job.
-            new_input: New input parameters.
+            new_input: New input parameters as dict of parameter names and values.
             job_id: Job ID.
 
         Returns:
@@ -406,12 +405,12 @@ class Jobscript(Driver):
                 f"To rerun only this particular jobscript, delete the corrupted metadata file."
             )
         existing_input_hash = existing_metadata["input_hash"]
-        new_input_hash = hash_input(self.parameters.sample_as_dict(new_input))
+        new_input_hash = hash_input(new_input)
         return existing_input_hash == new_input_hash
 
     def run_jobscript(
         self,
-        sample: np.ndarray,
+        inputs: dict,
         job_id: int,
         num_procs: int,
         experiment_dir: Path,
@@ -420,7 +419,7 @@ class Jobscript(Driver):
         """Run the jobscript.
 
         Args:
-            sample: Input sample.
+            inputs: Input sample as dict of parameter names and values.
             job_id: Job ID.
             num_procs: Number of processors.
             experiment_dir: Path to QUEENS experiment directory.
@@ -433,10 +432,8 @@ class Jobscript(Driver):
             job_id, experiment_dir
         )
 
-        sample_dict = self.parameters.sample_as_dict(sample)
-
-        metadata = SimulationMetadata(job_id=job_id, job_input=sample_dict, job_dir=job_dir)
-        self.write_job_input(job_dir, sample_dict)
+        metadata = SimulationMetadata(job_id=job_id, job_input=inputs, job_dir=job_dir)
+        self.write_job_input(job_dir, inputs)
 
         with metadata.track_step("prepare_input_files"):
             job_options = JobOptions(
@@ -452,7 +449,7 @@ class Jobscript(Driver):
 
             # Create the input files
             self.prepare_input_files(
-                job_options.add_data_and_to_dict(sample_dict), experiment_dir, input_files
+                job_options.add_data_and_to_dict(inputs), experiment_dir, input_files
             )
 
             jobscript_file = job_dir / self.jobscript_file_name
