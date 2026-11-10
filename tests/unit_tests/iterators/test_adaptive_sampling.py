@@ -12,40 +12,70 @@
 # should have received a copy of the GNU Lesser General Public License along with QUEENS. If not,
 # see <https://www.gnu.org/licenses/>.
 #
-"""Unit tests for AdaptiveSampling iterator.
-
-Currently only tests the internal method _filter_failed_evaluations
-since there is an integration test covering the full functionality
-already.
-"""
+"""Unit tests for the AdaptiveSampling iterator."""
 
 from unittest.mock import Mock
 
 import numpy as np
 import pytest
 
+from queens.distributions.normal import Normal
 from queens.iterators.adaptive_sampling import AdaptiveSampling
+from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
+from queens.models.likelihoods.gaussian import Gaussian
+from queens.parameters.parameters import Parameters
+from queens.utils.io import load_result
 
 
 @pytest.fixture(name="adaptive_sampling_iterator")
-def fixture_adaptive_sampling_iterator(global_settings, default_parameters_uniform_2d):
+def fixture_adaptive_sampling_iterator(global_settings):
     """Fixture for AdaptiveSampling iterator with mocked dependencies."""
-    # Mock model
-    model = Mock()
+    # A single vector parameter exercises the structured field used by particles.
+    parameters = Parameters(x=Normal(mean=[0.0, 0.0], covariance=np.eye(2)))
 
-    # Mock likelihood model with observations
-    likelihood_model = Mock()
-    likelihood_model.observations = np.array([1.0, 2.0, 3.0])
+    def evaluate_surrogate(samples):
+        surrogate.num_evaluations += len(samples)
+        log_likelihood = -5.0 * np.sum((samples - [0.5, -0.5]) ** 2, axis=1)
+        return {"result": log_likelihood.reshape(-1, 1)}
 
-    # Mock solving iterator
-    solving_iterator = Mock()
+    # Mock the evaluate function of the surrogate
+    surrogate = Mock(num_evaluations=0)
+    surrogate.evaluate.side_effect = evaluate_surrogate
+
+    # Mock the evaluate function of the forward model, output is 3-dimensional
+    forward_model = Mock()
+    forward_model.evaluate.side_effect = lambda samples: {
+        "result": np.column_stack((samples, samples.sum(axis=1)))
+    }
+
+    likelihood_model = Gaussian(
+        forward_model=forward_model,
+        observations=np.zeros(3),
+        noise_type="fixed_variance",
+        noise_value=1.0,
+    )
+
+    solving_iterator = SequentialMonteCarloChopin(
+        model=surrogate,
+        parameters=parameters,
+        global_settings=global_settings,
+        seed=42,
+        num_particles=30,
+        resampling_threshold=0.8,
+        resampling_method="residual",
+        feynman_kac_model="adaptive_tempering",
+        waste_free=True,
+        num_rejuvenation_steps=3,
+        max_feval=100_000,
+        result_description={},
+    )
 
     # Initial training samples
     initial_train_samples = np.array([[0.1, 0.2], [0.3, 0.4]])
 
     iterator = AdaptiveSampling(
-        model=model,
-        parameters=default_parameters_uniform_2d,
+        model=surrogate,
+        parameters=parameters,
         global_settings=global_settings,
         likelihood_model=likelihood_model,
         initial_train_samples=initial_train_samples,
@@ -55,6 +85,19 @@ def fixture_adaptive_sampling_iterator(global_settings, default_parameters_unifo
     )
 
     return iterator
+
+
+def test_adaptive_sampling_with_vector_parameter(adaptive_sampling_iterator):
+    """Run one adaptive step with a two-dimensional parameter."""
+    adaptive_sampling_iterator.run()
+
+    results = load_result(adaptive_sampling_iterator.global_settings.result_file(".pickle"))
+    final_particles = results["particles"][-1]
+    final_weights = results["weights"][-1]
+    assert final_particles.shape[1] == 2
+    assert results["x_train_new"][-1].shape == (2, 2)
+    assert np.isfinite(final_particles).all()
+    np.testing.assert_allclose(final_weights.sum(), 1.0)
 
 
 def test_filter_failed_evaluations_some_failures(adaptive_sampling_iterator):
