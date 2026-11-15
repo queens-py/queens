@@ -136,3 +136,33 @@ def test_filter_failed_evaluations_multiple_calls(adaptive_sampling_iterator):
     np.testing.assert_array_equal(
         adaptive_sampling_iterator.x_train_failed, expected_x_train_failed
     )
+
+
+def test_core_run_plots_latest_iteration_after_restart(adaptive_sampling_iterator):
+    """Test that a restarted run plots the latest stored iteration."""
+    adaptive_sampling_iterator.num_steps = 1
+    adaptive_sampling_iterator.eval_log_likelihood = Mock(return_value=np.array([0.0, 0.0]))
+    adaptive_sampling_iterator.model.initialize = Mock()
+    adaptive_sampling_iterator.solving_iterator.pre_run = Mock()
+    adaptive_sampling_iterator.solving_iterator.core_run = Mock()
+    adaptive_sampling_iterator.solving_iterator.get_particles_and_weights.return_value = (
+        np.array([[0.1, 0.2], [0.3, 0.4]]),
+        np.array([0.5, 0.5]),
+        np.array([0.0, 0.0]),
+    )
+    adaptive_sampling_iterator.choose_new_samples = Mock(return_value=np.array([[0.3, 0.4]]))
+    # Restart after two iterations: write_results appends the first step of this run to them.
+    num_previous_iterations = 2
+    results = {"particles": [np.empty((2, 2))] * (num_previous_iterations + 1)}
+    adaptive_sampling_iterator.write_results = Mock(return_value=(1.0, results))
+    adaptive_sampling_iterator.visualization = Mock()
+
+    adaptive_sampling_iterator.core_run()
+
+    # The first step of this run is stored at index 2, not 0.
+    adaptive_sampling_iterator.visualization.plot.assert_called_once_with(
+        results,
+        num_previous_iterations,
+        adaptive_sampling_iterator.parameters,
+        global_settings=adaptive_sampling_iterator.global_settings,
+    )
