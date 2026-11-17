@@ -29,6 +29,7 @@ from queens.models.simulation import Simulation
 from queens.parameters.parameters import Parameters
 from queens.schedulers.pool import Pool
 from queens.utils.io import load_result
+from queens.visualization.adaptive_sampling_visualization import AdaptiveSamplingVisualization
 
 
 @pytest.fixture(
@@ -148,9 +149,16 @@ def test_logpdf_gaussian_process_park91a(
         solving_iterator=solving_iterator,
         num_new_samples=num_new_samples,
         num_steps=num_steps,
+        visualization=AdaptiveSamplingVisualization(),
     )
 
     run_iterator(adaptive_sampling_iterator, global_settings)
+
+    # Plotting failures are only logged, so check that a plot was saved for every step.
+    for i in range(num_steps):
+        assert global_settings.result_file(
+            suffix=f"_posterior_iteration_{i}", extension="svg"
+        ).exists()
 
     # Load results
     results = load_result(global_settings.result_file(".pickle"))

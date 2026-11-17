@@ -25,6 +25,7 @@ from jax import jit
 from queens.iterators._iterator import Iterator
 from queens.iterators.sequential_monte_carlo_chopin import SequentialMonteCarloChopin
 from queens.utils.io import load_result, write_pickle
+from queens.visualization.adaptive_sampling_visualization import AdaptiveSamplingVisualization
 
 _logger = logging.getLogger(__name__)
 jax.config.update("jax_enable_x64", True)
@@ -42,6 +43,7 @@ class AdaptiveSampling(Iterator):
         seed (int, opt): Seed for random number generation
         restart_file (str, opt): Result file path for restarts
         cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold
+        visualization (obj, opt): Adaptive sampling visualization object
         x_train (np.ndarray): Training input samples
         x_train_new (np.ndarray): Newly drawn training samples
         y_train (np.ndarray): Training likelihood output samples
@@ -61,6 +63,7 @@ class AdaptiveSampling(Iterator):
         seed=41,
         restart_file=None,
         cs_div_criterion=0.01,
+        visualization: AdaptiveSamplingVisualization | None = None,
     ):
         """Initialise AdaptiveSampling.
 
@@ -78,6 +81,7 @@ class AdaptiveSampling(Iterator):
             seed (int, opt): Seed for random number generation.
             restart_file (str, opt): Result file path for restarts.
             cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold.
+            visualization (obj, opt): Visualization object
         """
         super().__init__(model, parameters, global_settings)
         self.seed = seed
@@ -94,6 +98,7 @@ class AdaptiveSampling(Iterator):
         self.y_train = np.empty((0, 1))
         self.model_outputs = np.empty((0, self.likelihood_model.observations.size))
         self.model_outputs_failed = np.empty((0, self.likelihood_model.observations.size))
+        self.visualization = visualization
 
     def pre_run(self):
         """Pre run."""
@@ -142,7 +147,15 @@ class AdaptiveSampling(Iterator):
             particles, weights, log_posterior = self.solving_iterator.get_particles_and_weights()
             self.x_train_new = self.choose_new_samples(particles, weights)
 
-            cs_div = self.write_results(particles, weights, log_posterior, i)
+            cs_div, results = self.write_results(particles, weights, log_posterior, i)
+            if self.visualization is not None:
+                self.visualization.plot(
+                    results,
+                    # Use the latest stored iteration, which differs from i after a restart.
+                    len(results["particles"]) - 1,
+                    self.parameters,
+                    global_settings=self.global_settings,
+                )
 
             if cs_div < self.cs_div_criterion:
                 _logger.info(
@@ -259,6 +272,7 @@ class AdaptiveSampling(Iterator):
         Returns:
             cs_div (float): Maximum Cauchy-Schwarz divergence between marginals of the current and
                             previous step
+            results (dict): All results stored so far, including the current step
         """
         result_file = self.global_settings.result_file(".pickle")
 
@@ -300,7 +314,7 @@ class AdaptiveSampling(Iterator):
 
         write_pickle(results, result_file)
 
-        return cs_div
+        return cs_div, results
 
     def post_run(self):
         """Post run."""
