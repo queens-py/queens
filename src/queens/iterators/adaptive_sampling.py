@@ -15,7 +15,6 @@
 """Adaptive sampling iterator."""
 
 import logging
-import types
 
 import jax
 import jax.numpy as jnp
@@ -35,8 +34,7 @@ class AdaptiveSampling(Iterator):
 
     Attributes:
         likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported)
-        solving_iterator (Iterator): Iterator to solve inverse problem
-                                     (only SequentialMonteCarloChopin works out of the box)
+        solving_iterator (SequentialMonteCarloChopin): Iterator to solve inverse problem
         num_new_samples (int): Number of new training samples in each adaptive step
         num_steps (int): Number of adaptive sampling steps
         seed (int, opt): Seed for random number generation
@@ -55,7 +53,7 @@ class AdaptiveSampling(Iterator):
         global_settings,
         likelihood_model,
         initial_train_samples,
-        solving_iterator,
+        solving_iterator: SequentialMonteCarloChopin,
         num_new_samples,
         num_steps,
         seed=41,
@@ -71,14 +69,15 @@ class AdaptiveSampling(Iterator):
                                               and the output directory.
             likelihood_model (Model): Likelihood model (Only Gaussian Likelihood supported).
             initial_train_samples (np.ndarray): Initial training samples for surrogate model.
-            solving_iterator (Iterator): Iterator to solve inverse problem
-                                         (only SequentialMonteCarloChopin works out of the box).
+            solving_iterator: Iterator to solve inverse problem.
             num_new_samples (int): Number of new training samples in each adaptive step.
             num_steps (int): Number of adaptive sampling steps.
             seed (int, opt): Seed for random number generation.
             restart_file (str, opt): Result file path for restarts.
             cs_div_criterion (float): Cauchy-Schwarz divergence stopping criterion threshold.
         """
+        if not isinstance(solving_iterator, SequentialMonteCarloChopin):
+            raise TypeError("solving_iterator must be a SequentialMonteCarloChopin instance")
         super().__init__(model, parameters, global_settings)
         self.seed = seed
         self.likelihood_model = likelihood_model
@@ -121,21 +120,10 @@ class AdaptiveSampling(Iterator):
             self.solving_iterator.pre_run()  # We don't want that the random seed is set here.
             np.random.set_state(random_state)
 
-            def _m(self_, _, xp):
-                x_train_ml = self.x_train[np.argmax(self.y_train[:, 0])]
-                epn = xp.shared["exponents"][-1]
-                target = self_.current_target(epn)
-                particles = np.lib.recfunctions.structured_to_unstructured(xp.theta)
-                if not (particles == x_train_ml).all(-1).any():
-                    for j, par in enumerate(xp.theta.dtype.names):
-                        xp.theta[par][0] = x_train_ml[j]
-                    target(xp)
-                return self_.move(xp, target)
-
-            if isinstance(self.solving_iterator, SequentialMonteCarloChopin):
-                self.solving_iterator.smc_obj.fk.M = types.MethodType(
-                    _m, self.solving_iterator.smc_obj.fk
-                )
+            # After each SMC resampling, insert the evaluated training point of
+            # highest log likelihood if it is absent from the particles.
+            max_likelihood_sample = self.x_train[np.argmax(self.y_train[:, 0])]
+            self.solving_iterator.insert_sample_after_resampling(max_likelihood_sample)
 
             self.solving_iterator.core_run()
 
